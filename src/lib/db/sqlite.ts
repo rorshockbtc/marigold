@@ -3,16 +3,20 @@ import path from 'path';
 import fs from 'fs';
 
 let isInitialized = false;
+let dbInstance: Database.Database | null = null;
 
-// Helper to get DB connection. 
+// Helper to get DB connection with caching to prevent sluggish page navigation
 export function getDb() {
+  if (dbInstance) return dbInstance;
+
   const dbPath = path.resolve(process.cwd(), 'voters.db');
   
   if (!fs.existsSync(dbPath)) {
     return null;
   }
   
-  const db = new Database(dbPath);
+  dbInstance = new Database(dbPath);
+  const db = dbInstance;
   
   if (!isInitialized) {
     // Ensure all necessary tables exist
@@ -45,23 +49,21 @@ export function getDb() {
       CREATE INDEX IF NOT EXISTS idx_voters_names ON voters(last_name, first_name);
       CREATE INDEX IF NOT EXISTS idx_voters_zip ON voters(zip);
       CREATE INDEX IF NOT EXISTS idx_voters_address ON voters(address);
+
+      -- Clean up any legacy out-of-state cartridges
+      DELETE FROM playbooks WHERE name LIKE '%Cartridge%' OR name LIKE '%MN %' OR name LIKE '%GA %' OR name LIKE '%NC %' OR name LIKE '%TX %';
     `);
 
-    // Ensure all standard and multi-state cartridges exist
+    // Ensure Mississippi mission playbooks exist
     const defaults = [
-      ['High-Density Occupancy', 'density', 12, ''],
-      ['Missing Unit/Dorm Number', 'missing-dorm', 50, ''],
-      ['P.O. Box in Residence', 'po-box', 0, ''],
-      ['Fat-Finger Typo Names', 'typo-names', 0, ''],
-      ['Intra-County Duplicates', 'duplicates', 0, ''],
-      ['Commercial Disguises', 'commercial', 0, ''],
-      ['Registration Spikes', 'spikes', 0, ''],
-      ['Phantom Precincts', 'phantom-precincts', 0, ''],
-      ['Out-of-State Mailing', 'out-of-state-mailing', 0, ''],
-      ['[MN Cartridge] Multi-Family Network Occupancy (>15)', 'density', 15, ''],
-      ['[GA Cartridge] Clerical DOB Anomaly Filter', 'spikes', 0, ''],
-      ['[NC Cartridge] NCOA Interstate Address Mismatch', 'out-of-state-mailing', 0, ''],
-      ['[TX Cartridge] Commercial P.O. Box Disguise', 'po-box', 0, '']
+      ['[MS Mission] Hinds County High-Density Residential (>12)', 'density', 12, 'Hinds'],
+      ['[MS Mission] DeSoto County Registration Spikes', 'spikes', 0, 'DeSoto'],
+      ['[MS Mission] Harrison County Commercial P.O. Box Disguise', 'po-box', 0, 'Harrison'],
+      ['[MS Mission] Statewide NCOA Interstate Relocation', 'out-of-state-mailing', 0, ''],
+      ['[MS Mission] Madison County Intra-County Duplicates', 'duplicates', 0, 'Madison'],
+      ['[MS Mission] Rankin County Missing Unit / Dorm Filter', 'missing-dorm', 50, 'Rankin'],
+      ['[MS Mission] Jackson County Fat-Finger Typo Names', 'typo-names', 0, 'Jackson'],
+      ['[MS Mission] Lee County Phantom Precincts Check', 'phantom-precincts', 0, 'Lee']
     ];
     const checkStmt = db.prepare("SELECT COUNT(*) as c FROM playbooks WHERE name = ?");
     const insertStmt = db.prepare(`INSERT INTO playbooks (name, audit_type, threshold, county) VALUES (?, ?, ?, ?)`);
