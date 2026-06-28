@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { getAnomalies, AnomalyRecord, updateAnomalyStatus } from '@/lib/firebase/db';
+import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -58,6 +59,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Interactive Visual Analytics Hub */}
+      <ExecutiveVisualCanvas />
 
       {/* Admin Management Section */}
       {isAdmin && (

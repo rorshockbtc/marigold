@@ -103,7 +103,7 @@ export default function DataPrepPage() {
             <div className="card space-y-6">
               <div>
                 <h3 className="text-xl font-bold">Split & Export</h3>
-                <p className="text-muted-foreground text-sm mt-1">Break this massive file into smaller, actionable chunks for your volunteers or to upload to Elly.</p>
+                <p className="text-muted-foreground text-sm mt-1">Break this massive file into smaller, actionable chunks for your volunteers or to import into Marigold Insights.</p>
               </div>
 
               <div>

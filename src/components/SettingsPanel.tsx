@@ -6,21 +6,24 @@ export default function SettingsPanel() {
   const [msfeEmail, setMsfeEmail] = useState("");
   const [geminiKey, setGeminiKey] = useState("");
   const [textSize, setTextSize] = useState("16");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
-    setGeminiKey(localStorage.getItem("elly_gemini_key") || "");
+    setGeminiKey(localStorage.getItem("marigold_gemini_key") || "");
   }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     
     // Save Gemini Key
-    if (geminiKey) localStorage.setItem("elly_gemini_key", geminiKey);
-    else localStorage.removeItem("elly_gemini_key");
+    if (geminiKey) localStorage.setItem("marigold_gemini_key", geminiKey);
+    else localStorage.removeItem("marigold_gemini_key");
 
     alert("Settings saved securely to your browser!");
     document.documentElement.style.fontSize = `${textSize}px`;
+    setIsSaving(false);
   };
 
   return (

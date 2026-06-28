@@ -53,7 +53,7 @@ export default function StatsGuidePage() {
             <li><strong>High Standard Deviation:</strong> Total chaos. Some houses have 1 voter, some have 15, some have 100. </li>
           </ul>
           <p className="text-base leading-relaxed mt-4">
-            When you chat with the Elly Assistant, if it tells you the standard deviation is huge, that is your signal to stop looking at the big picture and start hunting for specific crazy addresses.
+            When you chat with the Marigold Assistant, if it tells you the standard deviation is huge, that is your signal to stop looking at the big picture and start hunting for specific crazy addresses.
           </p>
         </section>
 
@@ -118,7 +118,7 @@ export default function StatsGuidePage() {
 
         {/* Footer */}
         <div className="mt-8 pt-6 border-t border-border text-center">
-          <h3 className="text-xl font-bold mb-2">Still Confused? Just Ask Elly!</h3>
+          <h3 className="text-xl font-bold mb-2">Still Confused? Just Ask Marigold!</h3>
           <p className="text-muted-foreground mb-6">
             The Chat Agent is specifically programmed to translate nerdy math into plain English. Never be afraid to type: <em>"I don't understand what Kurtosis means, explain it to me like I'm 5 years old."</em>
           </p>

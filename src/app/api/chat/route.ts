@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     const feedbackContext = recentFeedback.map((f: any) => `- Audit: ${f.audit_type}, Feedback: ${f.user_feedback}, Date: ${f.created_at}`).join('\\n');
 
     const systemInstruction = `
-      You are the "ELLY Guide", an incredibly patient and statistically rigorous software tutor.
+      You are the "Marigold Guide", an incredibly patient and statistically rigorous software tutor.
       
       Your user base consists of two distinct groups:
       1. Non-Nerds (Volunteers): They want to work hard and find anomalies but lack statistical language.
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
       HANDLING EMPTY DATABASES:
       - If a tool returns {"error": "Database not connected."}, do NOT apologize for a generic error.
-      - Instead, cheerfully inform the user that ELLY has not received any data yet! 
+      - Instead, cheerfully inform the user that Marigold Insights has not received any data yet! 
       - Instruct them to go to the "Advanced Stats" or "Data Linkage" page and drag-and-drop their November Voter Roll CSV into the system to initialize the database.
 
       TRANSPARENCY & ACCURACY PREDICTION:

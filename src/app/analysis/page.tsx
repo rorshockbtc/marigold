@@ -234,7 +234,7 @@ export default function AnalysisDashboard() {
             <h3 className="text-2xl font-bold mb-2">Let's Get Started!</h3>
             <p className="text-muted-foreground">
               {error === "Database not found. Please run the ingestion script."
-                ? "Before ELLY can run algorithmic tuning, we need to load the data. Don't worry, it's very easy!"
+                ? "Before Marigold Insights can run algorithmic tuning, we need to load the data. Don't worry, it's very easy!"
                 : error}
             </p>
           </div>
@@ -245,7 +245,7 @@ export default function AnalysisDashboard() {
                 <ol className="list-decimal list-inside space-y-3 text-muted-foreground">
                   <li>Click the <strong>Upload Voter Roll</strong> button below.</li>
                   <li>Find the <strong>November voter file (.csv)</strong> on your computer.</li>
-                  <li>Drag and drop that file into the dotted box. ELLY will quickly process the file entirely on your machine!</li>
+                  <li>Drag and drop that file into the dotted box. Marigold Insights will quickly process the file entirely on your machine!</li>
                   <li>Come back to this page, and all the audit buttons (like High-Density) will automatically unlock!</li>
                 </ol>
               </div>
