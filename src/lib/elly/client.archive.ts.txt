@@ -1,0 +1,211 @@
+import { chromium, Browser, Page } from "playwright";
+import { GoogleGenAI, Schema, Type } from "@google/genai";
+
+/**
+ * Headless Recursive Browser Agent
+ * Uses Playwright and Gemini to autonomously explore complex drill-down interfaces.
+ */
+export class EllyClient {
+  private browser: Browser | null = null;
+  public page: Page | null = null;
+
+  async init() {
+    if (this.browser) return;
+
+    const proxyOptions = process.env.PROXY_HOST
+      ? {
+        server: `socks5://${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`,
+      }
+      : undefined;
+
+    this.browser = await chromium.launch({
+      headless: true, // Set to false to watch it navigate locally!
+      proxy: proxyOptions,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    this.page = await this.browser.newPage();
+  }
+
+  async login(email?: string, password?: string, loginUrl?: string) {
+    if (!this.page) await this.init();
+
+    const LOGIN_URL = loginUrl || process.env.ELLY_LOGIN_URL || "http://localhost:3001/mock-login";
+    const EMAIL_SELECTOR = process.env.ELLY_EMAIL_SELECTOR || "";
+    const PASSWORD_SELECTOR = process.env.ELLY_PASSWORD_SELECTOR || "";
+    const SUBMIT_BUTTON_SELECTOR = process.env.ELLY_SUBMIT_SELECTOR || "";
+
+    const USER_EMAIL = email || process.env.ELLY_USER_EMAIL || "";
+    const USER_PASSWORD = password || process.env.ELLY_USER_PASSWORD || "";
+
+    if (!EMAIL_SELECTOR || !PASSWORD_SELECTOR) {
+      console.log("[Dynamic Agent] Missing login selectors. Simulating login locally.");
+      return { success: true, message: "Simulated Login" };
+    }
+
+    try {
+      await this.page!.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
+      await this.page!.fill(EMAIL_SELECTOR, USER_EMAIL);
+      await this.page!.fill(PASSWORD_SELECTOR, USER_PASSWORD);
+      await this.page!.click(SUBMIT_BUTTON_SELECTOR);
+      
+      // Wait for navigation after login
+      await this.page!.waitForURL('**/dashboard**');
+      console.log('Successfully logged into ELLY API');
+      return { success: true, message: "Logged in dynamically." };
+    } catch (e: any) {
+      console.error('ELLY login failed:', e.message);
+      throw e;
+    }
+  }
+
+  /**
+   * Scrapes the current page for actionable elements (inputs, buttons, links) 
+   * and textual context so Gemini can decide what to do next.
+   */
+  async extractPageState() {
+    if (!this.page) throw new Error("Browser not initialized");
+
+    return await this.page.evaluate(() => {
+      const state: any = { interactables: [], textContext: "" };
+
+      // Get all actionable inputs and buttons
+      const interactables = document.querySelectorAll("input, select, textarea, button, a");
+      interactables.forEach(el => {
+        const id = el.id;
+        const tagName = el.tagName.toLowerCase();
+
+        // Skip hidden elements or elements without IDs (since we need selectors to interact)
+        // In a more robust generic agent, we'd assign temporary generic selectors (e.g. data-agent-id="1")
+        if (!id) return;
+
+        let details: any = { selector: `#${id}`, type: tagName };
+
+        if (tagName === 'input') {
+          details.inputType = (el as HTMLInputElement).type;
+          details.name = (el as HTMLInputElement).name;
+        } else if (tagName === 'button' || tagName === 'a') {
+          details.text = el.textContent?.trim()?.substring(0, 50);
+        }
+
+        state.interactables.push(details);
+      });
+
+      // Grab some visible text from the page to help the LLM understand where it is
+      state.textContext = document.body.innerText.substring(0, 1000);
+
+      return state;
+    });
+  }
+
+  /**
+   * Orchestrates the recursive exploration:
+   * 1. Navigates to the start page
+   * 2. Loops up to MAX_STEPS:
+   *    a. Extracts page state
+   *    b. Asks Gemini what action to take (click, fill, or done)
+   *    c. Executes action
+   */
+  async autonomousExplore(goal: string, searchUrl: string) {
+    if (!this.page) await this.init();
+
+    if (searchUrl && searchUrl !== "mock") {
+      await this.page.goto(searchUrl, { waitUntil: 'networkidle' });
+    }
+
+    const MAX_STEPS = 5; // Prevent infinite loops
+    let stepCount = 0;
+
+    const activeApiKey = process.env.GEMINI_API_KEY;
+    if (!activeApiKey) throw new Error("Gemini API Key required for dynamic agent.");
+    const ai = new GoogleGenAI({ apiKey: activeApiKey });
+
+    const schema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        actionType: {
+          type: Type.STRING,
+          enum: ["click", "fill", "done"],
+          description: "The next action to take. 'done' if the goal is achieved."
+        },
+        selector: {
+          type: Type.STRING,
+          description: "The CSS selector to interact with (required for click and fill)."
+        },
+        value: {
+          type: Type.STRING,
+          description: "The string value to enter (required for fill action)."
+        },
+        finalData: {
+          type: Type.STRING,
+          description: "If actionType is 'done', extract the final requested data from the page textContext to return."
+        }
+      },
+      required: ["actionType"]
+    };
+
+    while (stepCount < MAX_STEPS) {
+      stepCount++;
+      const state = await this.extractPageState();
+
+      const prompt = `
+        You are an autonomous browser agent navigating a complex web interface.
+        Your Ultimate Goal: "${goal}"
+        
+        Current Page Text Context:
+        ${state.textContext}
+        
+        Available Interactable Elements:
+        ${JSON.stringify(state.interactables, null, 2)}
+        
+        Determine the absolute best NEXT SINGLE STEP to achieve the goal.
+        If the data you need is already visible in the Text Context, return actionType: "done" and summarize it in "finalData".
+        Otherwise, choose "click" to drill down or "fill" to enter data.
+      `;
+
+      console.log(`[Step ${stepCount}] Asking Gemini for next action...`);
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: schema
+        }
+      });
+
+      const parsed = JSON.parse(response.text || "{}");
+      console.log(`[Step ${stepCount}] Gemini decided to:`, parsed.actionType, parsed.selector || "");
+
+      if (parsed.actionType === "done") {
+        return parsed.finalData || "Goal completed, but no data extracted.";
+      }
+
+      if (parsed.actionType === "click" && parsed.selector) {
+        try {
+          await this.page.click(parsed.selector);
+          await this.page.waitForLoadState('networkidle');
+        } catch (e) {
+          console.warn(`Click failed on ${parsed.selector}`, e);
+        }
+      } else if (parsed.actionType === "fill" && parsed.selector && parsed.value) {
+        try {
+          await this.page.fill(parsed.selector, parsed.value);
+        } catch (e) {
+          console.warn(`Fill failed on ${parsed.selector}`, e);
+        }
+      }
+
+      // Wait a moment for dynamic UI updates (dropdowns, popups)
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    return "Exploration timed out after maximum steps reached without finding the goal.";
+  }
+
+  async close() {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+      this.page = null;
+    }
+  }
+}
