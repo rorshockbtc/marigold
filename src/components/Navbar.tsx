@@ -22,6 +22,7 @@ export function Navbar() {
         </div>
 
         <nav className="flex flex-wrap gap-5 items-center">
+          <Link href="/perspectives" className="text-sm font-bold text-indigo-300 hover:text-white underline decoration-dotted transition-colors">🌐 Worldviews FAQ</Link>
           <Link href="/sandbox" className="text-sm font-bold text-amber-400 hover:underline">Public Sandbox</Link>
           <Link href="/registry" className="text-sm font-medium hover:text-amber-400 transition-colors">State Registry</Link>
           <Link href="/store" className="text-sm font-medium hover:text-amber-400 transition-colors">Audit Checklists</Link>

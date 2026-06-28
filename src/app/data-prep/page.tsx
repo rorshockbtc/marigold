@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCSVParser } from "@/hooks/useCSVParser";
 import { useCSVExport } from "@/hooks/useCSVExport";
+import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -182,6 +183,8 @@ export default function DataPrepPage() {
                   </div>
                 ))}
               </div>
+
+              <DesktopImportGuide />
             </div>
           )}
 

@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: 'Data Linkage', href: '/data-linkage', desc: 'Cross-precinct matching' },
   { label: 'Data Prep & Chunking', href: '/data-prep', desc: 'Client RAM file slicing' },
   { label: 'Mission Playbooks', href: '/playbooks', desc: 'Standardized check templates' },
+  { label: 'Worldviews FAQ', href: '/perspectives', desc: 'Plain-English Math Guide' },
   { label: 'AI Assistant', href: '/chat', desc: 'Plain-language query queries' },
   { label: 'Group Settings', href: '/settings', desc: 'Manage API keys & access' },
 ];

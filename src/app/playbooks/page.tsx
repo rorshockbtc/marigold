@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Tooltip } from "@/components/Tooltip";
 
 export default function MissionControl() {
@@ -9,6 +10,9 @@ export default function MissionControl() {
   const [accuracies, setAccuracies] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCounty, setSelectedCounty] = useState('All');
+  const [selectedState, setSelectedState] = useState('MS');
+  const [launchingId, setLaunchingId] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPlaybooks = async () => {
@@ -55,33 +59,80 @@ export default function MissionControl() {
     return labels[type] || type;
   };
 
+  const getPlaybookSource = (name: string, type: string) => {
+    if (name.includes("Quantile Model") || name.includes("IQR")) return "🧮 Source: Tukey's Fences & Mathematical Outlier Benchmarks";
+    if (name.includes("Poisson")) return "📊 Source: Poisson Rare Event Probability Theory";
+    if (name.includes("Good Governance") || name.includes("Suspense")) return "🏛️ Source: EAC Administrative Efficiency Guidelines";
+    if (name.includes("Relocation") || name.includes("Merge")) return "📋 Source: Interstate Voter Registration Crosscheck Standards";
+    if (name.includes("Voting Rights") || name.includes("Urban Precinct")) return "⚖️ Source: Brennan Center for Justice Polling Place Wait Time Study";
+    if (name.includes("Campus Housing") || name.includes("Dorm")) return "🎓 Source: ACLU / Fair Fight Student Voting Rights Guide";
+    if (name.includes("Purge Surge") || name.includes("Inactive")) return "🛡️ Source: League of Women Voters / Voter Purge Project";
+    if (type === "density") return "📚 Source: Heritage Foundation / Voter Roll Audit Standards";
+    if (type === "spikes") return "📈 Source: Seth Keshel Statistical Trend Analysis";
+    if (type === "po-box" || type === "commercial") return "📬 Source: USPS NCOA Commercial Address Registry";
+    if (type === "missing-dorm") return "🏛️ Source: EAC (Election Assistance Commission) Housing Guidelines";
+    if (type === "typo-names") return "🔍 Source: State Auditor Data Validation Benchmarks";
+    if (type === "duplicates") return "📋 Source: National Voter Registration Act (NVRA) Title 8";
+    if (type === "phantom-precincts") return "🗺️ Source: Public Interest Legal Foundation (PILF)";
+    if (type === "out-of-state-mailing") return "📬 Source: Interstate Crosscheck / ERIC Standards";
+    return "💡 Source: Non-Partisan Election Integrity Standard";
+  };
+
+  const statePlaybooks = playbooks.filter(p => {
+    if (selectedState === 'MS') return !p.name.includes('[NC ');
+    if (selectedState === 'NC') return p.name.includes('[NC ');
+    return true;
+  });
+
   const filteredPlaybooks = selectedCounty === 'All' 
-    ? playbooks 
-    : playbooks.filter(p => (selectedCounty === 'Statewide' ? !p.county : p.county === selectedCounty));
+    ? statePlaybooks 
+    : statePlaybooks.filter(p => (selectedCounty === 'Statewide' ? !p.county : p.county === selectedCounty));
+
+  const msCounties = ['All', 'Statewide', 'Hinds', 'DeSoto', 'Harrison', 'Madison', 'Rankin', 'Jackson', 'Lee'];
+  const ncCounties = ['All', 'Statewide', 'Wake', 'Mecklenburg', 'Guilford', 'Durham', 'New Hanover'];
+  const currentCounties = selectedState === 'NC' ? ncCounties : msCounties;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
       <header className="mb-8 space-y-4">
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="px-3 py-1 bg-amber-100 text-amber-950 rounded-full text-xs font-extrabold uppercase tracking-wider">
-              🏛️ Mississippi Mission Control
-            </span>
-            <span className="text-xs font-mono text-muted-foreground">Statewide & County Templates</span>
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-amber-100 text-amber-950 rounded-full text-xs font-extrabold uppercase tracking-wider">
+                🏛️ Multi-State Mission Control
+              </span>
+              <span className="text-xs font-mono text-muted-foreground">Calibrated Statistical Audits</span>
+            </div>
+
+            {/* State Selector */}
+            <div className="flex bg-slate-200 p-1 rounded-xl gap-1">
+              <button
+                onClick={() => { setSelectedState('MS'); setSelectedCounty('All'); }}
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${selectedState === 'MS' ? 'bg-primary text-white shadow' : 'text-slate-700 hover:bg-slate-300'}`}
+              >
+                📍 Mississippi (MS)
+              </button>
+              <button
+                onClick={() => { setSelectedState('NC'); setSelectedCounty('All'); }}
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${selectedState === 'NC' ? 'bg-emerald-700 text-white shadow' : 'text-slate-700 hover:bg-slate-300'}`}
+              >
+                🌲 North Carolina (NC)
+              </button>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Mississippi Mission Playbooks</h1>
+          <h1 className="text-3xl font-bold text-foreground">{selectedState === 'MS' ? 'Mississippi' : 'North Carolina'} Mission Playbooks</h1>
           <p className="text-muted-foreground mt-2">
-            Pre-configured statistical audits calibrated specifically for Mississippi counties (Hinds, DeSoto, Harrison, Madison, Rankin). Click a playbook below to launch an instant local scan. False positives are automatically filtered out, and our non-partisan models learn from your verification feedback.
+            Pre-configured statistical audits calibrated specifically for {selectedState === 'MS' ? 'Mississippi counties (Hinds, DeSoto, Harrison, etc.)' : 'North Carolina counties (Wake, Mecklenburg, Guilford, etc.)'}. Click a playbook below to launch an instant scan. False positives are automatically filtered out, and our non-partisan models learn from your verification feedback.
             Need help understanding the data? <Tooltip content="If the data looks confusing, hover over the ℹ️ icons or ask the AI Chat Guide to explain the math for you."><span className="text-primary font-semibold underline decoration-dotted">Hover here for a tip.</span></Tooltip>
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-          {['All', 'Statewide', 'Hinds', 'DeSoto', 'Harrison', 'Madison', 'Rankin', 'Jackson', 'Lee'].map(c => (
+          {currentCounties.map(c => (
             <button
               key={c}
               onClick={() => setSelectedCounty(c)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedCounty === c ? 'bg-primary text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedCounty === c ? (selectedState === 'NC' ? 'bg-emerald-700 text-white shadow' : 'bg-primary text-white shadow') : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
             >
               {c === 'All' ? '🌐 All Playbooks' : c === 'Statewide' ? '🏛️ Statewide General' : `📍 ${c} County`}
             </button>
@@ -125,14 +176,31 @@ export default function MissionControl() {
                     </p>
                   )}
                 </div>
+
+                <div className="bg-slate-100 border border-slate-200 rounded-lg p-2.5 mb-4 text-xs text-slate-800">
+                  <span className="font-bold text-slate-900 block mb-0.5">Citation / Legal Standard:</span>
+                  <span className="font-medium text-slate-700">{getPlaybookSource(p.name, p.audit_type)}</span>
+                </div>
               </div>
               
-              <Link 
-                href={`/analysis?audit=${p.audit_type}&county=${encodeURIComponent(p.county)}&threshold=${p.threshold}`}
-                className="btn-primary w-full justify-center bg-primary/90"
+              <button
+                type="button"
+                onClick={() => {
+                  setLaunchingId(p.id);
+                  router.push(`/analysis?audit=${p.audit_type}&county=${encodeURIComponent(p.county)}&threshold=${p.threshold}`);
+                }}
+                disabled={launchingId === p.id}
+                className="btn-primary w-full justify-center bg-primary/90 disabled:opacity-75 disabled:cursor-wait flex items-center gap-2"
               >
-                Launch Mission
-              </Link>
+                {launchingId === p.id ? (
+                  <>
+                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>
+                    <span>⏳ Launching Scan...</span>
+                  </>
+                ) : (
+                  "Launch Mission"
+                )}
+              </button>
             </div>
           ))}
         </div>

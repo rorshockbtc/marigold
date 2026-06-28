@@ -13,6 +13,7 @@ const WORKSPACE_ROUTES = [
   '/data-prep',
   '/playbooks',
   '/chat',
+  '/perspectives',
   '/settings',
   '/advanced-stats',
 ];
