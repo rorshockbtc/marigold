@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  suggestedPlaybook?: any;
 }
 
 export interface ChatSession {
@@ -31,6 +32,25 @@ export default function ChatInterface() {
   const [templateName, setTemplateName] = useState("");
   const [templateDesc, setTemplateDesc] = useState("");
   const [templateScope, setTemplateScope] = useState<"local" | "org">("local");
+  const [savedPlaybooks, setSavedPlaybooks] = useState<Record<string, boolean>>({});
+
+  const handleSaveSuggestedPlaybook = async (pb: any) => {
+    try {
+      await fetch('/api/playbooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: pb.name,
+          auditType: pb.audit_type,
+          threshold: pb.threshold,
+          county: pb.county
+        })
+      });
+      setSavedPlaybooks(prev => ({ ...prev, [pb.name]: true }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
   
   // Load initial data
   useEffect(() => {
@@ -133,7 +153,8 @@ export default function ChatInterface() {
       
       const assistantMessage: ChatMessage = { 
         role: "assistant", 
-        content: response.ok ? data.reply : `Error: ${data.error}` 
+        content: response.ok ? data.reply : `Error: ${data.error}`,
+        suggestedPlaybook: data.suggestedPlaybook
       };
 
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage] } : s));
@@ -236,6 +257,29 @@ export default function ChatInterface() {
                 <div className={`text-[1rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-primary-foreground' : 'text-foreground'}`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
+
+                {msg.suggestedPlaybook && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 space-y-2 text-left">
+                    <div className="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-amber-800">
+                      <span>✨ AI Suggested Mission Playbook</span>
+                      <span className="bg-amber-200 px-2 py-0.5 rounded">{msg.suggestedPlaybook.audit_type}</span>
+                    </div>
+                    <p className="font-bold text-sm">{msg.suggestedPlaybook.name}</p>
+                    <p className="text-xs text-amber-900 leading-relaxed">{msg.suggestedPlaybook.description}</p>
+                    <div className="flex gap-2 text-xs text-amber-800 font-mono pt-1">
+                      <span>Threshold: {msg.suggestedPlaybook.threshold || 'N/A'}</span>
+                      <span>• County: {msg.suggestedPlaybook.county || 'Statewide'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveSuggestedPlaybook(msg.suggestedPlaybook)}
+                      disabled={savedPlaybooks[msg.suggestedPlaybook.name]}
+                      className={`w-full py-2 rounded-lg font-bold text-xs transition-colors shadow ${savedPlaybooks[msg.suggestedPlaybook.name] ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-700 text-white'}`}
+                    >
+                      {savedPlaybooks[msg.suggestedPlaybook.name] ? '✓ Saved to Mission Control!' : '⚡ Save as Mission Playbook'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

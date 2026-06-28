@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Tooltip } from "@/components/Tooltip";
+import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 
 // Simple mapping for known institutional addresses to prevent false positives
 const categorizeAddress = (address: string) => {
@@ -113,6 +114,21 @@ export default function AnalysisDashboard() {
       setIsSavingPlaybook(false);
     }
   };
+
+  const renderAuditButton = (auditKey: string) => (
+    <button 
+      onClick={() => runAlgorithm(auditKey)} 
+      disabled={isLoading || !stats} 
+      className="btn-primary w-full justify-center flex items-center gap-2 disabled:opacity-75 disabled:cursor-wait"
+    >
+      {isLoading && currentAudit === auditKey ? (
+        <>
+          <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>
+          <span>⏳ Analyzing...</span>
+        </>
+      ) : "Run Audit"}
+    </button>
+  );
 
   const excludeRecord = async (value: string) => {
     if (!currentAudit || !value) return;
@@ -313,9 +329,7 @@ export default function AnalysisDashboard() {
               </h3>
               <p className="text-sm text-muted-foreground mb-4">Addresses with {thresholdFilter}+ registered voters. Helps identify institutions or large communal living spaces.</p>
             </div>
-            <button onClick={() => runAlgorithm('density')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'density' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('density')}
           </div>
 
           <div className="border border-border rounded-lg p-4 bg-muted/20 flex flex-col justify-between">
@@ -323,9 +337,7 @@ export default function AnalysisDashboard() {
               <h3 className="font-bold text-lg mb-2">Missing Unit/Dorm Number</h3>
               <p className="text-sm text-muted-foreground mb-4">High-density addresses ({Math.max(thresholdFilter, 50)}+ voters) missing an apartment or dorm number.</p>
             </div>
-            <button onClick={() => runAlgorithm('missing-dorm')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'missing-dorm' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('missing-dorm')}
           </div>
 
           <div className="border border-border rounded-lg p-4 bg-muted/20 flex flex-col justify-between">
@@ -337,9 +349,7 @@ export default function AnalysisDashboard() {
               </h3>
               <p className="text-sm text-muted-foreground mb-4">Records using a P.O. Box as their physical residence, which requires clarification under state law.</p>
             </div>
-            <button onClick={() => runAlgorithm('po-box')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'po-box' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('po-box')}
           </div>
         </div>
 
@@ -350,9 +360,7 @@ export default function AnalysisDashboard() {
               <h3 className="font-bold text-lg mb-2">Fat-Finger Typo Check</h3>
               <p className="text-sm text-muted-foreground mb-4">Finds voters whose first or last name is exactly 1 character long, indicating a data entry error.</p>
             </div>
-            <button onClick={() => runAlgorithm('typo-names')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'typo-names' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('typo-names')}
           </div>
 
           <div className="border border-border rounded-lg p-4 bg-muted/20 flex flex-col justify-between">
@@ -360,9 +368,7 @@ export default function AnalysisDashboard() {
               <h3 className="font-bold text-lg mb-2">Intra-County Duplicates</h3>
               <p className="text-sm text-muted-foreground mb-4">Finds identical names & zips with different street addresses, often signifying unpurged moving records.</p>
             </div>
-            <button onClick={() => runAlgorithm('duplicates')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'duplicates' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('duplicates')}
           </div>
 
           <div className="border border-border rounded-lg p-4 bg-muted/20 flex flex-col justify-between">
@@ -370,9 +376,7 @@ export default function AnalysisDashboard() {
               <h3 className="font-bold text-lg mb-2">Commercial Disguises</h3>
               <p className="text-sm text-muted-foreground mb-4">Finds residential addresses with commercial identifiers like "STE" or "BLDG" (e.g. UPS Stores).</p>
             </div>
-            <button onClick={() => runAlgorithm('commercial')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'commercial' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('commercial')}
           </div>
         </div>
 
@@ -383,27 +387,21 @@ export default function AnalysisDashboard() {
               <h3 className="font-bold text-lg mb-2">Registration Spikes</h3>
               <p className="text-sm text-muted-foreground mb-4">Groups registrations by date and county to identify massive, unexplained single-day surges.</p>
             </div>
-            <button onClick={() => runAlgorithm('spikes')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'spikes' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('spikes')}
           </div>
           <div className="border border-border rounded-lg p-4 bg-muted/20 flex flex-col justify-between">
             <div>
               <h3 className="font-bold text-lg mb-2">Phantom Precincts</h3>
               <p className="text-sm text-muted-foreground mb-4">Finds ACTIVE voters who fell through the cracks and have no precinct assigned to them.</p>
             </div>
-            <button onClick={() => runAlgorithm('phantom-precincts')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'phantom-precincts' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('phantom-precincts')}
           </div>
           <div className="border border-border rounded-lg p-4 bg-muted/20 flex flex-col justify-between">
             <div>
               <h3 className="font-bold text-lg mb-2">Out-of-State Mailing Loophole</h3>
               <p className="text-sm text-muted-foreground mb-4">Identifies active MS voters whose mailing address is permanently located in another state.</p>
             </div>
-            <button onClick={() => runAlgorithm('out-of-state-mailing')} disabled={isLoading || !stats} className="btn-primary w-full justify-center">
-              {isLoading && currentAudit === 'out-of-state-mailing' ? "Running..." : "Run Audit"}
-            </button>
+            {renderAuditButton('out-of-state-mailing')}
           </div>
         </div>
 
@@ -451,6 +449,8 @@ export default function AnalysisDashboard() {
           <div className="overflow-x-auto">
             {renderTable()}
           </div>
+
+          <DesktopImportGuide />
 
           {predictedAccuracy !== null && !hasGivenFeedback && (
             <div className="bg-muted/30 border border-border p-5 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 mt-6">

@@ -51,10 +51,10 @@ export function getDb() {
       CREATE INDEX IF NOT EXISTS idx_voters_address ON voters(address);
 
       -- Clean up any legacy out-of-state cartridges
-      DELETE FROM playbooks WHERE name LIKE '%Cartridge%' OR name LIKE '%MN %' OR name LIKE '%GA %' OR name LIKE '%NC %' OR name LIKE '%TX %';
+      DELETE FROM playbooks WHERE name LIKE '%Cartridge%' OR name LIKE '%MN %' OR name LIKE '%GA %' OR name LIKE '%TX %';
     `);
 
-    // Ensure Mississippi mission playbooks exist
+    // Ensure Mississippi and North Carolina mission playbooks exist
     const defaults = [
       ['[MS Mission] Hinds County High-Density Residential (>12)', 'density', 12, 'Hinds'],
       ['[MS Mission] DeSoto County Registration Spikes', 'spikes', 0, 'DeSoto'],
@@ -63,7 +63,18 @@ export function getDb() {
       ['[MS Mission] Madison County Intra-County Duplicates', 'duplicates', 0, 'Madison'],
       ['[MS Mission] Rankin County Missing Unit / Dorm Filter', 'missing-dorm', 50, 'Rankin'],
       ['[MS Mission] Jackson County Fat-Finger Typo Names', 'typo-names', 0, 'Jackson'],
-      ['[MS Mission] Lee County Phantom Precincts Check', 'phantom-precincts', 0, 'Lee']
+      ['[MS Mission] Lee County Phantom Precincts Check', 'phantom-precincts', 0, 'Lee'],
+      ['[NC Mission] Wake County High-Density Occupancy (>15)', 'density', 15, 'Wake'],
+      ['[NC Mission] Mecklenburg County Registration Spikes', 'spikes', 0, 'Mecklenburg'],
+      ['[NC Mission] Guilford County Commercial P.O. Box Disguise', 'po-box', 0, 'Guilford'],
+      ['[NC Mission] Statewide NCOA Interstate Address Mismatch', 'out-of-state-mailing', 0, ''],
+      ['[Voting Rights] Urban Precinct Overcrowding & Line Bottlenecks', 'phantom-precincts', 0, 'Statewide'],
+      ['[Voting Rights] Campus Housing / Dormitory Verification Audit', 'missing-dorm', 25, 'Statewide'],
+      ['[Voting Rights] Sudden Inactive Status & Voter Purge Surge', 'spikes', 0, 'Statewide'],
+      ['[Quantile Model] Interquartile Range (IQR) Extreme Occupancy', 'density', 15, 'Statewide'],
+      ['[Quantile Model] Poisson Probability Daily Surge Check', 'spikes', 0, 'Statewide'],
+      ['[Good Governance] Pending / Suspense Status Processing Bottleneck', 'spikes', 0, 'Statewide'],
+      ['[Good Governance] Clean Intra-State Relocation & Duplicate Merge', 'duplicates', 0, 'Statewide']
     ];
     const checkStmt = db.prepare("SELECT COUNT(*) as c FROM playbooks WHERE name = ?");
     const insertStmt = db.prepare(`INSERT INTO playbooks (name, audit_type, threshold, county) VALUES (?, ?, ?, ?)`);

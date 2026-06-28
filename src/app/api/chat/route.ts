@@ -67,6 +67,22 @@ const runBenfordsLawDeclaration: FunctionDeclaration = {
   }
 };
 
+const suggestMissionPlaybookDeclaration: FunctionDeclaration = {
+  name: "suggest_mission_playbook",
+  description: "Suggests a structured Mission Playbook template based on what the user wants to investigate, returning structured parameters that can be saved in 1-click.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      name: { type: Type.STRING, description: "Clear, descriptive name for the mission (e.g. '[MS Mission] Hinds County Dorm Filter')" },
+      audit_type: { type: Type.STRING, description: "Algorithm code: 'density', 'missing-dorm', 'po-box', 'typo-names', 'duplicates', 'commercial', 'spikes', 'phantom-precincts', or 'out-of-state-mailing'." },
+      threshold: { type: Type.NUMBER, description: "Numerical threshold parameter (e.g. 12 for occupancy, 50 for dorms). Defaults to 0." },
+      county: { type: Type.STRING, description: "Target county name (e.g. 'Hinds', 'DeSoto', 'Wake') or leave blank for Statewide." },
+      description: { type: Type.STRING, description: "Non-technical helpful explanation of what this query finds and why it matters." }
+    },
+    required: ["name", "audit_type", "threshold", "description"]
+  }
+};
+
 export async function POST(req: NextRequest) {
   try {
     const { query, history, userApiKey } = await req.json();
@@ -117,6 +133,10 @@ export async function POST(req: NextRequest) {
       Recent User Feedback Log:
       ${feedbackContext || 'No feedback logged yet.'}
 
+      SUGGESTING MISSIONS / PLAYBOOKS:
+      - Whenever a user asks how to find something, wants to explore a subject, or asks for query suggestions (e.g., 'How do I check for college dorms in Hinds?', 'Can we create a mission for out-of-state voters?'), you MUST call 'suggest_mission_playbook'.
+      - Help them structure the query by suggesting a clean name, the correct statistical audit_type, an appropriate threshold, and a clear description.
+
       Here is the complete documentation of the platform features:
       ---
       ${DOCS_DATA}
@@ -134,7 +154,7 @@ export async function POST(req: NextRequest) {
       history: formattedHistory,
       config: {
         systemInstruction: systemInstruction,
-        tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration] }],
+        tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration] }],
         temperature: 0.7
       }
     });
@@ -230,6 +250,23 @@ export async function POST(req: NextRequest) {
               response: statsResult
             }
           }]
+        });
+      } else if (call.name === "suggest_mission_playbook") {
+        const { name, audit_type, threshold, county, description } = call.args as any;
+        const suggestion = { name, audit_type, threshold: threshold || 0, county: county || '', description };
+        
+        response = await chat.sendMessage({
+          message: [{
+            functionResponse: {
+              name: call.name,
+              response: { success: true, message: "Suggested playbook created. Tell the user they can click the Save button below." }
+            }
+          }]
+        });
+
+        return NextResponse.json({
+          reply: response.text,
+          suggestedPlaybook: suggestion
         });
       }
     }

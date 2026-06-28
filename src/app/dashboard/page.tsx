@@ -9,10 +9,16 @@ import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
   const [anomalies, setAnomalies] = useState<AnomalyRecord[]>([]);
-  const [groupName, setGroupName] = useState("Mississippi Fair Elections");
+  const [groupName, setGroupName] = useState("MSFE Group (Mississippi Fair Elections)");
   const [isAdmin, setIsAdmin] = useState(true);
   const [transferEmail, setTransferEmail] = useState("");
   const [newGroupNameInput, setNewGroupNameInput] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [teamMembers, setTeamMembers] = useState([
+    { email: "kyle@msfe.org", role: "👑 Group Admin", status: "Active" },
+    { email: "dad@msfe.org", role: "🛡️ Mission Lead", status: "Active" },
+    { email: "volunteer@msfe.org", role: "👤 Reviewer", status: "Active" }
+  ]);
 
   useEffect(() => {
     getAnomalies().then(setAnomalies);
@@ -65,55 +71,71 @@ export default function DashboardPage() {
 
       {/* Admin Management Section */}
       {isAdmin && (
-        <div className="bg-amber-50/80 border border-amber-300 p-6 rounded-xl space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-amber-950 flex items-center gap-2">
-              👑 Group Administrator Controls
-            </h3>
-            <span className="text-xs bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded">Admin Only</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="bg-white p-4 rounded-lg border border-amber-200 space-y-2">
-              <label className="font-bold text-slate-700 block">Rename / Switch Organization Group</label>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={newGroupNameInput} 
-                  onChange={(e) => setNewGroupNameInput(e.target.value)} 
-                  placeholder={groupName}
-                  className="flex-1 px-3 py-1.5 border rounded outline-none font-bold text-primary"
-                />
-                <button 
-                  onClick={() => { if(newGroupNameInput) { setGroupName(newGroupNameInput); setNewGroupNameInput(""); } }}
-                  className="bg-primary text-white px-3 py-1.5 rounded font-bold hover:bg-slate-800 transition-colors"
-                >
-                  Update
-                </button>
+          <div className="bg-amber-50 border border-amber-300 p-5 rounded-xl space-y-4">
+            <div className="flex justify-between items-center border-b border-amber-200 pb-3">
+              <div>
+                <h3 className="font-bold text-amber-950 flex items-center gap-2 text-lg">
+                  👑 MSFE Shared Missions & Group Controls
+                </h3>
+                <p className="text-xs text-amber-800 mt-0.5">Invite team members (like your Dad or family) to collaborate on shared missions across jurisdictions.</p>
               </div>
+              <span className="text-xs bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded">Organization Admin</span>
             </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-1 text-xs">
+              {/* Invite Box */}
+              <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm space-y-3 flex flex-col justify-between">
+                <div>
+                  <label className="font-bold text-slate-800 text-sm block mb-1">Invite Member to MSFE Group</label>
+                  <p className="text-muted-foreground text-xs">Invited members gain instant access to your shared Mission Playbooks and investigation checklists.</p>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <input 
+                    type="email" 
+                    value={inviteEmail} 
+                    onChange={(e) => setInviteEmail(e.target.value)} 
+                    placeholder="dad@example.com"
+                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500 font-medium text-slate-800"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if(inviteEmail) {
+                        setTeamMembers([...teamMembers, { email: inviteEmail, role: "🛡️ Mission Lead", status: "Invited" }]);
+                        setInviteEmail("");
+                      }
+                    }}
+                    className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold shadow transition-colors"
+                  >
+                    Invite
+                  </button>
+                </div>
+              </div>
 
-            <div className="bg-white p-4 rounded-lg border border-amber-200 space-y-2">
-              <label className="font-bold text-slate-700 block">Transfer Admin Rights to Member</label>
-              <div className="flex gap-2">
-                <input 
-                  type="email" 
-                  value={transferEmail} 
-                  onChange={(e) => setTransferEmail(e.target.value)} 
-                  placeholder="volunteer@msfe.org"
-                  className="flex-1 px-3 py-1.5 border rounded outline-none"
-                />
-                <button 
-                  onClick={() => { if(transferEmail) { alert(`Admin transfer invitation sent to ${transferEmail}.`); setTransferEmail(""); } }}
-                  className="bg-red-800 hover:bg-red-900 text-white px-3 py-1.5 rounded font-bold transition-colors"
-                >
-                  Transfer
-                </button>
+              {/* Roster Table */}
+              <div className="lg:col-span-2 bg-white p-4 rounded-xl border border-amber-200 shadow-sm space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-slate-800 text-sm">👥 Active Group Roster ({teamMembers.length})</span>
+                  <span className="text-xs font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Shared Missions Sync Enabled</span>
+                </div>
+                <div className="divide-y divide-slate-100 max-h-36 overflow-y-auto pr-1">
+                  {teamMembers.map((m, idx) => (
+                    <div key={idx} className="py-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span className="font-bold text-slate-800">{m.email}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-500">{m.role}</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${m.status === 'Active' ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-800'}`}>{m.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* The Happy Path Workflow Guide */}
       <div className="space-y-4">
