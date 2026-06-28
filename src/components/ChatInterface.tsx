@@ -99,7 +99,7 @@ export default function ChatInterface() {
         id: "s" + Date.now(),
         title: query.substring(0, 30) + "...",
         timestamp: Date.now(),
-        messages: [{ role: "assistant", content: "Hello! I am your ELLY Guide. Ask me how to find specific records, use filters, or navigate the platform!" }]
+        messages: [{ role: "assistant", content: "Hello! I am your Marigold Guide. Ask me how to find specific records, use filters, or navigate the platform!" }]
       };
       setSessions(prev => [newSession, ...prev]);
       currentSessionId = newSession.id;
@@ -117,7 +117,7 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const userApiKey = localStorage.getItem("elly_gemini_key") || "";
+      const userApiKey = localStorage.getItem("marigold_gemini_key") || "";
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -213,7 +213,7 @@ export default function ChatInterface() {
         <div className="bg-secondary text-secondary-foreground p-4 shadow-sm z-10 flex justify-between items-center">
           <div>
             <h2 className="text-lg font-bold">{activeSession ? activeSession.title : "New Question"}</h2>
-            <p className="text-xs opacity-80">ELLY Documentation & Guidance</p>
+            <p className="text-xs opacity-80">Marigold Documentation & Guidance</p>
           </div>
           {activeSession && activeSession.messages.length > 1 && (
             <button onClick={() => setIsTemplateModalOpen(true)} className="text-xs bg-white text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-muted font-medium border border-border">
@@ -226,8 +226,8 @@ export default function ChatInterface() {
           {!activeSession && (
              <div className="h-full flex items-center justify-center text-muted-foreground flex-col text-center px-8">
                <span className="text-4xl mb-4">📚</span>
-               <p className="text-lg font-medium text-foreground">Welcome to the ELLY Guide</p>
-               <p className="mt-2">I am here to help you learn how to navigate ELLY and find the records you need.</p>
+               <p className="text-lg font-medium text-foreground">Welcome to the Marigold Guide</p>
+               <p className="mt-2">I am here to help you learn how to navigate Marigold Insights and find the records you need.</p>
              </div>
           )}
           {messages.map((msg, i) => (

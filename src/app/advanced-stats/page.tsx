@@ -81,7 +81,7 @@ export default function AdvancedStatsDashboard() {
               <span className="text-4xl block mb-4">👋</span>
               <h3 className="text-2xl font-bold mb-2">Let's Get Started!</h3>
               <p className="text-muted-foreground">
-                Before ELLY can run the advanced math, we need to load the data. Don't worry, it's very easy!
+                Before Marigold Insights can run the advanced math, we need to load the data. Don't worry, it's very easy!
               </p>
             </div>
             <div className="bg-muted/30 p-6 rounded-xl mb-8">
@@ -89,7 +89,7 @@ export default function AdvancedStatsDashboard() {
               <ol className="list-decimal list-inside space-y-3 text-muted-foreground">
                 <li>Click the <strong>Upload Voter Roll</strong> button below.</li>
                 <li>Find the <strong>November voter file (.csv)</strong> on your computer (it's likely in your Downloads folder).</li>
-                <li>Drag and drop that file into the dotted box. ELLY will quickly process the file entirely on your machine!</li>
+                <li>Drag and drop that file into the dotted box. Marigold Insights will quickly process the file entirely on your machine!</li>
                 <li>Come back to this page, and the mathematical graphs will automatically appear.</li>
               </ol>
             </div>

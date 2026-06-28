@@ -2,7 +2,7 @@ export default function MockLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-4 text-black">Mock Elly Login</h1>
+        <h1 className="text-2xl font-bold mb-4 text-black">Mock Marigold Login</h1>
         <form>
           <div className="mb-4">
             <label htmlFor="user_email_login" className="block text-sm font-medium text-gray-700">Email Address</label>
