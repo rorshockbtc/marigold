@@ -1,0 +1,400 @@
+import Database from 'better-sqlite3';
+import path from 'path';
+import fs from 'fs';
+
+let isInitialized = false;
+
+// Helper to get DB connection. 
+export function getDb() {
+  const dbPath = path.resolve(process.cwd(), 'voters.db');
+  
+  if (!fs.existsSync(dbPath)) {
+    return null;
+  }
+  
+  const db = new Database(dbPath);
+  
+  if (!isInitialized) {
+    // Ensure all necessary tables exist
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS playbooks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        audit_type TEXT NOT NULL,
+        threshold INTEGER DEFAULT 12,
+        county TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS exclusion_list (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        audit_type TEXT NOT NULL,
+        value TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS audit_feedback_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        audit_type TEXT NOT NULL,
+        predicted_accuracy INTEGER NOT NULL,
+        user_feedback TEXT NOT NULL, -- 'met', 'failed', 'exceeded'
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_voters_county_address ON voters(county, address);
+      CREATE INDEX IF NOT EXISTS idx_voters_names ON voters(last_name, first_name);
+      CREATE INDEX IF NOT EXISTS idx_voters_zip ON voters(zip);
+      CREATE INDEX IF NOT EXISTS idx_voters_address ON voters(address);
+    `);
+
+    // Ensure all standard and multi-state cartridges exist
+    const defaults = [
+      ['High-Density Occupancy', 'density', 12, ''],
+      ['Missing Unit/Dorm Number', 'missing-dorm', 50, ''],
+      ['P.O. Box in Residence', 'po-box', 0, ''],
+      ['Fat-Finger Typo Names', 'typo-names', 0, ''],
+      ['Intra-County Duplicates', 'duplicates', 0, ''],
+      ['Commercial Disguises', 'commercial', 0, ''],
+      ['Registration Spikes', 'spikes', 0, ''],
+      ['Phantom Precincts', 'phantom-precincts', 0, ''],
+      ['Out-of-State Mailing', 'out-of-state-mailing', 0, ''],
+      ['[MN Cartridge] Multi-Family Network Occupancy (>15)', 'density', 15, ''],
+      ['[GA Cartridge] Clerical DOB Anomaly Filter', 'spikes', 0, ''],
+      ['[NC Cartridge] NCOA Interstate Address Mismatch', 'out-of-state-mailing', 0, ''],
+      ['[TX Cartridge] Commercial P.O. Box Disguise', 'po-box', 0, '']
+    ];
+    const checkStmt = db.prepare("SELECT COUNT(*) as c FROM playbooks WHERE name = ?");
+    const insertStmt = db.prepare(`INSERT INTO playbooks (name, audit_type, threshold, county) VALUES (?, ?, ?, ?)`);
+    
+    db.transaction(() => {
+      for (const item of defaults) {
+        const res = checkStmt.get(item[0]) as { c: number };
+        if (res.c === 0) {
+          insertStmt.run(item[0], item[1], item[2], item[3]);
+        }
+      }
+    })();
+    
+    isInitialized = true;
+  }
+
+  return db;
+}
+
+export interface VoterRecord {
+  id: number;
+  voter_id: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  county: string;
+  status: string;
+  ncoa_flag: string;
+  date_registered: string;
+}
+
+export function getStats() {
+  const db = getDb();
+  if (!db) return null;
+
+  const total = db.prepare('SELECT COUNT(*) as count FROM voters').get() as { count: number };
+  const ncoa = db.prepare("SELECT COUNT(*) as count FROM voters WHERE ncoa_flag != ''").get() as { count: number };
+  
+  return {
+    totalRecords: total.count,
+    ncoaFlags: ncoa.count
+  };
+}
+
+// ---- PLAYBOOK & EXCLUSION LOGIC ----
+
+export function savePlaybook(name: string, auditType: string, threshold: number, county: string) {
+  const db = getDb();
+  if (!db) return false;
+  db.prepare(`INSERT INTO playbooks (name, audit_type, threshold, county) VALUES (?, ?, ?, ?)`).run(name, auditType, threshold, county);
+  return true;
+}
+
+export function getPlaybooks() {
+  const db = getDb();
+  if (!db) return [];
+  return db.prepare(`SELECT * FROM playbooks ORDER BY created_at DESC`).all();
+}
+
+export function addExclusion(auditType: string, value: string) {
+  const db = getDb();
+  if (!db) return false;
+  db.prepare(`INSERT INTO exclusion_list (audit_type, value) VALUES (?, ?)`).run(auditType, value);
+  return true;
+}
+
+// ---- ACCURACY PREDICTION & FEEDBACK LOOP ----
+
+export function addAuditFeedback(auditType: string, predictedAccuracy: number, feedback: string) {
+  const db = getDb();
+  if (!db) return false;
+  db.prepare(`INSERT INTO audit_feedback_log (audit_type, predicted_accuracy, user_feedback) VALUES (?, ?, ?)`).run(auditType, predictedAccuracy, feedback);
+  return true;
+}
+
+export function getAuditAccuracy(auditType: string) {
+  const db = getDb();
+  if (!db) return 75; // Default baseline
+
+  const logs = db.prepare(`SELECT user_feedback FROM audit_feedback_log WHERE audit_type = ? ORDER BY created_at DESC LIMIT 50`).all(auditType) as { user_feedback: string }[];
+  
+  let accuracy = 75; // Baseline
+  
+  for (const log of logs) {
+    if (log.user_feedback === 'exceeded') accuracy += 2;
+    if (log.user_feedback === 'failed') accuracy -= 3;
+    if (log.user_feedback === 'met') accuracy += 0.5;
+  }
+  
+  // Bound the accuracy between 10% and 99%
+  return Math.max(10, Math.min(99, Math.round(accuracy)));
+}
+
+export function getFeedbackLogs() {
+  const db = getDb();
+  if (!db) return [];
+  return db.prepare(`SELECT audit_type, user_feedback, created_at FROM audit_feedback_log ORDER BY created_at DESC LIMIT 20`).all();
+}
+
+// ---- ANOMALY ALGORITHMS ----
+
+export function findHighDensityAddresses(threshold = 12, county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT address, city, state, zip, county, COUNT(*) as occupant_count
+    FROM voters
+    WHERE address != '' ${countyFilter}
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'density')
+    GROUP BY address, city, state, zip, county
+    HAVING COUNT(*) > ?
+    ORDER BY occupant_count DESC
+    LIMIT 50
+  `).all(threshold);
+
+  return rows;
+}
+
+export function findMissingDormNumbers(threshold = 50, county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT address, city, state, zip, county, COUNT(*) as occupant_count
+    FROM voters
+    WHERE address != '' ${countyFilter}
+      AND address NOT LIKE '%APT%' 
+      AND address NOT LIKE '%ROOM%' 
+      AND address NOT LIKE '%RM%' 
+      AND address NOT LIKE '%UNIT%' 
+      AND address NOT LIKE '%STE%' 
+      AND address NOT LIKE '%#%'
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'missing-dorm')
+    GROUP BY address, city, state, zip, county
+    HAVING COUNT(*) > ?
+    ORDER BY occupant_count DESC
+    LIMIT 50
+  `).all(threshold);
+
+  return rows;
+}
+
+export function findPOBoxResidences(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT address, city, state, zip, county, COUNT(*) as occupant_count
+    FROM voters
+    WHERE (address LIKE '%P O BOX%' OR address LIKE '%PO BOX%' OR address LIKE '%P.O. BOX%') ${countyFilter}
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'po-box')
+    GROUP BY address, city, state, zip, county
+    ORDER BY occupant_count DESC
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function findTypoNames(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT first_name, last_name, address, city, county
+    FROM voters
+    WHERE (length(first_name) = 1 OR length(last_name) = 1) 
+      AND first_name != '' 
+      AND last_name != '' ${countyFilter}
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'typo-names')
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function findIntraCountyDuplicates(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND a.county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT a.first_name, a.last_name, a.zip, a.county, a.address as address1, b.address as address2
+    FROM voters a
+    JOIN voters b ON a.first_name = b.first_name 
+                 AND a.last_name = b.last_name 
+                 AND a.zip = b.zip
+    WHERE a.address != b.address AND a.id < b.id ${countyFilter}
+      AND a.address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'duplicates')
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function findCommercialAddresses(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT address, city, state, zip, county, COUNT(*) as occupant_count
+    FROM voters
+    WHERE (address LIKE '%STE %' OR address LIKE '%SUITE %' OR address LIKE '%BLDG %')
+      AND address NOT LIKE '%APT%' ${countyFilter}
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'commercial')
+    GROUP BY address, city, state, zip, county
+    HAVING COUNT(*) > 2
+    ORDER BY occupant_count DESC
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function findRegistrationSpikes(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT date_registered, county, COUNT(*) as registrations
+    FROM voters
+    WHERE date_registered != '' AND date_registered IS NOT NULL ${countyFilter}
+      AND date_registered NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'spikes')
+    GROUP BY date_registered, county
+    HAVING COUNT(*) > 500
+    ORDER BY registrations DESC
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function findPhantomPrecincts(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT first_name, last_name, address, city, county, status
+    FROM voters
+    WHERE status = 'A' AND (precinct_code = '' OR precinct_code IS NULL) ${countyFilter}
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'phantom-precincts')
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function findOutOfStateMailing(county = '') {
+  const db = getDb();
+  if (!db) return [];
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT first_name, last_name, address, city, county, mail_state
+    FROM voters
+    WHERE mail_state != 'MS' AND mail_state != '' AND mail_state IS NOT NULL ${countyFilter}
+      AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'out-of-state-mailing')
+    LIMIT 50
+  `).all();
+
+  return rows;
+}
+
+export function analyzeBenfordsLaw(county = '') {
+  const db = getDb();
+  if (!db) return null;
+
+  const countyFilter = county ? `AND county = '${county.replace(/'/g, "''")}'` : '';
+  const rows = db.prepare(`
+    SELECT address
+    FROM voters
+    WHERE address != '' ${countyFilter}
+  `).all() as { address: string }[];
+
+  const counts: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0 };
+  let total = 0;
+
+  for (const row of rows) {
+    // Extract the first digit (1-9) from the address
+    const match = row.address.match(/^[^\d]*([1-9])/);
+    if (match) {
+      counts[match[1]]++;
+      total++;
+    }
+  }
+
+  if (total === 0) return null;
+
+  const expectedPercentages: Record<string, number> = {
+    '1': 30.1, '2': 17.6, '3': 12.5, '4': 9.7, '5': 7.9, '6': 6.7, '7': 5.8, '8': 5.1, '9': 4.6
+  };
+
+  const results = [];
+  let totalVariance = 0;
+
+  for (let i = 1; i <= 9; i++) {
+    const digit = i.toString();
+    const actualCount = counts[digit];
+    const actualPercentage = (actualCount / total) * 100;
+    const expectedPercentage = expectedPercentages[digit];
+    const variance = Math.abs(actualPercentage - expectedPercentage);
+    totalVariance += variance;
+
+    results.push({
+      digit,
+      actualCount,
+      actualPercentage: parseFloat(actualPercentage.toFixed(2)),
+      expectedPercentage: expectedPercentage,
+      variance: parseFloat(variance.toFixed(2))
+    });
+  }
+
+  const meanAbsoluteError = totalVariance / 9;
+  
+  let conclusion = "Normal Distribution (Follows Benford's Law)";
+  if (meanAbsoluteError > 2) conclusion = 'Suspicious Distribution (Possible Fabrication)';
+  if (meanAbsoluteError > 5) conclusion = 'Highly Anomalous (Likely Fabricated Data)';
+
+  return {
+    totalRecordsAnalyzed: total,
+    meanAbsoluteError: parseFloat(meanAbsoluteError.toFixed(2)),
+    conclusion,
+    distribution: results
+  };
+}
