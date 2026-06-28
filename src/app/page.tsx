@@ -1,21 +1,61 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 
-export default function MarketingHomePage() {
-  return (
-    <div className="space-y-20 pb-24 font-sans">
-      {/* Hero Section */}
-      <section className="text-center space-y-8 py-20 bg-slate-950 text-white rounded-3xl border border-slate-800 shadow-2xl px-6 relative overflow-hidden">
-        {/* Background Landscape Photo ("America the Beautiful", No People) */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 pointer-events-none transform scale-105 transition-transform duration-1000"
-          style={{ backgroundImage: 'url("/hero-landscape.png"), url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2000&q=80")' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/30 pointer-events-none" />
+const REGIONS = [
+  {
+    id: 0,
+    tab: '🌄 Spacious Skies',
+    lyric: 'O beautiful for spacious skies...',
+    region: 'Big Sky Horizon',
+    location: 'Northern Plains & Big Sky Country',
+    bg: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80',
+  },
+  {
+    id: 1,
+    tab: '🌾 Amber Grain',
+    lyric: 'For amber waves of grain...',
+    region: 'Golden Harvest Valleys',
+    location: 'Wyoming & Midwest Agricultural Plains',
+    bg: '/hero-landscape.png',
+  },
+  {
+    id: 2,
+    tab: '🏔️ Mountain Majesties',
+    lyric: 'For purple mountain majesties...',
+    region: 'Rocky Mountain Range',
+    location: 'Grand Tetons & Western High Country',
+    bg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+  },
+  {
+    id: 3,
+    tab: '🍊 Fruited Plain',
+    lyric: 'Above the fruited plain!',
+    region: 'Fertile River Valleys',
+    location: 'Southern & Pacific Orchard Belt',
+    bg: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=80',
+  },
+];
 
-        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-2">
+export default function MarketingHomePage() {
+  const [activeRegion, setActiveRegion] = useState(1);
+  const current = REGIONS[activeRegion];
+
+  return (
+    <div className="pb-24 font-sans">
+      {/* Full-Width Edge-to-Edge Hero Section */}
+      <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
+        {/* Background Landscape Photo ("America the Beautiful" Montage) */}
+        <div 
+          key={current.id}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-45 pointer-events-none transform scale-105 transition-all duration-1000 ease-in-out"
+          style={{ backgroundImage: `url("${current.bg}")` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40 pointer-events-none" />
+
+        {/* Top Badges */}
+        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-4">
           <span className="bg-amber-400/20 text-amber-300 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-400/30 shadow-sm">
             FY26 FEMA HSGP Compliant
           </span>
@@ -32,28 +72,53 @@ export default function MarketingHomePage() {
           </a>
         </div>
 
-        <h1 className="relative z-10 text-4xl sm:text-6xl font-serif font-bold tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-md">
+        {/* Main Heading */}
+        <h1 className="relative z-10 text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-lg">
           Non-Partisan Civic Data Exploration
         </h1>
         
-        <p className="relative z-10 text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow">
+        <p className="relative z-10 text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow">
           Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
         </p>
 
-        {/* Buttons ensured to be uniform height and alignment */}
+        {/* America the Beautiful Regional Montage Selector */}
+        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur border border-slate-700 px-4 py-1.5 rounded-full text-xs text-amber-300 font-serif italic tracking-wide shadow-inner">
+            <span>🇺🇸 "{current.lyric}"</span>
+            <span className="text-slate-400 font-sans not-italic">— {current.location}</span>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-2">
+            {REGIONS.map((reg) => (
+              <button
+                key={reg.id}
+                onClick={() => setActiveRegion(reg.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                  activeRegion === reg.id
+                    ? 'bg-amber-500 text-slate-950 scale-105 shadow-amber-500/20'
+                    : 'bg-slate-900/70 text-slate-300 hover:bg-slate-800 border border-slate-700'
+                }`}
+              >
+                {reg.tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
         <div className="relative z-10 pt-4 flex flex-wrap justify-center items-center gap-4">
-          <Link href="/sandbox" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-lg bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5 min-w-[200px]">
-            Try Public Sandbox
+          <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5 min-w-[200px]">
+            Try Public Sandbox →
           </Link>
-          <Link href="/store" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-lg bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all min-w-[200px]">
+          <Link href="/store" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all min-w-[200px]">
             Browse Audit Checklists
           </Link>
-          <Link href="/registry" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-sm bg-slate-900/80 text-slate-200 border border-slate-700 hover:bg-slate-800 transition-all min-w-[200px]">
+          <Link href="/registry" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-sm bg-slate-900/80 text-slate-200 border border-slate-700 hover:bg-slate-800 transition-all min-w-[200px]">
             State Registry
           </Link>
         </div>
 
-        <div className="relative z-10 pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800 max-w-2xl mx-auto mt-8">
+        <div className="relative z-10 pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800/80 max-w-2xl mx-auto mt-8">
           <span>100% Client-Side Memory</span>
           <span>•</span>
           <span>No PII Uploads</span>
@@ -62,9 +127,11 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
-      {/* The Three Major Stakeholder Groups */}
-      <section className="space-y-10 max-w-6xl mx-auto px-2">
-        <div className="text-center space-y-3">
+      {/* Main Container for Rest of Content */}
+      <div className="space-y-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+        {/* The Three Major Stakeholder Groups */}
+        <section className="space-y-10 max-w-6xl mx-auto px-2">
+          <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary">Engineered for Every Civic Stakeholder</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Click any overview card below to read a clear, non-technical walkthrough tailored specifically for your role.</p>
         </div>
@@ -206,6 +273,7 @@ export default function MarketingHomePage() {
           </Link>
         </div>
       </section>
+      </div>
     </div>
   );
 }
