@@ -7,46 +7,53 @@ export default function MarketingHomePage() {
   return (
     <div className="space-y-20 pb-24 font-sans">
       {/* Hero Section */}
-      <section className="text-center space-y-8 py-16 bg-gradient-to-b from-white to-slate-50/80 rounded-3xl border border-border shadow-sm px-6 relative overflow-hidden">
-        <div className="flex flex-wrap justify-center gap-3 mb-2">
-          <span className="bg-amber-100 text-amber-950 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-300 shadow-sm">
+      <section className="text-center space-y-8 py-20 bg-slate-950 text-white rounded-3xl border border-slate-800 shadow-2xl px-6 relative overflow-hidden">
+        {/* Background Landscape Photo ("America the Beautiful", No People) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 pointer-events-none transform scale-105 transition-transform duration-1000"
+          style={{ backgroundImage: 'url("/hero-landscape.png"), url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2000&q=80")' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/30 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-2">
+          <span className="bg-amber-400/20 text-amber-300 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-400/30 shadow-sm">
             FY26 FEMA HSGP Compliant
           </span>
-          <span className="bg-slate-100 text-slate-800 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-slate-300 shadow-sm">
+          <span className="bg-slate-800/80 text-slate-200 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-slate-600 shadow-sm">
             Zero Cloud PII Exposure
           </span>
           <a 
             href="https://github.com/rorshockbtc/marigold" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-slate-900 text-white font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1.5"
+            className="bg-white text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider hover:bg-slate-200 transition-colors shadow-sm flex items-center gap-1.5"
           >
             <span>GitHub Open Source ↗</span>
           </a>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-serif font-bold tracking-tight text-primary max-w-4xl mx-auto leading-tight">
+        <h1 className="relative z-10 text-4xl sm:text-6xl font-serif font-bold tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-md">
           Non-Partisan Civic Data Exploration
         </h1>
         
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-normal">
+        <p className="relative z-10 text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow">
           Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
         </p>
 
         {/* Buttons ensured to be uniform height and alignment */}
-        <div className="pt-4 flex flex-wrap justify-center items-center gap-4">
-          <Link href="/sandbox" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-lg shadow-md bg-accent text-white hover:bg-amber-600 transition-all transform hover:-translate-y-0.5 min-w-[200px]">
+        <div className="relative z-10 pt-4 flex flex-wrap justify-center items-center gap-4">
+          <Link href="/sandbox" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-lg bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5 min-w-[200px]">
             Try Public Sandbox
           </Link>
-          <Link href="/store" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-lg shadow-md bg-primary text-white hover:bg-slate-800 transition-all min-w-[200px]">
+          <Link href="/store" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-lg bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all min-w-[200px]">
             Browse Audit Checklists
           </Link>
-          <Link href="/registry" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-lg shadow-sm bg-white text-slate-800 border border-border hover:bg-slate-100 transition-all min-w-[200px]">
+          <Link href="/registry" className="h-12 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-sm bg-slate-900/80 text-slate-200 border border-slate-700 hover:bg-slate-800 transition-all min-w-[200px]">
             State Registry
           </Link>
         </div>
 
-        <div className="pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-500 font-bold uppercase tracking-wider border-t border-border/60 max-w-2xl mx-auto mt-8">
+        <div className="relative z-10 pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800 max-w-2xl mx-auto mt-8">
           <span>100% Client-Side Memory</span>
           <span>•</span>
           <span>No PII Uploads</span>
