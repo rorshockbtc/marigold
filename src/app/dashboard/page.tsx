@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <span>⚡ Launch Pro Mode</span>
           </Link>
           <Link href="/playbooks" className="bg-slate-700 hover:bg-slate-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm">
-            Browse Cartridges
+            Browse MS Playbooks
           </Link>
         </div>
       </div>
@@ -134,16 +134,16 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Run pre-configured statistical algorithms (High-Density Occupancy, NCOA Interstate Relocation) to instantly isolate anomalies.
             </p>
-            <Link href="/playbooks" className="text-xs font-bold text-accent hover:underline block pt-2">Run Audit Cartridge →</Link>
+            <Link href="/playbooks" className="text-xs font-bold text-accent hover:underline block pt-2">Run MS Mission Playbooks →</Link>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
+          <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative cursor-pointer hover:border-amber-400 transition-colors" onClick={() => document.getElementById('checklist')?.scrollIntoView({ behavior: 'smooth' })}>
             <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white font-extrabold flex items-center justify-center text-sm shadow">3</span>
             <h3 className="font-bold text-lg text-primary pt-1">Verify Findings</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Review flagged voter records on your investigation checklist below. Mark verified anomalies or log false positives to train the system.
             </p>
-            <a href="#checklist" className="text-xs font-bold text-accent hover:underline block pt-2">View Checklist Below ↓</a>
+            <button type="button" onClick={() => document.getElementById('checklist')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs font-bold text-accent hover:underline block pt-2 text-left">View Checklist Below ↓</button>
           </div>
         </div>
       </div>

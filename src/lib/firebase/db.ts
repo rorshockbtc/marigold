@@ -43,18 +43,54 @@ let mockRecipes: SearchRecipe[] = [
 let mockAnomalies: AnomalyRecord[] = [
   {
     id: "a1",
-    voterName: "DOE, JOHN A",
-    address: "123 MAPLE ST, JACKSON, MS",
-    flags: ["NCOA_MATCH", "OUT_OF_STATE"],
+    voterName: "WILLIAMS, ROBERT L",
+    address: "1400 J R LYNCH ST, JACKSON, MS (HINDS)",
+    flags: ["HIGH_DENSITY_OCCUPANCY_18"],
     status: "pending",
     foundBy: "volunteer@msfe.org",
     dateFound: new Date().toISOString()
   },
   {
     id: "a2",
-    voterName: "SMITH, JANE B",
-    address: "456 OAK AVE, JACKSON, MS",
-    flags: ["HIGH_DENSITY_ADDRESS"],
+    voterName: "DAVIS, MARGARET E",
+    address: "7422 GOODMAN RD, OLIVE BRANCH, MS (DESOTO)",
+    flags: ["COMMERCIAL_PO_BOX_DISGUISE"],
+    status: "pending",
+    foundBy: "audit-bot@msfe.org",
+    dateFound: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: "a3",
+    voterName: "JOHNSON, MICHAEL T",
+    address: "2201 BEACH BLVD, BILOXI, MS (HARRISON)",
+    flags: ["NCOA_INTERSTATE_RELOCATION"],
+    status: "pending",
+    foundBy: "volunteer@msfe.org",
+    dateFound: new Date(Date.now() - 7200000).toISOString()
+  },
+  {
+    id: "a4",
+    voterName: "SMITH, CLARA M",
+    address: "112 MAIN ST, CANTON, MS (MADISON)",
+    flags: ["INTRA_COUNTY_DUPLICATE"],
+    status: "pending",
+    foundBy: "admin@msfe.org",
+    dateFound: new Date(Date.now() - 14400000).toISOString()
+  },
+  {
+    id: "a5",
+    voterName: "BROWN, JAMES K",
+    address: "501 GOVERNMENT ST, BRANDON, MS (RANKIN)",
+    flags: ["MISSING_UNIT_DORM_NUMBER"],
+    status: "pending",
+    foundBy: "volunteer@msfe.org",
+    dateFound: new Date(Date.now() - 28800000).toISOString()
+  },
+  {
+    id: "a6",
+    voterName: "TAYLOR, SUSAN V",
+    address: "456 OAK AVE, JACKSON, MS (HINDS)",
+    flags: ["HIGH_DENSITY_OCCUPANCY_14"],
     status: "verified",
     foundBy: "admin@msfe.org",
     dateFound: new Date(Date.now() - 86400000).toISOString()
