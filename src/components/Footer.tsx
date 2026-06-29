@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { MarigoldIcon } from '@/components/MarigoldIcon';
 
 export function Footer() {
   return (
@@ -8,7 +9,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs md:text-sm">
         <div className="space-y-1.5 text-center md:text-left">
           <div className="font-serif font-bold text-white text-base flex items-center justify-center md:justify-start gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block"></span>
+            <MarigoldIcon className="w-5 h-5 flex-shrink-0 drop-shadow-sm" />
             <span>Marigold Insights</span>
             <span className="bg-slate-800 text-amber-400 px-2 py-0.5 rounded text-[11px] font-mono font-normal border border-slate-700">v1.2</span>
           </div>
