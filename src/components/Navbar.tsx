@@ -21,7 +21,8 @@ export function Navbar() {
           </Link>
         </div>
 
-        <nav className="flex flex-wrap gap-5 items-center">
+        <nav className="flex flex-wrap gap-4 items-center">
+          <Link href="/anniversary" className="text-sm font-bold text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 transition-all shadow-sm">🎆 250th Celebration</Link>
           <Link href="/perspectives" className="text-sm font-bold text-indigo-300 hover:text-white underline decoration-dotted transition-colors">🌐 Worldviews FAQ</Link>
           <Link href="/sandbox" className="text-sm font-bold text-amber-400 hover:underline">Public Sandbox</Link>
           <Link href="/registry" className="text-sm font-medium hover:text-amber-400 transition-colors">State Registry</Link>
