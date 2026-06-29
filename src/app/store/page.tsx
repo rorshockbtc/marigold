@@ -114,7 +114,11 @@ export default function CartridgeStorePage() {
             const badgeText = isStateSpecific ? c.name.split(']')[0].replace('[', '') : 'National Standard';
             
             return (
-              <div key={i} className="bg-white rounded-2xl border border-border p-6 shadow-sm flex flex-col justify-between hover:border-slate-400 transition-all">
+              <div 
+                key={i} 
+                onClick={() => handleDownload(c)}
+                className="bg-white rounded-2xl border border-border p-6 shadow-sm flex flex-col justify-between hover:border-slate-400 hover:shadow-md transition-all cursor-pointer group"
+              >
                 <div className="space-y-3">
                   <div className="flex justify-between items-start gap-2">
                     <span className="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded border border-slate-200">
@@ -124,7 +128,7 @@ export default function CartridgeStorePage() {
                       Local-Only
                     </span>
                   </div>
-                  <h3 className="font-serif font-bold text-xl text-primary leading-snug">{c.name}</h3>
+                  <h3 className="font-serif font-bold text-xl text-primary group-hover:text-accent transition-colors leading-snug">{c.name}</h3>
                   <p className="text-xs text-slate-600 leading-relaxed">
                     Automated criteria checking for `{c.audit_type}` anomalies with parameter threshold &gt;= {c.threshold || 0}.
                   </p>
@@ -135,8 +139,11 @@ export default function CartridgeStorePage() {
                     Rev 1.{i}
                   </span>
                   <button 
-                    onClick={() => handleDownload(c)}
-                    className="bg-primary hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(c);
+                    }}
+                    className="bg-primary group-hover:bg-accent text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2"
                   >
                     <span>Download Checklist</span>
                     <span>↓</span>
