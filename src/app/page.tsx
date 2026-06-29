@@ -59,23 +59,28 @@ export default function MarketingHomePage() {
     <div className="pb-24 font-sans">
       {/* Full-Width Edge-to-Edge Hero Section */}
       <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
-        {/* Instant Static Background Placeholder (Served while video buffers or on mobile low power) */}
-        <div 
-          key={`bg-${current.id}`}
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-85 pointer-events-none transform scale-105 transition-all duration-1000 -z-10"
-          style={{ backgroundImage: `url("${current.bg}")` }}
-        />
-        {/* Background Video Stream */}
-        <video
-          key={current.id}
-          src={current.video}
-          poster={current.bg}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-85 pointer-events-none transform scale-105 transition-opacity duration-700"
-        />
+        {/* Instant Static Background Fallbacks & Layered Video Streams */}
+        {REGIONS.map((reg) => (
+          <React.Fragment key={reg.id}>
+            <div 
+              className={`absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform scale-105 transition-opacity duration-1000 ease-in-out ${
+                activeRegion === reg.id ? 'opacity-85 z-0' : 'opacity-0 -z-10'
+              }`}
+              style={{ backgroundImage: `url("${reg.bg}")` }}
+            />
+            <video
+              src={reg.video}
+              poster={reg.bg}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={`absolute inset-0 w-full h-full object-cover pointer-events-none transform scale-105 transition-opacity duration-1000 ease-in-out ${
+                activeRegion === reg.id ? 'opacity-85 z-10' : 'opacity-0 -z-10'
+              }`}
+            />
+          </React.Fragment>
+        ))}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
 
         {/* Top Badges */}
