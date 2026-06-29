@@ -8,15 +8,20 @@ export default function SemiquincentennialPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 selection:bg-amber-500 selection:text-slate-950">
       {/* Hero Video Section */}
       <section className="relative w-full py-32 md:py-48 px-6 text-center overflow-hidden border-b border-slate-800">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 pointer-events-none transform scale-105 transition-all duration-1000 -z-10"
+          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80")' }}
+        />
         <video
-          src="/hero-video.mp4"
+          src="/hero-montage.mp4"
+          poster="https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80"
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none transform scale-105"
+          className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none transform scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold uppercase tracking-widest shadow-lg">

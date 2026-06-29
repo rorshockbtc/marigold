@@ -11,7 +11,7 @@ const REGIONS = [
     region: 'The Liberty Bell & Semiquincentennial',
     location: 'Independence Hall & Washington D.C.',
     bg: 'https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80',
-    video: '/hero-video.mp4',
+    video: '/vid-0.mp4',
   },
   {
     id: 1,
@@ -20,6 +20,7 @@ const REGIONS = [
     region: 'Big Sky Horizon',
     location: 'Northern Plains & Big Sky Country',
     bg: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80',
+    video: '/vid-1.mp4',
   },
   {
     id: 2,
@@ -28,6 +29,7 @@ const REGIONS = [
     region: 'Golden Harvest Valleys',
     location: 'Wyoming & Midwest Agricultural Plains',
     bg: '/hero-landscape.png',
+    video: '/vid-2.mp4',
   },
   {
     id: 3,
@@ -36,6 +38,7 @@ const REGIONS = [
     region: 'Chugach & Rocky Mountain Glaciers',
     location: 'Alaska High Country & Grand Tetons',
     bg: 'https://images.unsplash.com/photo-1517056033588-3d12260f8440?auto=format&fit=crop&w=2000&q=80',
+    video: '/vid-3.mp4',
   },
   {
     id: 4,
@@ -44,6 +47,7 @@ const REGIONS = [
     region: 'Fertile River Valleys',
     location: 'Southern & Pacific Orchard Belt',
     bg: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=80',
+    video: '/vid-4.mp4',
   },
 ];
 
@@ -55,25 +59,24 @@ export default function MarketingHomePage() {
     <div className="pb-24 font-sans">
       {/* Full-Width Edge-to-Edge Hero Section */}
       <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
-        {/* Background Landscape Photo or Video ("America the Beautiful" Montage) */}
-        {current.video ? (
-          <video
-            key={current.id}
-            src={current.video}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-45 pointer-events-none transform scale-105 transition-all duration-1000 ease-in-out"
-          />
-        ) : (
-          <div 
-            key={current.id}
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-45 pointer-events-none transform scale-105 transition-all duration-1000 ease-in-out"
-            style={{ backgroundImage: `url("${current.bg}")` }}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40 pointer-events-none" />
+        {/* Instant Static Background Placeholder (Served while video buffers or on mobile low power) */}
+        <div 
+          key={`bg-${current.id}`}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-85 pointer-events-none transform scale-105 transition-all duration-1000 -z-10"
+          style={{ backgroundImage: `url("${current.bg}")` }}
+        />
+        {/* Background Video Stream */}
+        <video
+          key={current.id}
+          src={current.video}
+          poster={current.bg}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-85 pointer-events-none transform scale-105 transition-opacity duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
 
         {/* Top Badges */}
         <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-4">
