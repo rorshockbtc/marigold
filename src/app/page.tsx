@@ -6,6 +6,14 @@ import Link from "next/link";
 const REGIONS = [
   {
     id: 0,
+    tab: '🎆 250th Anniversary (1776–2026)',
+    lyric: 'Crown thy good with brotherhood...',
+    region: 'Federal Architecture & Heritage',
+    location: 'Washington D.C. National Mall',
+    bg: 'https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80',
+  },
+  {
+    id: 1,
     tab: '🌄 Spacious Skies',
     lyric: 'O beautiful for spacious skies...',
     region: 'Big Sky Horizon',
@@ -13,7 +21,7 @@ const REGIONS = [
     bg: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80',
   },
   {
-    id: 1,
+    id: 2,
     tab: '🌾 Amber Grain',
     lyric: 'For amber waves of grain...',
     region: 'Golden Harvest Valleys',
@@ -21,15 +29,15 @@ const REGIONS = [
     bg: '/hero-landscape.png',
   },
   {
-    id: 2,
+    id: 3,
     tab: '🏔️ Mountain Majesties',
     lyric: 'For purple mountain majesties...',
-    region: 'Rocky Mountain Range',
-    location: 'Grand Tetons & Western High Country',
-    bg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+    region: 'Chugach & Rocky Mountain Glaciers',
+    location: 'Alaska High Country & Grand Tetons',
+    bg: 'https://images.unsplash.com/photo-1517056033588-3d12260f8440?auto=format&fit=crop&w=2000&q=80',
   },
   {
-    id: 3,
+    id: 4,
     tab: '🍊 Fruited Plain',
     lyric: 'Above the fruited plain!',
     region: 'Fertile River Valleys',
@@ -39,7 +47,7 @@ const REGIONS = [
 ];
 
 export default function MarketingHomePage() {
-  const [activeRegion, setActiveRegion] = useState(1);
+  const [activeRegion, setActiveRegion] = useState(0);
   const current = REGIONS[activeRegion];
 
   return (
