@@ -340,58 +340,55 @@ export default function MarketingHomePage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Group 1: State Administrative Agencies */}
-          <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-400 transition-all">
+          <Link href="/solutions/state-agencies" className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all group cursor-pointer block">
             <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-100 px-3 py-1 rounded-md border border-sky-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-100 px-3 py-1 rounded-md border border-sky-200 inline-block">
                 State Level
               </span>
-              <h3 className="text-2xl font-serif font-bold text-primary">State Administrative Agencies (SAAs)</h3>
+              <h3 className="text-2xl font-serif font-bold text-primary group-hover:text-sky-700 transition-colors">State Administrative Agencies (SAAs)</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Safely fulfill mandatory **FEMA election security spend requirements** with zero embarrassing audit surprises. Professional verification structured as a flat-rate micro-purchase ($1,500/yr) that processes data inside local RAM without cloud risk.
               </p>
             </div>
-            <div className="pt-4 border-t border-slate-100">
-              <Link href="/solutions/state-agencies" className="text-sm font-bold text-sky-700 hover:underline inline-flex items-center gap-1">
-                Read State Guide &amp; Procurement Details →
-              </Link>
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-sky-700 group-hover:underline">
+              <span>Read State Guide &amp; Procurement Details</span>
+              <span className="transform group-hover:translate-x-1 transition-transform">→</span>
             </div>
-          </div>
+          </Link>
 
           {/* Group 2: Citizens & Volunteers */}
-          <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-400 transition-all">
+          <Link href="/solutions/citizens" className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-amber-400 hover:shadow-md transition-all group cursor-pointer block">
             <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-md border border-amber-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-md border border-amber-200 inline-block">
                 Citizen Level
               </span>
-              <h3 className="text-2xl font-serif font-bold text-primary">Citizen Auditors &amp; Volunteers</h3>
+              <h3 className="text-2xl font-serif font-bold text-primary group-hover:text-amber-700 transition-colors">Citizen Auditors &amp; Volunteers</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Written in plain, everyday language. You don&apos;t need to be a programmer to help maintain accurate community records. Think of Marigold as a smart magnifying glass that runs right on your computer desk with total privacy.
               </p>
             </div>
-            <div className="pt-4 border-t border-slate-100">
-              <Link href="/solutions/citizens" className="text-sm font-bold text-amber-700 hover:underline inline-flex items-center gap-1">
-                Read Plain-Language Citizen Guide →
-              </Link>
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-amber-700 group-hover:underline">
+              <span>Read Plain-Language Citizen Guide</span>
+              <span className="transform group-hover:translate-x-1 transition-transform">→</span>
             </div>
-          </div>
+          </Link>
 
           {/* Group 3: Civic Lead Groups */}
-          <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-400 transition-all">
+          <Link href="/solutions/organizations" className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all group cursor-pointer block">
             <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-md border border-emerald-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-md border border-emerald-200 inline-block">
                 Organization Level
               </span>
-              <h3 className="text-2xl font-serif font-bold text-primary">Civic Integrity Networks</h3>
+              <h3 className="text-2xl font-serif font-bold text-primary group-hover:text-emerald-700 transition-colors">Civic Integrity Networks</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Unify your volunteer chapters across county lines. Share effective search queries and standardized review checklists exclusively with your trusted network—ensuring strategic alignment without broadcasting public data.
               </p>
             </div>
-            <div className="pt-4 border-t border-slate-100">
-              <Link href="/solutions/organizations" className="text-sm font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">
-                Read Coalition Collaboration Guide →
-              </Link>
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-emerald-700 group-hover:underline">
+              <span>Read Coalition Collaboration Guide</span>
+              <span className="transform group-hover:translate-x-1 transition-transform">→</span>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 
