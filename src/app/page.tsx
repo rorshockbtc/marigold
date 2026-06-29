@@ -10,7 +10,7 @@ const REGIONS = [
     lyric: 'Proclaim Liberty throughout all the land...',
     region: 'Heritage & Self-Governance',
     location: 'Celebrating 250 Years of American Independence & Civic Legacy',
-    bg: 'https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-0.jpg',
     video: '/vid-0.mp4',
   },
   {
@@ -19,7 +19,7 @@ const REGIONS = [
     lyric: 'Thriving cities gleam, undimmed by human tears...',
     region: 'Innovation & Metropolis',
     location: 'Celebrating American Enterprise, Modern Infrastructure & Urban Opportunity',
-    bg: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-1.jpg',
     video: '/vid-1.mp4',
   },
   {
@@ -28,7 +28,7 @@ const REGIONS = [
     lyric: 'O beautiful for spacious skies and amber waves of grain...',
     region: 'Heartland & Bounty',
     location: 'Celebrating Our Agricultural Plains & Vast Heartlands',
-    bg: '/hero-landscape.png',
+    bg: '/bg-2.jpg',
     video: '/vid-2.mp4',
   },
   {
@@ -37,7 +37,7 @@ const REGIONS = [
     lyric: 'For purple mountain majesties above the fruited plain...',
     region: 'Majesty & Preservation',
     location: 'Celebrating Our High Country Glaciers & Natural Heritage',
-    bg: 'https://images.unsplash.com/photo-1517056033588-3d12260f8440?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-3.jpg',
     video: '/vid-3.mp4',
   },
   {
@@ -46,7 +46,7 @@ const REGIONS = [
     lyric: 'Crown thy good with brotherhood, from sea to shining sea...',
     region: 'Unity & Transparency',
     location: 'Celebrating 50 States United by Open-Source Citizen Verification',
-    bg: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-4.jpg',
     video: '/vid-4.mp4',
   },
   {
@@ -55,7 +55,7 @@ const REGIONS = [
     lyric: 'Confirm thy soul in self-control, thy liberty in law...',
     region: 'Civic Integrity',
     location: 'Celebrating Good Governance & Transparent Election Administration',
-    bg: 'https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-5.jpg',
     video: '/vid-5.mp4',
   },
   {
@@ -64,7 +64,7 @@ const REGIONS = [
     lyric: 'Alabaster cities gleam across the patriot dream...',
     region: 'Urban Vitality',
     location: 'Celebrating the Innovation and Economic Vitality of American Metropolises',
-    bg: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-6.jpg',
     video: '/vid-6.mp4',
   },
   {
@@ -73,7 +73,7 @@ const REGIONS = [
     lyric: 'O beautiful for pilgrim feet, whose stern impassion\'d stress...',
     region: 'Resilience & Community',
     location: 'Celebrating American Resilience & Local Community Dedication',
-    bg: '/hero-landscape.png',
+    bg: '/bg-7.jpg',
     video: '/vid-7.mp4',
   },
   {
@@ -82,7 +82,7 @@ const REGIONS = [
     lyric: 'A thoroughfare for freedom beat across the wilderness...',
     region: 'Technological Frontiers',
     location: 'Celebrating Modern Engineering & Civic Progress',
-    bg: 'https://images.unsplash.com/photo-1517056033588-3d12260f8440?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-8.jpg',
     video: '/vid-8.mp4',
   },
   {
@@ -91,7 +91,7 @@ const REGIONS = [
     lyric: 'America! America! God shed His grace on thee...',
     region: 'Public Trust',
     location: 'Celebrating Open Records, Public Examination, and True Self-Governance',
-    bg: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=80',
+    bg: '/bg-9.jpg',
     video: '/vid-9.mp4',
   },
 ];
@@ -115,8 +115,8 @@ export default function MarketingHomePage() {
         {REGIONS.map((reg) => (
           <React.Fragment key={reg.id}>
             <div 
-              className={`absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform scale-105 transition-opacity duration-1000 ease-in-out ${
-                activeRegion === reg.id ? 'opacity-85 z-0' : 'opacity-0 -z-10'
+              className={`absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform origin-center scale-[1.12] transition-opacity duration-1000 ease-in-out ${
+                activeRegion === reg.id ? 'opacity-100 z-0' : 'opacity-0 -z-10'
               }`}
               style={{ backgroundImage: `url("${reg.bg}")` }}
             />
@@ -127,8 +127,8 @@ export default function MarketingHomePage() {
               loop
               muted
               playsInline
-              className={`absolute inset-0 w-full h-full object-cover pointer-events-none transform scale-105 transition-opacity duration-1000 ease-in-out ${
-                activeRegion === reg.id ? 'opacity-85 z-10' : 'opacity-0 -z-10'
+              className={`absolute inset-0 w-full h-full object-cover pointer-events-none transform origin-center scale-[1.12] transition-opacity duration-1000 ease-in-out ${
+                activeRegion === reg.id ? 'opacity-100 z-10' : 'opacity-0 -z-10'
               }`}
             />
           </React.Fragment>
