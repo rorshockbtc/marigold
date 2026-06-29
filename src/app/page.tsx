@@ -7,10 +7,11 @@ const REGIONS = [
   {
     id: 0,
     tab: '🎆 250th Anniversary (1776–2026)',
-    lyric: 'Crown thy good with brotherhood...',
-    region: 'Federal Architecture & Heritage',
-    location: 'Washington D.C. National Mall',
+    lyric: 'Proclaim Liberty throughout all the land...',
+    region: 'The Liberty Bell & Semiquincentennial',
+    location: 'Independence Hall & Washington D.C.',
     bg: 'https://images.unsplash.com/photo-1546955870-90060241d09f?auto=format&fit=crop&w=2000&q=80',
+    video: '/hero-video.mp4',
   },
   {
     id: 1,
@@ -54,12 +55,24 @@ export default function MarketingHomePage() {
     <div className="pb-24 font-sans">
       {/* Full-Width Edge-to-Edge Hero Section */}
       <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
-        {/* Background Landscape Photo ("America the Beautiful" Montage) */}
-        <div 
-          key={current.id}
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-45 pointer-events-none transform scale-105 transition-all duration-1000 ease-in-out"
-          style={{ backgroundImage: `url("${current.bg}")` }}
-        />
+        {/* Background Landscape Photo or Video ("America the Beautiful" Montage) */}
+        {current.video ? (
+          <video
+            key={current.id}
+            src={current.video}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-45 pointer-events-none transform scale-105 transition-all duration-1000 ease-in-out"
+          />
+        ) : (
+          <div 
+            key={current.id}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-45 pointer-events-none transform scale-105 transition-all duration-1000 ease-in-out"
+            style={{ backgroundImage: `url("${current.bg}")` }}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40 pointer-events-none" />
 
         {/* Top Badges */}
