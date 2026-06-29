@@ -6,134 +6,269 @@ import Link from "next/link";
 const REGIONS = [
   {
     id: 0,
-    tab: '🎆 250th Anniversary',
-    lyric: 'Proclaim Liberty throughout all the land...',
-    region: 'Heritage & Self-Governance',
-    location: 'Celebrating 250 Years of American Independence & Civic Legacy',
+    tab: '🔔 Constitutional Foundation',
+    lyric: '"Proclaim liberty throughout all the land unto all the inhabitants thereof." — Inscription on the Liberty Bell (Leviticus 25:10)',
+    region: 'Founding Heritage',
+    location: 'Reflecting Alexis de Tocqueville: "The institutions of a free people must be guarded by vigilance; our democratic heritage relies not on passive inheritance, but on active, transparent civic inquiry."',
     bg: '/bg-0.jpg',
     video: '/vid-0.mp4',
   },
   {
     id: 1,
-    tab: '🏙️ America the Modern',
-    lyric: 'Thriving cities gleam, undimmed by human tears...',
-    region: 'Innovation & Metropolis',
-    location: 'Celebrating American Enterprise, Modern Infrastructure & Urban Opportunity',
+    tab: '🌲 The American Wilderness',
+    lyric: '"In wildness is the preservation of the world." — Henry David Thoreau',
+    region: 'Ancient Woodlands',
+    location: 'As John Muir wrote, going to the woods is going home. These towering ancient redwood stands remind us of deep time, ecological stewardship, and the peaceful grounding essential to a thriving democratic society.',
     bg: '/bg-1.jpg',
     video: '/vid-1.mp4',
   },
   {
     id: 2,
-    tab: '🌾 America the Beautiful',
-    lyric: 'O beautiful for spacious skies and amber waves of grain...',
-    region: 'Heartland & Bounty',
-    location: 'Celebrating Our Agricultural Plains & Vast Heartlands',
+    tab: '🏜️ The Open Highway',
+    lyric: '"Something hidden. Go and find it. Go and look behind the Ranges—Something lost behind the Ranges. Lost and waiting for you. Go!" — Rudyard Kipling',
+    region: 'American Southwest',
+    location: 'The open road is the ultimate American metaphor for rebirth and discovery. Wallace Stegner called the West the native home of hope, where boundless horizons invite limitless human potential.',
     bg: '/bg-2.jpg',
     video: '/vid-2.mp4',
   },
   {
     id: 3,
-    tab: '🏔️ Mountain Majesties',
-    lyric: 'For purple mountain majesties above the fruited plain...',
-    region: 'Majesty & Preservation',
-    location: 'Celebrating Our High Country Glaciers & Natural Heritage',
+    tab: '🌄 Pastoral Heartlands',
+    lyric: '"I know of no pursuit in which more real and important services can be rendered to any country than by improving its agriculture." — George Washington',
+    region: 'Pastoral Heartlands',
+    location: 'Agrarian localism and independent self-governance form the bedrock of American democracy. Wendell Berry reminds us that true community is rooted in affection for our local soil and neighbors.',
     bg: '/bg-3.jpg',
     video: '/vid-3.mp4',
   },
   {
     id: 4,
-    tab: '🤝 Sea to Shining Sea',
-    lyric: 'Crown thy good with brotherhood, from sea to shining sea...',
-    region: 'Unity & Transparency',
-    location: 'Celebrating 50 States United by Open-Source Citizen Verification',
+    tab: '🏔️ Desert Solitaire',
+    lyric: '"Wilderness is not a luxury but a necessity of the human spirit." — Edward Abbey, Desert Solitaire',
+    region: 'Monument Valley',
+    location: 'Standing amidst the monolithic sandstone spires of Monument Valley, Edward Abbey urged us to preserve the silent, untamed sanctuaries of the American West as vital refuges for individual freedom.',
     bg: '/bg-4.jpg',
     video: '/vid-4.mp4',
   },
   {
     id: 5,
-    tab: '🌟 Liberty in Law',
-    lyric: 'Confirm thy soul in self-control, thy liberty in law...',
-    region: 'Civic Integrity',
-    location: 'Celebrating Good Governance & Transparent Election Administration',
+    tab: '✨ The Urban Frontier',
+    lyric: '"Cities have the capability of providing something for everybody, only because, and only when, they are created by everybody." — Jane Jacobs, The Death and Life of Great American Cities',
+    region: 'Metropolitan Core',
+    location: 'The American metropolis is a dynamic engine of economic vitality and cultural melting pots, thriving through spontaneous human cooperation and transparent public innovation.',
     bg: '/bg-5.jpg',
     video: '/vid-5.mp4',
   },
   {
     id: 6,
-    tab: '🌉 Alabaster Cities',
-    lyric: 'Alabaster cities gleam across the patriot dream...',
-    region: 'Urban Vitality',
-    location: 'Celebrating the Innovation and Economic Vitality of American Metropolises',
+    tab: '🇺🇸 Sovereign Unity',
+    lyric: '"We are not enemies, but friends. We must not be enemies. Though passion may have strained, it must not break our bonds of affection." — Abraham Lincoln, First Inaugural Address',
+    region: 'National Unity',
+    location: 'The American republic endured through principled compromise and civic dedication. Our flag represents fifty distinct states united under the rule of law and constitutional liberty.',
     bg: '/bg-6.jpg',
     video: '/vid-6.mp4',
   },
   {
     id: 7,
-    tab: '🦅 Pilgrim Feet',
-    lyric: 'O beautiful for pilgrim feet, whose stern impassion\'d stress...',
-    region: 'Resilience & Community',
-    location: 'Celebrating American Resilience & Local Community Dedication',
+    tab: '🏛️ The Public Commons',
+    lyric: '"The public square is where our democratic discourse breathes." — Frederick Law Olmsted',
+    region: 'Civic Life',
+    location: 'From New England town greens to modern civic commons, well-designed public spaces nurture civic trust, open public dialogue, and active community engagement.',
     bg: '/bg-7.jpg',
     video: '/vid-7.mp4',
   },
   {
     id: 8,
-    tab: '🚀 Freedom Thoroughfare',
-    lyric: 'A thoroughfare for freedom beat across the wilderness...',
-    region: 'Technological Frontiers',
-    location: 'Celebrating Modern Engineering & Civic Progress',
+    tab: '🌃 Eternal Vigilance',
+    lyric: '"Sunlight is said to be the best of disinfectants; electric light the most efficient policeman." — Louis D. Brandeis, Other People\'s Money',
+    region: 'Urban Transit',
+    location: 'As modern cities operate around the clock, civic accountability and open public records ensure that our democratic institutions remain transparent, honest, and responsive to the people.',
     bg: '/bg-8.jpg',
     video: '/vid-8.mp4',
   },
   {
     id: 9,
-    tab: '🗽 Shed His Grace',
-    lyric: 'America! America! God shed His grace on thee...',
-    region: 'Public Trust',
-    location: 'Celebrating Open Records, Public Examination, and True Self-Governance',
+    tab: '🏙️ City of Big Shoulders',
+    lyric: '"Hog Butcher for the World, Tool Maker, Stacker of Wheat... Stormy, husky, brawling, City of the Big Shoulders." — Carl Sandburg, Chicago',
+    region: 'Midwest Metropolis',
+    location: 'Rising boldly along Lake Michigan, Chicago embodies American industrial muscle, monumental architecture inspired by Daniel Burnham, and relentless Midwestern determination.',
     bg: '/bg-9.jpg',
     video: '/vid-9.mp4',
   },
+  {
+    id: 10,
+    tab: '🌅 Maritime Heritage',
+    lyric: '"They that go down to the sea in ships, that do business in great waters; these see the works of the Lord, and his wonders in the deep." — Psalm 107:23',
+    region: 'Coastal Promenades',
+    location: 'America\'s deep-water ports and coastal harbors have connected domestic commerce to the globe for centuries, fostering trade, exploration, and vibrant maritime culture.',
+    bg: '/bg-10.jpg',
+    video: '/vid-10.mp4',
+  },
+  {
+    id: 11,
+    tab: '🎏 The Banner of Freedom',
+    lyric: '"Let it be known that he who wears the flag of the United States wears the symbol of universal liberty." — Henry Ward Beecher',
+    region: 'Patriotic Pride',
+    location: 'Against clear blue skies, the emblem of our constitutional republic reminds us of our shared civic duty to preserve civil liberties and ensure equal justice under law.',
+    bg: '/bg-11.jpg',
+    video: '/vid-11.mp4',
+  },
+  {
+    id: 12,
+    tab: '🦅 Untamed Sovereignty',
+    lyric: '"Nature holds the key to our aesthetic, intellectual, cognitive and even spiritual satisfaction." — E.O. Wilson',
+    region: 'Untamed Wildlife',
+    location: 'Chosen in 1782 as the national emblem, the bald eagle symbolizes strength, independence, and the resilience of historic American wildlife conservation efforts.',
+    bg: '/bg-12.jpg',
+    video: '/vid-12.mp4',
+  },
+  {
+    id: 13,
+    tab: '🥧 Hearth & Heritage',
+    lyric: '"No matter what happens, the family dining table remains the center of American warmth and storytelling." — M.F.K. Fisher',
+    region: 'Home & Hearth',
+    location: 'Generational family recipes and neighborly gatherings reflect the grassroots hospitality, warmth, and enduring culinary traditions of American community life.',
+    bg: '/bg-13.jpg',
+    video: '/vid-13.mp4',
+  },
+  {
+    id: 14,
+    tab: '⚾ The National Pastime',
+    lyric: '"Whoever wants to know the heart and mind of America had better learn baseball." — Jacques Barzun',
+    region: 'Championship Stadiums',
+    location: 'Under summer ballpark lights, baseball brings together diverse communities in shared celebration, embodying patience, teamwork, and timeless sporting tradition.',
+    bg: '/bg-14.jpg',
+    video: '/vid-14.mp4',
+  },
+  {
+    id: 15,
+    tab: '🏎️ Mechanical Ingenuity',
+    lyric: '"I invented nothing new. I simply assembled the discoveries of other men behind whom were centuries of work." — Henry Ford',
+    region: 'Automotive Ingenuity',
+    location: 'From Detroit assembly lines to Route 66 car clubs, American automotive heritage celebrates mechanical craftsmanship, V8 horsepower, and the freedom of mobility.',
+    bg: '/bg-15.jpg',
+    video: '/vid-15.mp4',
+  },
+  {
+    id: 16,
+    tab: '🍔 Backyard Fellowship',
+    lyric: '"Sharing a meal around an open grill is one of the oldest communal institutions in human history." — American Culinary Tradition',
+    region: 'Backyard Barbecues',
+    location: 'Summer backyard cookouts break down barriers, uniting neighbors and families over open grills, storytelling, and relaxed weekend camaraderie.',
+    bg: '/bg-16.jpg',
+    video: '/vid-16.mp4',
+  },
+  {
+    id: 17,
+    tab: '🌭 Summer Traditions',
+    lyric: '"To roast an ear of corn or grill over an open flame is to partake in the unpretentious joys of American summer." — James Beard',
+    region: 'Family Cookouts',
+    location: 'Classic comfort food served straight from the flame highlights the accessible, communal, and festive spirit of neighborhood block parties across the nation.',
+    bg: '/bg-17.jpg',
+    video: '/vid-17.mp4',
+  },
+  {
+    id: 18,
+    tab: '🍋 Midsummer Independence',
+    lyric: '"The Fourth of July is the day when we celebrate the birth of American independence with gratitude, picnic tables, and community joy." — David McCullough',
+    region: 'Holiday Gatherings',
+    location: 'Ice-Cold lemonade, star-spangled banners, and community picnics commemorate our founding charter, reminding us that democracy thrives best among friends.',
+    bg: '/bg-18.jpg',
+    video: '/vid-18.mp4',
+  },
 ];
 
-export default function MarketingHomePage() {
-  const [activeRegion, setActiveRegion] = useState(0);
-  const current = REGIONS[activeRegion];
+function RegionBackground({ reg, isActive, isNext }: { reg: typeof REGIONS[0], isActive: boolean, isNext: boolean }) {
+  const [hasMounted, setHasMounted] = useState(isActive || isNext || reg.id === 0);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    if (isActive || isNext) {
+      setHasMounted(true);
+    }
+  }, [isActive, isNext]);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (isActive) {
+      // Ensure smooth playback from the very beginning when transitioning in
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    } else if (isNext) {
+      // Warm up decoder quietly
+      videoRef.current.play().catch(() => {});
+    } else {
+      // Pause inactive videos so hardware decoders are not overloaded
+      videoRef.current.pause();
+    }
+  }, [isActive, isNext, hasMounted]);
+
+  return (
+    <div 
+      className={`absolute inset-0 pointer-events-none overflow-hidden transition-opacity duration-1000 ease-in-out ${
+        isActive ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{ zIndex: isActive ? 1 : 0 }}
+    >
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transform origin-center scale-[1.12]"
+        style={{ backgroundImage: `url("${reg.bg}")` }}
+      />
+      {hasMounted && (
+        <video
+          ref={videoRef}
+          src={reg.video}
+          poster={reg.bg}
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover transform origin-center scale-[1.12]"
+        />
+      )}
+    </div>
+  );
+}
+
+export default function MarketingHomePage() {
+  const [shuffledIndices, setShuffledIndices] = useState<number[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    // Generate indices 0 to 18
+    const indices = Array.from({ length: REGIONS.length }, (_, i) => i);
+    // Fisher-Yates shuffle to randomize the order
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    setShuffledIndices(indices);
+
     const timer = setInterval(() => {
-      setActiveRegion((prev) => (prev + 1) % REGIONS.length);
+      setCurrentIndex((prev) => (prev + 1) % REGIONS.length);
     }, 6000);
     return () => clearInterval(timer);
   }, []);
+
+  const activeRegion = shuffledIndices.length > 0 ? shuffledIndices[currentIndex] : 0;
+  const nextRegion = shuffledIndices.length > 0 ? shuffledIndices[(currentIndex + 1) % REGIONS.length] : 0;
+  const current = REGIONS[activeRegion];
 
   return (
     <div className="pb-24 font-sans">
       {/* Full-Width Edge-to-Edge Hero Section */}
       <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
-        {/* Instant Static Background Fallbacks & Layered Video Streams */}
+        {/* Optimized Layered Background Streams */}
         {REGIONS.map((reg) => (
-          <React.Fragment key={reg.id}>
-            <div 
-              className={`absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform origin-center scale-[1.12] transition-opacity duration-1000 ease-in-out ${
-                activeRegion === reg.id ? 'opacity-100 z-0' : 'opacity-0 -z-10'
-              }`}
-              style={{ backgroundImage: `url("${reg.bg}")` }}
-            />
-            <video
-              src={reg.video}
-              poster={reg.bg}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className={`absolute inset-0 w-full h-full object-cover pointer-events-none transform origin-center scale-[1.12] transition-opacity duration-1000 ease-in-out ${
-                activeRegion === reg.id ? 'opacity-100 z-10' : 'opacity-0 -z-10'
-              }`}
-            />
-          </React.Fragment>
+          <RegionBackground 
+            key={reg.id} 
+            reg={reg} 
+            isActive={activeRegion === reg.id} 
+            isNext={nextRegion === reg.id} 
+          />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
+        {/* Dual Scrim Overlays for Perfect Text Readability */}
+        <div className="absolute inset-0 bg-slate-950/30 pointer-events-none z-[2]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/15 to-slate-950 pointer-events-none z-[3]" />
 
         {/* Top Badges */}
         <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-4">
@@ -154,19 +289,21 @@ export default function MarketingHomePage() {
         </div>
 
         {/* Main Heading */}
-        <h1 className="relative z-10 text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-lg">
+        <h1 className="relative z-10 text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
           Non-Partisan Civic Data Exploration
         </h1>
         
-        <p className="relative z-10 text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow">
+        <p className="relative z-10 text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
           Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
         </p>
 
-        {/* America the Beautiful Animated Lyric Display */}
-        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur border border-slate-700 px-5 py-2 rounded-full text-sm text-amber-300 font-serif italic tracking-wide shadow-inner transition-all duration-500">
-            <span>🇺🇸 "{current.lyric}"</span>
-            <span className="text-slate-400 font-sans not-italic">— {current.location}</span>
+        {/* Editorial Reflection & Literary Facet Display */}
+        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto flex flex-col items-center gap-3">
+          <div className="inline-flex items-center gap-2 bg-slate-900/90 backdrop-blur-md border border-amber-500/40 px-5 py-2 rounded-full text-xs sm:text-sm text-amber-300 font-serif italic tracking-wide shadow-xl transition-all duration-500">
+            <span>✨ {current.lyric}</span>
+          </div>
+          <div className="bg-slate-950/80 backdrop-blur-md border border-slate-700/80 px-6 py-3 rounded-2xl text-xs sm:text-sm text-slate-300 font-normal leading-relaxed shadow-2xl max-w-2xl text-center transition-all duration-500">
+            {current.location}
           </div>
         </div>
 
