@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 const REGIONS = [
@@ -54,6 +54,13 @@ const REGIONS = [
 export default function MarketingHomePage() {
   const [activeRegion, setActiveRegion] = useState(0);
   const current = REGIONS[activeRegion];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveRegion((prev) => (prev + 1) % REGIONS.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="pb-24 font-sans">
@@ -110,27 +117,11 @@ export default function MarketingHomePage() {
           Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
         </p>
 
-        {/* America the Beautiful Regional Montage Selector */}
-        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur border border-slate-700 px-4 py-1.5 rounded-full text-xs text-amber-300 font-serif italic tracking-wide shadow-inner">
+        {/* America the Beautiful Animated Lyric Display */}
+        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur border border-slate-700 px-5 py-2 rounded-full text-sm text-amber-300 font-serif italic tracking-wide shadow-inner transition-all duration-500">
             <span>🇺🇸 "{current.lyric}"</span>
             <span className="text-slate-400 font-sans not-italic">— {current.location}</span>
-          </div>
-          
-          <div className="flex flex-wrap justify-center gap-2">
-            {REGIONS.map((reg) => (
-              <button
-                key={reg.id}
-                onClick={() => setActiveRegion(reg.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                  activeRegion === reg.id
-                    ? 'bg-amber-500 text-slate-950 scale-105 shadow-amber-500/20'
-                    : 'bg-slate-900/70 text-slate-300 hover:bg-slate-800 border border-slate-700'
-                }`}
-              >
-                {reg.tab}
-              </button>
-            ))}
           </div>
         </div>
 
