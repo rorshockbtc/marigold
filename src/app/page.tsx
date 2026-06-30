@@ -307,17 +307,14 @@ export default function MarketingHomePage() {
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Streamlined Action Buttons */}
         <div className="relative z-10 pt-4 flex flex-wrap justify-center items-center gap-4">
-          <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5 min-w-[200px]">
+          <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
             Try Public Sandbox →
           </Link>
-          <Link href="/store" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all min-w-[200px]">
-            Browse Audit Checklists
-          </Link>
-          <Link href="/registry" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-sm bg-slate-900/80 text-slate-200 border border-slate-700 hover:bg-slate-800 transition-all min-w-[200px]">
-            State Registry
-          </Link>
+          <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all">
+            Find Your Role Guide ↓
+          </a>
         </div>
 
         <div className="relative z-10 pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800/80 max-w-2xl mx-auto mt-8">
@@ -332,7 +329,7 @@ export default function MarketingHomePage() {
       {/* Main Container for Rest of Content */}
       <div className="space-y-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         {/* The Three Major Stakeholder Groups */}
-        <section className="space-y-10 max-w-6xl mx-auto px-2">
+        <section id="stakeholders" className="space-y-10 max-w-6xl mx-auto px-2 scroll-mt-24">
           <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary">Engineered for Every Civic Stakeholder</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Click any overview card below to read a clear, non-technical walkthrough tailored specifically for your role.</p>
