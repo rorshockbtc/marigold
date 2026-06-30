@@ -146,7 +146,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
                 paddingAngle={4}
                 dataKey="count"
                 cursor="pointer"
-                onClick={(entry) => setSelectedMetric(entry)}
+                onClick={(entry: any) => setSelectedMetric(entry.payload || entry)}
                 label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
               >
                 {CATEGORY_DATA.map((entry, index) => (
