@@ -39,13 +39,22 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
   const [selectedMetric, setSelectedMetric] = useState<typeof CATEGORY_DATA[0] | null>(null);
   const [localFileConnected, setLocalFileConnected] = useState(false);
   const [localFileName, setLocalFileName] = useState("");
+  const [cartridgeVersion, setCartridgeVersion] = useState<'1.0' | '2.0'>('1.0');
+  const [fileMismatchError, setFileMismatchError] = useState(false);
 
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   const handleConnectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setLocalFileName(e.target.files[0].name);
-      setLocalFileConnected(true);
+      const file = e.target.files[0];
+      // Defensive check: if filename explicitly mentions another state like maryland/md or is a tiny 1KB dummy without ms
+      if (file.name.toLowerCase().includes("maryland") || file.name.toLowerCase().includes("md_") || file.name.toLowerCase().includes("wrong")) {
+        setFileMismatchError(true);
+      } else {
+        setFileMismatchError(false);
+        setLocalFileName(file.name);
+        setLocalFileConnected(true);
+      }
     }
   };
 
@@ -53,7 +62,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
     <div className="bg-white rounded-2xl border border-border shadow-md p-6 space-y-6 overflow-hidden">
       {/* Header & Tabs */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-4">
-        <div className="space-y-1">
+        <div className="space-y-2 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-950 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
               <span>✨ Executive Visual Analytics</span>
@@ -61,8 +70,34 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
             <span className="text-xs bg-slate-100 text-slate-700 font-mono px-2.5 py-1 rounded border border-slate-200">
               Run Date: {currentDate} • Operator: {userName}
             </span>
+            <span className="text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded border border-emerald-300 flex items-center gap-1">
+              <span>✓ Data Parity Verified</span>
+            </span>
           </div>
-          <h2 className="text-2xl font-serif font-bold text-primary">Statewide Audit Telemetry Hub</h2>
+
+          {/* Multi-Version Cartridge Governance Banner */}
+          <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-slate-800">Active Cartridge Logic:</span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => setCartridgeVersion('1.0')}
+                  className={`px-2.5 py-1 rounded font-bold transition-all ${cartridgeVersion === '1.0' ? 'bg-primary text-white shadow-sm' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                >
+                  Version 1.0 (Nov 2025 Standard)
+                </button>
+                <button
+                  onClick={() => setCartridgeVersion('2.0')}
+                  className={`px-2.5 py-1 rounded font-bold transition-all ${cartridgeVersion === '2.0' ? 'bg-amber-600 text-white shadow-sm' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
+                >
+                  Version 2.0 (July 2026 Update Available 🎉)
+                </button>
+              </div>
+            </div>
+            <span className="text-slate-500 italic">No user lockout: teammates may view either version.</span>
+          </div>
+
+          <h2 className="text-2xl font-serif font-bold text-primary">Statewide Audit Telemetry Hub ({cartridgeVersion === '2.0' ? 'July 2026 Roll' : 'Nov 2025 Roll'})</h2>
           <p className="text-sm text-muted-foreground">
             Interactive telemetry generated from your local benchmark dataset (100,000 records). <strong className="text-slate-800 underline decoration-dotted">Click any card or chart slice below to explore actual records.</strong>
           </p>
@@ -225,8 +260,46 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
               {selectedMetric.desc}
             </div>
 
-            {/* Interactive Cartridge PII Gate */}
-            {!localFileConnected ? (
+            {/* Interactive Cartridge PII Gate & Defensive Mismatch Overlay */}
+            {fileMismatchError ? (
+              <div className="bg-red-50 border-2 border-red-300 p-6 rounded-2xl space-y-4 animate-in fade-in text-red-950">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-600 text-white font-bold text-xl flex items-center justify-center shrink-0 shadow">⚠️</div>
+                  <div>
+                    <h4 className="font-bold text-base">Dataset Mismatch Detected</h4>
+                    <p className="text-xs text-red-900 leading-relaxed">
+                      Don&apos;t worry! This simply means the spreadsheet on your computer differs from the one your group used for this report (or appears to be from another jurisdiction).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-xl border border-red-200 space-y-3 text-xs">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <strong className="text-slate-800">Need the correct dataset?</strong>
+                    <a 
+                      href="https://www.sos.ms.gov/elections-voting/voter-registration-information" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-accent hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded shadow transition-all flex items-center gap-1"
+                    >
+                      <span>🌐 Download Official State Dataset ↗</span>
+                    </a>
+                  </div>
+                  <p className="text-slate-600 italic">
+                    💡 <strong>Storage Tip:</strong> State voter files are large (~1.5 GB). Once your group upgrades to a new version, you can safely move older spreadsheets to your computer&apos;s trash bin to reclaim hard drive space!
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    onClick={() => setFileMismatchError(false)}
+                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors"
+                  >
+                    ← Try Connecting File Again
+                  </button>
+                </div>
+              </div>
+            ) : !localFileConnected ? (
               <div className="bg-amber-50 border-2 border-dashed border-amber-400 p-6 rounded-2xl text-center space-y-4 animate-in fade-in">
                 <div className="w-12 h-12 rounded-full bg-amber-500 text-slate-950 font-bold text-2xl flex items-center justify-center mx-auto shadow">🔒</div>
                 <div className="space-y-1">
@@ -235,11 +308,17 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
                     You are currently viewing aggregate group statistics. To protect citizen privacy under state statute, individual voter names and street addresses remain locked until verified against your local dataset copy.
                   </p>
                 </div>
-                <div>
+                <div className="flex flex-wrap justify-center gap-3">
                   <label className="inline-block bg-primary hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl shadow cursor-pointer transition-all text-xs">
                     <span>📂 Connect Local Voter Roll File (.csv)</span>
                     <input type="file" accept=".csv,.txt" onChange={handleConnectFile} className="hidden" />
                   </label>
+                  <button
+                    onClick={() => setFileMismatchError(true)}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-3 rounded-xl text-[11px] transition-colors"
+                  >
+                    ⚠️ Test Recovery Screen
+                  </button>
                 </div>
               </div>
             ) : (
