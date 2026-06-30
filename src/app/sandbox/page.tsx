@@ -13,11 +13,11 @@ export default function SandboxPage() {
     if (e.target.files && e.target.files[0]) {
       setFileName(e.target.files[0].name);
       setFileUploaded(true);
-      // Simulate quick memory check
+      // Simulate quick memory check with synthetic demonstration records
       setSimulatedResults([
-        { address: "1400 J R LYNCH ST, JACKSON", occupants: 423, status: "University Dormitory (Verified)" },
-        { address: "123 MAPLE ST, JACKSON", occupants: 18, status: "High-Density Review Needed (>12)" },
-        { address: "821 HWY 51, MADISON", occupants: 85, status: "Job Corps Center (Verified)" }
+        { address: "1400 LINCOLN WAY, LIBERTY CITY (Demo)", occupants: 423, status: "University Dormitory (Synthetic Demo)" },
+        { address: "123 CONSTITUTION AVE, FRANKLIN (Demo)", occupants: 18, status: "High-Density Review Needed (>12)" },
+        { address: "821 DEMONSTRATION PKWY, ADAMS (Demo)", occupants: 85, status: "Job Corps Center (Synthetic Demo)" }
       ]);
     }
   };

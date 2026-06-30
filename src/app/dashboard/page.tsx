@@ -62,6 +62,17 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-4 px-4">
+      {/* Setup Wizard Prompt */}
+      <div className="bg-amber-100 border border-amber-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-amber-950 shadow-sm">
+        <div className="space-y-0.5">
+          <strong className="font-bold text-sm block">Welcome! First time auditing in your jurisdiction?</strong>
+          <p className="text-xs text-amber-900">Complete our interactive setup wizard to select your state compliance rules and join or create a local organization team.</p>
+        </div>
+        <Link href="/onboarding" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-colors">
+          Launch Setup Wizard →
+        </Link>
+      </div>
+
       {/* Group Welcome Header */}
       <div className="bg-gradient-to-r from-primary to-slate-800 text-white p-8 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-slate-700">
         <div className="space-y-2 flex-1">
@@ -131,6 +142,9 @@ export default function DashboardPage() {
         <div className="flex flex-wrap gap-3 self-start md:self-center">
           <Link href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
             <span>⚡ Launch Pro Mode</span>
+          </Link>
+          <Link href="/settings/group" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-1.5">
+            <span>👑 Group Admin Console</span>
           </Link>
           <Link href="/playbooks" className="bg-slate-700 hover:bg-slate-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm">
             Browse Mission Playbooks
