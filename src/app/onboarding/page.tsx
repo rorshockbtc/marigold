@@ -15,10 +15,10 @@ interface StateGroup {
 }
 
 const PUBLIC_GROUPS: StateGroup[] = [
-  { id: 'msfe', name: 'Mississippi Fair Elections (MSFE Pilot)', state: 'Mississippi', website: 'https://msfe.org', desc: 'Non-partisan volunteer network verifying voter rolls across all 82 MS counties.', memberCount: 14 },
-  { id: 'wy_integrity', name: 'Wyoming Election Audit Taskforce', state: 'Wyoming', website: 'https://wyelections.org', desc: 'Local citizen analysts reviewing rural county voter lists.', memberCount: 8 },
-  { id: 'oh_coalition', name: 'Ohio Voter Roll Audit Group', state: 'Ohio', desc: 'Volunteers collaborating on NCOA relocation verification.', memberCount: 22 },
-  { id: 'pa_network', name: 'Pennsylvania Integrity Network', state: 'Pennsylvania', desc: 'County-level public record review teams.', memberCount: 31 },
+  { id: 'msfe', name: 'Mississippi Fair Elections (MSFE Pilot)', state: 'Mississippi', website: 'https://msfe.org', desc: 'Non-partisan volunteer network verifying voter rolls across all 82 MS counties.', memberCount: 1 },
+  { id: 'wy_integrity', name: 'Wyoming Election Audit Taskforce', state: 'Wyoming', website: 'https://wyelections.org', desc: 'Local citizen analysts reviewing rural county voter lists.', memberCount: 2 },
+  { id: 'oh_coalition', name: 'Ohio Voter Roll Audit Group', state: 'Ohio', desc: 'Volunteers collaborating on NCOA relocation verification.', memberCount: 1 },
+  { id: 'pa_network', name: 'Pennsylvania Integrity Network', state: 'Pennsylvania', desc: 'County-level public record review teams.', memberCount: 3 },
 ];
 
 export default function OnboardingPage() {
@@ -28,6 +28,11 @@ export default function OnboardingPage() {
   const [selectedState, setSelectedState] = useState("Mississippi");
   const [actionType, setActionType] = useState<'join' | 'create'>('join');
   const [legalAccepted, setLegalAccepted] = useState(false);
+
+  // Profile & Existing Admin recognition
+  const [customName, setCustomName] = useState("");
+  const [existingGroup, setExistingGroup] = useState<string | null>(null);
+  const [existingRole, setExistingRole] = useState<string | null>(null);
 
   // Join form state
   const [targetGroup, setTargetGroup] = useState<StateGroup | null>(PUBLIC_GROUPS[0]);
@@ -39,6 +44,20 @@ export default function OnboardingPage() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupWebsite, setNewGroupWebsite] = useState("");
 
+  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
+  const fallbackName = user?.fullName || userEmail.split('@')[0] || "New Auditor";
+
+  React.useEffect(() => {
+    if (isLoaded) {
+      const savedGroup = localStorage.getItem("marigold_active_group");
+      const savedRole = localStorage.getItem("marigold_user_role");
+      const savedName = localStorage.getItem("marigold_user_name");
+      if (savedGroup) setExistingGroup(savedGroup);
+      if (savedRole) setExistingRole(savedRole);
+      setCustomName(savedName || fallbackName);
+    }
+  }, [isLoaded, fallbackName]);
+
   if (!isLoaded) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
@@ -47,12 +66,10 @@ export default function OnboardingPage() {
     );
   }
 
-  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
-  const userName = user?.fullName || userEmail.split('@')[0] || "New Auditor";
-
   const handleCompleteOnboarding = (groupTitle: string, role: string) => {
     localStorage.setItem("marigold_active_group", groupTitle);
     localStorage.setItem("marigold_user_role", role);
+    localStorage.setItem("marigold_user_name", customName || fallbackName);
     localStorage.setItem("marigold_onboarding_done", "true");
     router.push('/dashboard');
   };
@@ -65,24 +82,79 @@ export default function OnboardingPage() {
           Step {step} of 2 • Workspace Setup
         </span>
         <h1 className="text-3xl sm:text-4xl font-serif font-bold text-primary">
-          Welcome to Marigold Insights, {userName}
+          Welcome to Marigold Insights, {customName || fallbackName}
         </h1>
         <p className="text-muted-foreground text-sm max-w-xl mx-auto">
           Let&apos;s configure your zero-PII local analysis environment and connect you with your civic jurisdiction.
         </p>
       </div>
 
+      {/* Existing Group Admin Banner */}
+      {existingGroup && (
+        <div className="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-6 shadow-md space-y-4 text-emerald-950 animate-in fade-in">
+          <div className="flex flex-wrap justify-between items-center gap-2">
+            <span className="bg-emerald-200 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              👑 Active Organization Detected
+            </span>
+            <span className="font-mono text-xs bg-white px-3 py-1 rounded border border-emerald-300">
+              Role: {existingRole || 'Group Admin'}
+            </span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-serif font-bold text-primary">
+            Welcome back, {customName || fallbackName}! You are governing <strong>{existingGroup}</strong>.
+          </h2>
+          <p className="text-xs text-emerald-900 leading-relaxed">
+            Your zero-PII local workspace is already connected. Enter your dashboard directly or manage new member applicants in group settings.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="bg-primary hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow transition-all"
+            >
+              Enter Dashboard →
+            </button>
+            <button
+              onClick={() => router.push('/settings/group')}
+              className="bg-white hover:bg-emerald-100 text-emerald-950 font-bold px-6 py-2.5 rounded-xl border border-emerald-400 text-xs shadow-sm transition-all"
+            >
+              ⚙️ Manage Roster & Apps
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem("marigold_active_group");
+                setExistingGroup(null);
+              }}
+              className="text-xs text-slate-500 hover:text-red-600 font-bold underline px-2 py-2.5 ml-auto transition-colors"
+            >
+              Switch / Create New Group
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Step 1: Jurisdiction & Compliance */}
       {step === 1 && (
         <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md space-y-6 animate-in fade-in duration-200">
           <div className="border-b border-border pb-4">
-            <h2 className="text-xl font-bold text-primary">1. Select Your Primary State Jurisdiction</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Every state maintains specific statutory guidelines regarding public voter file access and distribution.</p>
+            <h2 className="text-xl font-bold text-primary">1. Configure Profile &amp; Jurisdiction</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Set your display title and select your state election record area.</p>
           </div>
 
           <div className="space-y-4">
-            <label className="text-sm font-bold text-slate-800 block">Which State Voter Rolls Will You Analyze?</label>
-            <select
+            <div>
+              <label className="text-sm font-bold text-slate-800 block mb-1">Your Full Name / Display Title *</label>
+              <input
+                type="text"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="e.g., Kyle (Lead Auditor)"
+                className="w-full h-12 px-4 rounded-xl border border-border bg-slate-50 text-base font-medium text-primary focus:ring-2 focus:ring-amber-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-slate-800 block mb-1">Which State Voter Rolls Will You Analyze?</label>
+              <select
               value={selectedState}
               onChange={(e) => {
                 setSelectedState(e.target.value);
@@ -97,6 +169,7 @@ export default function OnboardingPage() {
               <option value="Pennsylvania">Pennsylvania</option>
               <option value="Other / Multi-State">Other / Multi-State Jurisdiction</option>
             </select>
+            </div>
           </div>
 
           {/* State Specific Legal & Privacy Notice */}
@@ -208,7 +281,7 @@ export default function OnboardingPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div>
                       <label className="font-bold text-slate-700 block mb-1">Your Full Name</label>
-                      <input type="text" readOnly value={userName} className="w-full px-3 py-2 bg-slate-200 border border-slate-300 rounded-lg font-medium text-slate-700" />
+                      <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 focus:border-amber-500 outline-none" />
                     </div>
                     <div>
                       <label className="font-bold text-slate-700 block mb-1">Email Address</label>

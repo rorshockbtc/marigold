@@ -21,13 +21,12 @@ export default function GroupAdminSettingsPage() {
 
   const [applications, setApplications] = useState<Application[]>([
     { id: 'app-1', name: 'Robert Miller', email: 'robert.m@civicdata.org', phone: '(601) 555-0182', note: 'Rankin County volunteer analyst looking to assist with NCOA verification.', date: 'Today, 9:15 AM', status: 'pending' },
-    { id: 'app-2', name: 'Sarah Jenkins', email: 'sjenkins@example.com', phone: '(601) 555-0941', note: 'Interested in reviewing dormitory residency records in Lafayette County.', date: 'Yesterday', status: 'pending' }
   ]);
 
   const [roster, setRoster] = useState([
     { name: 'Kyle (You)', email: 'kyle@msfe.org', role: '👑 Group Admin', joined: 'Founding Member' },
-    { name: 'David Lead', email: 'dad@msfe.org', role: '🛡️ Mission Lead', joined: 'Active (Cartridge Sync Enabled)' },
-    { name: 'Elena Vance', email: 'evance@civicdata.org', role: '👤 Field Reviewer', joined: 'Active' }
+    { name: 'David Lead', email: 'dad@msfe.org', role: '👤 Group Member', joined: 'Active (Cartridge Sync Enabled)' },
+    { name: 'Elena Vance', email: 'evance@civicdata.org', role: '👤 Group Member', joined: 'Active' }
   ]);
 
   useEffect(() => {
@@ -37,11 +36,21 @@ export default function GroupAdminSettingsPage() {
 
   const handleApprove = (app: Application) => {
     setApplications(applications.map(a => a.id === app.id ? { ...a, status: 'approved' } : a));
-    setRoster([...roster, { name: app.name, email: app.email, role: '👤 Field Reviewer', joined: 'Just Approved' }]);
+    setRoster([...roster, { name: app.name, email: app.email, role: '👤 Group Member', joined: 'Just Approved' }]);
   };
 
   const handleReject = (app: Application) => {
     setApplications(applications.map(a => a.id === app.id ? { ...a, status: 'rejected' } : a));
+  };
+
+  const handleToggleRole = (email: string) => {
+    setRoster(roster.map(m => {
+      if (m.email === email) {
+        const newRole = m.role === '👑 Group Admin' ? '👤 Group Member' : '👑 Group Admin';
+        return { ...m, role: newRole };
+      }
+      return m;
+    }));
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -189,17 +198,27 @@ export default function GroupAdminSettingsPage() {
 
             <div className="divide-y divide-border text-sm">
               {roster.map((m, idx) => (
-                <div key={idx} className="py-3 flex justify-between items-center">
+                <div key={idx} className="py-3 flex flex-wrap justify-between items-center gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
                     <div>
                       <strong className="text-slate-900 block font-bold">{m.name}</strong>
                       <span className="text-xs font-mono text-slate-500">{m.email}</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-800 block">{m.role}</span>
-                    <span className="text-[10px] text-muted-foreground mt-0.5 block">{m.joined}</span>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded block ${m.role === '👑 Group Admin' ? 'bg-amber-100 text-amber-950 font-extrabold' : 'bg-slate-100 text-slate-800'}`}>{m.role}</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 block">{m.joined}</span>
+                    </div>
+                    {m.email !== 'kyle@msfe.org' && (
+                      <button
+                        onClick={() => handleToggleRole(m.email)}
+                        className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded border border-slate-300 transition-colors shrink-0"
+                      >
+                        {m.role === '👑 Group Admin' ? 'Demote to Member' : 'Promote to Admin'}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

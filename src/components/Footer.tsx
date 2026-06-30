@@ -48,10 +48,28 @@ export function Footer() {
               GitHub Repository ↗
             </a>
             <a 
+              href="/terms" 
+              className="text-amber-400 hover:underline transition-all"
+            >
+              Terms of Service &amp; Liability
+            </a>
+            <a 
+              href="/privacy" 
+              className="text-amber-400 hover:underline transition-all"
+            >
+              Privacy Policy
+            </a>
+            <a 
+              href="/sandbox" 
+              className="text-orange-400 font-extrabold hover:underline transition-all"
+            >
+              🧪 ACME Sandbox (Mock Data Demo)
+            </a>
+            <a 
               href="/compliance" 
               className="text-sky-300 hover:underline transition-all"
             >
-              FEMA Compliance
+              Statutory Compliance
             </a>
           </div>
         </div>
