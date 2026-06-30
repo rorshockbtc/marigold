@@ -27,6 +27,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedState, setSelectedState] = useState("Mississippi");
   const [actionType, setActionType] = useState<'join' | 'create'>('join');
+  const [legalAccepted, setLegalAccepted] = useState(false);
 
   // Join form state
   const [targetGroup, setTargetGroup] = useState<StateGroup | null>(PUBLIC_GROUPS[0]);
@@ -113,10 +114,26 @@ export default function OnboardingPage() {
             </ul>
           </div>
 
+          {/* Statutory Liability & Terms Acceptance Checkbox */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-xs text-slate-300 space-y-3 shadow-inner">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={legalAccepted}
+                onChange={(e) => setLegalAccepted(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500 shrink-0 cursor-pointer"
+              />
+              <span className="leading-relaxed">
+                I acknowledge and agree to the <Link href="/terms" target="_blank" className="text-accent underline font-bold">Terms of Service &amp; Statutory Data Liability Agreement</Link> and <Link href="/privacy" target="_blank" className="text-accent underline font-bold">Zero-Knowledge Privacy Policy</Link>. I warrant that any civic dataset or voter roll spreadsheet connected locally to my browser tab complies with all applicable Secretary of State regulations and state election laws.
+              </span>
+            </label>
+          </div>
+
           <div className="pt-4 flex justify-end">
             <button
               onClick={() => setStep(2)}
-              className="bg-primary hover:bg-slate-800 text-white font-bold px-8 py-3.5 rounded-xl shadow transition-all text-sm flex items-center gap-2"
+              disabled={!legalAccepted}
+              className="bg-primary hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-3.5 rounded-xl shadow transition-all text-sm flex items-center gap-2"
             >
               <span>Continue to Organization Setup</span>
               <span>→</span>
