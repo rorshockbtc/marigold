@@ -27,10 +27,22 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
     return (
       <div className="flex min-h-screen bg-slate-50 font-sans">
         <AppSidebar />
-        <main className="flex-1 pl-64 overflow-x-hidden">
-          <div className="p-6 md:p-10 max-w-7xl mx-auto">
+        <main className="flex-1 pl-64 overflow-x-hidden flex flex-col justify-between min-h-screen">
+          <div className="p-6 md:p-10 max-w-7xl mx-auto w-full flex-1">
             {children}
           </div>
+          <footer className="border-t border-slate-200 bg-white py-4 px-6 md:px-10 text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-3 mt-auto">
+            <div className="flex flex-wrap items-center gap-4 font-bold text-slate-700">
+              <a href="/terms" className="hover:text-amber-600 transition-colors">Terms of Service &amp; Statutory Liability</a>
+              <span>•</span>
+              <a href="/privacy" className="hover:text-amber-600 transition-colors">Zero-Knowledge Privacy Policy</a>
+              <span>•</span>
+              <a href="/compliance" className="hover:text-amber-600 transition-colors">Security &amp; Compliance</a>
+            </div>
+            <div className="font-mono text-[11px] text-slate-400">
+              100% Local Browser Memory Execution • Zero Cloud PII
+            </div>
+          </footer>
         </main>
       </div>
     );

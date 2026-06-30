@@ -23,20 +23,33 @@ export default function SandboxPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 pb-24 font-sans">
+    <div className="max-w-5xl mx-auto space-y-8 pb-24 font-sans">
+      {/* Prominent Synthetic Warning Banner */}
+      <div className="bg-orange-600 text-white p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl shrink-0">🧪</span>
+          <span className="leading-relaxed">
+            <strong>ACME CIVIC DATA SANDBOX:</strong> All datasets, occupancy records, and addresses displayed on this page are 100% synthetic simulated mock data generated for demonstration and verification purposes only.
+          </span>
+        </div>
+        <span className="bg-orange-950/60 text-orange-200 px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold whitespace-nowrap shrink-0">
+          Synthetic Demo Mode
+        </span>
+      </div>
+
       {/* Banner */}
       <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 text-white shadow-md">
         <div className="space-y-2 max-w-2xl">
           <span className="bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1 rounded uppercase tracking-wider">
-            Public Sandbox Environment
+            ACME Public Demonstration Workspace
           </span>
-          <h2 className="text-2xl font-serif font-bold pt-1">Unauthenticated Testing Workspace</h2>
+          <h2 className="text-2xl font-serif font-bold pt-1">Unauthenticated Testing Sandbox</h2>
           <p className="text-sm text-slate-300 leading-relaxed">
-            Test our in-memory data engine with dummy files or public snapshots. To save custom audit playbooks or join an organization team, please sign in.
+            Test our in-memory data engine with simulated files or public snapshots. To save custom audit playbooks or join a real state organization team, please sign in.
           </p>
         </div>
         <Link href="/dashboard" className="bg-accent text-white font-bold text-sm px-6 py-3 rounded-lg shadow whitespace-nowrap hover:bg-amber-600 transition-all">
-          Sign In to Workspace →
+          Sign In to Real Workspace →
         </Link>
       </div>
 
