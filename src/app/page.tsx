@@ -473,6 +473,25 @@ export default function MarketingHomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Global Legal & Compliance Footer */}
+      <footer className="border-t border-slate-800 bg-slate-950 py-12 px-4 text-center text-xs text-slate-400 space-y-4">
+        <div className="flex flex-wrap justify-center gap-6 font-bold text-slate-300">
+          <Link href="/terms" className="hover:text-amber-400 transition-colors">Terms of Service &amp; Statutory Liability</Link>
+          <span>•</span>
+          <Link href="/privacy" className="hover:text-amber-400 transition-colors">Zero-Knowledge Privacy Policy</Link>
+          <span>•</span>
+          <Link href="/compliance" className="hover:text-amber-400 transition-colors">Security &amp; Statutory Compliance</Link>
+          <span>•</span>
+          <Link href="/registry" className="hover:text-amber-400 transition-colors">50-State Data Registry</Link>
+        </div>
+        <p className="max-w-2xl mx-auto leading-relaxed text-slate-500 font-mono">
+          Marigold Insights is a client-side civic exploration protocol. All data processing occurs locally within the user&apos;s machine. Marigold Insights does not ingest, store, or transmit state voter roll files across cloud servers.
+        </p>
+        <div className="text-[11px] text-slate-600 font-mono">
+          © {new Date().getFullYear()} Marigold Insights LLC. Non-Partisan Election Integrity Standard.
+        </div>
+      </footer>
       </div>
     </div>
   );
