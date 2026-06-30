@@ -37,8 +37,17 @@ const RADAR_DATA = [
 export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?: string }) {
   const [activeTab, setActiveTab] = useState<'distribution' | 'velocity' | 'radar'>('distribution');
   const [selectedMetric, setSelectedMetric] = useState<typeof CATEGORY_DATA[0] | null>(null);
+  const [localFileConnected, setLocalFileConnected] = useState(false);
+  const [localFileName, setLocalFileName] = useState("");
 
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const handleConnectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setLocalFileName(e.target.files[0].name);
+      setLocalFileConnected(true);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-border shadow-md p-6 space-y-6 overflow-hidden">
@@ -216,36 +225,59 @@ export function ExecutiveVisualCanvas({ userName = "Active User" }: { userName?:
               {selectedMetric.desc}
             </div>
 
-            <div className="space-y-3">
-              <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Sample Filtered Records (Live Client Memory)</span>
-              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl bg-white overflow-hidden text-xs">
-                <div className="p-3 flex justify-between items-center bg-slate-50 font-bold text-slate-600">
-                  <span>Voter ID &amp; Registration Address</span>
-                  <span>Flag Match Reason</span>
+            {/* Interactive Cartridge PII Gate */}
+            {!localFileConnected ? (
+              <div className="bg-amber-50 border-2 border-dashed border-amber-400 p-6 rounded-2xl text-center space-y-4 animate-in fade-in">
+                <div className="w-12 h-12 rounded-full bg-amber-500 text-slate-950 font-bold text-2xl flex items-center justify-center mx-auto shadow">🔒</div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-amber-950 text-base">Local Voter File Required to Inspect Individual Addresses</h4>
+                  <p className="text-xs text-amber-900 max-w-md mx-auto leading-relaxed">
+                    You are currently viewing aggregate group statistics. To protect citizen privacy under state statute, individual voter names and street addresses remain locked until verified against your local dataset copy.
+                  </p>
                 </div>
-                <div className="p-3 flex justify-between items-center hover:bg-amber-50/50 transition-colors">
-                  <div>
-                    <strong className="text-slate-900 block font-bold">Voter #AGY-88412</strong>
-                    <span className="text-slate-500 font-mono">4812 Commercial Pkwy Ste 104</span>
-                  </div>
-                  <span className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded">UPS Store Mailbox #104</span>
-                </div>
-                <div className="p-3 flex justify-between items-center hover:bg-amber-50/50 transition-colors">
-                  <div>
-                    <strong className="text-slate-900 block font-bold">Voter #AGY-91204</strong>
-                    <span className="text-slate-500 font-mono">109 Highway 51 North Unit 12B</span>
-                  </div>
-                  <span className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded">Commercial Retail Strip</span>
-                </div>
-                <div className="p-3 flex justify-between items-center hover:bg-amber-50/50 transition-colors">
-                  <div>
-                    <strong className="text-slate-900 block font-bold">Voter #AGY-44910</strong>
-                    <span className="text-slate-500 font-mono">805 Main St PMB 402</span>
-                  </div>
-                  <span className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded">Private Mail Box (PMB)</span>
+                <div>
+                  <label className="inline-block bg-primary hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl shadow cursor-pointer transition-all text-xs">
+                    <span>📂 Connect Local Voter Roll File (.csv)</span>
+                    <input type="file" accept=".csv,.txt" onChange={handleConnectFile} className="hidden" />
+                  </label>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3 animate-in fade-in">
+                <div className="flex justify-between items-center bg-emerald-50 border border-emerald-300 p-2.5 rounded-lg text-xs font-bold text-emerald-900">
+                  <span>🔓 Local File Connected ({localFileName})</span>
+                  <span className="font-mono bg-emerald-200 px-2 py-0.5 rounded text-[10px]">PII Index Joined in Memory</span>
+                </div>
+                <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Sample Filtered Records (Live Client Memory)</span>
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl bg-white overflow-hidden text-xs">
+                  <div className="p-3 flex justify-between items-center bg-slate-50 font-bold text-slate-600">
+                    <span>Voter ID &amp; Registration Address</span>
+                    <span>Flag Match Reason</span>
+                  </div>
+                  <div className="p-3 flex justify-between items-center hover:bg-amber-50/50 transition-colors">
+                    <div>
+                      <strong className="text-slate-900 block font-bold">Voter #AGY-88412</strong>
+                      <span className="text-slate-500 font-mono">4812 Commercial Pkwy Ste 104</span>
+                    </div>
+                    <span className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded">UPS Store Mailbox #104</span>
+                  </div>
+                  <div className="p-3 flex justify-between items-center hover:bg-amber-50/50 transition-colors">
+                    <div>
+                      <strong className="text-slate-900 block font-bold">Voter #AGY-91204</strong>
+                      <span className="text-slate-500 font-mono">109 Highway 51 North Unit 12B</span>
+                    </div>
+                    <span className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded">Commercial Retail Strip</span>
+                  </div>
+                  <div className="p-3 flex justify-between items-center hover:bg-amber-50/50 transition-colors">
+                    <div>
+                      <strong className="text-slate-900 block font-bold">Voter #AGY-44910</strong>
+                      <span className="text-slate-500 font-mono">805 Main St PMB 402</span>
+                    </div>
+                    <span className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded">Private Mail Box (PMB)</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2 border-t border-border">
               <button 
