@@ -118,17 +118,15 @@ export function Navbar() {
         )}
       </header>
 
-      {/* Persistent Disclaimer Banner (Hidden on landing page to avoid grey bar above hero) */}
-      {pathname !== '/' && (
-        <div className="bg-slate-100 border-b border-border text-slate-700 px-6 py-2.5 text-xs md:text-sm font-medium flex items-center justify-between shadow-inner">
-          <div className="flex items-center gap-2 max-w-6xl mx-auto">
-            <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-            <span>
-              <strong className="font-bold text-slate-900">Architecture Notice:</strong> This execution engine processes all civic records 100% locally inside client memory. Zero citizen files are ever uploaded or transmitted.
-            </span>
-          </div>
+      {/* Persistent Disclaimer Banner */}
+      <div className="bg-slate-100 border-b border-border text-slate-700 px-6 py-2.5 text-xs md:text-sm font-medium flex items-center justify-between shadow-inner">
+        <div className="flex items-center gap-2 max-w-6xl mx-auto">
+          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
+          <span>
+            <strong className="font-bold text-slate-900">Architecture Notice:</strong> This execution engine processes all civic records 100% locally inside client memory. Zero citizen files are ever uploaded or transmitted.
+          </span>
         </div>
-      )}
+      </div>
     </>
   );
 }

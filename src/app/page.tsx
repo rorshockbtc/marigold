@@ -256,73 +256,77 @@ export default function MarketingHomePage() {
   return (
     <div className="pb-24 font-sans">
       {/* Full-Width Edge-to-Edge Hero Section */}
-      <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
-        {/* Optimized Layered Background Streams */}
-        {REGIONS.map((reg) => (
-          <RegionBackground 
-            key={reg.id} 
-            reg={reg} 
-            isActive={activeRegion === reg.id} 
-            isNext={nextRegion === reg.id} 
-          />
-        ))}
-        {/* Dual Scrim Overlays for Perfect Text Readability */}
-        <div className="absolute inset-0 bg-slate-950/30 pointer-events-none z-[2]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/15 to-slate-950 pointer-events-none z-[3]" />
-
-        {/* Top Badges */}
-        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-4">
-          <span className="bg-amber-400/20 text-amber-300 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-400/30 shadow-sm">
-            FY26 FEMA HSGP Compliant
-          </span>
-          <span className="bg-slate-800/80 text-slate-200 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-slate-600 shadow-sm">
-            Zero Cloud PII Exposure
-          </span>
-          <a 
-            href="https://github.com/rorshockbtc/marigold" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="bg-white text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider hover:bg-slate-200 transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <span>GitHub Open Source ↗</span>
-          </a>
+      <section className="w-full text-center py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
+        {/* Isolated Absolute Background Layers & Overlays */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+          {REGIONS.map((reg) => (
+            <RegionBackground 
+              key={reg.id} 
+              reg={reg} 
+              isActive={activeRegion === reg.id} 
+              isNext={nextRegion === reg.id} 
+            />
+          ))}
+          <div className="absolute inset-0 bg-slate-950/30 z-[2]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/15 to-slate-950 z-[3]" />
         </div>
 
-        {/* Main Heading */}
-        <h1 className="relative z-10 text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
-          Non-Partisan Civic Data Exploration
-        </h1>
-        
-        <p className="relative z-10 text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
-          Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
-        </p>
-
-        {/* Editorial Reflection & Literary Facet Display */}
-        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto flex flex-col items-center gap-3">
-          <div className="inline-flex items-center gap-2 bg-slate-900/90 backdrop-blur-md border border-amber-500/40 px-5 py-2 rounded-full text-xs sm:text-sm text-amber-300 font-serif italic tracking-wide shadow-xl transition-all duration-500">
-            <span>✨ {current.lyric}</span>
+        {/* Content Flow Container */}
+        <div className="relative z-10 space-y-8 max-w-6xl mx-auto">
+          {/* Top Badges */}
+          <div className="flex flex-wrap justify-center gap-3 mb-4">
+            <span className="bg-amber-400/20 text-amber-300 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-400/30 shadow-sm">
+              FY26 FEMA HSGP Compliant
+            </span>
+            <span className="bg-slate-800/80 text-slate-200 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-slate-600 shadow-sm">
+              Zero Cloud PII Exposure
+            </span>
+            <a 
+              href="https://github.com/rorshockbtc/marigold" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-white text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider hover:bg-slate-200 transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <span>GitHub Open Source ↗</span>
+            </a>
           </div>
-          <div className="bg-slate-950/80 backdrop-blur-md border border-slate-700/80 px-6 py-3 rounded-2xl text-xs sm:text-sm text-slate-300 font-normal leading-relaxed shadow-2xl max-w-2xl text-center transition-all duration-500">
-            {current.location}
+
+          {/* Main Heading */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+            Non-Partisan Civic Data Exploration
+          </h1>
+          
+          <p className="text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+            Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
+          </p>
+
+          {/* Editorial Reflection & Literary Facet Display */}
+          <div className="pt-4 pb-2 max-w-3xl mx-auto flex flex-col items-center gap-3">
+            <div className="inline-flex items-center gap-2 bg-slate-900/90 backdrop-blur-md border border-amber-500/40 px-5 py-2 rounded-full text-xs sm:text-sm text-amber-300 font-serif italic tracking-wide shadow-xl transition-all duration-500">
+              <span>✨ {current.lyric}</span>
+            </div>
+            <div className="bg-slate-950/80 backdrop-blur-md border border-slate-700/80 px-6 py-3 rounded-2xl text-xs sm:text-sm text-slate-300 font-normal leading-relaxed shadow-2xl max-w-2xl text-center transition-all duration-500">
+              {current.location}
+            </div>
           </div>
-        </div>
 
-        {/* Streamlined Action Buttons */}
-        <div className="relative z-10 pt-4 flex flex-wrap justify-center items-center gap-4">
-          <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
-            Try Public Sandbox →
-          </Link>
-          <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all">
-            Find Your Role Guide ↓
-          </a>
-        </div>
+          {/* Streamlined Action Buttons */}
+          <div className="pt-4 flex flex-wrap justify-center items-center gap-4">
+            <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
+              Try Public Sandbox →
+            </Link>
+            <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all">
+              Find Your Role Guide ↓
+            </a>
+          </div>
 
-        <div className="relative z-10 pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800/80 max-w-2xl mx-auto mt-8">
-          <span>100% Client-Side Memory</span>
-          <span>•</span>
-          <span>No PII Uploads</span>
-          <span>•</span>
-          <span>Wyoming LLC Built</span>
+          <div className="pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800/80 max-w-2xl mx-auto mt-8">
+            <span>100% Client-Side Memory</span>
+            <span>•</span>
+            <span>No PII Uploads</span>
+            <span>•</span>
+            <span>Wyoming LLC Built</span>
+          </div>
         </div>
       </section>
 
