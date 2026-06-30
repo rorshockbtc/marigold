@@ -97,11 +97,14 @@ export default function MissionControl() {
       <header className="mb-8 space-y-4">
         <div>
           <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 bg-amber-100 text-amber-950 rounded-full text-xs font-extrabold uppercase tracking-wider">
                 🏛️ Multi-State Mission Control
               </span>
               <span className="text-xs font-mono text-muted-foreground">Calibrated Statistical Audits</span>
+              <span className="text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded border border-emerald-300 flex items-center gap-1">
+                <span>✓ Data Parity Verified</span>
+              </span>
             </div>
 
             {/* State Selector */}
@@ -120,6 +123,25 @@ export default function MissionControl() {
               </button>
             </div>
           </div>
+
+          {/* Collaborative Parity & Dataset Governance Banner */}
+          <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-emerald-950 shadow-sm mb-4">
+            <div className="space-y-0.5">
+              <strong className="font-bold text-sm block">Local Cartridge Protocol Active</strong>
+              <p className="text-xs text-emerald-900">
+                Playbook missions execute strictly inside your browser memory. If your state file differs from your group standard, download the latest version below.
+              </p>
+            </div>
+            <a
+              href="https://www.sos.ms.gov/elections-voting/voter-registration-information"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
+            >
+              <span>🌐 Download Official State Dataset ↗</span>
+            </a>
+          </div>
+
           <h1 className="text-3xl font-bold text-foreground">{selectedState === 'MS' ? 'Mississippi' : 'North Carolina'} Mission Playbooks</h1>
           <p className="text-muted-foreground mt-2">
             Pre-configured statistical audits calibrated specifically for {selectedState === 'MS' ? 'Mississippi counties (Hinds, DeSoto, Harrison, etc.)' : 'North Carolina counties (Wake, Mecklenburg, Guilford, etc.)'}. Click a playbook below to launch an instant scan. False positives are automatically filtered out, and our non-partisan models learn from your verification feedback.

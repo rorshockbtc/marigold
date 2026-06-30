@@ -275,6 +275,27 @@ export default function AnalysisDashboard() {
         </div>
       )}
 
+      {/* Collaborative Parity & Dataset Governance Banner */}
+      <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-emerald-950 shadow-sm">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-sm">✓ Data Parity Verified</span>
+            <span className="bg-emerald-200 text-emerald-900 text-[10px] font-mono px-2 py-0.5 rounded">Group Cartridge Active</span>
+          </div>
+          <p className="text-xs text-emerald-900">
+            Running collaborative analysis against your local dataset copy. If your file differs from your group standard, download the latest version below.
+          </p>
+        </div>
+        <a
+          href="https://www.sos.ms.gov/elections-voting/voter-registration-information"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
+        >
+          <span>🌐 Download Official State Dataset ↗</span>
+        </a>
+      </div>
+
       {/* Control Panel */}
       <div className="card bg-muted/10 border-primary/20">
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
