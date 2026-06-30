@@ -9,24 +9,45 @@ import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
   const [anomalies, setAnomalies] = useState<AnomalyRecord[]>([]);
-  const [groupName, setGroupName] = useState("MSFE Group (Mississippi Fair Elections)");
+  const [groupName, setGroupName] = useState("National Civic Data Sandbox (Multi-State Jurisdiction)");
+  const [isEditingGroup, setIsEditingGroup] = useState(false);
+  const [customGroupInput, setCustomGroupInput] = useState("");
   const [isAdmin, setIsAdmin] = useState(true);
-  const [transferEmail, setTransferEmail] = useState("");
-  const [newGroupNameInput, setNewGroupNameInput] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [teamMembers, setTeamMembers] = useState([
-    { email: "kyle@msfe.org", role: "👑 Group Admin", status: "Active" },
-    { email: "dad@msfe.org", role: "🛡️ Mission Lead", status: "Active" },
-    { email: "volunteer@msfe.org", role: "👤 Reviewer", status: "Active" }
+    { email: "lead.investigator@civicdata.org", role: "👑 Group Admin", status: "Active" },
+    { email: "senior.auditor@civicdata.org", role: "🛡️ Mission Lead", status: "Active" },
+    { email: "field.reviewer@civicdata.org", role: "👤 Reviewer", status: "Active" }
   ]);
 
   useEffect(() => {
     getAnomalies().then(setAnomalies);
+    // Load custom group name if saved in localStorage
+    const savedGroup = localStorage.getItem("marigold_active_group");
+    if (savedGroup) {
+      setGroupName(savedGroup);
+    }
   }, []);
+
+  // Sync user email into team members once loaded
+  useEffect(() => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      setTeamMembers(prev => [
+        { email: user.primaryEmailAddress!.emailAddress, role: "👑 Group Admin", status: "Active" },
+        ...prev.slice(1)
+      ]);
+    }
+  }, [user]);
 
   const handleStatusChange = async (id: string, newStatus: "pending" | "verified" | "false_positive") => {
     await updateAnomalyStatus(id, newStatus);
     setAnomalies(anomalies.map(a => a.id === id ? { ...a, status: newStatus } : a));
+  };
+
+  const handleSaveGroup = (newName: string) => {
+    setGroupName(newName);
+    localStorage.setItem("marigold_active_group", newName);
+    setIsEditingGroup(false);
   };
 
   if (!isLoaded) {
@@ -43,31 +64,82 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-4 px-4">
       {/* Group Welcome Header */}
       <div className="bg-gradient-to-r from-primary to-slate-800 text-white p-8 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-slate-700">
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           <div className="flex items-center gap-2">
             <span className="bg-accent text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
               Active Workspace
             </span>
             <span className="text-xs font-mono text-slate-300">Zero-PII Client Memory</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">{groupName}</h1>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-extrabold tracking-tight">{groupName}</h1>
+            <button 
+              onClick={() => {
+                setCustomGroupInput(groupName);
+                setIsEditingGroup(!isEditingGroup);
+              }}
+              className="bg-slate-700/80 hover:bg-slate-600 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 transition-colors flex items-center gap-1.5 shadow"
+            >
+              <span>⚙️ Switch Jurisdiction / Group</span>
+            </button>
+          </div>
+
+          {isEditingGroup && (
+            <div className="bg-slate-900/95 p-4 rounded-xl border border-amber-500/50 mt-3 space-y-3 max-w-xl shadow-xl animate-in fade-in duration-200">
+              <label className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Select Preset Jurisdiction or Enter Custom Group Name:</label>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {[
+                  "National Civic Data Sandbox (Multi-State)",
+                  "Mississippi Fair Elections (MSFE Pilot)",
+                  "Wyoming Election Audit Taskforce",
+                  "Ohio Voter Roll Audit Group",
+                  "Pennsylvania Integrity Network"
+                ].map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => handleSaveGroup(preset)}
+                    className="bg-slate-800 hover:bg-amber-600 text-slate-200 hover:text-white px-2.5 py-1.5 rounded border border-slate-700 font-medium transition-colors"
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 pt-1">
+                <input
+                  type="text"
+                  value={customGroupInput}
+                  onChange={(e) => setCustomGroupInput(e.target.value)}
+                  placeholder="Enter your custom group name..."
+                  className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-amber-500 outline-none"
+                />
+                <button
+                  onClick={() => handleSaveGroup(customGroupInput || "National Civic Data Sandbox")}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
+
           <p className="text-slate-300 text-sm">
             Signed in as <strong className="text-white">{displayName}</strong> ({isAdmin ? "👑 Group Administrator" : "Standard Member"})
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 self-start md:self-center">
           <Link href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
             <span>⚡ Launch Pro Mode</span>
           </Link>
           <Link href="/playbooks" className="bg-slate-700 hover:bg-slate-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm">
-            Browse MS Playbooks
+            Browse Mission Playbooks
           </Link>
         </div>
       </div>
 
       {/* Interactive Visual Analytics Hub */}
-      <ExecutiveVisualCanvas />
+      <ExecutiveVisualCanvas userName={displayName} />
 
       {/* Admin Management Section */}
       {isAdmin && (
@@ -75,9 +147,9 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center border-b border-amber-200 pb-3">
               <div>
                 <h3 className="font-bold text-amber-950 flex items-center gap-2 text-lg">
-                  👑 MSFE Shared Missions & Group Controls
+                  👑 Shared Missions &amp; Group Controls
                 </h3>
-                <p className="text-xs text-amber-800 mt-0.5">Invite team members (like your Dad or family) to collaborate on shared missions across jurisdictions.</p>
+                <p className="text-xs text-amber-800 mt-0.5">Invite team members or family auditors to collaborate on shared missions across your selected jurisdiction.</p>
               </div>
               <span className="text-xs bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded">Organization Admin</span>
             </div>
@@ -86,7 +158,7 @@ export default function DashboardPage() {
               {/* Invite Box */}
               <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm space-y-3 flex flex-col justify-between">
                 <div>
-                  <label className="font-bold text-slate-800 text-sm block mb-1">Invite Member to MSFE Group</label>
+                  <label className="font-bold text-slate-800 text-sm block mb-1">Invite Member to Group</label>
                   <p className="text-muted-foreground text-xs">Invited members gain instant access to your shared Mission Playbooks and investigation checklists.</p>
                 </div>
                 <div className="flex gap-2 pt-2">
@@ -94,7 +166,7 @@ export default function DashboardPage() {
                     type="email" 
                     value={inviteEmail} 
                     onChange={(e) => setInviteEmail(e.target.value)} 
-                    placeholder="dad@example.com"
+                    placeholder="teammate@example.org"
                     className="flex-1 px-3 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500 font-medium text-slate-800"
                   />
                   <button 
