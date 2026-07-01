@@ -115,16 +115,21 @@ export function useDataQuery() {
                 if (existing) {
                   existing.count++;
                 } else {
-                  // Keep only essential fields to keep RAM usage flat under ~15MB
+                  const first = extractField(r, ['firstname', 'first'], '');
+                  const last = extractField(r, ['lastname', 'last'], '');
+                  const fullName = extractField(r, ['fullname', 'votername', 'name', 'firstlastname'], '') || [first, last].filter(Boolean).join(' ') || 'Unlisted Resident';
+                  
                   addressCounts.set(addr, {
                     count: 1,
                     sample: {
                       voter_id: extractField(r, ['voterid', 'registrationnumber', 'sosid', 'voterregnum', 'idnum', 'voter', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
+                      name: fullName,
                       address: addr,
                       city: extractField(r, ['residentialcity', 'residencecity', 'cityname', 'city'], 'Unknown City'),
                       state: extractField(r, ['residentialstate', 'residencestate', 'state'], 'MS'),
                       zip: extractField(r, ['residentialzip', 'residencezip', 'zipcode', 'postalcode', 'zip'], 'N/A'),
-                      county: rCounty
+                      county: rCounty,
+                      raw: typeof r === 'object' && r !== null ? { ...r } : {}
                     }
                   });
                 }
@@ -139,6 +144,7 @@ export function useDataQuery() {
                 if (count >= threshold) {
                   results.push({
                     id: sample.voter_id,
+                    name: sample.name,
                     address: addr,
                     city: sample.city,
                     state: sample.state,
@@ -146,7 +152,8 @@ export function useDataQuery() {
                     county: sample.county,
                     occupant_count: count,
                     risk_level: count > 20 ? 'CRITICAL' : 'HIGH',
-                    details: `${count} distinct voter IDs registered to this single residential location.`
+                    details: `${count} distinct voter IDs registered to this single residential location.`,
+                    raw: sample.raw
                   });
                 }
               }
@@ -159,6 +166,7 @@ export function useDataQuery() {
                 if (isDormLike) {
                   results.push({
                     id: sample.voter_id,
+                    name: sample.name,
                     address: addr,
                     city: sample.city,
                     state: sample.state,
@@ -166,7 +174,8 @@ export function useDataQuery() {
                     county: sample.county,
                     occupant_count: count,
                     risk_level: 'HIGH',
-                    details: `${count} residents without unit/room numbers. Potential unsegmented campus dorm.`
+                    details: `${count} residents without unit/room numbers. Potential unsegmented campus dorm.`,
+                    raw: sample.raw
                   });
                 }
               }
@@ -176,6 +185,7 @@ export function useDataQuery() {
                 if (upper.includes('P O BOX') || upper.includes('PO BOX') || upper.includes('P.O. BOX')) {
                   results.push({
                     id: sample.voter_id,
+                    name: sample.name,
                     address: addr,
                     city: sample.city,
                     state: sample.state,
@@ -183,7 +193,8 @@ export function useDataQuery() {
                     county: sample.county,
                     occupant_count: count,
                     risk_level: 'CRITICAL',
-                    details: `Commercial / P.O. Box address listed as primary residential domicile.`
+                    details: `Commercial / P.O. Box address listed as primary residential domicile.`,
+                    raw: sample.raw
                   });
                 }
               }
@@ -194,6 +205,7 @@ export function useDataQuery() {
                 if (count > 1) {
                   results.push({
                     id: sample.voter_id,
+                    name: sample.name,
                     address: addr,
                     city: sample.city,
                     state: sample.state,
@@ -201,7 +213,8 @@ export function useDataQuery() {
                     county: sample.county,
                     occupant_count: count,
                     risk_level: 'MEDIUM',
-                    details: `${count} residents registered at this address.`
+                    details: `${count} residents registered at this address.`,
+                    raw: sample.raw
                   });
                 }
               }

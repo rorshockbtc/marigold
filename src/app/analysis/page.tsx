@@ -39,6 +39,7 @@ export default function AnalysisDashboard() {
   // New Interactive Controls & Cryptographic SHA-256 State
   const [sortOrder, setSortOrder] = useState<'default' | 'az' | 'za' | 'severity'>('default');
   const [selectedNoteRecord, setSelectedNoteRecord] = useState<any | null>(null);
+  const [selectedInspectRecord, setSelectedInspectRecord] = useState<any | null>(null);
   const [expandedMethodology, setExpandedMethodology] = useState<string | null>(null);
   const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   
@@ -302,56 +303,86 @@ export default function AnalysisDashboard() {
       return 0;
     });
 
-    const keys = Object.keys(results[0]);
     return (
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-border bg-muted/50">
-            {keys.map(k => (
-              <th key={k} className="p-3 text-sm font-semibold text-muted-foreground capitalize">
-                {k.replace(/_/g, ' ')}
-              </th>
-            ))}
-            <th className="p-3 text-sm font-semibold text-muted-foreground">Category / Notes</th>
-            <th className="p-3 text-sm font-semibold text-muted-foreground">Peer Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {sortedResults.map((r, i) => {
-            const exclusionValue = r.address || r.address1 || r.date_registered || '';
-            return (
-              <tr key={i} className="hover:bg-muted/20 transition-colors">
-                {keys.map(k => (
-                  <td key={k} className="p-3 text-sm whitespace-nowrap">
-                    {k === 'occupant_count' || k === 'registrations' ? <span className="font-bold">{r[k]}</span> : r[k]}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-border bg-muted/50 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <th className="p-3.5">Citizen Identity & Domicile</th>
+              <th className="p-3.5">Signal Severity</th>
+              <th className="p-3.5">Anomaly Diagnosis</th>
+              <th className="p-3.5 text-right">Triage Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {sortedResults.map((r, i) => {
+              const exclusionValue = r.address || r.address1 || r.date_registered || '';
+              const occ = r.occupant_count || r.registrations || 1;
+              const isCritical = occ > 20 || r.risk_level === 'CRITICAL';
+              return (
+                <tr 
+                  key={i} 
+                  onClick={() => setSelectedInspectRecord(r)}
+                  className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-muted/30'}`}
+                >
+                  <td className="p-3.5 space-y-1 max-w-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-sm">{r.name || 'Resident Record'}</span>
+                      <span className="text-[11px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground border border-border">ID: {r.id || 'N/A'}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground font-medium truncate">
+                      📍 {r.address || r.address1 || 'Unknown Address'}
+                    </div>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <span>{r.city || 'City'}, {r.state || 'MS'} {r.zip || ''}</span>
+                      <span>•</span>
+                      <span className="font-semibold text-primary">{r.county || 'Statewide'} County</span>
+                    </div>
                   </td>
-                ))}
-                <td className="p-3 text-sm">
-                  <span className={`px-2 py-1 rounded-full whitespace-nowrap ${categorizeAddress(r.address || r.address1 || "") === "⚠️ Review Recommended" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>
-                    {categorizeAddress(r.address || r.address1 || "")}
-                  </span>
-                </td>
-                <td className="p-3 text-sm flex items-center gap-2">
-                  <button 
-                    onClick={() => setSelectedNoteRecord(r)}
-                    className="p-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 font-bold transition-colors whitespace-nowrap flex items-center gap-1 text-xs border border-amber-500/30 shadow-sm"
-                    title="Attach encrypted SHA-256 peer note"
-                  >
-                    🔐 Note
-                  </button>
-                  <button 
-                    onClick={() => excludeRecord(exclusionValue)}
-                    className="p-1 rounded-md hover:bg-red-100 text-muted-foreground hover:text-red-600 transition-colors"
-                    title="Mark as False Positive (Will hide this from future runs)"
-                  >
-                    👎 Exclude
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <td className="p-3.5 whitespace-nowrap">
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-black shadow-sm ${isCritical ? 'bg-red-600 text-white animate-pulse' : 'bg-amber-100 text-amber-900 border border-amber-300'}`}>
+                        {occ} Residents
+                      </span>
+                      <span className="text-[10px] font-bold tracking-wide uppercase text-muted-foreground">
+                        {r.risk_level || (isCritical ? 'CRITICAL RISK' : 'HIGH DENSITY')}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="p-3.5 max-w-md text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <p className="font-medium">{r.details || categorizeAddress(r.address || r.address1 || "")}</p>
+                  </td>
+                  <td className="p-3.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button 
+                        onClick={() => setSelectedInspectRecord(r)}
+                        className="px-2.5 py-1 rounded-md bg-primary/10 hover:bg-primary/20 text-primary font-bold transition-all text-xs border border-primary/30 flex items-center gap-1 shadow-sm"
+                        title="Open MVC Side Sheet Controller"
+                      >
+                        <span>🔍 Inspect</span>
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNoteRecord(r)}
+                        className="p-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold transition-colors text-xs border border-amber-500/30"
+                        title="Attach encrypted peer note"
+                      >
+                        🔐 Note
+                      </button>
+                      <button 
+                        onClick={() => excludeRecord(exclusionValue)}
+                        className="p-1.5 rounded-md hover:bg-red-100 text-muted-foreground hover:text-red-600 transition-colors text-xs"
+                        title="Exclude false positive"
+                      >
+                        👎
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     );
   };
 
@@ -969,6 +1000,93 @@ export default function AnalysisDashboard() {
               ✅ Thank you! The Predicted Accuracy score has been updated for the entire organization based on your feedback.
             </div>
           )}
+        </div>
+      )}
+
+      {/* Persistent MVC Side Sheet Controller */}
+      {selectedInspectRecord && (
+        <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-slate-900 border-l border-border shadow-2xl z-50 flex flex-col animate-slideLeft">
+          {/* Side Sheet Header */}
+          <div className="p-4 border-b border-border bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🔍</span>
+              <div>
+                <h3 className="font-black text-sm text-foreground uppercase tracking-wider">MVC Anomaly Controller</h3>
+                <p className="text-[11px] text-muted-foreground">Persistent Forensic Inspection Drawer</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setSelectedInspectRecord(null)}
+              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors font-bold text-sm"
+              title="Close Controller Drawer"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Anomaly Diagnosis Section (Top Priority) */}
+          <div className="p-4 bg-amber-500/10 border-b border-amber-500/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase text-amber-700 dark:text-amber-400 tracking-wide flex items-center gap-1.5">
+                <span>🚨 Primary Anomaly Diagnosis</span>
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-800 dark:text-amber-300">
+                {selectedInspectRecord.risk_level || 'HIGH DENSITY'}
+              </span>
+            </div>
+            <p className="text-xs text-amber-950 dark:text-amber-200 font-medium leading-relaxed">
+              {selectedInspectRecord.details || categorizeAddress(selectedInspectRecord.address || selectedInspectRecord.address1 || "")}
+            </p>
+            <div className="pt-1 flex items-center gap-2">
+              <button
+                onClick={() => setSelectedNoteRecord(selectedInspectRecord)}
+                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors flex items-center gap-1 shadow-sm"
+              >
+                <span>🔐 Attach Encrypted Peer Note</span>
+              </button>
+              <button
+                onClick={() => {
+                  excludeRecord(selectedInspectRecord.address || selectedInspectRecord.address1 || "");
+                  setSelectedInspectRecord(null);
+                }}
+                className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 border border-red-300 dark:border-red-800 font-bold rounded text-xs transition-colors"
+              >
+                <span>👎 Mark False Positive</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Citizen & Location Blueprint */}
+          <div className="p-4 border-b border-border bg-muted/20 space-y-1.5">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Citizen & Domicile Summary</h4>
+            <div className="text-sm font-bold text-foreground">{selectedInspectRecord.name || 'Resident Record'}</div>
+            <div className="text-xs text-muted-foreground font-mono">ID: {selectedInspectRecord.id || 'N/A'}</div>
+            <div className="text-xs text-slate-700 dark:text-slate-300 font-medium pt-1">
+              📍 {selectedInspectRecord.address || selectedInspectRecord.address1 || 'Unknown Address'}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {selectedInspectRecord.city || 'City'}, {selectedInspectRecord.state || 'MS'} {selectedInspectRecord.zip || ''} ({selectedInspectRecord.county || 'Statewide'} County)
+            </div>
+          </div>
+
+          {/* Raw Supporting Data Grid */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">All Extracted Attributes & Raw Data</h4>
+            {selectedInspectRecord.raw && Object.keys(selectedInspectRecord.raw).length > 0 ? (
+              <div className="grid grid-cols-1 gap-2">
+                {Object.entries(selectedInspectRecord.raw).map(([key, value]) => (
+                  <div key={key} className="bg-muted/40 p-2 rounded border border-border/60 flex flex-col gap-0.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">{key.replace(/_/g, ' ')}</span>
+                    <span className="text-xs font-mono text-foreground break-all">{String(value !== null && value !== undefined ? value : '—')}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-muted-foreground italic bg-muted/20 p-4 rounded text-center">
+                Raw column attributes are preserved during direct chunk parsing. Re-scan your Data Map if additional fields are missing.
+              </div>
+            )}
+          </div>
         </div>
       )}
 
