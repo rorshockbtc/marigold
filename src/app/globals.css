@@ -17,7 +17,7 @@
   --accent-foreground: #FFFFFF;
   
   --muted: #E2E8F0;
-  --muted-foreground: #475569;
+  --muted-foreground: #1E293B; /* Slate 800 - High Contrast for Accessibility */
   
   --border: #CBD5E1;
   --input: #FFFFFF;

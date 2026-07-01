@@ -304,86 +304,90 @@ export default function AnalysisDashboard() {
     });
 
     return (
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto border-2 border-slate-300 dark:border-slate-700 rounded-xl shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-border bg-muted/50 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              <th className="p-3.5">Citizen Identity & Domicile</th>
-              <th className="p-3.5">Signal Severity</th>
-              <th className="p-3.5">Anomaly Diagnosis</th>
-              <th className="p-3.5 text-right">Triage Actions</th>
+            <tr className="border-b-2 border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-900 text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+              <th className="p-4">1. Location / Cluster Summary</th>
+              <th className="p-4">2. Signal Classification</th>
+              <th className="p-4">3. Plain-English Synthesis</th>
+              <th className="p-4 text-right">4. Verification CTA</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
             {sortedResults.map((r, i) => {
               const exclusionValue = r.address || r.address1 || r.date_registered || '';
-              const occ = r.occupant_count || r.registrations || 1;
+              const occ = Number(r.occupant_count || r.registrations || 1);
+              const isCluster = occ > 1;
               const isCritical = occ > 20 || r.risk_level === 'CRITICAL';
               return (
                 <tr 
                   key={i} 
                   onClick={() => setSelectedInspectRecord(r)}
-                  className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-muted/30'}`}
+                  className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 dark:hover:bg-slate-900/60'}`}
                 >
-                  <td className="p-3.5 space-y-1.5 max-w-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-slate-900 dark:text-white text-base">{r.name || 'Resident Record'}</span>
-                      <span className="text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded font-bold text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">ID: {r.id || 'N/A'}</span>
+                  <td className="p-4 space-y-1.5 max-w-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-black text-slate-950 dark:text-white text-base">
+                        {isCluster ? `🏠 Address Cluster` : (r.name || 'Resident Record')}
+                      </span>
+                      {isCluster ? (
+                        <span className="text-[11px] font-mono bg-amber-100 dark:bg-amber-950/80 px-2.5 py-0.5 rounded-md font-black text-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-700">
+                          🏢 Multi-Voter Domicile ({occ} Occupants)
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-extrabold text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600">
+                          REC-ID: {r.id || 'LOCAL-1'}
+                        </span>
+                      )}
                     </div>
-                    <div className="text-sm text-slate-900 dark:text-slate-100 font-bold truncate">
-                      📍 {r.address || r.address1 || 'Unknown Address'}
+                    <div className="text-sm text-slate-950 dark:text-white font-extrabold truncate">
+                      📍 {r.address || r.address1 || 'Unknown Street Address'}
                     </div>
-                    <div className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
+                    <div className="text-xs text-slate-800 dark:text-slate-200 font-bold flex items-center gap-1.5">
                       <span>{r.city || 'City'}, {r.state || 'MS'} {r.zip || ''}</span>
                       <span>•</span>
-                      <span className="font-extrabold text-primary">{r.county || 'Statewide'} County</span>
+                      <span className="font-black text-amber-800 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded">{r.county || 'Statewide'} County</span>
                     </div>
                   </td>
-                  <td className="p-3.5 whitespace-nowrap">
-                    <div className="flex flex-col gap-1 items-start">
-                      <span className={`px-3 py-1 rounded-full text-xs font-black shadow-sm ${isCritical ? 'bg-red-600 text-white animate-pulse' : 'bg-amber-100 text-amber-950 border border-amber-400'}`}>
-                        {occ} Residents
+                  <td className="p-4 whitespace-nowrap align-top">
+                    <div className="flex flex-col gap-1.5 items-start mt-0.5">
+                      <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-red-600 text-white border border-red-700 animate-pulse' : 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950'}`}>
+                        {occ} Total Registered
                       </span>
-                      <span className="text-xs font-extrabold tracking-wide uppercase text-slate-800 dark:text-slate-200">
-                        {r.risk_level || (isCritical ? 'CRITICAL RISK' : 'HIGH DENSITY')}
+                      <span className="text-[11px] font-black tracking-wider uppercase text-slate-900 dark:text-slate-100 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">
+                        {r.risk_level || (isCritical ? 'CRITICAL SURGE FLAG' : 'HIGH DENSITY FLAG')}
                       </span>
                     </div>
                   </td>
-                  <td className="p-3.5 max-w-md text-sm font-semibold text-slate-900 dark:text-slate-100 leading-relaxed">
-                    <p>{r.details || categorizeAddress(r.address || r.address1 || "")}</p>
+                  <td className="p-4 max-w-md text-sm font-bold text-slate-900 dark:text-slate-100 leading-relaxed align-top">
+                    <p className="mt-0.5">{r.details || `Forensic check triggered: ${occ} distinct voter registrations recorded at this single physical address.`}</p>
                   </td>
-                  <td className="p-3.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-1.5">
+                  <td className="p-4 text-right whitespace-nowrap align-top" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-2 mt-0.5">
                       <button 
                         onClick={() => setSelectedInspectRecord(r)}
-                        className="px-3 py-1.5 rounded-lg bg-primary text-white font-extrabold transition-all text-xs flex items-center gap-1 shadow hover:bg-primary/90"
-                        title="Open MVC Side Sheet Controller"
+                        className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-black transition-all text-xs flex items-center gap-1 shadow-md border border-slate-700 dark:border-slate-300"
+                        title="Open Inline Forensic Controller"
                       >
-                        <span>🔍 Inspect</span>
+                        <span>🔍 Review Findings</span>
                       </button>
                       <button 
                         onClick={() => {
                           navigator.clipboard.writeText(String(r.address || r.address1 || ""));
                           alert("Address copied to clipboard! Paste into a new browser tab or mapping app to look up without sharing tracking referrers.");
                         }}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-all text-xs border border-slate-300 dark:border-slate-600 flex items-center gap-1"
+                        className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 font-extrabold transition-all text-xs border border-slate-300 dark:border-slate-600 flex items-center gap-1 shadow-sm"
                         title="Copy address to clipboard for private external lookup"
                       >
                         <span>📋 Copy</span>
                       </button>
                       <button 
                         onClick={() => setSelectedNoteRecord(r)}
-                        className="px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold transition-colors text-xs border border-amber-500/30"
+                        className="px-2.5 py-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 font-black transition-colors text-xs border border-amber-500/40 shadow-sm"
                         title="Attach volunteer field note"
                       >
                         📝 Note
-                      </button>
-                      <button 
-                        onClick={() => excludeRecord(exclusionValue)}
-                        className="p-1.5 rounded-lg hover:bg-red-100 text-slate-600 hover:text-red-600 transition-colors text-xs font-bold"
-                        title="Exclude false positive"
-                      >
-                        👎
                       </button>
                     </div>
                   </td>
