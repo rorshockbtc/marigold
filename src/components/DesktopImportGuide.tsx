@@ -37,13 +37,19 @@ export function DesktopImportGuide() {
               onClick={() => setActiveTab('numbers')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${activeTab === 'numbers' ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-700 border border-amber-200'}`}
             >
-              🍏 Apple Numbers (Mac)
+              🍏 Apple Numbers
             </button>
             <button
               onClick={() => setActiveTab('sheets')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${activeTab === 'sheets' ? 'bg-amber-600 text-white shadow' : 'bg-white text-slate-700 border border-amber-200'}`}
             >
               🌐 Google Sheets
+            </button>
+            <button
+              onClick={() => setActiveTab('shards' as any)}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${activeTab === ('shards' as any) ? 'bg-purple-700 text-white shadow' : 'bg-white text-slate-700 border border-amber-200'}`}
+            >
+              📦 Multi-Part Shard Storage &amp; Zip Archiving
             </button>
           </div>
 
@@ -82,6 +88,28 @@ export function DesktopImportGuide() {
                 <li>In the top menu, click <strong>File → Import</strong>.</li>
                 <li>Go to the <strong>Browse / Import</strong> tab inside Google Sheets and select your downloaded file from your computer.</li>
                 <li>Leave the settings as default and click <strong>Import Data</strong>. You can now explore and filter your records locally or online!</li>
+              </ol>
+            </div>
+          )}
+
+          {(activeTab as any) === 'shards' && (
+            <div className="text-xs text-slate-800 space-y-2.5 bg-white p-4 rounded-xl border border-purple-200 leading-relaxed">
+              <h5 className="font-bold text-purple-900 text-sm flex items-center gap-1.5">
+                <span>📦</span> Multi-Part Shard Storage, Naming Rules &amp; Zip Archiving
+              </h5>
+              <p className="text-slate-700">
+                When you split a massive dataset into multiple chunk files (e.g. <code>part-01.csv</code>, <code>part-02.csv</code>), follow these guidelines to keep your data organized and ready for instant re-import:
+              </p>
+              <ol className="list-decimal list-inside space-y-2 ml-1 font-medium text-slate-800">
+                <li>
+                  <strong>Dedicated Folder Storage:</strong> Save all downloaded shard files into a single dedicated folder on your computer (for example: <code>Desktop / Marigold_Voter_Roll_Shards /</code>). Do not leave them loose in your Downloads folder.
+                </li>
+                <li>
+                  <strong>Do Not Rename Shards:</strong> Keep the exact generated file names (e.g. <code>voter_file_part_1.csv</code>, <code>voter_file_part_2.csv</code>). The Marigold ingestion pipeline expects exact sequence numbers so it can stitch rows together seamlessly in numerical order.
+                </li>
+                <li>
+                  <strong>Zip Archiving &amp; Backup:</strong> To securely archive or transfer your split dataset to another computer or team member, right-click your shard folder and select <strong>Compress to ZIP file</strong>. When re-loading into Marigold on another device, simply unzip the folder or highlight all unzipped CSV files simultaneously inside the file selector.
+                </li>
               </ol>
             </div>
           )}
