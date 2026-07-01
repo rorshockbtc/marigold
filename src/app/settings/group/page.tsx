@@ -253,6 +253,16 @@ export default function GroupAdminSettingsPage() {
 
           {/* Active Roster Table */}
           <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
+            <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl text-xs text-emerald-950 flex items-start gap-3">
+              <span className="text-base shrink-0">💡</span>
+              <div className="space-y-1">
+                <strong className="font-bold block text-emerald-900">Organization Data Ingestion Policy</strong>
+                <p className="text-emerald-800 leading-relaxed">
+                  To maintain strict compliance with state privacy statutes, all group members must stream and chunk raw voter rolls locally on their individual devices using the <Link href="/data-prep" className="underline font-bold">Data Chunking Studio</Link>. Only zero-PII statistical frequency summaries (Cartridges) synchronize across group accounts.
+                </p>
+              </div>
+            </div>
+
             <div className="flex justify-between items-center border-b border-border pb-3">
               <div>
                 <h3 className="font-bold text-lg text-primary">👥 Active Group Roster ({roster.length})</h3>

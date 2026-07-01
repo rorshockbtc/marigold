@@ -383,23 +383,28 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-          {/* Step 1: Connect File */}
-          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-amber-500/50 transition-all">
+          {/* Step 1: Link & Stream File */}
+          <div className="bg-slate-800/80 p-5 rounded-xl border border-emerald-500/40 space-y-3 flex flex-col justify-between hover:border-emerald-500 transition-all shadow-lg">
             <div className="space-y-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center text-sm">1</div>
-              <h4 className="font-bold text-white text-base">Connect Local Roll File</h4>
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm">1</div>
+              <h4 className="font-bold text-white text-base">Link &amp; Stream Local Shard</h4>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Select one or more official CSV, TXT, TSV, or DAT voter files (e.g. MS weekly split shards). Parsed strictly inside browser RAM—no records leave your device.
+                Link your raw voter file (CSV/TXT). Our browser Web Worker streams and chunks your dataset locally while you sit and watch—guaranteed 100% air-gapped data safety.
               </p>
             </div>
-            <div className="space-y-2">
-              <label className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg shadow cursor-pointer transition-colors text-xs">
-                <span>📂 Select File(s) Here</span>
-                <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => handleStageFiles(e, false)} className="hidden" />
-              </label>
-              <Link href="/data-prep" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-lg shadow transition-colors text-xs">
-                📁 Open Chunking Studio →
+            <div className="space-y-2.5 pt-1">
+              <Link href="/data-prep" className="w-full text-center inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition-colors text-xs flex items-center justify-center gap-1.5">
+                <span>🚀 Launch Data Chunking Studio →</span>
               </Link>
+              <details className="text-[11px] text-slate-400 pt-1 border-t border-slate-700/60">
+                <summary className="cursor-pointer hover:text-amber-300 transition-colors font-mono">Deprecated Fallback: Direct Sandbox Load</summary>
+                <div className="pt-2">
+                  <label className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold px-3 py-2 rounded-lg shadow cursor-pointer transition-colors text-xs">
+                    <span>📂 Direct RAM Buffer Load (Small Files Only)</span>
+                    <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => handleStageFiles(e, false)} className="hidden" />
+                  </label>
+                </div>
+              </details>
             </div>
           </div>
 

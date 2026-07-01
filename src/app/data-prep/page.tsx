@@ -65,17 +65,17 @@ export default function DataPrepPage() {
           onDrop={handleFileDrop}
         >
           <div className="text-4xl mb-4">📁</div>
-          <h3 className="text-xl font-bold mb-2">Drag and drop your massive CSV here</h3>
-          <p className="text-muted-foreground mb-6">or click below to browse your computer.</p>
+          <h3 className="text-xl font-bold mb-2">Link &amp; Stream Local Voter Roll File</h3>
+          <p className="text-muted-foreground mb-6">Select your raw CSV/TXT file. Our browser Web Worker will stream and chunk rows locally into memory—0 records leave your machine.</p>
           <input 
             type="file" 
-            accept=".csv" 
+            accept=".csv,.txt,.tsv" 
             className="hidden" 
             id="csv-upload" 
             onChange={handleFileSelect} 
           />
-          <label htmlFor="csv-upload" className="btn-primary cursor-pointer inline-block">
-            Select File
+          <label htmlFor="csv-upload" className="btn-primary cursor-pointer inline-block px-8 py-3 text-base shadow">
+            📂 Select File to Stream &amp; Chunk
           </label>
         </div>
       )}
@@ -223,6 +223,21 @@ export default function DataPrepPage() {
                     </a>
                   </div>
                 ))}
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-300 p-5 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                  <strong className="text-sm text-emerald-950 font-bold block">✓ Local IndexedDB Cache Populated</strong>
+                  <p className="text-xs text-emerald-800">Your chunked rows are now ready for immediate high-speed traversal in local browser memory.</p>
+                </div>
+                <div className="flex gap-3 shrink-0">
+                  <a href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition-colors whitespace-nowrap">
+                    ⚡ Launch Pro Mode Analytics →
+                  </a>
+                  <a href="/dashboard" className="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-4 py-2.5 rounded-lg border border-slate-300 transition-colors whitespace-nowrap">
+                    📊 View Dashboard Hub
+                  </a>
+                </div>
               </div>
 
               <DesktopImportGuide />
