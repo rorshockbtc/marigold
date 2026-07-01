@@ -61,7 +61,7 @@ async function exportData(config: ExportConfig) {
     const totalRows = await countRows(db);
 
     if (totalRows === 0) {
-      self.postMessage({ type: 'error', message: 'No data to export' } as ExportError);
+      self.postMessage({ type: 'error', message: 'No local data found to export' } as ExportError);
       db.close();
       return;
     }
@@ -126,7 +126,7 @@ async function exportData(config: ExportConfig) {
     };
 
     cursorRequest.onerror = () => {
-      self.postMessage({ type: 'error', message: 'Failed to read data' } as ExportError);
+      self.postMessage({ type: 'error', message: 'Failed to read data from local database' } as ExportError);
       db.close();
     };
   } catch (error) {

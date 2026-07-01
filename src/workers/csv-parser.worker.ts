@@ -85,7 +85,7 @@ self.onmessage = async (e: MessageEvent) => {
           hasError = true;
           self.postMessage({
             type: 'error',
-            message: err.message || 'Failed to store chunk',
+            message: err.message || 'Failed to store chunk in local database',
           } as ParseError);
           parser.abort();
         }
@@ -110,7 +110,7 @@ self.onmessage = async (e: MessageEvent) => {
   } catch (error) {
     self.postMessage({
       type: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: error instanceof Error ? error.message : 'Unknown processing error',
     } as ParseError);
   }
 };
