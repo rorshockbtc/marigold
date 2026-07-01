@@ -22,6 +22,7 @@ function extractField(row: Record<string, any>, keywords: string[], fallback = '
   }
   for (const kw of keywords) {
     const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanKw.length <= 3) continue;
     for (const key of keys) {
       const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (cleanKey.includes(cleanKw) || cleanKw.includes(cleanKey)) {
@@ -122,7 +123,7 @@ export function useDataQuery() {
                   addressCounts.set(addr, {
                     count: 1,
                     sample: {
-                      voter_id: extractField(r, ['voterid', 'registrationnumber', 'sosid', 'voterregnum', 'idnum', 'voter', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
+                      voter_id: extractField(r, ['voterregistrationnumber', 'registrationnumber', 'sosvoterid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voterid'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
                       name: fullName,
                       address: addr,
                       city: extractField(r, ['residentialcity', 'residencecity', 'cityname', 'city'], 'Unknown City'),

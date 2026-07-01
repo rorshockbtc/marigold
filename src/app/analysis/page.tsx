@@ -325,52 +325,62 @@ export default function AnalysisDashboard() {
                   onClick={() => setSelectedInspectRecord(r)}
                   className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-muted/30'}`}
                 >
-                  <td className="p-3.5 space-y-1 max-w-sm">
+                  <td className="p-3.5 space-y-1.5 max-w-sm">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-foreground text-sm">{r.name || 'Resident Record'}</span>
-                      <span className="text-[11px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground border border-border">ID: {r.id || 'N/A'}</span>
+                      <span className="font-extrabold text-slate-900 dark:text-white text-base">{r.name || 'Resident Record'}</span>
+                      <span className="text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded font-bold text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">ID: {r.id || 'N/A'}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium truncate">
+                    <div className="text-sm text-slate-900 dark:text-slate-100 font-bold truncate">
                       📍 {r.address || r.address1 || 'Unknown Address'}
                     </div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                    <div className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
                       <span>{r.city || 'City'}, {r.state || 'MS'} {r.zip || ''}</span>
                       <span>•</span>
-                      <span className="font-semibold text-primary">{r.county || 'Statewide'} County</span>
+                      <span className="font-extrabold text-primary">{r.county || 'Statewide'} County</span>
                     </div>
                   </td>
                   <td className="p-3.5 whitespace-nowrap">
                     <div className="flex flex-col gap-1 items-start">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-black shadow-sm ${isCritical ? 'bg-red-600 text-white animate-pulse' : 'bg-amber-100 text-amber-900 border border-amber-300'}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-black shadow-sm ${isCritical ? 'bg-red-600 text-white animate-pulse' : 'bg-amber-100 text-amber-950 border border-amber-400'}`}>
                         {occ} Residents
                       </span>
-                      <span className="text-[10px] font-bold tracking-wide uppercase text-muted-foreground">
+                      <span className="text-xs font-extrabold tracking-wide uppercase text-slate-800 dark:text-slate-200">
                         {r.risk_level || (isCritical ? 'CRITICAL RISK' : 'HIGH DENSITY')}
                       </span>
                     </div>
                   </td>
-                  <td className="p-3.5 max-w-md text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                    <p className="font-medium">{r.details || categorizeAddress(r.address || r.address1 || "")}</p>
+                  <td className="p-3.5 max-w-md text-sm font-semibold text-slate-900 dark:text-slate-100 leading-relaxed">
+                    <p>{r.details || categorizeAddress(r.address || r.address1 || "")}</p>
                   </td>
                   <td className="p-3.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1.5">
                       <button 
                         onClick={() => setSelectedInspectRecord(r)}
-                        className="px-2.5 py-1 rounded-md bg-primary/10 hover:bg-primary/20 text-primary font-bold transition-all text-xs border border-primary/30 flex items-center gap-1 shadow-sm"
+                        className="px-3 py-1.5 rounded-lg bg-primary text-white font-extrabold transition-all text-xs flex items-center gap-1 shadow hover:bg-primary/90"
                         title="Open MVC Side Sheet Controller"
                       >
                         <span>🔍 Inspect</span>
                       </button>
                       <button 
-                        onClick={() => setSelectedNoteRecord(r)}
-                        className="p-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold transition-colors text-xs border border-amber-500/30"
-                        title="Attach encrypted peer note"
+                        onClick={() => {
+                          navigator.clipboard.writeText(String(r.address || r.address1 || ""));
+                          alert("Address copied to clipboard! Paste into a new browser tab or mapping app to look up without sharing tracking referrers.");
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-all text-xs border border-slate-300 dark:border-slate-600 flex items-center gap-1"
+                        title="Copy address to clipboard for private external lookup"
                       >
-                        🔐 Note
+                        <span>📋 Copy</span>
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNoteRecord(r)}
+                        className="px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold transition-colors text-xs border border-amber-500/30"
+                        title="Attach volunteer field note"
+                      >
+                        📝 Note
                       </button>
                       <button 
                         onClick={() => excludeRecord(exclusionValue)}
-                        className="p-1.5 rounded-md hover:bg-red-100 text-muted-foreground hover:text-red-600 transition-colors text-xs"
+                        className="p-1.5 rounded-lg hover:bg-red-100 text-slate-600 hover:text-red-600 transition-colors text-xs font-bold"
                         title="Exclude false positive"
                       >
                         👎
@@ -1005,19 +1015,19 @@ export default function AnalysisDashboard() {
 
       {/* Persistent MVC Side Sheet Controller */}
       {selectedInspectRecord && (
-        <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-slate-900 border-l border-border shadow-2xl z-50 flex flex-col animate-slideLeft">
+        <div className="fixed top-0 bottom-0 right-0 h-screen w-full max-w-lg bg-white dark:bg-slate-900 border-l-2 border-slate-300 dark:border-slate-700 shadow-2xl z-[9999] flex flex-col overflow-hidden animate-slideLeft">
           {/* Side Sheet Header */}
-          <div className="p-4 border-b border-border bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🔍</span>
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">🔍</span>
               <div>
-                <h3 className="font-black text-sm text-foreground uppercase tracking-wider">MVC Anomaly Controller</h3>
-                <p className="text-[11px] text-muted-foreground">Persistent Forensic Inspection Drawer</p>
+                <h3 className="font-black text-base text-slate-900 dark:text-white uppercase tracking-wider">MVC Anomaly Controller</h3>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Persistent Forensic Inspection Drawer</p>
               </div>
             </div>
             <button 
               onClick={() => setSelectedInspectRecord(null)}
-              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors font-bold text-sm"
+              className="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors font-black text-base"
               title="Close Controller Drawer"
             >
               ✕
@@ -1025,31 +1035,31 @@ export default function AnalysisDashboard() {
           </div>
 
           {/* Anomaly Diagnosis Section (Top Priority) */}
-          <div className="p-4 bg-amber-500/10 border-b border-amber-500/20 space-y-2">
+          <div className="p-5 bg-amber-500/15 border-b-2 border-amber-500/30 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-amber-700 dark:text-amber-400 tracking-wide flex items-center gap-1.5">
+              <span className="text-sm font-black uppercase text-amber-900 dark:text-amber-300 tracking-wide flex items-center gap-1.5">
                 <span>🚨 Primary Anomaly Diagnosis</span>
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-800 dark:text-amber-300">
+              <span className="px-3 py-1 rounded-md text-xs font-black bg-amber-500/30 text-amber-950 dark:text-amber-200 border border-amber-500/40">
                 {selectedInspectRecord.risk_level || 'HIGH DENSITY'}
               </span>
             </div>
-            <p className="text-xs text-amber-950 dark:text-amber-200 font-medium leading-relaxed">
+            <p className="text-sm text-slate-900 dark:text-slate-100 font-bold leading-relaxed bg-white/60 dark:bg-slate-900/60 p-3 rounded-lg border border-amber-500/30">
               {selectedInspectRecord.details || categorizeAddress(selectedInspectRecord.address || selectedInspectRecord.address1 || "")}
             </p>
-            <div className="pt-1 flex items-center gap-2">
+            <div className="pt-1 flex flex-wrap items-center gap-2.5">
               <button
                 onClick={() => setSelectedNoteRecord(selectedInspectRecord)}
-                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors flex items-center gap-1 shadow-sm"
+                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow"
               >
-                <span>🔐 Attach Encrypted Peer Note</span>
+                <span>📝 Attach Volunteer Observation Note</span>
               </button>
               <button
                 onClick={() => {
                   excludeRecord(selectedInspectRecord.address || selectedInspectRecord.address1 || "");
                   setSelectedInspectRecord(null);
                 }}
-                className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 border border-red-300 dark:border-red-800 font-bold rounded text-xs transition-colors"
+                className="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 font-extrabold rounded-lg text-xs transition-colors shadow-sm"
               >
                 <span>👎 Mark False Positive</span>
               </button>
@@ -1057,33 +1067,53 @@ export default function AnalysisDashboard() {
           </div>
 
           {/* Citizen & Location Blueprint */}
-          <div className="p-4 border-b border-border bg-muted/20 space-y-1.5">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Citizen & Domicile Summary</h4>
-            <div className="text-sm font-bold text-foreground">{selectedInspectRecord.name || 'Resident Record'}</div>
-            <div className="text-xs text-muted-foreground font-mono">ID: {selectedInspectRecord.id || 'N/A'}</div>
-            <div className="text-xs text-slate-700 dark:text-slate-300 font-medium pt-1">
+          <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Citizen & Domicile Summary</h4>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(String(selectedInspectRecord.address || selectedInspectRecord.address1 || ""));
+                  alert("Address copied! Paste securely into a new tab or mapping app.");
+                }}
+                className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold rounded text-xs transition-all flex items-center gap-1"
+              >
+                <span>📋 Copy Address</span>
+              </button>
+            </div>
+            <div className="text-base font-black text-slate-900 dark:text-white">{selectedInspectRecord.name || 'Resident Record'}</div>
+            <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Voter ID: {selectedInspectRecord.id || 'N/A'}</div>
+            <div className="text-sm text-slate-900 dark:text-slate-100 font-extrabold pt-1">
               📍 {selectedInspectRecord.address || selectedInspectRecord.address1 || 'Unknown Address'}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               {selectedInspectRecord.city || 'City'}, {selectedInspectRecord.state || 'MS'} {selectedInspectRecord.zip || ''} ({selectedInspectRecord.county || 'Statewide'} County)
             </div>
           </div>
 
           {/* Raw Supporting Data Grid */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">All Extracted Attributes & Raw Data</h4>
+          <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
+            <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">All Extracted Attributes & Raw Data</h4>
             {selectedInspectRecord.raw && Object.keys(selectedInspectRecord.raw).length > 0 ? (
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-2.5">
                 {Object.entries(selectedInspectRecord.raw).map(([key, value]) => (
-                  <div key={key} className="bg-muted/40 p-2 rounded border border-border/60 flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">{key.replace(/_/g, ' ')}</span>
-                    <span className="text-xs font-mono text-foreground break-all">{String(value !== null && value !== undefined ? value : '—')}</span>
+                  <div key={key} className="bg-slate-100 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
+                    <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase">{key.replace(/_/g, ' ')}</span>
+                    <span className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 break-all">{String(value !== null && value !== undefined ? value : '—')}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-xs text-muted-foreground italic bg-muted/20 p-4 rounded text-center">
-                Raw column attributes are preserved during direct chunk parsing. Re-scan your Data Map if additional fields are missing.
+              <div className="text-sm text-slate-700 dark:text-slate-300 font-medium bg-slate-100 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
+                <p>Detailed raw columns are indexed during your live database crawl.</p>
+                <button
+                  onClick={() => {
+                    runAlgorithm(currentAudit || 'density', countyFilter, thresholdFilter, true);
+                    setSelectedInspectRecord(null);
+                  }}
+                  className="px-3 py-1.5 bg-primary text-white font-bold rounded-lg text-xs shadow hover:bg-primary/90"
+                >
+                  🔄 Force Full Data Map Scan
+                </button>
               </div>
             )}
           </div>
