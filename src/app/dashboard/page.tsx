@@ -102,12 +102,15 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => {
+                  localStorage.removeItem("marigold_file_connected");
+                  localStorage.removeItem("marigold_file_name");
+                  localStorage.removeItem("marigold_file_rows");
                   setGroupName("Independent Audit Workspace");
                   localStorage.setItem("marigold_active_group", "Independent Audit Workspace");
                 }}
                 className="w-full text-center inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3.5 rounded-xl shadow transition-colors text-sm"
               >
-                Initialize Independent Session →
+                Initialize Independent Session (Neutral State) →
               </button>
             </div>
           </div>
@@ -208,15 +211,24 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap gap-3 self-start md:self-center">
+          <Link href="/data-prep" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
+            <span>📁 Stream & Chunk Data</span>
+          </Link>
           <Link href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
             <span>⚡ Launch Pro Mode</span>
           </Link>
-          <Link href="/settings/group" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-1.5">
-            <span>👑 Group Admin Console</span>
-          </Link>
-          <Link href="/playbooks" className="bg-slate-700 hover:bg-slate-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm">
-            Browse Mission Playbooks
-          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.removeItem("marigold_file_connected");
+              localStorage.removeItem("marigold_file_name");
+              localStorage.removeItem("marigold_file_rows");
+              window.location.reload();
+            }}
+            className="bg-slate-700 hover:bg-red-900 text-slate-200 hover:text-red-200 font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-1.5"
+          >
+            <span>🔌 Revert to Neutral State</span>
+          </button>
         </div>
       </div>
 

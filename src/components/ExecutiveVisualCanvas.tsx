@@ -392,11 +392,14 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 Select one or more official CSV, TXT, TSV, or DAT voter files (e.g. MS weekly split shards). Parsed strictly inside browser RAM—no records leave your device.
               </p>
             </div>
-            <div>
-              <label className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg shadow cursor-pointer transition-colors text-xs">
-                <span>📂 Select Voter File(s) / Multi-Part</span>
+            <div className="space-y-2">
+              <label className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg shadow cursor-pointer transition-colors text-xs">
+                <span>📂 Select File(s) Here</span>
                 <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => handleStageFiles(e, false)} className="hidden" />
               </label>
+              <Link href="/data-prep" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-lg shadow transition-colors text-xs">
+                📁 Open Chunking Studio →
+              </Link>
             </div>
           </div>
 
