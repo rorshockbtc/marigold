@@ -15,10 +15,8 @@ interface StateGroup {
 }
 
 const PUBLIC_GROUPS: StateGroup[] = [
-  { id: 'msfe', name: 'Mississippi Fair Elections (MSFE Pilot)', state: 'Mississippi', website: 'https://msfe.org', desc: 'Non-partisan volunteer network verifying voter rolls across all 82 MS counties.', memberCount: 1 },
-  { id: 'wy_integrity', name: 'Wyoming Election Audit Taskforce', state: 'Wyoming', website: 'https://wyelections.org', desc: 'Local citizen analysts reviewing rural county voter lists.', memberCount: 2 },
-  { id: 'oh_coalition', name: 'Ohio Voter Roll Audit Group', state: 'Ohio', desc: 'Volunteers collaborating on NCOA relocation verification.', memberCount: 1 },
-  { id: 'pa_network', name: 'Pennsylvania Integrity Network', state: 'Pennsylvania', desc: 'County-level public record review teams.', memberCount: 3 },
+  { id: 'msfe', name: 'Mississippi Fair Elections', state: 'Mississippi', website: 'https://msfe.org', desc: 'Non-partisan volunteer network verifying voter rolls across all 82 MS counties.', memberCount: 1 },
+  { id: 'acme_sandbox', name: 'ACME Civic Data Sandbox (Demo Environment)', state: 'Other / Multi-State', desc: 'Synthetically generated sample roll environment for training and testing.', memberCount: 1 }
 ];
 
 export default function OnboardingPage() {
@@ -36,6 +34,7 @@ export default function OnboardingPage() {
 
   // Join form state
   const [targetGroup, setTargetGroup] = useState<StateGroup | null>(PUBLIC_GROUPS[0]);
+  const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [applicantPhone, setApplicantPhone] = useState("");
   const [applicantNote, setApplicantNote] = useState("");
   const [requestSubmitted, setRequestSubmitted] = useState(false);
@@ -70,6 +69,15 @@ export default function OnboardingPage() {
     localStorage.setItem("marigold_active_group", groupTitle);
     localStorage.setItem("marigold_user_role", role);
     localStorage.setItem("marigold_user_name", customName || fallbackName);
+    if (userEmail) {
+      localStorage.setItem("marigold_user_email", userEmail);
+    }
+    if (newGroupWebsite) {
+      localStorage.setItem("marigold_active_website", newGroupWebsite);
+    }
+    if (selectedState) {
+      localStorage.setItem("marigold_active_jurisdiction", `${selectedState} Coverage Area`);
+    }
     localStorage.setItem("marigold_onboarding_done", "true");
     router.push('/dashboard');
   };
@@ -247,8 +255,44 @@ export default function OnboardingPage() {
           {/* JOIN EXISTING GROUP FLOW */}
           {actionType === 'join' && (
             <div className="space-y-6 pt-2">
+              {/* Anti-Scraping UUID Lookup */}
+              <div className="bg-slate-900 text-white p-5 rounded-2xl space-y-3 border border-slate-800 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <span>🔒 Anti-Scraping Protected UUID Lookup</span>
+                  </span>
+                  <span className="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded font-mono border border-slate-700">Private Join Mode</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  To protect citizen volunteer lists and client identities from automated scraping, many organizations hide from public directories. Enter your group invitation UUID or code below:
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    type="text"
+                    value={inviteCodeInput}
+                    onChange={(e) => setInviteCodeInput(e.target.value)}
+                    placeholder="Enter Invite UUID or Code (e.g. MSFE-PILOT-8821)"
+                    className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = inviteCodeInput.toUpperCase();
+                      if (val.includes("MSFE") || val.includes("MISS") || val.includes("PILOT")) {
+                        setTargetGroup(PUBLIC_GROUPS[0]);
+                      } else {
+                        alert("Invalid Invitation Code. For testing, try typing 'MSFE-PILOT-8821'.");
+                      }
+                    }}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition-colors shrink-0 shadow"
+                  >
+                    Lookup & Select Group →
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Available Groups in {selectedState}:</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Available Public Groups in {selectedState}:</label>
                 <div className="grid grid-cols-1 gap-3">
                   {PUBLIC_GROUPS.filter(g => selectedState === "Other / Multi-State" || g.state === selectedState).map(group => (
                     <div
@@ -310,7 +354,22 @@ export default function OnboardingPage() {
                   </div>
 
                   <button
-                    onClick={() => setRequestSubmitted(true)}
+                    onClick={() => {
+                      const newApp = {
+                        id: `APP-${Date.now()}`,
+                        name: customName || "Volunteer Auditor",
+                        email: userEmail || "volunteer@example.org",
+                        phone: applicantPhone || "(601) 555-0199",
+                        note: applicantNote || `Requesting access to ${targetGroup?.name || "group"} shared audit checklists.`,
+                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                        status: 'pending'
+                      };
+                      try {
+                        const existing = JSON.parse(localStorage.getItem("marigold_group_applications") || "[]");
+                        localStorage.setItem("marigold_group_applications", JSON.stringify([...existing, newApp]));
+                      } catch (e) {}
+                      setRequestSubmitted(true);
+                    }}
                     disabled={!applicantPhone}
                     className="w-full bg-accent hover:bg-amber-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow transition-all text-sm"
                   >

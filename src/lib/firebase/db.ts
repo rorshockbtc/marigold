@@ -20,8 +20,8 @@ export interface AnomalyRecord {
   dateFound: string;
 }
 
-// Fallback Mock Data for UI presentation before Firebase is fully hooked up
-let mockRecipes: SearchRecipe[] = [
+// Default Search Templates for UI presentation before Firebase is fully hooked up
+let defaultSearchTemplates: SearchRecipe[] = [
   {
     id: "r1",
     name: "Address Density Check",
@@ -40,67 +40,12 @@ let mockRecipes: SearchRecipe[] = [
   }
 ];
 
-let mockAnomalies: AnomalyRecord[] = [
-  {
-    id: "a1",
-    voterName: "WILLIAMS, ROBERT L",
-    address: "1400 J R LYNCH ST, JACKSON, MS (HINDS)",
-    flags: ["HIGH_DENSITY_OCCUPANCY_18"],
-    status: "pending",
-    foundBy: "volunteer@msfe.org",
-    dateFound: new Date().toISOString()
-  },
-  {
-    id: "a2",
-    voterName: "DAVIS, MARGARET E",
-    address: "7422 GOODMAN RD, OLIVE BRANCH, MS (DESOTO)",
-    flags: ["COMMERCIAL_PO_BOX_DISGUISE"],
-    status: "pending",
-    foundBy: "audit-bot@msfe.org",
-    dateFound: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: "a3",
-    voterName: "JOHNSON, MICHAEL T",
-    address: "2201 BEACH BLVD, BILOXI, MS (HARRISON)",
-    flags: ["NCOA_INTERSTATE_RELOCATION"],
-    status: "pending",
-    foundBy: "volunteer@msfe.org",
-    dateFound: new Date(Date.now() - 7200000).toISOString()
-  },
-  {
-    id: "a4",
-    voterName: "SMITH, CLARA M",
-    address: "112 MAIN ST, CANTON, MS (MADISON)",
-    flags: ["INTRA_COUNTY_DUPLICATE"],
-    status: "pending",
-    foundBy: "admin@msfe.org",
-    dateFound: new Date(Date.now() - 14400000).toISOString()
-  },
-  {
-    id: "a5",
-    voterName: "BROWN, JAMES K",
-    address: "501 GOVERNMENT ST, BRANDON, MS (RANKIN)",
-    flags: ["MISSING_UNIT_DORM_NUMBER"],
-    status: "pending",
-    foundBy: "volunteer@msfe.org",
-    dateFound: new Date(Date.now() - 28800000).toISOString()
-  },
-  {
-    id: "a6",
-    voterName: "TAYLOR, SUSAN V",
-    address: "456 OAK AVE, JACKSON, MS (HINDS)",
-    flags: ["HIGH_DENSITY_OCCUPANCY_14"],
-    status: "verified",
-    foundBy: "admin@msfe.org",
-    dateFound: new Date(Date.now() - 86400000).toISOString()
-  }
-];
+let inMemoryAnomalies: AnomalyRecord[] = [];
 
 const IS_FIREBASE_CONNECTED = !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
 export async function getSearchRecipes(): Promise<SearchRecipe[]> {
-  if (!IS_FIREBASE_CONNECTED) return mockRecipes;
+  if (!IS_FIREBASE_CONNECTED) return defaultSearchTemplates;
   
   const q = query(collection(db as any, "search_recipes"), orderBy("successRate", "desc"), limit(10));
   const snapshot = await getDocs(q);
@@ -108,7 +53,7 @@ export async function getSearchRecipes(): Promise<SearchRecipe[]> {
 }
 
 export async function getAnomalies(): Promise<AnomalyRecord[]> {
-  if (!IS_FIREBASE_CONNECTED) return mockAnomalies;
+  if (!IS_FIREBASE_CONNECTED) return inMemoryAnomalies;
   
   const q = query(collection(db as any, "anomalies"), orderBy("dateFound", "desc"), limit(50));
   const snapshot = await getDocs(q);
@@ -118,7 +63,7 @@ export async function getAnomalies(): Promise<AnomalyRecord[]> {
 export async function saveAnomaly(data: Omit<AnomalyRecord, "id">): Promise<string> {
   if (!IS_FIREBASE_CONNECTED) {
     const id = "m" + Date.now();
-    mockAnomalies = [{ id, ...data }, ...mockAnomalies];
+    inMemoryAnomalies = [{ id, ...data }, ...inMemoryAnomalies];
     return id;
   }
   
@@ -129,7 +74,7 @@ export async function saveAnomaly(data: Omit<AnomalyRecord, "id">): Promise<stri
 export async function saveSearchRecipe(data: Omit<SearchRecipe, "id">): Promise<string> {
   if (!IS_FIREBASE_CONNECTED) {
     const id = "r" + Date.now();
-    mockRecipes = [{ id, ...data }, ...mockRecipes];
+    defaultSearchTemplates = [{ id, ...data }, ...defaultSearchTemplates];
     return id;
   }
   
@@ -139,7 +84,7 @@ export async function saveSearchRecipe(data: Omit<SearchRecipe, "id">): Promise<
 
 export async function updateAnomalyStatus(id: string, newStatus: "pending" | "verified" | "false_positive"): Promise<void> {
   if (!IS_FIREBASE_CONNECTED) {
-    mockAnomalies = mockAnomalies.map(a => a.id === id ? { ...a, status: newStatus } : a);
+    inMemoryAnomalies = inMemoryAnomalies.map(a => a.id === id ? { ...a, status: newStatus } : a);
     return;
   }
   

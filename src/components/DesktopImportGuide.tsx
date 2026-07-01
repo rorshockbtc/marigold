@@ -80,8 +80,8 @@ export function DesktopImportGuide() {
                 <li>Open your web browser and go to <a href="https://sheets.google.com" target="_blank" rel="noreferrer" className="text-blue-600 underline font-semibold">sheets.google.com</a>.</li>
                 <li>Click the large <strong>+ Blank</strong> button to create a new spreadsheet.</li>
                 <li>In the top menu, click <strong>File → Import</strong>.</li>
-                <li>Go to the <strong>Upload</strong> tab and drag your downloaded file into the box (or click <em>Browse</em>).</li>
-                <li>Leave the settings as default and click <strong>Import Data</strong>. You can now explore and filter your records online!</li>
+                <li>Go to the <strong>Browse / Import</strong> tab inside Google Sheets and select your downloaded file from your computer.</li>
+                <li>Leave the settings as default and click <strong>Import Data</strong>. You can now explore and filter your records locally or online!</li>
               </ol>
             </div>
           )}

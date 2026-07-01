@@ -9,16 +9,12 @@ import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
   const [anomalies, setAnomalies] = useState<AnomalyRecord[]>([]);
-  const [groupName, setGroupName] = useState("National Civic Data Sandbox (Multi-State Jurisdiction)");
+  const [groupName, setGroupName] = useState("");
   const [isEditingGroup, setIsEditingGroup] = useState(false);
   const [customGroupInput, setCustomGroupInput] = useState("");
   const [isAdmin, setIsAdmin] = useState(true);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [teamMembers, setTeamMembers] = useState([
-    { email: "lead.investigator@civicdata.org", role: "👑 Group Admin", status: "Active" },
-    { email: "senior.auditor@civicdata.org", role: "🛡️ Mission Lead", status: "Active" },
-    { email: "field.reviewer@civicdata.org", role: "👤 Reviewer", status: "Active" }
-  ]);
+  const [teamMembers, setTeamMembers] = useState<{ email: string; role: string; status: string }[]>([]);
 
   useEffect(() => {
     getAnomalies().then(setAnomalies);
@@ -31,12 +27,11 @@ export default function DashboardPage() {
 
   // Sync user email into team members once loaded
   useEffect(() => {
+    const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "rorshock@protonmail.com";
     if (user?.primaryEmailAddress?.emailAddress) {
-      setTeamMembers(prev => [
-        { email: user.primaryEmailAddress!.emailAddress, role: "👑 Group Admin", status: "Active" },
-        ...prev.slice(1)
-      ]);
+      localStorage.setItem("marigold_user_email", user.primaryEmailAddress.emailAddress);
     }
+    setTeamMembers([{ email: userEmail, role: "👑 Group Admin", status: "Active" }]);
   }, [user]);
 
   const handleStatusChange = async (id: string, newStatus: "pending" | "verified" | "false_positive") => {
@@ -59,6 +54,82 @@ export default function DashboardPage() {
   }
 
   const displayName = user?.fullName || user?.primaryEmailAddress?.emailAddress || "Civic Leader";
+
+  if (!groupName) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-6 px-4 animate-in fade-in">
+        <div className="bg-slate-900 text-white rounded-3xl p-8 md:p-12 border border-amber-500/30 shadow-2xl text-center space-y-8">
+          <div className="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-3xl flex items-center justify-center text-4xl font-bold mx-auto shadow-inner border border-amber-500/30">
+            👑
+          </div>
+          <div className="space-y-3 max-w-2xl mx-auto">
+            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+              🚀 Marigold Insights Pro Gateway
+            </span>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white pt-2">No Active Group Workspace Associated</h2>
+            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+              Welcome, <strong className="text-amber-400">{displayName}</strong>. You do not currently belong to an active state organization or pilot team. To begin verifying voter rolls, join a team or launch an independent analysis session.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 max-w-4xl mx-auto text-left">
+            {/* CTA 1: Join or Create Group */}
+            <div className="bg-slate-800/80 p-6 sm:p-8 rounded-2xl border border-slate-700 hover:border-amber-500/60 transition-all flex flex-col justify-between space-y-6 shadow-lg">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl font-bold">🤝</div>
+                <h3 className="font-bold text-white text-xl">Join or Create a Group</h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Join an existing organization using a private invitation UUID code, or establish a new volunteer network workspace for your jurisdiction.
+                </p>
+              </div>
+              <Link
+                href="/onboarding"
+                className="w-full text-center inline-block bg-primary hover:bg-slate-800 text-white font-bold px-5 py-3.5 rounded-xl shadow transition-colors text-sm"
+              >
+                Launch Group Setup Gateway →
+              </Link>
+            </div>
+
+            {/* CTA 2: Link Local Voter Roll Shard */}
+            <div className="bg-slate-800/80 p-6 sm:p-8 rounded-2xl border border-slate-700 hover:border-emerald-500/60 transition-all flex flex-col justify-between space-y-6 shadow-lg">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">📂</div>
+                <h3 className="font-bold text-white text-xl">Link Local Voter Roll Shard</h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Have an official state dataset (CSV/TXT) or want to evaluate our benchmark sample? Initialize an independent session to inspect rows inside local browser RAM.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setGroupName("Independent Audit Workspace");
+                  localStorage.setItem("marigold_active_group", "Independent Audit Workspace");
+                }}
+                className="w-full text-center inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3.5 rounded-xl shadow transition-colors text-sm"
+              >
+                Initialize Independent Session →
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Pilot Recovery Link */}
+          <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row justify-center items-center gap-3 text-xs text-slate-400">
+            <span>Are you a member of the Mississippi Fair Elections pilot team?</span>
+            <button
+              type="button"
+              onClick={() => {
+                setGroupName("Mississippi Fair Elections");
+                localStorage.setItem("marigold_active_group", "Mississippi Fair Elections");
+              }}
+              className="text-amber-400 hover:text-amber-300 font-bold bg-amber-500/10 hover:bg-amber-500/20 px-3.5 py-2 rounded-lg border border-amber-500/30 transition-all"
+            >
+              👑 Connect Mississippi Fair Elections Pilot →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-4 px-4">
@@ -101,11 +172,8 @@ export default function DashboardPage() {
               <label className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Select Preset Jurisdiction or Enter Custom Group Name:</label>
               <div className="flex flex-wrap gap-2 text-xs">
                 {[
-                  "National Civic Data Sandbox (Multi-State)",
-                  "Mississippi Fair Elections (MSFE Pilot)",
-                  "Wyoming Election Audit Taskforce",
-                  "Ohio Voter Roll Audit Group",
-                  "Pennsylvania Integrity Network"
+                  "Mississippi Fair Elections",
+                  "ACME Civic Data Sandbox (Demo Environment)"
                 ].map((preset) => (
                   <button
                     key={preset}
@@ -229,11 +297,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
             <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white font-extrabold flex items-center justify-center text-sm shadow">1</span>
-            <h3 className="font-bold text-lg text-primary pt-1">Load Local Data</h3>
+            <h3 className="font-bold text-lg text-primary pt-1">Load Statewide Shards</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Select or drag-and-drop your official county voter roll CSV file. Data remains encrypted inside your client browser memory.
+              Select your official statewide or weekly voter file shards. Marigold distills county-level anomaly distributions automatically in client memory.
             </p>
-            <Link href="/data-prep" className="text-xs font-bold text-accent hover:underline block pt-2">Connect CSV File →</Link>
+            <button type="button" onClick={() => window.scrollTo({ top: 350, behavior: 'smooth' })} className="text-xs font-bold text-accent hover:underline block pt-2 text-left">Connect Shards Above ↑</button>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
@@ -268,48 +336,70 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="divide-y divide-border">
-          {anomalies.map(anomaly => (
-            <div key={anomaly.id} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-base text-primary">{anomaly.voterName}</span>
-                  <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">{anomaly.address}</span>
-                </div>
-                <div className="flex gap-2">
-                  {anomaly.flags.map(f => (
-                    <span key={f} className="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
-                      ⚠️ {f.replace(/_/g, ' ')}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 self-end md:self-auto">
-                {anomaly.status === 'pending' ? (
-                  <>
-                    <button 
-                      onClick={() => handleStatusChange(anomaly.id!, "verified")}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow transition-colors"
-                    >
-                      ✓ Verify Anomaly
-                    </button>
-                    <button 
-                      onClick={() => handleStatusChange(anomaly.id!, "false_positive")}
-                      className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded transition-colors"
-                    >
-                      ✕ False Positive
-                    </button>
-                  </>
-                ) : (
-                  <span className={`text-xs font-extrabold px-3 py-1 rounded uppercase ${anomaly.status === 'verified' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500 line-through'}`}>
-                    {anomaly.status === 'verified' ? "✓ Verified Anomaly" : "False Positive"}
-                  </span>
-                )}
-              </div>
+        {anomalies.length === 0 ? (
+          <div className="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 space-y-4">
+            <span className="text-4xl block">📂</span>
+            <h4 className="text-lg font-bold text-primary">No Audit Records Loaded in Client Memory</h4>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+              To populate your investigation checklist with verified discrepancies across counties, connect your statewide voter file above or run an active Mission Playbook.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 350, behavior: 'smooth' })}
+                className="bg-primary hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all"
+              >
+                Connect Statewide File Above ↑
+              </button>
+              <Link href="/playbooks" className="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-5 py-2.5 rounded-xl border border-slate-300 transition-all">
+                Run Mission Playbooks
+              </Link>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {anomalies.map(anomaly => (
+              <div key={anomaly.id} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-base text-primary">{anomaly.voterName}</span>
+                    <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">{anomaly.address}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {anomaly.flags.map(f => (
+                      <span key={f} className="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                        ⚠️ {f.replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end md:self-auto">
+                  {anomaly.status === 'pending' ? (
+                    <>
+                      <button 
+                        onClick={() => handleStatusChange(anomaly.id!, "verified")}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow transition-colors"
+                      >
+                        ✓ Verify Anomaly
+                      </button>
+                      <button 
+                        onClick={() => handleStatusChange(anomaly.id!, "false_positive")}
+                        className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded transition-colors"
+                      >
+                        ✕ False Positive
+                      </button>
+                    </>
+                  ) : (
+                    <span className={`text-xs font-extrabold px-3 py-1 rounded uppercase ${anomaly.status === 'verified' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500 line-through'}`}>
+                      {anomaly.status === 'verified' ? "✓ Verified Anomaly" : "False Positive"}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

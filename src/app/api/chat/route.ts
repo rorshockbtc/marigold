@@ -5,6 +5,17 @@ import { jStat } from 'jstat';
 import { getDb, getFeedbackLogs, analyzeBenfordsLaw } from '@/lib/db/sqlite';
 
 const DOCS_DATA = `
+Multi-File State Releases (Weekly Delta vs. Historical Master Rolls):
+- Many jurisdictions (such as Mississippi) distribute voter records across two distinct files:
+  1. Historical Master Baseline File: Contains the primary registration database of active and inactive voters (~1.5 to 2 million records).
+  2. Weekly Delta Release File: Contains recent 7-day incremental transactions, address updates, new registrations, and NCOA relocations (~5,000 to 50,000 records).
+- How Marigold Handles Them: When both files are staged in our Multi-File Ingestion Console, Marigold combines them inside local browser memory, using the weekly delta records to update or append to baseline historical records.
+
+Local Desktop File Authorization & Legal Compliance (Terms & Privacy):
+- Zero-Exfiltration Client-Side RAM Architecture: When a volunteer connects a local voter roll file (.csv, .txt), no data is EVER uploaded to Marigold servers or any external cloud database.
+- Authorization & Permissions: You do NOT need to grant Marigold system-wide disk access or install software agents. The web browser uses standard HTML5 File sandbox permissions to read only the exact files you manually drag or select.
+- Legal Compliance: Because the records remain strictly isolated inside temporary browser RAM on your local machine, your analysis complies 100% with State Secretary of State non-dissemination agreements and Marigold Terms & Conditions.
+
 Phase 2 Audits:
 - High-Density Occupancy: Addresses with 12+ voters (institutions).
 - Missing Unit/Dorm Number: 50+ voters missing APT/STE.

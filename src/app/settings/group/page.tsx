@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 
 interface Application {
   id: string;
@@ -14,33 +15,69 @@ interface Application {
 }
 
 export default function GroupAdminSettingsPage() {
-  const [groupName, setGroupName] = useState("Mississippi Fair Elections (MSFE Pilot)");
+  const { user } = useUser();
+  const [groupName, setGroupName] = useState("Mississippi Fair Elections");
   const [website, setWebsite] = useState("https://msfe.org");
   const [jurisdiction, setJurisdiction] = useState("Mississippi (All 82 Counties)");
   const [savedMessage, setSavedMessage] = useState(false);
 
-  const [applications, setApplications] = useState<Application[]>([
-    { id: 'app-1', name: 'Robert Miller', email: 'robert.m@civicdata.org', phone: '(601) 555-0182', note: 'Rankin County volunteer analyst looking to assist with NCOA verification.', date: 'Today, 9:15 AM', status: 'pending' },
-  ]);
+  const [applications, setApplications] = useState<Application[]>([]);
 
-  const [roster, setRoster] = useState([
-    { name: 'Kyle (You)', email: 'kyle@msfe.org', role: '👑 Group Admin', joined: 'Founding Member' },
-    { name: 'David Lead', email: 'dad@msfe.org', role: '👤 Group Member', joined: 'Active (Cartridge Sync Enabled)' },
-    { name: 'Elena Vance', email: 'evance@civicdata.org', role: '👤 Group Member', joined: 'Active' }
-  ]);
+  const [roster, setRoster] = useState<{ name: string; email: string; role: string; joined: string }[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("marigold_active_group");
-    if (saved) setGroupName(saved);
+    const savedGroup = localStorage.getItem("marigold_active_group");
+    if (savedGroup) setGroupName(savedGroup);
+    const savedWebsite = localStorage.getItem("marigold_active_website");
+    if (savedWebsite) setWebsite(savedWebsite);
+    const savedJurisdiction = localStorage.getItem("marigold_active_jurisdiction");
+    if (savedJurisdiction) setJurisdiction(savedJurisdiction);
+    const savedApps = localStorage.getItem("marigold_group_applications");
+    if (savedApps) {
+      try {
+        setApplications(JSON.parse(savedApps));
+      } catch (e) {}
+    }
   }, []);
 
+  useEffect(() => {
+    const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "rorshock@protonmail.com";
+    const userName = user?.fullName || localStorage.getItem("marigold_user_name") || userEmail.split('@')[0] || "Founding Admin";
+    if (user?.primaryEmailAddress?.emailAddress) {
+      localStorage.setItem("marigold_user_email", user.primaryEmailAddress.emailAddress);
+    }
+    if (user?.fullName) {
+      localStorage.setItem("marigold_user_name", user.fullName);
+    }
+    setRoster([{ name: userName, email: userEmail, role: "👑 Group Admin", joined: "Founding Member" }]);
+  }, [user]);
+
+  const handleSimulateApplicant = () => {
+    const mockApp: Application = {
+      id: `APP-${Date.now()}`,
+      name: "Richard Rorshock (Volunteer Auditor)",
+      email: "richard.rorshock@example.org",
+      phone: "(601) 555-0182",
+      note: "Ready to assist with Hinds and Rankin county registration audits.",
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: 'pending'
+    };
+    const updated = [...applications, mockApp];
+    setApplications(updated);
+    localStorage.setItem("marigold_group_applications", JSON.stringify(updated));
+  };
+
   const handleApprove = (app: Application) => {
-    setApplications(applications.map(a => a.id === app.id ? { ...a, status: 'approved' } : a));
+    const updated = applications.map(a => a.id === app.id ? { ...a, status: 'approved' as const } : a);
+    setApplications(updated);
+    localStorage.setItem("marigold_group_applications", JSON.stringify(updated));
     setRoster([...roster, { name: app.name, email: app.email, role: '👤 Group Member', joined: 'Just Approved' }]);
   };
 
   const handleReject = (app: Application) => {
-    setApplications(applications.map(a => a.id === app.id ? { ...a, status: 'rejected' } : a));
+    const updated = applications.map(a => a.id === app.id ? { ...a, status: 'rejected' as const } : a);
+    setApplications(updated);
+    localStorage.setItem("marigold_group_applications", JSON.stringify(updated));
   };
 
   const handleToggleRole = (email: string) => {
@@ -56,6 +93,8 @@ export default function GroupAdminSettingsPage() {
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem("marigold_active_group", groupName);
+    localStorage.setItem("marigold_active_website", website);
+    localStorage.setItem("marigold_active_jurisdiction", jurisdiction);
     setSavedMessage(true);
     setTimeout(() => setSavedMessage(false), 3000);
   };
@@ -141,47 +180,75 @@ export default function GroupAdminSettingsPage() {
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Citizens requesting access to join your shared audit missions.</p>
               </div>
-              <span className="bg-amber-100 text-amber-900 font-bold text-xs px-2.5 py-1 rounded-full">
-                {applications.filter(a => a.status === 'pending').length} Pending
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSimulateApplicant}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition-all flex items-center gap-1"
+                >
+                  <span>🧪 Simulate Applicant</span>
+                </button>
+                <span className="bg-amber-100 text-amber-900 font-bold text-xs px-2.5 py-1 rounded-full">
+                  {applications.filter(a => a.status === 'pending').length} Pending
+                </span>
+              </div>
             </div>
 
-            <div className="divide-y divide-border">
-              {applications.map(app => (
-                <div key={app.id} className="py-4 space-y-3">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <strong className="text-base text-primary font-bold">{app.name}</strong>
-                        <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">{app.email}</span>
-                      </div>
-                      <p className="text-xs font-semibold text-slate-500 mt-0.5">📞 Phone: <span className="text-slate-800 font-mono">{app.phone}</span> • Submitted: {app.date}</p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      {app.status === 'pending' ? (
-                        <>
-                          <button onClick={() => handleApprove(app)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow transition-colors">
-                            Approve Access
-                          </button>
-                          <button onClick={() => handleReject(app)} className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded transition-colors">
-                            Decline
-                          </button>
-                        </>
-                      ) : (
-                        <span className={`text-xs font-extrabold px-3 py-1 rounded uppercase ${app.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                          {app.status === 'approved' ? '✓ Approved Member' : '✕ Declined'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 italic">
-                    &quot;{app.note}&quot;
-                  </div>
+            {applications.length === 0 ? (
+              <div className="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 space-y-3">
+                <span className="text-3xl block">📭</span>
+                <p className="text-sm font-bold text-slate-700">No Pending Applications</p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  When volunteers apply from this device, their requests appear here. For multi-device workflows (e.g. parents applying on their own computer), applications remain saved in their browser memory until Firebase cloud database broadcast is enabled.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleSimulateApplicant}
+                    className="bg-primary hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all"
+                  >
+                    🧪 Simulate Volunteer Applicant Now →
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {applications.map(app => (
+                  <div key={app.id} className="py-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <strong className="text-base text-primary font-bold">{app.name}</strong>
+                          <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">{app.email}</span>
+                        </div>
+                        <p className="text-xs font-semibold text-slate-500 mt-0.5">📞 Phone: <span className="text-slate-800 font-mono">{app.phone}</span> • Submitted: {app.date}</p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        {app.status === 'pending' ? (
+                          <>
+                            <button onClick={() => handleApprove(app)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow transition-colors">
+                              Approve Access
+                            </button>
+                            <button onClick={() => handleReject(app)} className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded transition-colors">
+                              Decline
+                            </button>
+                          </>
+                        ) : (
+                          <span className={`text-xs font-extrabold px-3 py-1 rounded uppercase ${app.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                            {app.status === 'approved' ? '✓ Approved Member' : '✕ Declined'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 italic">
+                      &quot;{app.note}&quot;
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Active Roster Table */}
