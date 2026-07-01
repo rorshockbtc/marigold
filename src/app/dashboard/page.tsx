@@ -215,7 +215,7 @@ export default function DashboardPage() {
             <span>📁 Stream & Chunk Data</span>
           </Link>
           <Link href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
-            <span>⚡ Launch Pro Mode</span>
+            <span>🧭 Explore & Review Records</span>
           </Link>
           <button
             type="button"
