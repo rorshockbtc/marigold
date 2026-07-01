@@ -563,14 +563,19 @@ export default function AnalysisDashboard() {
 
       {/* Honest 0 Flagged Records State */}
       {results.length === 0 && currentAudit && !isLoading && (
-        <div className="bg-card border border-border p-8 rounded-2xl text-center space-y-3 shadow-sm my-6">
+        <div className="bg-card border border-border p-8 rounded-2xl text-center space-y-4 shadow-sm my-6">
           <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto text-2xl font-bold">
             ✅
           </div>
           <h3 className="text-lg font-bold text-foreground">0 Flagged Records Identified</h3>
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            The live forensic query completed across the connected voter database shards. No records exceeded the mathematical cutoff threshold ({thresholdFilter}) for the selected audit parameter ({currentAudit}). All examined addresses satisfy standard occupancy and registration criteria.
+          <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            The live forensic query completed across the connected local database shards. No records exceeded the mathematical cutoff threshold ({thresholdFilter}) for the selected audit parameter ({currentAudit}). If you have not loaded your jurisdiction roll into local memory yet, please stream your file below.
           </p>
+          <div className="pt-2">
+            <a href="/data-prep" className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow transition-colors">
+              📁 Stream &amp; Chunk Dataset in Data Prep Studio →
+            </a>
+          </div>
         </div>
       )}
 
