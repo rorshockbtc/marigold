@@ -5,6 +5,36 @@ export interface QueryResult {
   totalMatches: number;
 }
 
+function extractField(row: Record<string, any>, keywords: string[], fallback = ''): string {
+  if (!row || typeof row !== 'object') return fallback;
+  const keys = Object.keys(row);
+  for (const kw of keywords) {
+    const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const key of keys) {
+      const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (cleanKey === cleanKw) {
+        const val = row[key];
+        if (val !== undefined && val !== null && String(val).trim() !== '') {
+          return String(val).trim();
+        }
+      }
+    }
+  }
+  for (const kw of keywords) {
+    const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const key of keys) {
+      const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (cleanKey.includes(cleanKw) || cleanKw.includes(cleanKey)) {
+        const val = row[key];
+        if (val !== undefined && val !== null && String(val).trim() !== '') {
+          return String(val).trim();
+        }
+      }
+    }
+  }
+  return fallback;
+}
+
 export function useDataQuery() {
   const [isQuerying, setIsQuerying] = useState(false);
 
@@ -75,11 +105,11 @@ export function useDataQuery() {
             const val = cursor.value;
             const r = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
             
-            const rCounty = String(r.county || r.COUNTY || '').toLowerCase();
+            const rCounty = extractField(r, ['countyname', 'countycode', 'jurisdiction', 'county'], 'Statewide');
             const filterCounty = (countyFilter || '').toLowerCase();
             
-            if (!filterCounty || rCounty.includes(filterCounty)) {
-              const addr = String(r.address || r.RESIDENTIAL_ADDRESS || r.street_address || '').trim();
+            if (!filterCounty || rCounty.toLowerCase().includes(filterCounty)) {
+              const addr = extractField(r, ['residentialaddress', 'residenceaddress', 'streetaddress', 'physicaladdress', 'address1', 'address']);
               if (addr) {
                 const existing = addressCounts.get(addr);
                 if (existing) {
@@ -89,12 +119,12 @@ export function useDataQuery() {
                   addressCounts.set(addr, {
                     count: 1,
                     sample: {
-                      voter_id: String(r.voter_id || r.id || Math.random()),
+                      voter_id: extractField(r, ['voterid', 'registrationnumber', 'sosid', 'voterregnum', 'idnum', 'voter', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
                       address: addr,
-                      city: String(r.city || r.RESIDENTIAL_CITY || 'Unknown'),
-                      state: String(r.state || r.RESIDENTIAL_STATE || 'MS'),
-                      zip: String(r.zip || r.RESIDENTIAL_ZIP || ''),
-                      county: String(r.county || r.COUNTY || 'Statewide')
+                      city: extractField(r, ['residentialcity', 'residencecity', 'cityname', 'city'], 'Unknown City'),
+                      state: extractField(r, ['residentialstate', 'residencestate', 'state'], 'MS'),
+                      zip: extractField(r, ['residentialzip', 'residencezip', 'zipcode', 'postalcode', 'zip'], 'N/A'),
+                      county: rCounty
                     }
                   });
                 }

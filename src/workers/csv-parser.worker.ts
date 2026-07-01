@@ -50,6 +50,7 @@ self.onmessage = async (e: MessageEvent) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: (h: string) => h.replace(/^\uFEFF/, '').trim(),
       chunkSize: chunkSize,
       chunk: async (results: Papa.ParseResult<Record<string, unknown>>, parser: Papa.Parser) => {
         if (hasError) return;
