@@ -398,9 +398,19 @@ export default function AnalysisDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Sandbox & Tuning (Pro Mode)</h1>
-        <p className="text-muted-foreground mt-2">Adjust algorithmic thresholds, filter by county, and save your perfect configuration to the organization's Playbook.</p>
+      <header className="mb-8 bg-amber-50 dark:bg-slate-900 border-2 border-amber-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-3.5 mb-2">
+          <span className="text-3xl">🧭</span>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Explore & Review Election Records</h1>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1">Guided discovery of voter roll patterns, address anomalies, and community verification tasks.</p>
+          </div>
+        </div>
+        <div className="mt-4 pt-3 border-t border-amber-200/80 dark:border-slate-800 flex flex-wrap items-center gap-4 text-xs font-bold text-slate-800 dark:text-slate-200">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Auto-Guide Mode Active</span>
+          <span className="flex items-center gap-1.5">🔒 Zero Data Exfiltration (100% Local RAM)</span>
+          <span className="text-amber-900 dark:text-amber-300 bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded-md">💡 Look for ✨ icons for simple ELI5 plain-English explanations</span>
+        </div>
       </header>
 
       {error && (

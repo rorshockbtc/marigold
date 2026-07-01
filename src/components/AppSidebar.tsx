@@ -8,11 +8,11 @@ import { MarigoldIcon } from '@/components/MarigoldIcon';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', desc: 'Overview & verification hub' },
-  { label: 'Pro Mode Analytics', href: '/analysis', desc: 'Unified statistical workbench' },
-  { label: 'Cross-Precinct Linkage', href: '/data-linkage', desc: 'Probabilistic record matching' },
-  { label: 'Mission Playbooks', href: '/playbooks', desc: 'Standardized check templates' },
-  { label: 'AI Assistant', href: '/chat', desc: 'Natural language civic queries' },
-  { label: 'Group Governance', href: '/settings/group', desc: 'Roster & membership review' },
+  { label: 'Explore & Review', href: '/analysis', desc: 'Find anomalies & verify records' },
+  { label: 'Duplicate Finder', href: '/data-linkage', desc: 'Cross-check address & voter links' },
+  { label: 'Audit Playbooks', href: '/playbooks', desc: 'Step-by-step verification guides' },
+  { label: 'Ask AI Guide', href: '/chat', desc: 'Plain-English help & analysis' },
+  { label: 'Volunteer Team', href: '/settings/group', desc: 'Group roster & shared missions' },
 ];
 
 export default function AppSidebar() {
