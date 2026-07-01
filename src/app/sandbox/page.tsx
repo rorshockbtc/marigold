@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 
 export default function SandboxPage() {
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -13,11 +14,10 @@ export default function SandboxPage() {
     if (e.target.files && e.target.files[0]) {
       setFileName(e.target.files[0].name);
       setFileUploaded(true);
-      // Simulate quick memory check with synthetic demonstration records
       setSimulatedResults([
-        { address: "1400 LINCOLN WAY, LIBERTY CITY (Demo)", occupants: 423, status: "University Dormitory (Synthetic Demo)" },
-        { address: "123 CONSTITUTION AVE, FRANKLIN (Demo)", occupants: 18, status: "High-Density Review Needed (>12)" },
-        { address: "821 DEMONSTRATION PKWY, ADAMS (Demo)", occupants: 85, status: "Job Corps Center (Synthetic Demo)" }
+        { address: "123 DEMO STREET, SAMPLE CITY (Sandbox Placeholder)", occupants: 423, status: "University Dormitory Example" },
+        { address: "456 PLACEHOLDER AVE, TEST TOWN (Sandbox Placeholder)", occupants: 18, status: "High-Density Review Needed (>12)" },
+        { address: "789 SYNTHETIC BOULEVARD, MOCK CITY (Sandbox Placeholder)", occupants: 85, status: "Commercial Mailbox Example" }
       ]);
     }
   };
@@ -121,6 +121,10 @@ export default function SandboxPage() {
               ))}
             </tbody>
           </table>
+
+          <div className="pt-4">
+            <ExecutiveVisualCanvas userName="Sandbox Demo User" isSandbox={true} />
+          </div>
 
           <div className="bg-slate-900 text-white p-8 rounded-xl text-center space-y-4">
             <h4 className="font-serif font-bold text-2xl">Ready to run comprehensive audits on 2,000,000+ records?</h4>

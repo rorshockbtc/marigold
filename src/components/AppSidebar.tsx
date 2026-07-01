@@ -7,14 +7,12 @@ import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/dashboard', desc: 'Overview & system status' },
-  { label: 'Pro Mode Analytics', href: '/analysis', desc: 'In-memory statistical audits' },
-  { label: 'Data Linkage', href: '/data-linkage', desc: 'Cross-precinct matching' },
-  { label: 'Data Prep & Chunking', href: '/data-prep', desc: 'Client RAM file slicing' },
+  { label: 'Dashboard', href: '/dashboard', desc: 'Overview & verification hub' },
+  { label: 'Pro Mode Analytics', href: '/analysis', desc: 'Unified statistical workbench' },
+  { label: 'Cross-Precinct Linkage', href: '/data-linkage', desc: 'Probabilistic record matching' },
   { label: 'Mission Playbooks', href: '/playbooks', desc: 'Standardized check templates' },
-  { label: 'Worldviews FAQ', href: '/perspectives', desc: 'Plain-English Math Guide' },
-  { label: 'AI Assistant', href: '/chat', desc: 'Plain-language query queries' },
-  { label: 'Group Settings', href: '/settings', desc: 'Manage API keys & access' },
+  { label: 'AI Assistant', href: '/chat', desc: 'Natural language civic queries' },
+  { label: 'Group Governance', href: '/settings/group', desc: 'Roster & membership review' },
 ];
 
 export default function AppSidebar() {

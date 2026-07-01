@@ -93,7 +93,7 @@ export default function CartridgeStorePage() {
             <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider">Step 3: Apply Filter</span>
             <h3 className="font-serif font-bold text-primary text-lg">View Verified Results</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Upload your downloaded `.json` checklist into the inspector panel. Your web browser will instantly highlight any records matching the criteria right on your screen.
+              Load your downloaded `.json` checklist directly into the local inspector panel. Your web browser will instantly highlight any records matching the criteria right on your screen.
             </p>
           </div>
         </div>
