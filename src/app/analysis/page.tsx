@@ -109,7 +109,7 @@ export default function AnalysisDashboard() {
     }
   }, []);
 
-  const runAlgorithm = async (action: string, overrideCounty?: string, overrideThreshold?: number) => {
+  const runAlgorithm = async (action: string, overrideCounty?: string, overrideThreshold?: number, forceRefresh: boolean = false) => {
     setIsLoading(true);
     setError(null);
     setCurrentAudit(action);
@@ -117,18 +117,37 @@ export default function AnalysisDashboard() {
     
     const finalCounty = overrideCounty !== undefined ? overrideCounty : countyFilter;
     const finalThreshold = overrideThreshold !== undefined ? overrideThreshold : thresholdFilter;
+    const cacheKey = `marigold_cached_results_${action}_${finalCounty || 'all'}_${finalThreshold}`;
     
     try {
       localStorage.setItem('marigold_last_audit', action);
       if (finalCounty !== undefined) localStorage.setItem('marigold_last_county', finalCounty);
     } catch (e) {}
     
+    // Check local Data Map cache first if not forcing a refresh
+    if (!forceRefresh) {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setResults(parsed);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+
     try {
       // Step 1: Query local client-side VoterDataDB IndexedDB first
       try {
         const localResults = await runLocalAudit(action, finalCounty, finalThreshold);
         if (localResults && localResults.length > 0) {
           setResults(localResults);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(localResults.slice(0, 500)));
+          } catch (e) {}
           setIsLoading(false);
           return;
         }
@@ -139,6 +158,9 @@ export default function AnalysisDashboard() {
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
         setResults(data);
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(data.slice(0, 500)));
+        } catch (e) {}
       } else {
         setResults([]);
       }
@@ -646,6 +668,14 @@ export default function AnalysisDashboard() {
                   className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 rounded-lg text-xs border border-amber-500/30 transition-all flex items-center gap-1 shadow-sm"
                 >
                   <span>🏆 Top County</span>
+                </button>
+                <button
+                  onClick={() => runAlgorithm(currentAudit || 'density', countyFilter, thresholdFilter, true)}
+                  disabled={isLoading}
+                  title="Force re-scan of local database chunks instead of using instant cache"
+                  className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold px-2.5 py-1 rounded-lg text-xs border border-purple-500/30 transition-all flex items-center gap-1 shadow-sm disabled:opacity-50"
+                >
+                  <span>🔄 Re-scan Data Map</span>
                 </button>
               </div>
 
