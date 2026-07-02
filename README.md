@@ -15,6 +15,8 @@ Instead of requiring jurisdictions to upload sensitive citizen voter rolls conta
 ### Aligned with FY26 FEMA HSGP Mandates
 Marigold qualifies as an allowable voter list maintenance expenditure under the mandatory **3% National Priority Area spending requirement for Election Security** under the Homeland Security Grant Program (HSGP) Notice of Funding Opportunity.
 
+📖 **For detailed systems engineering, prior art synthesis (Web Workers, Fellegi-Sunter linkage, Cartridges), and Open-Core vs. Commercial IP boundaries, read our complete [Architectural Specification & Prior Art Synthesis (ARCHITECTURE.md)](./ARCHITECTURE.md).**
+
 ---
 
 ## 🚀 Key Features
