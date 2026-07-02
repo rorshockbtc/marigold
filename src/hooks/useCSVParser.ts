@@ -54,6 +54,11 @@ export function useCSVParser() {
           }));
           break;
         case 'complete':
+          if (typeof window !== "undefined") {
+            localStorage.setItem("marigold_file_connected", "true");
+            localStorage.setItem("marigold_file_rows", String(message.totalRows));
+            localStorage.setItem("marigold_file_name", file.name);
+          }
           setState(prev => ({
             ...prev,
             isProcessing: false,

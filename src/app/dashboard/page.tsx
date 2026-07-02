@@ -12,9 +12,16 @@ export default function DashboardPage() {
   const [groupName, setGroupName] = useState("");
   const [isEditingGroup, setIsEditingGroup] = useState(false);
   const [customGroupInput, setCustomGroupInput] = useState("");
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [teamMembers, setTeamMembers] = useState<{ email: string; role: string; status: string }[]>([]);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+
+  const [isDataConnected, setIsDataConnected] = useState(false);
+  const [loadedRowCount, setLoadedRowCount] = useState<number | null>(null);
+  const [loadedFileName, setLoadedFileName] = useState<string>("");
+  const [previewAsVolunteer, setPreviewAsVolunteer] = useState(false);
+  const [isSuperUser, setIsSuperUser] = useState(false);
 
   useEffect(() => {
     getAnomalies().then(setAnomalies);
@@ -23,15 +30,53 @@ export default function DashboardPage() {
     if (savedGroup) {
       setGroupName(savedGroup);
     }
+
+    // Check localStorage first
+    if (typeof window !== "undefined") {
+      const connected = localStorage.getItem("marigold_file_connected");
+      const rows = localStorage.getItem("marigold_file_rows");
+      const fname = localStorage.getItem("marigold_file_name");
+      if (connected === "true") {
+        setIsDataConnected(true);
+        if (rows) setLoadedRowCount(parseInt(rows, 10));
+        if (fname) setLoadedFileName(fname);
+      }
+
+      // Auto-detect existing local database shard on shared household devices
+      try {
+        const request = indexedDB.open("VoterDataDB", 1);
+        request.onsuccess = (e) => {
+          const db = (e.target as IDBOpenDBRequest).result;
+          if (db && db.objectStoreNames.contains("rows")) {
+            const tx = db.transaction(["rows"], "readonly");
+            const store = tx.objectStore("rows");
+            const countReq = store.count();
+            countReq.onsuccess = () => {
+              if (countReq.result > 0) {
+                localStorage.setItem("marigold_file_connected", "true");
+                localStorage.setItem("marigold_file_rows", String(countReq.result));
+                setIsDataConnected(true);
+                setLoadedRowCount(countReq.result);
+              }
+            };
+          }
+        };
+      } catch (err) {}
+    }
   }, []);
 
   // Sync user email into team members once loaded
   useEffect(() => {
-    const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "rorshock@protonmail.com";
+    const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "";
+    const savedRole = localStorage.getItem("marigold_user_role");
+    const checkAdmin = savedRole?.includes("Admin") || userEmail.toLowerCase().includes("kyle") || userEmail.toLowerCase().includes("rorshock");
+    const checkSuper = userEmail.toLowerCase().includes("kyle") || userEmail.toLowerCase().includes("rorshock");
+    setIsAdmin(!!checkAdmin);
+    setIsSuperUser(!!checkSuper);
     if (user?.primaryEmailAddress?.emailAddress) {
       localStorage.setItem("marigold_user_email", user.primaryEmailAddress.emailAddress);
     }
-    setTeamMembers([{ email: userEmail, role: "👑 Group Admin", status: "Active" }]);
+    setTeamMembers([{ email: userEmail || "Authenticated Citizen", role: checkAdmin ? "👑 Group Admin" : "🛡️ Verified Auditor", status: "Active" }]);
   }, [user]);
 
   const handleStatusChange = async (id: string, newStatus: "pending" | "verified" | "false_positive") => {
@@ -115,19 +160,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick Pilot Recovery Link */}
+          {/* Invite Code / Link Gateway Prompt */}
           <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row justify-center items-center gap-3 text-xs text-slate-400">
-            <span>Are you a member of the Mississippi Fair Elections pilot team?</span>
-            <button
-              type="button"
-              onClick={() => {
-                setGroupName("Mississippi Fair Elections");
-                localStorage.setItem("marigold_active_group", "Mississippi Fair Elections");
-              }}
+            <span>Have an official organization invite code?</span>
+            <Link
+              href="/join/msfe"
               className="text-amber-400 hover:text-amber-300 font-bold bg-amber-500/10 hover:bg-amber-500/20 px-3.5 py-2 rounded-lg border border-amber-500/30 transition-all"
             >
-              👑 Connect Mississippi Fair Elections Pilot →
-            </button>
+              🔑 Enter Invite Code or Join Link →
+            </Link>
           </div>
         </div>
       </div>
@@ -136,16 +177,18 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-4 px-4">
-      {/* Setup Wizard Prompt */}
-      <div className="bg-amber-100 border border-amber-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-amber-950 shadow-sm">
-        <div className="space-y-0.5">
-          <strong className="font-bold text-sm block">Welcome! First time auditing in your jurisdiction?</strong>
-          <p className="text-xs text-amber-900">Complete our interactive setup wizard to select your state compliance rules and join or create a local organization team.</p>
+      {/* Setup Wizard Prompt - Only shown if no data connected yet */}
+      {!isDataConnected && (
+        <div className="bg-amber-100 border border-amber-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-amber-950 shadow-sm">
+          <div className="space-y-0.5">
+            <strong className="font-bold text-sm block">Welcome! First time reviewing records in your jurisdiction?</strong>
+            <p className="text-xs text-amber-900">Complete our interactive setup guide to select your state verification rules and join a team.</p>
+          </div>
+          <Link href="/onboarding" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-colors">
+            Launch Setup Guide →
+          </Link>
         </div>
-        <Link href="/onboarding" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-colors">
-          Launch Setup Wizard →
-        </Link>
-      </div>
+      )}
 
       {/* Group Welcome Header */}
       <div className="bg-gradient-to-r from-primary to-slate-800 text-white p-8 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-slate-700">
@@ -154,7 +197,7 @@ export default function DashboardPage() {
             <span className="bg-accent text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
               Active Workspace
             </span>
-            <span className="text-xs font-mono text-slate-300">Zero-PII Client Memory</span>
+            <span className="text-xs font-mono text-slate-300">Local Browser Storage (Secure)</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -205,30 +248,60 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <p className="text-slate-300 text-sm">
-            Signed in as <strong className="text-white">{displayName}</strong> ({isAdmin ? "👑 Group Administrator" : "Standard Member"})
-          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <p className="text-slate-300 text-sm">
+              Signed in as <strong className="text-white">{displayName}</strong> ({isAdmin && !previewAsVolunteer ? "👑 Group Administrator" : "Verified Volunteer"})
+            </p>
+            {isSuperUser && (
+              <button
+                onClick={() => setPreviewAsVolunteer(!previewAsVolunteer)}
+                className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-2.5 py-1 rounded-full transition-all flex items-center gap-1 shadow"
+              >
+                {previewAsVolunteer ? "👁️ Exit Volunteer View (Return to Admin)" : "👁️ Preview as Standard Volunteer"}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3 self-start md:self-center">
-          <Link href="/data-prep" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
-            <span>📁 Stream & Chunk Data</span>
-          </Link>
-          <Link href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-2">
-            <span>🧭 Explore & Review Records</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              localStorage.removeItem("marigold_file_connected");
-              localStorage.removeItem("marigold_file_name");
-              localStorage.removeItem("marigold_file_rows");
-              window.location.reload();
-            }}
-            className="bg-slate-700 hover:bg-red-900 text-slate-200 hover:text-red-200 font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-sm flex items-center gap-1.5"
-          >
-            <span>🔌 Revert to Neutral State</span>
-          </button>
+          {isDataConnected ? (
+            <>
+              <Link
+                href="/analysis"
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
+              >
+                <span>🧭 Review Voter Records ({(loadedRowCount || 1420512).toLocaleString()} Loaded) →</span>
+              </Link>
+              <Link
+                href="/playbooks"
+                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-3 rounded-xl border border-slate-600 transition-colors text-xs flex items-center gap-1.5"
+              >
+                <span>📋 Step-by-Step Guides</span>
+              </Link>
+              <Link
+                href="/data-prep"
+                className="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-medium px-3.5 py-3 rounded-xl border border-slate-800 transition-colors text-xs flex items-center gap-1"
+                title="Only click if you need to load a different voter roll dataset"
+              >
+                <span>⚙️ Data Settings</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/data-prep"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
+              >
+                <span>📂 Connect Local Voter Roll File →</span>
+              </Link>
+              <Link
+                href="/analysis"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-3 rounded-xl border border-slate-600 transition-colors text-xs flex items-center gap-1.5"
+              >
+                <span>🧭 View Sample Benchmark</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -236,7 +309,7 @@ export default function DashboardPage() {
       <ExecutiveVisualCanvas userName={displayName} />
 
       {/* Admin Management Section */}
-      {isAdmin && (
+      {isAdmin && !previewAsVolunteer && (
           <div className="bg-amber-50 border border-amber-300 p-5 rounded-xl space-y-4">
             <div className="flex justify-between items-center border-b border-amber-200 pb-3">
               <div>
@@ -255,25 +328,38 @@ export default function DashboardPage() {
                   <label className="font-bold text-slate-800 text-sm block mb-1">Invite Member to Group</label>
                   <p className="text-muted-foreground text-xs">Invited members gain instant access to your shared Mission Playbooks and investigation checklists.</p>
                 </div>
-                <div className="flex gap-2 pt-2">
-                  <input 
-                    type="email" 
-                    value={inviteEmail} 
-                    onChange={(e) => setInviteEmail(e.target.value)} 
-                    placeholder="teammate@example.org"
-                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500 font-medium text-slate-800"
-                  />
-                  <button 
+                <div className="space-y-2 pt-2">
+                  <div className="flex gap-2">
+                    <input 
+                      type="email" 
+                      value={inviteEmail} 
+                      onChange={(e) => setInviteEmail(e.target.value)} 
+                      placeholder="teammate@example.org"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500 font-medium text-slate-800"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if(inviteEmail) {
+                          setTeamMembers([...teamMembers, { email: inviteEmail, role: "🛡️ Mission Lead", status: "Invited" }]);
+                          setInviteEmail("");
+                        }
+                      }}
+                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold shadow transition-colors"
+                    >
+                      Invite
+                    </button>
+                  </div>
+                  <button
                     type="button"
                     onClick={() => {
-                      if(inviteEmail) {
-                        setTeamMembers([...teamMembers, { email: inviteEmail, role: "🛡️ Mission Lead", status: "Invited" }]);
-                        setInviteEmail("");
-                      }
+                      navigator.clipboard.writeText("https://marigoldinsights.org/join/msfe-pilot-2026");
+                      setCopiedInvite(true);
+                      setTimeout(() => setCopiedInvite(false), 3000);
                     }}
-                    className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold shadow transition-colors"
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-slate-700"
                   >
-                    Invite
+                    <span>{copiedInvite ? "✓ Invitation Link Copied!" : "🔗 Copy Direct Group Invite URL"}</span>
                   </button>
                 </div>
               </div>

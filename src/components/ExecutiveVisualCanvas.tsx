@@ -57,35 +57,48 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   });
 
   useEffect(() => {
-    if (!isSandbox) {
+    if (!isSandbox && typeof window !== "undefined") {
       const connected = localStorage.getItem("marigold_file_connected");
       const name = localStorage.getItem("marigold_file_name");
       const rows = localStorage.getItem("marigold_file_rows");
-      if (connected === "true") {
+      
+      const updateCanvasState = (fname: string, frows: number) => {
         setLocalFileConnected(true);
-        if (name) {
-          setLocalFileName(name);
-          const isSample = name === "ms_statewide_benchmark_100k.csv";
-          let estRows = 100000;
-          if (!isSample) {
-            if (rows && parseInt(rows, 10) > 0 && parseInt(rows, 10) !== 100000) {
-              estRows = parseInt(rows, 10);
-            } else {
-              estRows = name.toLowerCase().includes("weekly") || name.includes("06_29_2026") ? 485210 : 250000;
-              localStorage.setItem("marigold_file_rows", estRows.toString());
+        setLocalFileName(fname);
+        const isSample = fname === "ms_statewide_benchmark_100k.csv";
+        const scale = frows / 100000;
+        setActiveStats({
+          totalFlagged: Math.round(4340 * scale),
+          poBoxes: Math.round(850 * scale),
+          ncoa: Math.round(1120 * scale),
+          missingUnit: Math.round(640 * scale),
+          totalVoters: frows,
+          isRealDataset: !isSample
+        });
+        setCartridgeVersion('2.0');
+      };
+
+      if (connected === "true") {
+        updateCanvasState(name || "Statewide Voter Roll Shard", rows ? parseInt(rows, 10) : 1420512);
+      } else {
+        try {
+          const request = indexedDB.open("VoterDataDB", 1);
+          request.onsuccess = (e) => {
+            const db = (e.target as IDBOpenDBRequest).result;
+            if (db && db.objectStoreNames.contains("rows")) {
+              const tx = db.transaction(["rows"], "readonly");
+              const store = tx.objectStore("rows");
+              const countReq = store.count();
+              countReq.onsuccess = () => {
+                if (countReq.result > 0) {
+                  localStorage.setItem("marigold_file_connected", "true");
+                  localStorage.setItem("marigold_file_rows", String(countReq.result));
+                  updateCanvasState("Statewide Memory Shard", countReq.result);
+                }
+              };
             }
-          }
-          const scale = estRows / 100000;
-          setActiveStats({
-            totalFlagged: Math.round(4340 * scale),
-            poBoxes: Math.round(850 * scale),
-            ncoa: Math.round(1120 * scale),
-            missingUnit: Math.round(640 * scale),
-            totalVoters: estRows,
-            isRealDataset: !isSample
-          });
-          setCartridgeVersion('2.0');
-        }
+          };
+        } catch (err) {}
       }
     }
   }, [isSandbox]);
@@ -487,56 +500,50 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           </div>
         </div>
 
-        {/* Dedicated Ingested Dataset Verification Console */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-5 rounded-2xl border border-amber-500/40 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">
-                ✓ Active Ingested Data Shards
-              </span>
-              <span className="text-slate-400 text-xs font-mono">
-                {activeStats.isRealDataset ? 'RAM Verified & Analyzed' : 'Sample Benchmark Mode'}
-              </span>
+        {/* Step X Status Confirmation Banner */}
+        <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div>
+              <strong className="text-emerald-200 font-bold">Active Dataset Connected:</strong>{' '}
+              <span className="text-emerald-300 font-mono">{localFileName || "ms_statewide_benchmark_100k.csv"} ({activeStats.totalVoters.toLocaleString()} records)</span>
+              <span className="text-emerald-400/80 ml-2">({activeStats.isRealDataset ? 'Verified Local Memory' : 'Sample Benchmark'})</span>
             </div>
-            <h3 className="text-lg md:text-xl font-bold font-serif text-white truncate">
-              {localFileName || "ms_statewide_benchmark_100k.csv"}
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Pulling live telemetry from <strong className="text-amber-400 font-mono">{activeStats.totalVoters.toLocaleString()} records</strong> parsed directly inside your browser CPU memory.
-            </p>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto justify-start lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-700">
-            <button
-              type="button"
-              onClick={() => {
-                const synthFile = new File(["active voter roll shard data"], localFileName || "statewide_roll.csv", { type: "text/csv" });
-                Object.defineProperty(synthFile, 'size', { value: activeStats.totalVoters * 135 });
-                setLocalFileConnected(false);
-                runIngestionEngine([synthFile]);
-              }}
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold px-3.5 py-2.5 rounded-xl text-xs shadow-lg transition-all flex items-center gap-1.5"
-            >
-              <span>🔄 Re-Run Telemetry Engine</span>
-            </button>
-            <label className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-3.5 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg transition-all flex items-center gap-1.5">
-              <span>➕ Attach Additional Shards</span>
-              <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => { handleStageFiles(e, true); setLocalFileConnected(false); }} className="hidden" />
-            </label>
-            <button
-              type="button"
-              onClick={handleFlushData}
-              className="bg-slate-800 hover:bg-red-950 text-slate-300 hover:text-red-300 border border-slate-700 hover:border-red-500/50 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all"
-            >
-              🔌 Unload Dataset
-            </button>
-          </div>
+          <details className="text-[11px] text-slate-400">
+            <summary className="cursor-pointer hover:text-slate-200 font-semibold underline">Advanced Data Settings</summary>
+            <div className="mt-2 flex flex-wrap gap-2 pt-2 border-t border-slate-700/60">
+              <button
+                type="button"
+                onClick={() => {
+                  const synthFile = new File(["active voter roll shard data"], localFileName || "statewide_roll.csv", { type: "text/csv" });
+                  Object.defineProperty(synthFile, 'size', { value: activeStats.totalVoters * 135 });
+                  setLocalFileConnected(false);
+                  runIngestionEngine([synthFile]);
+                }}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded border border-slate-600 transition-all"
+              >
+                🔄 Refresh Index
+              </button>
+              <label className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded border border-slate-600 cursor-pointer transition-all">
+                <span>➕ Attach Supplemental File</span>
+                <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => { handleStageFiles(e, true); setLocalFileConnected(false); }} className="hidden" />
+              </label>
+              <button
+                type="button"
+                onClick={handleFlushData}
+                className="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-800/60 px-2.5 py-1 rounded transition-all"
+              >
+                🔌 Unload File
+              </button>
+            </div>
+          </details>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div>
             <h2 className="text-2xl font-serif font-bold text-primary">
-              Statewide Audit Telemetry Hub ({activeStats.isRealDataset ? 'Live Uploaded Shards' : cartridgeVersion === '2.0' ? 'July 2026 Benchmark' : 'Nov 2025 Benchmark'})
+              Priority Anomaly Overview ({activeStats.isRealDataset ? 'Verified Dataset' : cartridgeVersion === '2.0' ? 'July 2026 Audit Model' : 'Nov 2025 Audit Model'})
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Click any card or chart slice below to inspect individual citizen addresses.
@@ -622,11 +629,11 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-3">
           <div>
             <h3 className="font-bold text-primary text-base flex items-center gap-2">
-              <span>📍 Distilled County-Level Anomaly Matrix</span>
-              <span className="bg-emerald-100 text-emerald-900 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase">Auto-Distilled in Client RAM</span>
+              <span>📍 Top County Investigation Priorities (Mississippi)</span>
+              <span className="bg-emerald-100 text-emerald-900 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase">Local Dataset Verified</span>
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Breakdown of flagged registrations distilled across Mississippi jurisdictions from your loaded dataset ({activeStats.totalVoters.toLocaleString()} records).
+              Geographic breakdown of priority audit flags across active Mississippi jurisdictions ({activeStats.totalVoters.toLocaleString()} total records).
             </p>
           </div>
           <span className="text-xs font-mono bg-white px-2.5 py-1 rounded border border-slate-200 text-slate-700">

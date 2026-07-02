@@ -4,12 +4,39 @@ import { useState, useEffect } from "react";
 import { useCSVParser } from "@/hooks/useCSVParser";
 import { useCSVExport } from "@/hooks/useCSVExport";
 import { DesktopImportGuide } from "@/components/DesktopImportGuide";
+import Link from "next/link";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
   const { state: exportState, startExport, downloadAll, reset: resetExport } = useCSVExport();
   
   const [rowsPerFile, setRowsPerFile] = useState(250000);
+  const [existingShardCount, setExistingShardCount] = useState<number | null>(null);
+
+  // Auto-detect existing local database shard on shared household devices
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const request = indexedDB.open("VoterDataDB", 1);
+      request.onsuccess = (e) => {
+        const db = (e.target as IDBOpenDBRequest).result;
+        if (db && db.objectStoreNames.contains("rows")) {
+          const tx = db.transaction(["rows"], "readonly");
+          const store = tx.objectStore("rows");
+          const countReq = store.count();
+          countReq.onsuccess = () => {
+            if (countReq.result > 0) {
+              setExistingShardCount(countReq.result);
+              localStorage.setItem("marigold_file_connected", "true");
+              localStorage.setItem("marigold_file_rows", String(countReq.result));
+            }
+          };
+        }
+      };
+    } catch (err) {
+      console.warn("Could not check IndexedDB shard status:", err);
+    }
+  }, []);
 
   // Safeguard against accidental tab closure during active processing
   useEffect(() => {
@@ -57,8 +84,42 @@ export default function DataPrepPage() {
         </p>
       </header>
 
+      {/* Shared Household Device Auto-Resume Banner */}
+      {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (
+        <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 rounded-2xl p-8 text-white shadow-xl space-y-6 animate-in fade-in">
+          <div className="flex flex-wrap justify-between items-center gap-4">
+            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+              <span>⚡ Active Shared Device Shard Detected</span>
+            </span>
+            <span className="text-xs font-mono bg-slate-800 px-3 py-1 rounded border border-slate-700">
+              {existingShardCount.toLocaleString()} Records Ready in RAM
+            </span>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-serif font-black text-white">Resume Audit Session Without Re-Uploading</h2>
+            <p className="text-sm text-slate-200 leading-relaxed max-w-2xl">
+              We detected that this device already processed and chunked a statewide voter dataset into local browser memory. You do not need to re-upload or re-chunk your files.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4 pt-2">
+            <Link
+              href="/analysis"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
+            >
+              <span>🚀 Resume Session with Existing Shard →</span>
+            </Link>
+            <button
+              onClick={() => setExistingShardCount(null)}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold px-5 py-3.5 rounded-xl border border-slate-600 text-xs transition-colors"
+            >
+              🔄 Replace &amp; Stream New File Instead
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Upload Zone */}
-      {!parseState.isProcessing && parseState.totalRows === 0 && (
+      {!parseState.isProcessing && parseState.totalRows === 0 && (!existingShardCount || existingShardCount === 0) && (
         <div 
           className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-muted/10 hover:bg-muted/30 transition-colors"
           onDragOver={(e) => e.preventDefault()}

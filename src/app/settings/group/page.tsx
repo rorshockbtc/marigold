@@ -16,9 +16,9 @@ interface Application {
 
 export default function GroupAdminSettingsPage() {
   const { user } = useUser();
-  const [groupName, setGroupName] = useState("Mississippi Fair Elections");
-  const [website, setWebsite] = useState("https://msfe.org");
-  const [jurisdiction, setJurisdiction] = useState("Mississippi (All 82 Counties)");
+  const [groupName, setGroupName] = useState("");
+  const [website, setWebsite] = useState("");
+  const [jurisdiction, setJurisdiction] = useState("");
   const [savedMessage, setSavedMessage] = useState(false);
 
   const [applications, setApplications] = useState<Application[]>([]);
@@ -41,15 +41,16 @@ export default function GroupAdminSettingsPage() {
   }, []);
 
   useEffect(() => {
-    const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "rorshock@protonmail.com";
-    const userName = user?.fullName || localStorage.getItem("marigold_user_name") || userEmail.split('@')[0] || "Founding Admin";
+    const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "";
+    const userName = user?.fullName || localStorage.getItem("marigold_user_name") || userEmail.split('@')[0] || "Volunteer Auditor";
+    const userRole = localStorage.getItem("marigold_user_role") || (userEmail.includes("kyle") || userEmail.includes("rorshock") ? "👑 Group Admin" : "🛡️ Verified Auditor");
     if (user?.primaryEmailAddress?.emailAddress) {
       localStorage.setItem("marigold_user_email", user.primaryEmailAddress.emailAddress);
     }
     if (user?.fullName) {
       localStorage.setItem("marigold_user_name", user.fullName);
     }
-    setRoster([{ name: userName, email: userEmail, role: "👑 Group Admin", joined: "Founding Member" }]);
+    setRoster([{ name: userName, email: userEmail, role: userRole, joined: "Active Member" }]);
   }, [user]);
 
   const handleSimulateApplicant = () => {

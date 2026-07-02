@@ -26,8 +26,8 @@ export default function AppSidebar() {
           <MarigoldIcon className="w-6 h-6 flex-shrink-0 drop-shadow-sm" />
           <span className="font-serif font-bold text-lg tracking-tight text-white">Marigold Insights</span>
         </div>
-        <div className="inline-block bg-slate-800 text-amber-400 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-slate-700">
-          State SAA / Volunteer Workspace
+        <div className="inline-block bg-slate-800 text-amber-400 font-medium text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-slate-700">
+          Citizen Volunteer Network
         </div>
       </div>
 

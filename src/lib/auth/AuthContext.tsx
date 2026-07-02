@@ -36,11 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = (groupName = "Mississippi Fair Elections", role: 'admin' | 'member' = 'admin') => {
+  const login = (groupName = "", role: 'admin' | 'member' = 'member') => {
     const mockUser: UserProfile = {
-      id: "usr_123",
-      name: "Kyle (Volunteer Lead)",
-      email: "kyle@colonhyphenbracket.pink",
+      id: "usr_" + Math.random().toString(36).substring(2, 8),
+      name: "Authenticated Citizen",
+      email: "volunteer@example.org",
       groupName,
       role
     };
