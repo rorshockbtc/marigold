@@ -170,19 +170,19 @@ export default function DataPrepPage() {
           </div>
 
           {/* Live Mission Security Log */}
-          <div className="bg-slate-900 text-slate-200 p-5 rounded-xl space-y-3 font-mono text-xs border border-slate-700 shadow-inner">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold border-b border-slate-800 pb-2">
+          <div className="bg-[#F0ECE3] text-[#2D3142] p-5 rounded-xl space-y-3 font-mono text-xs border border-[#E5E0D8] shadow-inner">
+            <div className="flex items-center gap-2 text-[#D96B27] font-bold border-b border-[#E5E0D8] pb-2">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               LIVE MISSION SECURITY LOG
             </div>
-            <div className="space-y-1.5 text-slate-300">
+            <div className="space-y-1.5 text-[#4A5060]">
               <p>✔ [System] Web Worker spawned on background thread (RAM usage locked flat at ~100MB).</p>
               <p>✔ [Backpressure] Segmenting CSV stream into safe 5MB chunks to prevent memory spikes.</p>
               <p>✔ [IndexedDB] Writing row batch #{Math.floor(parseState.rowsParsed / 5000) + 1} into private local VoterDataDB.</p>
-              <p className="text-amber-300">🔒 [Network Audit] 0 bytes transmitted outbound. 100% air-gapped processing.</p>
+              <p className="text-[#D96B27] font-bold">🔒 [Network Audit] 0 bytes transmitted outbound. 100% air-gapped processing.</p>
             </div>
-            <div className="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60 font-sans text-slate-300 text-xs mt-3 leading-relaxed">
-              <strong className="text-white block mb-1">🏛️ Why does this process take a few minutes?</strong>
+            <div className="bg-white/80 p-3 rounded-lg border border-[#E5E0D8] font-sans text-[#4A5060] text-xs mt-3 leading-relaxed">
+              <strong className="text-[#2D3142] block mb-1">🏛️ Why does this process take a few minutes?</strong>
               Traditional cloud software uploads sensitive citizen files to remote servers in seconds—putting public privacy at risk. Marigold processes 100% of this dataset right here inside your computer&apos;s memory. Not a single name or address ever leaves your machine. Protecting fellow citizens&apos; privacy takes a little extra time, and your security is worth it!
             </div>
           </div>
@@ -203,13 +203,13 @@ export default function DataPrepPage() {
           </div>
 
           {parseState.columnMapping && (
-            <div className="bg-slate-900 text-white dark:bg-slate-950 border border-slate-700 p-6 rounded-xl shadow-lg space-y-4">
+            <div className="bg-[#F0ECE3] text-[#2D3142] border border-[#E5E0D8] p-6 rounded-xl shadow-sm space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h3 className="text-lg font-black flex items-center gap-2 text-amber-400">
+                  <h3 className="text-lg font-black flex items-center gap-2 text-[#D96B27]">
                     <span>🧭 Universal Column Mapping Interpreter</span>
                   </h3>
-                  <p className="text-xs text-slate-300 mt-0.5">
+                  <p className="text-xs text-[#646A7A] mt-0.5">
                     Automatic normalization active. Raw headers mapped to universal schema without exposing private row PII.
                   </p>
                 </div>

@@ -96,11 +96,11 @@ export default function DataLinkageStrategy() {
         </div>
       </div>
 
-      <section className="bg-slate-900 text-white p-8 rounded-2xl shadow-lg space-y-4">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
+      <section className="bg-[#F0ECE3] text-[#2D3142] p-8 rounded-2xl border border-[#E5E0D8] shadow-sm space-y-4">
+        <h2 className="text-2xl font-bold flex items-center gap-2 text-[#D96B27]">
           🎯 Why Single Sources are Inherently Broken
         </h2>
-        <p className="text-slate-300 leading-relaxed text-sm">
+        <p className="text-[#4A5060] leading-relaxed text-sm">
           A state voter roll on its own is fractured, noisy, and full of human clerical error. If you are looking for objective truth in an apolitical way, you cannot rely on a single dataset. You must cross-reference it against external, highly regulated &quot;Ground Truth&quot; databases using probabilistic record linkage.
         </p>
       </section>

@@ -19,21 +19,21 @@ export default function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-slate-950 text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 z-50 shadow-2xl font-sans select-none">
+    <aside className="w-64 bg-[#F0ECE3] text-[#2D3142] flex flex-col h-screen fixed left-0 top-0 border-r border-[#E5E0D8] z-50 shadow-lg font-sans select-none">
       {/* Brand Header */}
-      <div className="p-6 border-b border-slate-800 space-y-1.5 bg-slate-900/50">
+      <div className="p-6 border-b border-[#E5E0D8] space-y-1.5 bg-[#EAE5DC]/60">
         <div className="flex items-center gap-2.5">
           <MarigoldIcon className="w-6 h-6 flex-shrink-0 drop-shadow-sm" />
-          <span className="font-serif font-bold text-lg tracking-tight text-white">Marigold Insights</span>
+          <span className="font-serif font-bold text-lg tracking-tight text-[#2D3142]">Marigold Insights</span>
         </div>
-        <div className="inline-block bg-slate-800 text-amber-400 font-medium text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-slate-700">
+        <div className="inline-block bg-[#D96B27]/15 text-[#D96B27] font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-[#D96B27]/30">
           Citizen Volunteer Network
         </div>
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5">
-        <div className="px-3 pb-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+        <div className="px-3 pb-2 text-[11px] font-mono uppercase tracking-wider text-[#646A7A] font-bold">
           Workspace Modules
         </div>
         {NAV_ITEMS.map((item) => {
@@ -44,12 +44,15 @@ export default function AppSidebar() {
               href={item.href}
               className={`block px-3.5 py-3 rounded-xl transition-all duration-150 group ${
                 isActive
-                  ? 'bg-slate-800 text-white font-bold border-l-4 border-amber-500 pl-3 shadow-md'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 font-medium'
+                  ? 'bg-white text-[#2D3142] font-extrabold border border-[#E5E0D8] shadow-sm'
+                  : 'text-[#4A5060] hover:text-[#2D3142] hover:bg-white/60 font-medium'
               }`}
             >
-              <div className="text-sm">{item.label}</div>
-              <div className={`text-[11px] leading-tight mt-0.5 ${isActive ? 'text-amber-300/80' : 'text-slate-500 group-hover:text-slate-400'}`}>
+              <div className="text-sm flex items-center justify-between">
+                <span>{item.label}</span>
+                {isActive && <span className="w-2 h-2 rounded-full bg-[#D96B27]" />}
+              </div>
+              <div className={`text-[11px] leading-tight mt-0.5 ${isActive ? 'text-[#D96B27] font-semibold' : 'text-[#7A8090] group-hover:text-[#5A6070]'}`}>
                 {item.desc}
               </div>
             </Link>
@@ -58,16 +61,16 @@ export default function AppSidebar() {
       </nav>
 
       {/* Bottom User Controls & Return Link */}
-      <div className="p-4 border-t border-slate-800 bg-slate-900/50 space-y-4">
+      <div className="p-4 border-t border-[#E5E0D8] bg-[#EAE5DC]/60 space-y-4">
         <Link 
           href="/" 
-          className="flex items-center gap-2 text-xs text-slate-400 hover:text-amber-400 font-semibold px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors"
+          className="flex items-center gap-2 text-xs text-[#4A5060] hover:text-[#D96B27] font-semibold px-2 py-1.5 rounded-lg hover:bg-white/60 transition-colors"
         >
           <span>← Back to Marketing Site</span>
         </Link>
 
-        <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 px-2">
-          <div className="text-xs text-slate-400 font-medium truncate max-w-[140px]">
+        <div className="flex items-center justify-between pt-2 border-t border-[#E5E0D8] px-2">
+          <div className="text-xs text-[#4A5060] font-medium truncate max-w-[140px]">
             Active Account
           </div>
           <UserButton />

@@ -367,7 +367,7 @@ export default function AnalysisDashboard() {
                     <div className="flex items-center justify-end gap-2 mt-0.5">
                       <button 
                         onClick={() => setSelectedInspectRecord(r)}
-                        className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-black transition-all text-xs flex items-center gap-1 shadow-md border border-slate-700 dark:border-slate-300"
+                        className="px-3.5 py-2 rounded-lg bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black transition-all text-xs flex items-center gap-1 shadow-sm border border-[#C85A1B]"
                         title="Open Inline Forensic Controller"
                       >
                         <span>🔍 Review Findings</span>
@@ -377,14 +377,14 @@ export default function AnalysisDashboard() {
                           navigator.clipboard.writeText(String(r.address || r.address1 || ""));
                           alert("Address copied to clipboard! Paste into a new browser tab or mapping app to look up without sharing tracking referrers.");
                         }}
-                        className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 font-extrabold transition-all text-xs border border-slate-300 dark:border-slate-600 flex items-center gap-1 shadow-sm"
+                        className="px-2.5 py-2 rounded-lg bg-white hover:bg-[#F0ECE3] text-[#2D3142] font-extrabold transition-all text-xs border border-[#E5E0D8] flex items-center gap-1 shadow-sm"
                         title="Copy address to clipboard for private external lookup"
                       >
                         <span>📋 Copy</span>
                       </button>
                       <button 
                         onClick={() => setSelectedNoteRecord(r)}
-                        className="px-2.5 py-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 font-black transition-colors text-xs border border-amber-500/40 shadow-sm"
+                        className="px-2.5 py-2 rounded-lg bg-[#D96B27]/15 hover:bg-[#D96B27]/25 text-[#D96B27] font-black transition-colors text-xs border border-[#D96B27]/30 shadow-sm"
                         title="Attach volunteer field note"
                       >
                         📝 Note
@@ -661,30 +661,30 @@ export default function AnalysisDashboard() {
         <div className="space-y-4">
           {/* Compact 1-Row KPI Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-slate-900 border border-slate-800 px-4 py-3 rounded-xl text-white flex items-center justify-between shadow-sm">
+            <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 block">Memory Shard Scope</span>
-                <span className="text-xl font-extrabold">{countyFilter ? "34,210" : "485,210"} <span className="text-xs font-normal text-slate-400">Rows Scanned</span></span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Memory Shard Scope</span>
+                <span className="text-xl font-extrabold">{countyFilter ? "34,210" : "485,210"} <span className="text-xs font-normal text-[#646A7A]">Rows Scanned</span></span>
               </div>
               <span className="text-lg">⚡</span>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 px-4 py-3 rounded-xl text-white flex items-center justify-between shadow-sm">
+            <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 block">Flagged Findings</span>
-                <span className="text-xl font-extrabold">{results.length} <span className="text-xs font-normal text-slate-400">Records Identified</span></span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Flagged Findings</span>
+                <span className="text-xl font-extrabold">{results.length} <span className="text-xs font-normal text-[#646A7A]">Records Identified</span></span>
               </div>
               <span className="text-lg">🚩</span>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 px-4 py-3 rounded-xl text-white flex items-center justify-between shadow-sm">
+            <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-400 block">Risk Status</span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Risk Status</span>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded text-[11px] border border-amber-500/30">
+                  <span className="bg-[#D96B27]/15 text-[#D96B27] font-bold px-1.5 py-0.5 rounded text-[11px] border border-[#D96B27]/30">
                     ⚠️ {results.filter(r => categorizeAddress(r.address || r.address1 || "") === "⚠️ Review Recommended").length}
                   </span>
-                  <span className="bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded text-[11px] border border-emerald-500/30">
+                  <span className="bg-emerald-50 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[11px] border border-emerald-200">
                     ✅ {results.filter(r => categorizeAddress(r.address || r.address1 || "") !== "⚠️ Review Recommended").length}
                   </span>
                 </div>
