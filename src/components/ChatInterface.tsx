@@ -309,32 +309,32 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           )}
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-lg p-4 shadow-sm relative group ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-white border border-border text-foreground'}`}>
+              <div className={`max-w-[85%] rounded-2xl p-4 shadow-2xs relative group ${msg.role === 'user' ? 'bg-[#D96B27] text-white font-medium' : 'bg-white border border-[#E5E0D8] text-[#2D3142]'}`}>
                 {msg.role === 'assistant' && (
                   <div className="flex justify-end mb-1">
                     <button
                       type="button"
                       onClick={() => handleSpeakText(msg.content)}
-                      className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1 transition-colors"
+                      className="text-[11px] bg-[#FAF8F5] hover:bg-[#EAE5DC] text-[#4A5060] px-2 py-0.5 rounded border border-[#E5E0D8] flex items-center gap-1 transition-colors font-semibold"
                       title="Read this response out loud"
                     >
                       🔊 Read Aloud
                     </button>
                   </div>
                 )}
-                <div className={`text-[1rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-primary-foreground' : 'text-foreground'}`}>
+                <div className={`text-sm md:text-[0.95rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-white' : 'text-[#2D3142]'}`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
 
                 {msg.suggestedPlaybook && (
-                  <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 space-y-2 text-left">
-                    <div className="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-amber-800">
+                  <div className="mt-4 p-3 bg-[#FAF8F5] border border-[#D96B27]/30 rounded-xl text-[#2D3142] space-y-2 text-left">
+                    <div className="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-[#D96B27]">
                       <span>✨ AI Suggested Mission Playbook</span>
-                      <span className="bg-amber-200 px-2 py-0.5 rounded">{msg.suggestedPlaybook.audit_type}</span>
+                      <span className="bg-[#D96B27]/15 px-2 py-0.5 rounded">{msg.suggestedPlaybook.audit_type}</span>
                     </div>
                     <p className="font-bold text-sm">{msg.suggestedPlaybook.name}</p>
-                    <p className="text-xs text-amber-900 leading-relaxed">{msg.suggestedPlaybook.description}</p>
-                    <div className="flex gap-2 text-xs text-amber-800 font-mono pt-1">
+                    <p className="text-xs text-[#4A5060] leading-relaxed">{msg.suggestedPlaybook.description}</p>
+                    <div className="flex gap-2 text-xs text-[#646A7A] font-mono pt-1">
                       <span>Threshold: {msg.suggestedPlaybook.threshold || 'N/A'}</span>
                       <span>• County: {msg.suggestedPlaybook.county || 'Statewide'}</span>
                     </div>
@@ -342,7 +342,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                       type="button"
                       onClick={() => handleSaveSuggestedPlaybook(msg.suggestedPlaybook)}
                       disabled={savedPlaybooks[msg.suggestedPlaybook.name]}
-                      className={`w-full py-2 rounded-lg font-bold text-xs transition-colors shadow ${savedPlaybooks[msg.suggestedPlaybook.name] ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-600 hover:bg-amber-700 text-white'}`}
+                      className={`w-full py-2 rounded-lg font-bold text-xs transition-colors shadow-2xs ${savedPlaybooks[msg.suggestedPlaybook.name] ? 'bg-emerald-600 text-white cursor-default' : 'bg-[#D96B27] hover:bg-[#C85A1B] text-white'}`}
                     >
                       {savedPlaybooks[msg.suggestedPlaybook.name] ? '✓ Saved to Mission Control!' : '⚡ Save as Mission Playbook'}
                     </button>
@@ -353,86 +353,103 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white border border-border rounded-lg p-4 shadow-sm animate-pulse">
-                <p className="text-muted-foreground">Thinking...</p>
+              <div className="bg-white border border-[#E5E0D8] rounded-2xl p-4 shadow-2xs animate-pulse">
+                <p className="text-[#646A7A] text-sm font-medium">Thinking & reviewing local data records...</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Quick Starter Chips */}
-        <div className="bg-amber-50/70 border-t border-amber-200/80 p-2.5 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
-          <span className="text-xs font-bold text-amber-900 shrink-0 flex items-center gap-1">💡 What should I ask?</span>
-          <button onClick={() => setQuery("Are there any unusual apartment complexes or dorms in my town?")} className="text-xs bg-white border border-amber-300 text-amber-900 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors shadow-sm font-medium">
-            🏢 Check for unusual apartment complexes
-          </button>
-          <button onClick={() => setQuery("Can you check if any commercial shipping stores are listed as residential addresses?")} className="text-xs bg-white border border-amber-300 text-amber-900 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors shadow-sm font-medium">
-            📦 Find shipping boxes listed as homes
-          </button>
-          <button onClick={() => setQuery("Explain what a Z-Score is like I am sitting at the kitchen table drinking coffee.")} className="text-xs bg-white border border-amber-300 text-amber-900 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors shadow-sm font-medium">
-            ☕ Explain Z-Scores over coffee
-          </button>
-        </div>
+        {/* Suggested Starter Actions Grid (Clean stacked cards instead of congested horizontal chips!) */}
+        {messages.length <= 1 && (
+          <div className="p-4 bg-[#F0ECE3] border-t border-[#E5E0D8] space-y-3">
+            <div className="text-[11px] font-black text-[#646A7A] uppercase tracking-wider flex items-center justify-between">
+              <span>✨ Suggested Forensic Inquiries</span>
+              <span className="text-[10px] font-normal font-mono">Click any card to ask</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setQuery("Are there any unusual apartment complexes or dorms registered in my jurisdiction?")}
+                className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
+              >
+                <span className="text-base shrink-0">🏢</span>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">High-Density Registration Scan</div>
+                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Check over-registered apartments & dorms</div>
+                </div>
+              </button>
 
-        {/* Recipes Bar */}
-        <div className="bg-muted/30 border-t border-border p-3 flex gap-3 overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
-          <span className="text-xs font-semibold text-muted-foreground shrink-0">Demo Prompts:</span>
-          
-          <select 
-            className="text-xs border border-border rounded-md px-2 py-1 bg-white"
-            onChange={(e) => setQuery(`Run a Fraud Audit on ${e.target.value} County`)}
-            defaultValue=""
-          >
-            <option value="" disabled>Select County to Audit...</option>
-            <option value="Hinds">Hinds</option>
-            <option value="Rankin">Rankin</option>
-            <option value="Madison">Madison</option>
-            <option value="DeSoto">DeSoto</option>
-            <option value="Harrison">Harrison</option>
-          </select>
+              <button
+                type="button"
+                onClick={() => setQuery("Can you check if any commercial shipping stores or PO boxes are listed as residential homes?")}
+                className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
+              >
+                <span className="text-base shrink-0">📦</span>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Audit Commercial Mail Drops</div>
+                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Identify shipping boxes used as residences</div>
+                </div>
+              </button>
 
-          <button onClick={() => setQuery("Explain the Z-Scores for density")} className="text-xs bg-sky-50 border border-sky-200 text-sky-700 px-3 py-1.5 rounded-full hover:bg-sky-100 transition-colors font-medium shrink-0">
-            📊 Explain the Z-Scores for density
-          </button>
-          
-          <div className="w-px h-4 bg-border mx-1 shrink-0"></div>
-          {localRecipes.map(r => (
-            <button key={r.id} onClick={() => setQuery(r.queryTemplate)} className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors" title={r.description}>
-              👤 {r.name}
-            </button>
-          ))}
-          {orgRecipes.map(r => (
-            <button key={r.id} onClick={() => setQuery(r.queryTemplate)} className="text-xs bg-white border border-border px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors" title={r.description}>
-              🏢 {r.name}
-            </button>
-          ))}
-        </div>
+              <button
+                type="button"
+                onClick={() => setQuery("Explain what a Z-Score is and how Marigold detects anomalies without partisan bias.")}
+                className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
+              >
+                <span className="text-base shrink-0">☕</span>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Plain-English Z-Scores Guide</div>
+                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Understand objective statistical anomalies</div>
+                </div>
+              </button>
 
-        {/* Input Form */}
-        <div className="p-4 bg-white border-t border-border">
-          <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-4 items-center">
-            <input 
-              type="text" 
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="input-field flex-1" 
-              placeholder={isListening ? "🎙️ Listening... speak now..." : "Type a question or press the mic..."} 
-              disabled={isLoading || isListening}
-            />
-            <button
-              type="button"
-              onClick={toggleSpeechRecognition}
-              className={`p-2.5 rounded-lg border font-bold text-sm transition-all flex items-center gap-1.5 shrink-0 ${isListening ? 'bg-rose-600 text-white border-rose-700 animate-pulse' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'}`}
-              title="Speak your question out loud"
+              <button
+                type="button"
+                onClick={() => setQuery("Run a full statistical fraud evaluation on Hinds County and summarize priority anomalies.")}
+                className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
+              >
+                <span className="text-base shrink-0">📊</span>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Sample County Audit (Hinds)</div>
+                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Generate county anomaly report</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Clean Modern Input Form */}
+        <div className="p-4 bg-white border-t border-[#E5E0D8]">
+          <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <input 
+                type="text" 
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full bg-[#FAF8F5] border border-[#E5E0D8] focus:border-[#D96B27] rounded-xl px-4 py-3 pr-10 text-sm text-[#2D3142] outline-none font-medium placeholder-[#646A7A]" 
+                placeholder={isListening ? "🎙️ Listening... speak now..." : "Type a question or ask for guidance..."} 
+                disabled={isLoading || isListening}
+              />
+              <button
+                type="button"
+                onClick={toggleSpeechRecognition}
+                className={`absolute right-2 top-1.5 bottom-1.5 px-2.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center ${isListening ? 'bg-rose-600 text-white animate-pulse' : 'text-[#646A7A] hover:text-[#D96B27] hover:bg-[#EAE5DC]'}`}
+                title="Speak your question out loud"
+              >
+                🎙️
+              </button>
+            </div>
+            <button 
+              type="submit" 
+              className="bg-[#D96B27] hover:bg-[#C85A1B] disabled:opacity-50 text-white font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0" 
+              disabled={isLoading || isListening || !query.trim()}
             >
-              🎙️ {isListening ? 'Listening...' : 'Speak'}
-            </button>
-            <button type="submit" className="btn-primary shrink-0" disabled={isLoading || isListening}>
               Send
             </button>
           </form>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            AI generated searches can make mistakes. Always verify findings before reporting.
+          <p className="text-[11px] text-[#646A7A] mt-2 text-center">
+            AI generated guidance runs locally. Always verify findings before reporting.
           </p>
         </div>
 

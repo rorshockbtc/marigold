@@ -8,9 +8,23 @@ export default function MariRightPanel() {
 
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
+    const handleClose = () => setIsOpen(false);
+    const handleToggle = () => setIsOpen(prev => !prev);
+
     window.addEventListener('open-mari-panel', handleOpen);
-    return () => window.removeEventListener('open-mari-panel', handleOpen);
+    window.addEventListener('close-mari-panel', handleClose);
+    window.addEventListener('toggle-mari-panel', handleToggle);
+    return () => {
+      window.removeEventListener('open-mari-panel', handleOpen);
+      window.removeEventListener('close-mari-panel', handleClose);
+      window.removeEventListener('toggle-mari-panel', handleToggle);
+    };
   }, []);
+
+  // Notify window whenever panel toggles so workspace layout can adjust its right margin
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('mari-panel-state-change', { detail: { isOpen } }));
+  }, [isOpen]);
 
   return (
     <>
@@ -27,43 +41,37 @@ export default function MariRightPanel() {
         </button>
       )}
 
-      {/* Right Slide-Over Backdrop and Panel */}
+      {/* Right Slide-Over Panel (Attached strictly to right-0 top-0 bottom-0 without scrim!) */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-[2px] animate-in fade-in duration-200">
-          <div 
-            className="w-full max-w-lg md:max-w-xl h-full bg-[#FAF8F5] border-l border-[#E5E0D8] shadow-2xl flex flex-col z-50 overflow-hidden animate-in slide-in-from-right duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="bg-[#F0ECE3] border-b border-[#E5E0D8] px-6 py-4 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#D96B27]/20 border border-[#D96B27]/40 text-[#D96B27] flex items-center justify-center font-bold text-xl shadow-inner">
-                  🌼
-                </div>
-                <div>
-                  <h3 className="font-black text-[#2D3142] text-base leading-tight">Mari AI Guidance Co-Pilot</h3>
-                  <p className="text-[11px] text-[#646A7A] font-mono mt-0.5">100% Local Browser Memory • Non-Partisan Guide</p>
-                </div>
+        <aside 
+          className="fixed top-0 right-0 bottom-0 w-full max-w-md md:max-w-[430px] xl:max-w-[460px] bg-[#FAF8F5] border-l border-[#E5E0D8] shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-300"
+        >
+          {/* Header */}
+          <div className="bg-[#F0ECE3] border-b border-[#E5E0D8] px-5 py-3.5 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#D96B27]/20 border border-[#D96B27]/40 text-[#D96B27] flex items-center justify-center font-bold text-lg shadow-inner">
+                🌼
               </div>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-lg text-[#646A7A] hover:text-[#2D3142] hover:bg-[#E5E0D8]/60 font-bold text-lg flex items-center justify-center transition-colors"
-                title="Close side panel"
-              >
-                ✕
-              </button>
+              <div>
+                <h3 className="font-black text-[#2D3142] text-sm leading-tight">Mari AI Guidance Co-Pilot</h3>
+                <p className="text-[10px] text-[#646A7A] font-mono mt-0.5">100% Local Memory • Non-Partisan Guide</p>
+              </div>
             </div>
-
-            {/* Chat Content Body */}
-            <div className="flex-1 overflow-hidden p-0 bg-[#FAF8F5]">
-              <ChatInterface isDrawer={true} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="px-2.5 py-1 rounded-lg text-[#646A7A] hover:text-[#2D3142] hover:bg-[#E5E0D8]/60 font-bold text-xs flex items-center gap-1 transition-colors"
+              title="Close side panel"
+            >
+              <span>✕ Close</span>
+            </button>
           </div>
 
-          {/* Backdrop click to close */}
-          <div className="flex-1 h-full" onClick={() => setIsOpen(false)} />
-        </div>
+          {/* Chat Content Body */}
+          <div className="flex-1 overflow-hidden p-0 bg-[#FAF8F5] flex flex-col">
+            <ChatInterface isDrawer={true} />
+          </div>
+        </aside>
       )}
     </>
   );

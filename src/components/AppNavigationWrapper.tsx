@@ -21,6 +21,17 @@ const WORKSPACE_ROUTES = [
 
 export default function AppNavigationWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
+  const [isMariOpen, setIsMariOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handlePanelChange = (e: any) => {
+      if (e && e.detail && typeof e.detail.isOpen === 'boolean') {
+        setIsMariOpen(e.detail.isOpen);
+      }
+    };
+    window.addEventListener('mari-panel-state-change', handlePanelChange);
+    return () => window.removeEventListener('mari-panel-state-change', handlePanelChange);
+  }, []);
 
   const isWorkspace = WORKSPACE_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`));
 
@@ -29,7 +40,7 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
       <div className="flex min-h-screen bg-[#FAF8F5] font-sans">
         <AppSidebar />
         <MariRightPanel />
-        <main className="flex-1 pl-64 overflow-x-hidden flex flex-col justify-between min-h-screen">
+        <main className={`flex-1 pl-64 transition-all duration-300 overflow-x-hidden flex flex-col justify-between min-h-screen ${isMariOpen ? 'pr-[430px] xl:pr-[460px]' : ''}`}>
           <div className="p-6 md:p-10 max-w-7xl mx-auto w-full flex-1">
             {children}
           </div>
