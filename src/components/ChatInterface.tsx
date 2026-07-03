@@ -17,7 +17,7 @@ export interface ChatSession {
   messages: ChatMessage[];
 }
 
-export default function ChatInterface() {
+export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean } = {}) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -241,40 +241,42 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] max-w-6xl mx-auto gap-6">
+    <div className={isDrawer ? "flex h-full w-full gap-0 bg-[#FAF8F5]" : "flex h-[calc(100vh-8rem)] max-w-6xl mx-auto gap-6"}>
       
       {/* Sidebar: History */}
-      <div className="w-64 flex flex-col bg-white rounded-xl shadow-sm border border-border overflow-hidden shrink-0">
-        <div className="p-4 border-b border-border">
-          <button onClick={handleNewSession} className="w-full btn-primary text-sm py-2">
-            + New Question
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {sessions.map(s => (
-            <div 
-              key={s.id} 
-              onClick={() => setActiveSessionId(s.id)}
-              className={`p-3 rounded-lg cursor-pointer text-sm flex justify-between items-center group transition-colors ${activeSessionId === s.id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-muted-foreground'}`}
-            >
-              <span className="truncate flex-1 pr-2">{s.title}</span>
-              <button 
-                onClick={(e) => handleDeleteSession(s.id, e)}
-                className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 p-1"
-                title="Delete Session"
+      {!isDrawer && (
+        <div className="w-64 flex flex-col bg-white rounded-xl shadow-sm border border-border overflow-hidden shrink-0">
+          <div className="p-4 border-b border-border">
+            <button onClick={handleNewSession} className="w-full btn-primary text-sm py-2">
+              + New Question
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {sessions.map(s => (
+              <div 
+                key={s.id} 
+                onClick={() => setActiveSessionId(s.id)}
+                className={`p-3 rounded-lg cursor-pointer text-sm flex justify-between items-center group transition-colors ${activeSessionId === s.id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-muted-foreground'}`}
               >
-                ✕
-              </button>
-            </div>
-          ))}
-          {sessions.length === 0 && (
-            <p className="text-xs text-center text-muted-foreground mt-4">No past questions.</p>
-          )}
+                <span className="truncate flex-1 pr-2">{s.title}</span>
+                <button 
+                  onClick={(e) => handleDeleteSession(s.id, e)}
+                  className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 p-1"
+                  title="Delete Session"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {sessions.length === 0 && (
+              <p className="text-xs text-center text-muted-foreground mt-4">No past questions.</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-border overflow-hidden relative">
+      <div className={`flex-1 flex flex-col bg-white overflow-hidden relative ${isDrawer ? 'border-0 rounded-none shadow-none h-full' : 'rounded-xl shadow-sm border border-border'}`}>
         <div className="bg-secondary text-secondary-foreground p-4 shadow-sm z-10 flex flex-wrap justify-between items-center gap-4">
           <div>
             <h2 className="text-lg font-bold">{activeSession ? activeSession.title : "New Question"}</h2>

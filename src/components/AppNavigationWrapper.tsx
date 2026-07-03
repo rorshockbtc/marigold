@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import AppSidebar from '@/components/AppSidebar';
+import MariRightPanel from '@/components/MariRightPanel';
 
 const WORKSPACE_ROUTES = [
   '/dashboard',
@@ -25,22 +26,23 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
 
   if (isWorkspace) {
     return (
-      <div className="flex min-h-screen bg-slate-50 font-sans">
+      <div className="flex min-h-screen bg-[#FAF8F5] font-sans">
         <AppSidebar />
+        <MariRightPanel />
         <main className="flex-1 pl-64 overflow-x-hidden flex flex-col justify-between min-h-screen">
           <div className="p-6 md:p-10 max-w-7xl mx-auto w-full flex-1">
             {children}
           </div>
-          <footer className="border-t border-slate-200 bg-white py-4 px-6 md:px-10 text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-3 mt-auto">
-            <div className="flex flex-wrap items-center gap-4 font-bold text-slate-700">
-              <a href="/terms" className="hover:text-amber-600 transition-colors">Terms of Service &amp; Statutory Liability</a>
+          <footer className="border-t border-[#E5E0D8] bg-white py-4 px-6 md:px-10 text-xs text-[#646A7A] flex flex-col sm:flex-row justify-between items-center gap-3 mt-auto">
+            <div className="flex flex-wrap items-center gap-4 font-bold text-[#2D3142]">
+              <a href="/terms" className="hover:text-[#D96B27] transition-colors">Terms of Service &amp; Statutory Liability</a>
               <span>•</span>
-              <a href="/privacy" className="hover:text-amber-600 transition-colors">Zero-Knowledge Privacy Policy</a>
+              <a href="/privacy" className="hover:text-[#D96B27] transition-colors">Zero-Knowledge Privacy Policy</a>
               <span>•</span>
-              <a href="/compliance" className="hover:text-amber-600 transition-colors">Security &amp; Compliance</a>
+              <a href="/compliance" className="hover:text-[#D96B27] transition-colors">Security &amp; Compliance</a>
             </div>
-            <div className="font-mono text-[11px] text-slate-400">
-              100% Local Browser Memory Execution • Zero Cloud PII
+            <div className="font-mono text-[11px] text-[#D96B27] font-bold">
+              🔒 100% Local Browser Memory Execution • Zero Cloud PII
             </div>
           </footer>
         </main>

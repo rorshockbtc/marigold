@@ -501,24 +501,25 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         </div>
 
         {/* Step X Status Confirmation Banner */}
-        <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="bg-[#EAE5DC]/80 border border-[#D96B27]/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
             <div>
-              <strong className="text-emerald-200 font-bold">Active Dataset Connected:</strong>{' '}
-              <span className="text-emerald-300 font-mono">{localFileName || "ms_statewide_benchmark_100k.csv"} ({activeStats.totalVoters.toLocaleString()} records)</span>
-              <span className="text-emerald-400/80 ml-2">({activeStats.isRealDataset ? 'Verified Local Memory' : 'Sample Benchmark'})</span>
+              <strong className="text-[#2D3142] font-black">Active Dataset Connected:</strong>{' '}
+              <span className="text-[#D96B27] font-mono font-bold">{localFileName || "ms_statewide_benchmark_100k.csv"} ({activeStats.totalVoters.toLocaleString()} records)</span>
+              <span className="text-[#4A5060] font-medium ml-2">({activeStats.isRealDataset ? 'Verified Local Memory' : 'Sample Benchmark'})</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <a
-              href="/chat"
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-mari-panel'))}
+              className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-4 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
             >
               💬 Ask Mari for Guidance
-            </a>
-            <details className="text-[11px] text-slate-400">
-            <summary className="cursor-pointer hover:text-slate-200 font-semibold underline">Advanced Data Settings</summary>
+            </button>
+            <details className="text-[11px] text-[#4A5060]">
+            <summary className="cursor-pointer hover:text-[#2D3142] font-bold underline">Advanced Data Settings</summary>
             <div className="mt-2 flex flex-wrap gap-2 pt-2 border-t border-slate-700/60">
               <button
                 type="button"
