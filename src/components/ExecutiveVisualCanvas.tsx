@@ -510,7 +510,14 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               <span className="text-emerald-400/80 ml-2">({activeStats.isRealDataset ? 'Verified Local Memory' : 'Sample Benchmark'})</span>
             </div>
           </div>
-          <details className="text-[11px] text-slate-400">
+          <div className="flex items-center gap-3">
+            <a
+              href="/chat"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
+            >
+              💬 Ask Mari for Guidance
+            </a>
+            <details className="text-[11px] text-slate-400">
             <summary className="cursor-pointer hover:text-slate-200 font-semibold underline">Advanced Data Settings</summary>
             <div className="mt-2 flex flex-wrap gap-2 pt-2 border-t border-slate-700/60">
               <button
@@ -539,6 +546,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             </div>
           </details>
         </div>
+      </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div>

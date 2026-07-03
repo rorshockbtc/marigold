@@ -23,6 +23,11 @@ export default function ChatInterface() {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
+  // Friendly Guide vs Pro Mode
+  const [isFriendlyMode, setIsFriendlyMode] = useState(true);
+  // Voice listening state
+  const [isListening, setIsListening] = useState(false);
+
   // Recipes
   const [orgRecipes, setOrgRecipes] = useState<SearchRecipe[]>([]);
   const [localRecipes, setLocalRecipes] = useState<SearchRecipe[]>([]);
@@ -33,6 +38,44 @@ export default function ChatInterface() {
   const [templateDesc, setTemplateDesc] = useState("");
   const [templateScope, setTemplateScope] = useState<"local" | "org">("local");
   const [savedPlaybooks, setSavedPlaybooks] = useState<Record<string, boolean>>({});
+
+  // Voice recognition helper
+  const toggleSpeechRecognition = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser. Please try Chrome or Edge.");
+      return;
+    }
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(prev => (prev ? prev + " " + transcript : transcript));
+      setIsListening(false);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
+
+  // Read aloud helper
+  const handleSpeakText = (text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    // Strip markdown chars for clean speaking
+    const cleanText = text.replace(/[*#`~_]/g, "").replace(/\[.*?\]\(.*?\)/g, "");
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleSaveSuggestedPlaybook = async (pb: any) => {
     try {
@@ -145,7 +188,8 @@ export default function ChatInterface() {
         body: JSON.stringify({ 
           query: userMessage.content, 
           history: currentMessages,
-          userApiKey
+          userApiKey,
+          isFriendlyMode
         }),
       });
 
@@ -231,16 +275,26 @@ export default function ChatInterface() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-border overflow-hidden relative">
-        <div className="bg-secondary text-secondary-foreground p-4 shadow-sm z-10 flex justify-between items-center">
+        <div className="bg-secondary text-secondary-foreground p-4 shadow-sm z-10 flex flex-wrap justify-between items-center gap-4">
           <div>
             <h2 className="text-lg font-bold">{activeSession ? activeSession.title : "New Question"}</h2>
             <p className="text-xs opacity-80">Marigold Documentation & Guidance</p>
           </div>
-          {activeSession && activeSession.messages.length > 1 && (
-            <button onClick={() => setIsTemplateModalOpen(true)} className="text-xs bg-white text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-muted font-medium border border-border">
-              Save as Common Question
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsFriendlyMode(!isFriendlyMode)}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${isFriendlyMode ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm' : 'bg-slate-800 text-slate-200 border-slate-600'}`}
+              title={isFriendlyMode ? "Plain English analogies without statistical formulas" : "Rigorous Z-scores, kurtosis, and mathematical distributions"}
+            >
+              {isFriendlyMode ? '🌱 Friendly Guide Mode' : '🔬 Analyst Pro Mode'}
             </button>
-          )}
+            {activeSession && activeSession.messages.length > 1 && (
+              <button onClick={() => setIsTemplateModalOpen(true)} className="text-xs bg-white text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-muted font-medium border border-border">
+                Save as Common Question
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-background">
@@ -253,7 +307,19 @@ export default function ChatInterface() {
           )}
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-lg p-4 shadow-sm ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-white border border-border text-foreground'}`}>
+              <div className={`max-w-[80%] rounded-lg p-4 shadow-sm relative group ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-white border border-border text-foreground'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="flex justify-end mb-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSpeakText(msg.content)}
+                      className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1 transition-colors"
+                      title="Read this response out loud"
+                    >
+                      🔊 Read Aloud
+                    </button>
+                  </div>
+                )}
                 <div className={`text-[1rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-primary-foreground' : 'text-foreground'}`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
@@ -292,6 +358,20 @@ export default function ChatInterface() {
           )}
         </div>
 
+        {/* Quick Starter Chips */}
+        <div className="bg-amber-50/70 border-t border-amber-200/80 p-2.5 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
+          <span className="text-xs font-bold text-amber-900 shrink-0 flex items-center gap-1">💡 What should I ask?</span>
+          <button onClick={() => setQuery("Are there any unusual apartment complexes or dorms in my town?")} className="text-xs bg-white border border-amber-300 text-amber-900 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors shadow-sm font-medium">
+            🏢 Check for unusual apartment complexes
+          </button>
+          <button onClick={() => setQuery("Can you check if any commercial shipping stores are listed as residential addresses?")} className="text-xs bg-white border border-amber-300 text-amber-900 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors shadow-sm font-medium">
+            📦 Find shipping boxes listed as homes
+          </button>
+          <button onClick={() => setQuery("Explain what a Z-Score is like I am sitting at the kitchen table drinking coffee.")} className="text-xs bg-white border border-amber-300 text-amber-900 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors shadow-sm font-medium">
+            ☕ Explain Z-Scores over coffee
+          </button>
+        </div>
+
         {/* Recipes Bar */}
         <div className="bg-muted/30 border-t border-border p-3 flex gap-3 overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
           <span className="text-xs font-semibold text-muted-foreground shrink-0">Demo Prompts:</span>
@@ -328,16 +408,24 @@ export default function ChatInterface() {
 
         {/* Input Form */}
         <div className="p-4 bg-white border-t border-border">
-          <form onSubmit={handleSubmit} className="flex gap-4">
+          <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-4 items-center">
             <input 
               type="text" 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="input-field flex-1" 
-              placeholder="e.g. How do I filter the table to show only NCOA matches?" 
-              disabled={isLoading}
+              placeholder={isListening ? "🎙️ Listening... speak now..." : "Type a question or press the mic..."} 
+              disabled={isLoading || isListening}
             />
-            <button type="submit" className="btn-primary" disabled={isLoading}>
+            <button
+              type="button"
+              onClick={toggleSpeechRecognition}
+              className={`p-2.5 rounded-lg border font-bold text-sm transition-all flex items-center gap-1.5 shrink-0 ${isListening ? 'bg-rose-600 text-white border-rose-700 animate-pulse' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'}`}
+              title="Speak your question out loud"
+            >
+              🎙️ {isListening ? 'Listening...' : 'Speak'}
+            </button>
+            <button type="submit" className="btn-primary shrink-0" disabled={isLoading || isListening}>
               Send
             </button>
           </form>

@@ -1,39 +1,9 @@
 import { useState, useCallback } from 'react';
+import { normalizeRowWithMapping } from '@/lib/csv/universalMapper';
 
 export interface QueryResult {
   rows: Array<Record<string, any>>;
   totalMatches: number;
-}
-
-function extractField(row: Record<string, any>, keywords: string[], fallback = ''): string {
-  if (!row || typeof row !== 'object') return fallback;
-  const keys = Object.keys(row);
-  for (const kw of keywords) {
-    const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
-    for (const key of keys) {
-      const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (cleanKey === cleanKw) {
-        const val = row[key];
-        if (val !== undefined && val !== null && String(val).trim() !== '') {
-          return String(val).trim();
-        }
-      }
-    }
-  }
-  for (const kw of keywords) {
-    const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (cleanKw.length <= 3) continue;
-    for (const key of keys) {
-      const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (cleanKey.includes(cleanKw) || cleanKw.includes(cleanKey)) {
-        const val = row[key];
-        if (val !== undefined && val !== null && String(val).trim() !== '') {
-          return String(val).trim();
-        }
-      }
-    }
-  }
-  return fallback;
 }
 
 export function useDataQuery() {
@@ -66,7 +36,7 @@ export function useDataQuery() {
             );
             if (matches) {
               matchCount++;
-              if (matchCount > offset && allRows.length < limit) allRows.push(rowData);
+              if (matchCount > offset && allRows.length < limit) allRows.push(normalizeRowWithMapping(rowData));
             }
             cursor.continue();
           } else {
@@ -94,8 +64,12 @@ export function useDataQuery() {
       const transaction = db.transaction(['rows'], 'readonly');
       const store = transaction.objectStore('rows');
       
-      // Memory optimization: store lightweight counter map instead of full row objects
+      // Memory optimization: collect targeted anomaly structures
       const addressCounts: Map<string, { count: number; sample: Record<string, any> }> = new Map();
+      const dateCounts: Map<string, { count: number; sample: Record<string, any> }> = new Map();
+      const phantomList: Array<Record<string, any>> = [];
+      const ncoaList: Array<Record<string, any>> = [];
+      const dupMap: Map<string, { count: number; sample: Record<string, any>; addrs: Set<string> }> = new Map();
       const results: Array<Record<string, any>> = [];
 
       return new Promise((resolve, reject) => {
@@ -104,34 +78,116 @@ export function useDataQuery() {
           const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
           if (cursor) {
             const val = cursor.value;
-            const r = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
+            const raw = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
+            const std = normalizeRowWithMapping(raw);
             
-            const rCounty = extractField(r, ['countyname', 'countycode', 'jurisdiction', 'county'], 'Statewide');
+            const rCounty = std.county || 'Statewide';
             const filterCounty = (countyFilter || '').toLowerCase();
             
             if (!filterCounty || rCounty.toLowerCase().includes(filterCounty)) {
-              const addr = extractField(r, ['residentialaddress', 'residenceaddress', 'streetaddress', 'physicaladdress', 'address1', 'address']);
+              const addr = std.address;
               if (addr) {
                 const existing = addressCounts.get(addr);
                 if (existing) {
                   existing.count++;
                 } else {
-                  const first = extractField(r, ['firstname', 'first'], '');
-                  const last = extractField(r, ['lastname', 'last'], '');
-                  const fullName = extractField(r, ['fullname', 'votername', 'name', 'firstlastname'], '') || [first, last].filter(Boolean).join(' ') || 'Unlisted Resident';
-                  
                   addressCounts.set(addr, {
                     count: 1,
                     sample: {
-                      voter_id: extractField(r, ['voterregistrationnumber', 'registrationnumber', 'sosvoterid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voterid'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
-                      name: fullName,
-                      address: addr,
-                      city: extractField(r, ['residentialcity', 'residencecity', 'cityname', 'city'], 'Unknown City'),
-                      state: extractField(r, ['residentialstate', 'residencestate', 'state'], 'MS'),
-                      zip: extractField(r, ['residentialzip', 'residencezip', 'zipcode', 'postalcode', 'zip'], 'N/A'),
+                      voter_id: std.voter_id,
+                      name: std.name,
+                      address: std.address,
+                      city: std.city,
+                      state: std.state,
+                      zip: std.zip,
                       county: rCounty,
-                      raw: typeof r === 'object' && r !== null ? { ...r } : {}
+                      raw: std.raw
                     }
+                  });
+                }
+              }
+
+              // Track registration spikes
+              if (std.date_registered) {
+                const dExisting = dateCounts.get(std.date_registered);
+                if (dExisting) {
+                  dExisting.count++;
+                } else {
+                  dateCounts.set(std.date_registered, {
+                    count: 1,
+                    sample: {
+                      voter_id: std.voter_id,
+                      name: `Surge Cohort (${std.date_registered})`,
+                      address: `Multiple Locations Registered on ${std.date_registered}`,
+                      city: std.city,
+                      state: std.state,
+                      zip: std.zip,
+                      county: rCounty,
+                      raw: std.raw
+                    }
+                  });
+                }
+              }
+
+              // Track phantom precincts
+              if (!std.precinct_code || std.precinct_code === '0' || std.precinct_code.toUpperCase() === 'UNASSIGNED') {
+                if (phantomList.length < 100) {
+                  phantomList.push({
+                    id: std.voter_id,
+                    name: std.name,
+                    address: std.address || 'Unlisted Domicile',
+                    city: std.city,
+                    state: std.state,
+                    zip: std.zip,
+                    county: rCounty,
+                    occupant_count: 1,
+                    risk_level: 'HIGH',
+                    details: `Active voter record missing mandatory voting precinct code assignment.`,
+                    raw: std.raw
+                  });
+                }
+              }
+
+              // Track NCOA / Out of state
+              if (std.ncoa_flag || (std.raw && (std.raw.mail_state || std.raw.MAIL_ST) && String(std.raw.mail_state || std.raw.MAIL_ST).toUpperCase() !== 'MS')) {
+                if (ncoaList.length < 100) {
+                  ncoaList.push({
+                    id: std.voter_id,
+                    name: std.name,
+                    address: std.address || 'Unlisted Domicile',
+                    city: std.city,
+                    state: std.state,
+                    zip: std.zip,
+                    county: rCounty,
+                    occupant_count: 1,
+                    risk_level: 'HIGH',
+                    details: `National Change of Address (NCOA) flag triggered or out-of-state mailing domicile.`,
+                    raw: std.raw
+                  });
+                }
+              }
+
+              // Track intra-county duplicates
+              if (std.first_name && std.last_name && std.zip) {
+                const dupKey = `${std.first_name.toLowerCase()}|${std.last_name.toLowerCase()}|${std.zip}`;
+                const dExisting = dupMap.get(dupKey);
+                if (dExisting) {
+                  dExisting.count++;
+                  if (std.address) dExisting.addrs.add(std.address);
+                } else {
+                  dupMap.set(dupKey, {
+                    count: 1,
+                    sample: {
+                      voter_id: std.voter_id,
+                      name: std.name,
+                      address: std.address,
+                      city: std.city,
+                      state: std.state,
+                      zip: std.zip,
+                      county: rCounty,
+                      raw: std.raw
+                    },
+                    addrs: new Set(std.address ? [std.address] : [])
                   });
                 }
               }
@@ -139,7 +195,7 @@ export function useDataQuery() {
             cursor.continue();
           } else {
             setIsQuerying(false);
-            // Process aggregated address counts based on auditType
+            // Process aggregated results based on auditType
             if (auditType === 'density') {
               for (const [addr, { count, sample }] of addressCounts.entries()) {
                 if (count >= threshold) {
@@ -195,6 +251,46 @@ export function useDataQuery() {
                     occupant_count: count,
                     risk_level: 'CRITICAL',
                     details: `Commercial / P.O. Box address listed as primary residential domicile.`,
+                    raw: sample.raw
+                  });
+                }
+              }
+            } else if (auditType === 'spikes') {
+              for (const [regDate, { count, sample }] of dateCounts.entries()) {
+                if (count >= (threshold || 50)) {
+                  results.push({
+                    id: sample.voter_id,
+                    name: sample.name,
+                    address: sample.address,
+                    city: sample.city,
+                    state: sample.state,
+                    zip: sample.zip,
+                    county: sample.county,
+                    occupant_count: count,
+                    risk_level: count > 500 ? 'CRITICAL' : 'HIGH',
+                    details: `Unusual registration surge: ${count} new registrations recorded on single day (${regDate}).`,
+                    raw: sample.raw
+                  });
+                }
+              }
+            } else if (auditType === 'phantom-precincts') {
+              results.push(...phantomList);
+            } else if (auditType === 'out-of-state-mailing') {
+              results.push(...ncoaList);
+            } else if (auditType === 'duplicates') {
+              for (const [key, { count, sample, addrs }] of dupMap.entries()) {
+                if (count > 1 && addrs.size > 1) {
+                  results.push({
+                    id: sample.voter_id,
+                    name: sample.name,
+                    address: sample.address,
+                    city: sample.city,
+                    state: sample.state,
+                    zip: sample.zip,
+                    county: sample.county,
+                    occupant_count: count,
+                    risk_level: 'HIGH',
+                    details: `Potential intra-county duplicate: ${count} registrations with identical Name & Zip across ${addrs.size} addresses.`,
                     raw: sample.raw
                   });
                 }

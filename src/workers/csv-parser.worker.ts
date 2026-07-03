@@ -1,4 +1,5 @@
 import Papa from 'papaparse';
+import { interpretColumnMappings } from '@/lib/csv/universalMapper';
 
 export interface ParseProgress {
   type: 'progress';
@@ -12,6 +13,7 @@ export interface ParseComplete {
   type: 'complete';
   totalRows: number;
   columns: string[];
+  columnMapping?: Record<string, string>;
 }
 
 export interface ParseError {
@@ -93,10 +95,12 @@ self.onmessage = async (e: MessageEvent) => {
       },
       complete: () => {
         if (!hasError) {
+          const mapping = interpretColumnMappings(columns);
           self.postMessage({
             type: 'complete',
             totalRows: rowsParsed,
             columns,
+            columnMapping: mapping as unknown as Record<string, string>,
           } as ParseComplete);
         }
       },

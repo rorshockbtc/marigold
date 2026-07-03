@@ -352,10 +352,10 @@ export default function AnalysisDashboard() {
                   </td>
                   <td className="p-4 whitespace-nowrap align-top">
                     <div className="flex flex-col gap-1.5 items-start mt-0.5">
-                      <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-red-600 text-white border border-red-700 animate-pulse' : 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950'}`}>
+                      <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-[#D9534F] text-white border border-[#B52B27]' : 'bg-[#232733] text-white border border-[#1E222B]'}`}>
                         {occ} Total Registered
                       </span>
-                      <span className="text-[11px] font-black tracking-wider uppercase text-slate-900 dark:text-slate-100 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">
+                      <span className="text-[11px] font-black tracking-wider uppercase text-[#D96B27] bg-[#D96B27]/10 border border-[#D96B27]/20 px-2 py-0.5 rounded">
                         {r.risk_level || (isCritical ? 'CRITICAL SURGE FLAG' : 'HIGH DENSITY FLAG')}
                       </span>
                     </div>

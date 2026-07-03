@@ -8,6 +8,7 @@ export interface ParserState {
   bytesProcessed: number;
   totalBytes: number;
   columns: string[];
+  columnMapping?: Record<string, string>;
   error: string | null;
   totalRows: number;
 }
@@ -58,11 +59,15 @@ export function useCSVParser() {
             localStorage.setItem("marigold_file_connected", "true");
             localStorage.setItem("marigold_file_rows", String(message.totalRows));
             localStorage.setItem("marigold_file_name", file.name);
+            if (message.columnMapping) {
+              localStorage.setItem("marigold_file_mapping", JSON.stringify(message.columnMapping));
+            }
           }
           setState(prev => ({
             ...prev,
             isProcessing: false,
             columns: message.columns,
+            columnMapping: message.columnMapping,
             totalRows: message.totalRows,
             progress: 100,
           }));

@@ -202,6 +202,32 @@ export default function DataPrepPage() {
             </button>
           </div>
 
+          {parseState.columnMapping && (
+            <div className="bg-slate-900 text-white dark:bg-slate-950 border border-slate-700 p-6 rounded-xl shadow-lg space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 className="text-lg font-black flex items-center gap-2 text-amber-400">
+                    <span>🧭 Universal Column Mapping Interpreter</span>
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Automatic normalization active. Raw headers mapped to universal schema without exposing private row PII.
+                  </p>
+                </div>
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[11px] px-2.5 py-1 rounded-full font-black">
+                  {Object.values(parseState.columnMapping).filter(Boolean).length} Standard Fields Mapped
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 pt-2">
+                {Object.entries(parseState.columnMapping).map(([key, val]) => val ? (
+                  <div key={key} className="bg-slate-800/80 border border-slate-700/80 rounded-lg p-2.5 text-xs">
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-extrabold">{key.replace('_', ' ')}</div>
+                    <div className="font-mono font-bold text-slate-100 truncate mt-0.5" title={String(val)}>← {String(val)}</div>
+                  </div>
+                ) : null)}
+              </div>
+            </div>
+          )}
+
           {!exportState.isExporting && !exportState.isComplete && (
             <div className="card space-y-6">
               <div>

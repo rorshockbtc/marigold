@@ -96,7 +96,7 @@ const suggestMissionPlaybookDeclaration: FunctionDeclaration = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { query, history, userApiKey } = await req.json();
+    const { query, history, userApiKey, isFriendlyMode } = await req.json();
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
@@ -113,8 +113,17 @@ export async function POST(req: NextRequest) {
     const recentFeedback = getFeedbackLogs();
     const feedbackContext = recentFeedback.map((f: any) => `- Audit: ${f.audit_type}, Feedback: ${f.user_feedback}, Date: ${f.created_at}`).join('\\n');
 
+    const modePrompt = isFriendlyMode !== false ? `
+      CRITICAL INSTRUCTION FOR FRIENDLY GUIDE MODE (ACTIVE):
+      The user has toggled 'Friendly Guide Mode' ON. You MUST explain all data, statistics, and findings strictly in everyday kitchen-table analogies without quoting complex math terms like kurtosis, skewness, or raw vectors. Keep it warm, simple, conversational, and empowering! Never overwhelm them with technical jargon.
+    ` : `
+      CRITICAL INSTRUCTION FOR ANALYST PRO MODE (ACTIVE):
+      The user wants rigorous statistical reporting. Provide exact standard deviations, Z-scores, kurtosis, and data vectors alongside concise explanations.
+    `;
+
     const systemInstruction = `
       You are the "Marigold Guide", an incredibly patient and statistically rigorous software tutor.
+      ${modePrompt}
       
       Your user base consists of two distinct groups:
       1. Non-Nerds (Volunteers): They want to work hard and find anomalies but lack statistical language.
