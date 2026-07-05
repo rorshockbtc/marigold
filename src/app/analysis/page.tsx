@@ -1151,7 +1151,7 @@ export default function AnalysisDashboard() {
 
       {/* Persistent MVC Side Sheet Controller */}
       {selectedInspectRecord && (
-        <div className="fixed top-0 bottom-0 right-0 h-screen w-full max-w-lg bg-white dark:bg-slate-900 border-l-2 border-slate-300 dark:border-slate-700 shadow-2xl z-[9999] flex flex-col overflow-hidden animate-slideLeft">
+        <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white dark:bg-slate-900 border-l-2 border-slate-300 dark:border-slate-700 shadow-2xl z-[9999] flex flex-col overflow-hidden animate-slideLeft">
           {/* Side Sheet Header */}
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -1170,216 +1170,217 @@ export default function AnalysisDashboard() {
             </button>
           </div>
 
-          {/* Anomaly Diagnosis Section (Top Priority) */}
-          <div className="p-5 bg-amber-500/15 border-b-2 border-amber-500/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-black uppercase text-amber-900 dark:text-amber-300 tracking-wide flex items-center gap-1.5">
-                <span>🚨 Primary Anomaly Diagnosis</span>
-              </span>
-              <span className="px-3 py-1 rounded-md text-xs font-black bg-amber-500/30 text-amber-950 dark:text-amber-200 border border-amber-500/40">
-                {selectedInspectRecord.risk_level || 'HIGH DENSITY'}
-              </span>
-            </div>
-            <p className="text-sm text-slate-900 dark:text-slate-100 font-bold leading-relaxed bg-white/60 dark:bg-slate-900/60 p-3 rounded-lg border border-amber-500/30">
-              {selectedInspectRecord.details || categorizeAddress(selectedInspectRecord.address || selectedInspectRecord.address1 || "")}
-            </p>
-            <div className="pt-1 flex flex-wrap items-center gap-2.5">
-              <button
-                onClick={() => setSelectedNoteRecord(selectedInspectRecord)}
-                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow"
-              >
-                <span>📝 Attach Volunteer Observation Note</span>
-              </button>
-              <button
-                onClick={() => {
-                  excludeRecord(selectedInspectRecord.address || selectedInspectRecord.address1 || "");
-                  setSelectedInspectRecord(null);
-                }}
-                className="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 font-extrabold rounded-lg text-xs transition-colors shadow-sm"
-              >
-                <span>👎 Mark False Positive</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Citizen & Location Blueprint */}
-          <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Citizen & Domicile Summary</h4>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(String(selectedInspectRecord.address || selectedInspectRecord.address1 || ""));
-                  alert("Address copied! Paste securely into a new tab or mapping app.");
-                }}
-                className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold rounded text-xs transition-all flex items-center gap-1"
-              >
-                <span>📋 Copy Address</span>
-              </button>
-            </div>
-            <div className="text-base font-black text-slate-900 dark:text-white">{selectedInspectRecord.name || 'Resident Record'}</div>
-            <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Voter ID: {selectedInspectRecord.id || 'N/A'}</div>
-            <div className="text-sm text-slate-900 dark:text-slate-100 font-extrabold pt-1">
-              📍 {selectedInspectRecord.address || selectedInspectRecord.address1 || 'Unknown Address'}
-            </div>
-            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              {selectedInspectRecord.city || 'City'}, {selectedInspectRecord.state || 'MS'} {selectedInspectRecord.zip || ''} ({selectedInspectRecord.county || 'Statewide'} County)
-            </div>
-          </div>
-
-          {/* Matching / Related Duplicate Registrations (For County Clerk / Commissioner Verification) */}
-          {(selectedInspectRecord.duplicateAddresses || (currentAudit === 'duplicates' && results.length > 0)) && (
-            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-amber-500/10 dark:bg-amber-500/5 space-y-3">
+          {/* Scrollable Content Wrapper */}
+          <div className="flex-1 overflow-y-auto select-text divide-y divide-slate-200 dark:divide-slate-800">
+            {/* Anomaly Diagnosis Section (Top Priority) */}
+            <div className="p-5 bg-amber-500/15 border-b-2 border-amber-500/30 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
-                  <span>👯 Matching Duplicate Registrations</span>
+                <span className="text-sm font-black uppercase text-amber-900 dark:text-amber-300 tracking-wide flex items-center gap-1.5">
+                  <span>🚨 Primary Anomaly Diagnosis</span>
                 </span>
-                <span className="text-[10px] font-mono bg-amber-500/20 text-amber-950 dark:text-amber-200 px-2 py-0.5 rounded font-bold">
-                  Cross-Reference Check
+                <span className="px-3 py-1 rounded-md text-xs font-black bg-amber-500/30 text-amber-950 dark:text-amber-200 border border-amber-500/40">
+                  {selectedInspectRecord.risk_level || 'HIGH DENSITY'}
                 </span>
               </div>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                For official County Clerk or Election Commissioner verification, below are all addresses registered under this identical Name &amp; Zip code:
+              <p className="text-sm text-slate-900 dark:text-slate-100 font-bold leading-relaxed bg-white/60 dark:bg-slate-900/60 p-3 rounded-lg border border-amber-500/30">
+                {selectedInspectRecord.details || categorizeAddress(selectedInspectRecord.address || selectedInspectRecord.address1 || "")}
               </p>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {(selectedInspectRecord.duplicateAddresses || results
-                  .filter(r => r.name === selectedInspectRecord.name && r.address !== selectedInspectRecord.address)
-                  .map(r => r.address)
-                  .concat([selectedInspectRecord.address])
-                  .filter((v, i, a) => a.indexOf(v) === i)
-                ).map((addr: string, idx: number) => (
-                  <div 
-                    key={idx} 
-                    className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 font-mono font-bold ${addr === selectedInspectRecord.address ? 'bg-amber-500/20 border-amber-500/40 text-amber-950 dark:text-amber-200' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'}`}
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 flex items-center justify-center text-[10px] shrink-0 font-black">
-                        #{idx + 1}
-                      </span>
-                      <span className="truncate">{addr || 'Unknown Address'}</span>
-                    </div>
-                    {addr === selectedInspectRecord.address ? (
-                      <span className="text-[10px] uppercase font-sans font-black bg-amber-600 text-white px-1.5 py-0.5 rounded shrink-0">Current Row</span>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(String(addr));
-                          alert("Address copied: " + addr);
-                        }}
-                        className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white px-1.5 py-0.5 rounded shrink-0 underline"
-                      >
-                        Copy
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Resident Cluster Roster (All Occupants at Domicile / Date) */}
-          {selectedInspectRecord.residentCluster && selectedInspectRecord.residentCluster.length > 0 && (
-            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-blue-500/10 dark:bg-blue-500/5 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
-                  <span>👥 Resident Cluster Roster</span>
-                </span>
-                <span className="text-[10px] font-mono bg-blue-500/20 text-blue-950 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
-                  {selectedInspectRecord.residentCluster.length} Total Occupants
-                </span>
-              </div>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                {currentAudit === 'spikes'
-                  ? "Below is the sample cohort of individuals registered on this surge date across the jurisdiction:"
-                  : "For official verification, below is the roster of registered voters domiciled at this exact street address:"}
-              </p>
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {selectedInspectRecord.residentCluster.map((res: any, idx: number) => (
-                  <div 
-                    key={idx} 
-                    className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between gap-2 font-mono font-bold text-slate-800 dark:text-slate-200 shadow-2xs"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-900 dark:text-blue-300 flex items-center justify-center text-[10px] shrink-0 font-black">
-                        #{idx + 1}
-                      </span>
-                      <div className="truncate">
-                        <div className="font-extrabold text-slate-900 dark:text-white truncate">{res.name || 'Resident Name'}</div>
-                        <div className="text-[10px] text-slate-500 font-normal">ID: {res.id || 'N/A'} {res.date ? `• Reg: ${res.date}` : res.city ? `• City: ${res.city}` : ''}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${res.name} (ID: ${res.id})`);
-                        alert("Resident details copied!");
-                      }}
-                      className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white px-1.5 py-0.5 rounded shrink-0 underline"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Out-of-State Mailing Loophole Side-by-Side Comparison */}
-          {(selectedInspectRecord.mailingAddress || currentAudit === 'out-of-state-mailing') && (
-            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-purple-500/10 dark:bg-purple-500/5 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
-                  <span>📬 Domicile vs. Mailing Comparison</span>
-                </span>
-                <span className="text-[10px] font-mono bg-purple-500/20 text-purple-950 dark:text-purple-200 px-2 py-0.5 rounded font-bold">
-                  Interstate Loophole Check
-                </span>
-              </div>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                This voter maintains an active residential registration in Mississippi while directing official mail to an out-of-state address:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">📍 MS Residence (Domicile)</div>
-                  <div className="text-xs font-bold font-mono text-slate-900 dark:text-white break-words">
-                    {selectedInspectRecord.address || 'Unknown Address'}<br />
-                    {selectedInspectRecord.city || 'City'}, MS {selectedInspectRecord.zip || ''}
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/60 border-2 border-purple-400 dark:border-purple-700 space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-purple-800 dark:text-purple-300">✈️ Out-of-State Mailing</div>
-                  <div className="text-xs font-bold font-mono text-purple-950 dark:text-purple-100 break-words">
-                    {selectedInspectRecord.mailingAddress || selectedInspectRecord.raw?.mail_address || selectedInspectRecord.raw?.mailing_address || selectedInspectRecord.raw?.MAIL_ADDR || 'Out-of-State Address Filed'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Raw Supporting Data Grid */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
-            <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">All Extracted Attributes & Raw Data</h4>
-            {selectedInspectRecord.raw && Object.keys(selectedInspectRecord.raw).length > 0 ? (
-              <div className="grid grid-cols-1 gap-2.5">
-                {Object.entries(selectedInspectRecord.raw).map(([key, value]) => (
-                  <div key={key} className="bg-slate-100 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
-                    <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase">{key.replace(/_/g, ' ')}</span>
-                    <span className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 break-all">{String(value !== null && value !== undefined ? value : '—')}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-slate-700 dark:text-slate-300 font-medium bg-slate-100 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
-                <p>Detailed raw columns are indexed during your live database crawl.</p>
+              <div className="pt-1 flex flex-wrap items-center gap-2.5">
+                <button
+                  onClick={() => setSelectedNoteRecord(selectedInspectRecord)}
+                  className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow"
+                >
+                  <span>📝 Attach Volunteer Observation Note</span>
+                </button>
                 <button
                   onClick={() => {
-                    runAlgorithm(currentAudit || 'density', countyFilter, thresholdFilter, true);
+                    excludeRecord(selectedInspectRecord.address || selectedInspectRecord.address1 || "");
                     setSelectedInspectRecord(null);
                   }}
-                  className="px-3 py-1.5 bg-primary text-white font-bold rounded-lg text-xs shadow hover:bg-primary/90"
+                  className="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 font-extrabold rounded-lg text-xs transition-colors shadow-sm"
                 >
-                  🔄 Force Full Data Map Scan
+                  <span>👎 Mark False Positive</span>
                 </button>
               </div>
+            </div>
+
+            {/* Citizen & Location Blueprint */}
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Citizen & Domicile Summary</h4>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(String(selectedInspectRecord.address || selectedInspectRecord.address1 || ""));
+                    alert("Address copied! Paste securely into a new tab or mapping app.");
+                  }}
+                  className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold rounded text-xs transition-all flex items-center gap-1"
+                >
+                  <span>📋 Copy Address</span>
+                </button>
+              </div>
+              <div className="text-base font-black text-slate-900 dark:text-white">{selectedInspectRecord.name || 'Resident Record'}</div>
+              <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Voter ID: {selectedInspectRecord.id || 'N/A'}</div>
+              <div className="text-sm text-slate-900 dark:text-slate-100 font-extrabold pt-1">
+                📍 {selectedInspectRecord.address || selectedInspectRecord.address1 || 'Unknown Address'}
+              </div>
+              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {selectedInspectRecord.city || 'City'}, {selectedInspectRecord.state || 'MS'} {selectedInspectRecord.zip || ''} ({selectedInspectRecord.county || 'Statewide'} County)
+              </div>
+            </div>
+
+            {/* Matching / Related Duplicate Registrations (For County Clerk / Commissioner Verification) */}
+            {(selectedInspectRecord.duplicateAddresses || (currentAudit === 'duplicates' && results.length > 0)) && (
+              <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-amber-500/10 dark:bg-amber-500/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                    <span>👯 Matching Duplicate Registrations</span>
+                  </span>
+                  <span className="text-[10px] font-mono bg-amber-500/20 text-amber-950 dark:text-amber-200 px-2 py-0.5 rounded font-bold">
+                    Cross-Reference Check
+                  </span>
+                </div>
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                  For official County Clerk or Election Commissioner verification, below are all addresses registered under this identical Name &amp; Zip code:
+                </p>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {(selectedInspectRecord.duplicateAddresses || results
+                    .filter(r => r.name === selectedInspectRecord.name && r.address !== selectedInspectRecord.address)
+                    .map(r => r.address)
+                    .concat([selectedInspectRecord.address])
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                  ).map((addr: string, idx: number) => (
+                    <div 
+                      key={idx} 
+                      className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 font-mono font-bold ${addr === selectedInspectRecord.address ? 'bg-amber-500/20 border-amber-500/40 text-amber-950 dark:text-amber-200' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'}`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 flex items-center justify-center text-[10px] shrink-0 font-black">
+                          #{idx + 1}
+                        </span>
+                        <span className="truncate">{addr || 'Unknown Address'}</span>
+                      </div>
+                      {addr === selectedInspectRecord.address ? (
+                        <span className="text-[10px] uppercase font-sans font-black bg-amber-600 text-white px-1.5 py-0.5 rounded shrink-0">Current Row</span>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(String(addr));
+                            alert("Address copied: " + addr);
+                          }}
+                          className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white px-1.5 py-0.5 rounded shrink-0 underline"
+                        >
+                          Copy
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
+
+            {/* Resident Cluster Roster (All Occupants at Domicile / Date) */}
+            {selectedInspectRecord.residentCluster && selectedInspectRecord.residentCluster.length > 0 && (
+              <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-blue-500/10 dark:bg-blue-500/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                    <span>👥 Resident Cluster Roster</span>
+                  </span>
+                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-950 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
+                    {selectedInspectRecord.residentCluster.length} Total Occupants
+                  </span>
+                </div>
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {currentAudit === 'spikes'
+                    ? "Below is the sample cohort of individuals registered on this surge date across the jurisdiction:"
+                    : "For official verification, below is the roster of registered voters domiciled at this exact street address:"}
+                </p>
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  {selectedInspectRecord.residentCluster.map((res: any, idx: number) => (
+                    <div 
+                      key={idx} 
+                      className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between gap-2 font-mono font-bold text-slate-800 dark:text-slate-200 shadow-2xs"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-900 dark:text-blue-300 flex items-center justify-center text-[10px] shrink-0 font-black">
+                          #{idx + 1}
+                        </span>
+                        <div className="truncate">
+                          <div className="font-extrabold text-slate-900 dark:text-white truncate">{res.name || 'Resident Name'}</div>
+                          <div className="text-[10px] text-slate-500 font-normal">ID: {res.id || 'N/A'} {res.date ? `• Reg: ${res.date}` : res.city ? `• City: ${res.city}` : ''}</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedNoteRecord({ name: res.name, id: res.id, address: selectedInspectRecord.address || selectedInspectRecord.address1 });
+                        }}
+                        className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-[10px] transition-colors border border-slate-300 shadow-3xs shrink-0"
+                      >
+                        📝 Note
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Domicile vs Mailing Address comparison (Out-of-State / NCOA Check) */}
+            {(selectedInspectRecord.mailingAddress || currentAudit === 'out-of-state-mailing') && (
+              <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-red-500/10 dark:bg-red-500/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-red-900 dark:text-red-300 flex items-center gap-1.5">
+                    <span>📫 Domicile vs Mailing Comparison</span>
+                  </span>
+                  <span className="text-[10px] font-mono bg-red-500/20 text-red-950 dark:text-red-200 px-2 py-0.5 rounded font-bold">
+                    Mail Divergence
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3.5 pt-1">
+                  <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <span className="text-[10px] uppercase font-sans font-extrabold text-slate-500 block">Residential Domicile</span>
+                    <strong className="text-xs font-mono font-bold text-slate-900 dark:text-white block leading-relaxed">
+                      {selectedInspectRecord.address || 'Unknown Address'}<br />
+                      {selectedInspectRecord.city || 'City'}, MS {selectedInspectRecord.zip || ''}
+                    </strong>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <span className="text-[10px] uppercase font-sans font-extrabold text-slate-500 block">Out-of-State Mailing</span>
+                    <strong className="text-xs font-mono font-bold text-red-700 dark:text-red-300 block leading-relaxed">
+                      {selectedInspectRecord.mailingAddress || selectedInspectRecord.raw?.mail_address || selectedInspectRecord.raw?.mailing_address || selectedInspectRecord.raw?.MAIL_ADDR || 'Out-of-State Address Filed'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Extracted CSV Attributes & Raw Object Values */}
+            <div className="p-5 space-y-3">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>📋 All Extracted Attributes &amp; Raw Data</span>
+              </span>
+              {selectedInspectRecord.raw && Object.keys(selectedInspectRecord.raw).length > 0 ? (
+                <div className="grid grid-cols-1 gap-2.5">
+                  {Object.entries(selectedInspectRecord.raw).map(([key, value]) => (
+                    <div key={key} className="bg-slate-100 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
+                      <span className="text-[11px] font-extrabold text-slate-600 dark:border-slate-400 uppercase">{key.replace(/_/g, ' ')}</span>
+                      <span className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 break-all">{String(value !== null && value !== undefined ? value : '—')}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium bg-slate-100 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
+                  <p>Detailed raw columns are indexed during your live database crawl.</p>
+                  <button
+                    onClick={() => {
+                      runAlgorithm(currentAudit || 'density', countyFilter, thresholdFilter, true);
+                      setSelectedInspectRecord(null);
+                    }}
+                    className="px-3 py-1.5 bg-primary text-white font-bold rounded-lg text-xs shadow hover:bg-primary/90"
+                  >
+                    🔄 Force Full Data Map Scan
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
