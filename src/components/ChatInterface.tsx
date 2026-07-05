@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { getSearchRecipes, saveSearchRecipe, SearchRecipe } from "@/lib/firebase/db";
 import ReactMarkdown from 'react-markdown';
+import { usePathname } from 'next/navigation';
+import { BookOpen, Volume2, Sparkles, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope } from 'lucide-react';
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -23,6 +25,18 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pathname = usePathname() || '';
+
+  const getPageContext = () => {
+    if (typeof window === 'undefined') return null;
+    return {
+      currentRoute: pathname,
+      activeGroup: localStorage.getItem("marigold_active_group") || "Independent Audit Workspace",
+      datasetName: localStorage.getItem("marigold_file_name") || "No file linked",
+      datasetRowCount: localStorage.getItem("marigold_file_rows") || "0",
+      isDataConnected: localStorage.getItem("marigold_file_connected") === "true"
+    };
+  };
 
   useEffect(() => {
     if (query === "" && textareaRef.current) {
@@ -208,7 +222,8 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           query: userMessage.content, 
           history: currentMessages,
           userApiKey,
-          isFriendlyMode
+          isFriendlyMode,
+          pageContext: getPageContext()
         }),
       });
 
@@ -308,7 +323,17 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
               className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${isFriendlyMode ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm' : 'bg-slate-800 text-slate-200 border-slate-600'}`}
               title={isFriendlyMode ? "Plain English analogies without statistical formulas" : "Rigorous Z-scores, kurtosis, and mathematical distributions"}
             >
-              {isFriendlyMode ? '🌱 Friendly Guide Mode' : '🔬 Analyst Pro Mode'}
+              {isFriendlyMode ? (
+                <>
+                  <Sprout className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Friendly Guide Mode</span>
+                </>
+              ) : (
+                <>
+                  <Microscope className="w-3.5 h-3.5 text-slate-300" />
+                  <span>Analyst Pro Mode</span>
+                </>
+              )}
             </button>
             {activeSession && activeSession.messages.length > 1 && (
               <button onClick={() => setIsTemplateModalOpen(true)} className="text-xs bg-white text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-muted font-medium border border-border">
@@ -321,7 +346,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
         <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-background">
           {!activeSession && (
              <div className="h-full flex items-center justify-center text-muted-foreground flex-col text-center px-8">
-               <span className="text-4xl mb-4">📚</span>
+               <BookOpen className="w-12 h-12 text-slate-400 mb-4" />
                <p className="text-lg font-medium text-foreground">Welcome to the Marigold Guide</p>
                <p className="mt-2">I am here to help you learn how to navigate Marigold Insights and find the records you need.</p>
              </div>
@@ -337,7 +362,8 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                       className="text-[11px] bg-[#FAF8F5] hover:bg-[#EAE5DC] text-[#4A5060] px-2 py-0.5 rounded border border-[#E5E0D8] flex items-center gap-1 transition-colors font-semibold"
                       title="Read this response out loud"
                     >
-                      🔊 Read Aloud
+                      <Volume2 className="w-3.5 h-3.5 text-[#D96B27]" />
+                      <span>Read Aloud</span>
                     </button>
                   </div>
                 )}
@@ -348,7 +374,10 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 {msg.suggestedPlaybook && (
                   <div className="mt-4 p-3 bg-[#FAF8F5] border border-[#D96B27]/30 rounded-xl text-[#2D3142] space-y-2 text-left">
                     <div className="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-[#D96B27]">
-                      <span>✨ AI Suggested Mission Playbook</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>AI Suggested Mission Playbook</span>
+                      </span>
                       <span className="bg-[#D96B27]/15 px-2 py-0.5 rounded">{msg.suggestedPlaybook.audit_type}</span>
                     </div>
                     <p className="font-bold text-sm">{msg.suggestedPlaybook.name}</p>
@@ -379,11 +408,14 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           )}
         </div>
 
-        {/* Suggested Starter Actions Grid (Clean stacked cards instead of congested horizontal chips!) */}
+        {/* Suggested Starter Actions Grid */}
         {messages.length <= 1 && (
           <div className="p-4 bg-[#F0ECE3] border-t border-[#E5E0D8] space-y-3">
             <div className="text-[11px] font-black text-[#646A7A] uppercase tracking-wider flex items-center justify-between">
-              <span>✨ Suggested Forensic Inquiries</span>
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#D96B27]" />
+                <span>Suggested Forensic Inquiries</span>
+              </span>
               <span className="text-[10px] font-normal font-mono">Click any card to ask</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -392,7 +424,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 onClick={() => setQuery("Are there any unusual apartment complexes or dorms registered in my jurisdiction?")}
                 className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
               >
-                <span className="text-base shrink-0">🏢</span>
+                <Building2 className="w-5 h-5 text-[#D96B27] shrink-0" />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">High-Density Registration Scan</div>
                   <div className="text-[11px] text-[#646A7A] line-clamp-1">Check over-registered apartments & dorms</div>
@@ -404,7 +436,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 onClick={() => setQuery("Can you check if any commercial shipping stores or PO boxes are listed as residential homes?")}
                 className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
               >
-                <span className="text-base shrink-0">📦</span>
+                <Package className="w-5 h-5 text-[#D96B27] shrink-0" />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Audit Commercial Mail Drops</div>
                   <div className="text-[11px] text-[#646A7A] line-clamp-1">Identify shipping boxes used as residences</div>
@@ -416,7 +448,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 onClick={() => setQuery("Explain what a Z-Score is and how Marigold detects anomalies without partisan bias.")}
                 className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
               >
-                <span className="text-base shrink-0">☕</span>
+                <HelpCircle className="w-5 h-5 text-[#D96B27] shrink-0" />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Plain-English Z-Scores Guide</div>
                   <div className="text-[11px] text-[#646A7A] line-clamp-1">Understand objective statistical anomalies</div>
@@ -428,7 +460,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 onClick={() => setQuery("Run a full statistical fraud evaluation on Hinds County and summarize priority anomalies.")}
                 className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
               >
-                <span className="text-base shrink-0">📊</span>
+                <BarChart3 className="w-5 h-5 text-[#D96B27] shrink-0" />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Sample County Audit (Hinds)</div>
                   <div className="text-[11px] text-[#646A7A] line-clamp-1">Generate county anomaly report</div>
@@ -509,8 +541,8 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 <div>
                   <label className="block text-sm font-medium mb-1">Visibility Scope</label>
                   <select value={templateScope} onChange={(e: any) => setTemplateScope(e.target.value)} className="input-field w-full">
-                    <option value="local">👤 Personal (Save to this browser only)</option>
-                    <option value="org">🏢 Organization (Publish to all MSFE volunteers)</option>
+                    <option value="local">Personal (Save to this browser only)</option>
+                    <option value="org">Organization (Publish to all MSFE volunteers)</option>
                   </select>
                 </div>
                 

@@ -31,10 +31,25 @@ Phase 4 Audits:
 - Phantom Precincts: Active voters with no precinct assigned.
 - Out-of-State Mailing Loophole: Active MS voters with out-of-state mail.
 
-Phase 5:
+Phase 5 & Organization Workflows:
 - Mission Control: A page of pre-configured, 1-click Playbooks for volunteers.
 - Pro Mode: The sandbox where users can tune threshold sliders and save Playbooks.
-- Exclusion Loop (False Positives): Users can click 'Thumbs Down' on any record to banish it from the global organization's search results forever.
+- Exclusion Loop (False Positives): Users can click 'Thumbs Down' on any record to banish it from the global organization's search results forever. This prevents duplicate review work across volunteer teams.
+
+Mississippi Fair Elections (MSFE) Specific Guidance & Patterns:
+- Jurisdictional Focus: MSFE prioritizes Hinds, DeSoto, Madison, and Rankin counties due to high registration velocity and student/institution density.
+- Apartment Complex & Dorm Scans: In college towns (e.g., Oxford, Starkville, Hattiesburg) or urban centers (Jackson), volunteers should look for missing apartment numbers (APT/STE) where 50+ voters share a single street address.
+- Interstate Relocation (NCOA): Flag active voters who filed National Change of Address forms moving out-of-state but remain on active voting rolls over 180 days later.
+
+Executive Visual Analytics & Chart Interpretation:
+- Benford's Law Distribution Curves: Explains whether street address numbers follow natural probability distributions (30% leading 1s). If the actual curve deviates sharply from the expected red line, it indicates human data tampering or synthetic generation.
+- NCOA Relocation Flow: Shows net migration across county lines and out-of-state departures.
+- Z-Score Anomaly Scatter: Plots occupancy against registration date to visually isolate extreme outliers (Z > 3.0) in the upper right quadrant.
+
+Troubleshooting Local File Linking & Air-Gapped RAM:
+- Why Files Are Processed Locally: Marigold uses an air-gapped browser architecture. Large CSVs (2M+ rows) are chunked via Web Workers into local IndexedDB/RAM. No data ever leaves the user's computer.
+- Memory Limits / Browser Freezes: If a volunteer experiences sluggishness during ingestion, recommend closing background browser tabs or switching to 'Stream / Chunked Mode' on the Data Settings page.
+- Schema Mapping: If columns don't match standard names (e.g. 'VoterID', 'ResStreet'), our Smart Mapping engine detects headers automatically with 85%+ fuzzy similarity.
 
 Stats 101 Reference (For Non-Nerds):
 - Mean (Average): The mathematical average. Prone to being wildly skewed by massive outliers (like nursing homes).
@@ -96,7 +111,7 @@ const suggestMissionPlaybookDeclaration: FunctionDeclaration = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { query, history, userApiKey, isFriendlyMode } = await req.json();
+    const { query, history, userApiKey, isFriendlyMode, pageContext } = await req.json();
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
@@ -121,9 +136,24 @@ export async function POST(req: NextRequest) {
       The user wants rigorous statistical reporting. Provide exact standard deviations, Z-scores, kurtosis, and data vectors alongside concise explanations.
     `;
 
+    const pageContextPrompt = pageContext ? `
+      REAL-TIME PAGE CONTEXT & WORKSPACE AWARENESS (ACTIVE):
+      - Current Screen / Route: ${pageContext.currentRoute}
+      - Organization / Jurisdiction: ${pageContext.activeGroup}
+      - Dataset Linked: ${pageContext.isDataConnected ? `Yes (${pageContext.datasetName}, ${Number(pageContext.datasetRowCount || 0).toLocaleString()} rows loaded in browser RAM)` : "No (Offline / Not Connected)"}
+      
+      HOW TO USE THIS CONTEXT:
+      - If the user is on '/dashboard', orient them to their Command Center, active shards, and team missions.
+      - If the user is on '/analysis', give them specific tips on filtering, searching by Name/Address, sorting by Z-Score, and verifying anomalies on the grid.
+      - If the user is on '/data-prep', guide them through linking their local CSV/TXT file, streaming shards, and understanding air-gapped RAM safety.
+      - If the user is on '/playbooks', explain how 1-click Mission Playbooks (like High-Density Occupancy or NCOA Relocation) work and how to execute them.
+      - Always tailor your advice to their exact screen and dataset status!
+    ` : "";
+
     const systemInstruction = `
       You are the "Marigold Guide", an incredibly patient and statistically rigorous software tutor.
       ${modePrompt}
+      ${pageContextPrompt}
       
       Your user base consists of two distinct groups:
       1. Non-Nerds (Volunteers): They want to work hard and find anomalies but lack statistical language.

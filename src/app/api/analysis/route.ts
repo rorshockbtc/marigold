@@ -39,7 +39,20 @@ export async function GET(req: NextRequest) {
 
     if (action === 'duplicates') {
       const rows = findIntraCountyDuplicates(county);
-      return NextResponse.json(rows);
+      const formatted = rows.map((r: any, idx: number) => ({
+        id: `DUP-${idx + 1}`,
+        name: `${r.first_name} ${r.last_name}`,
+        address: r.address1,
+        city: r.county || 'City',
+        state: 'MS',
+        zip: r.zip,
+        county: r.county || 'Statewide',
+        occupant_count: 2,
+        risk_level: 'HIGH',
+        details: `Potential intra-county duplicate: Identical Name & Zip across multiple addresses.`,
+        duplicateAddresses: [r.address1, r.address2].filter(Boolean)
+      }));
+      return NextResponse.json(formatted);
     }
 
     if (action === 'commercial') {

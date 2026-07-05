@@ -1153,6 +1153,56 @@ export default function AnalysisDashboard() {
             </div>
           </div>
 
+          {/* Matching / Related Duplicate Registrations (For County Clerk / Commissioner Verification) */}
+          {(selectedInspectRecord.duplicateAddresses || (currentAudit === 'duplicates' && results.length > 0)) && (
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-amber-500/10 dark:bg-amber-500/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                  <span>👯 Matching Duplicate Registrations</span>
+                </span>
+                <span className="text-[10px] font-mono bg-amber-500/20 text-amber-950 dark:text-amber-200 px-2 py-0.5 rounded font-bold">
+                  Cross-Reference Check
+                </span>
+              </div>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                For official County Clerk or Election Commissioner verification, below are all addresses registered under this identical Name &amp; Zip code:
+              </p>
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {(selectedInspectRecord.duplicateAddresses || results
+                  .filter(r => r.name === selectedInspectRecord.name && r.address !== selectedInspectRecord.address)
+                  .map(r => r.address)
+                  .concat([selectedInspectRecord.address])
+                  .filter((v, i, a) => a.indexOf(v) === i)
+                ).map((addr: string, idx: number) => (
+                  <div 
+                    key={idx} 
+                    className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 font-mono font-bold ${addr === selectedInspectRecord.address ? 'bg-amber-500/20 border-amber-500/40 text-amber-950 dark:text-amber-200' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'}`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 flex items-center justify-center text-[10px] shrink-0 font-black">
+                        #{idx + 1}
+                      </span>
+                      <span className="truncate">{addr || 'Unknown Address'}</span>
+                    </div>
+                    {addr === selectedInspectRecord.address ? (
+                      <span className="text-[10px] uppercase font-sans font-black bg-amber-600 text-white px-1.5 py-0.5 rounded shrink-0">Current Row</span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(String(addr));
+                          alert("Address copied: " + addr);
+                        }}
+                        className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white px-1.5 py-0.5 rounded shrink-0 underline"
+                      >
+                        Copy
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Raw Supporting Data Grid */}
           <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
             <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">All Extracted Attributes & Raw Data</h4>

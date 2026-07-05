@@ -87,9 +87,7 @@ export default function MariRightPanel() {
           {/* Header */}
           <div className="bg-[#F0ECE3] border-b border-[#E5E0D8] px-5 py-3.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#D96B27]/15 border border-[#D96B27]/30 flex items-center justify-center shadow-inner">
-                <MarigoldIcon className="w-6 h-6 flex-shrink-0 drop-shadow-sm" />
-              </div>
+              <MarigoldIcon className="w-8 h-8 flex-shrink-0 text-[#D96B27] drop-shadow-md" />
               <div>
                 <h3 className="font-black text-[#2D3142] text-sm leading-tight">Mari AI Guidance Co-Pilot</h3>
                 <p className="text-[10px] text-[#646A7A] font-mono mt-0.5">100% Local Memory • Non-Partisan Guide</p>

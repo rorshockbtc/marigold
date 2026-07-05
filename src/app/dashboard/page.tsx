@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { getAnomalies, AnomalyRecord, updateAnomalyStatus } from '@/lib/firebase/db';
 import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
+import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -76,7 +77,7 @@ export default function DashboardPage() {
     if (user?.primaryEmailAddress?.emailAddress) {
       localStorage.setItem("marigold_user_email", user.primaryEmailAddress.emailAddress);
     }
-    setTeamMembers([{ email: userEmail || "Authenticated Citizen", role: checkAdmin ? "👑 Group Admin" : "🛡️ Verified Auditor", status: "Active" }]);
+    setTeamMembers([{ email: userEmail || "Authenticated Citizen", role: checkAdmin ? "Group Admin" : "Verified Auditor", status: "Active" }]);
   }, [user]);
 
   const handleStatusChange = async (id: string, newStatus: "pending" | "verified" | "false_positive") => {
@@ -104,12 +105,13 @@ export default function DashboardPage() {
     return (
       <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-6 px-4 animate-in fade-in">
         <div className="bg-slate-900 text-white rounded-3xl p-8 md:p-12 border border-amber-500/30 shadow-2xl text-center space-y-8">
-          <div className="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-3xl flex items-center justify-center text-4xl font-bold mx-auto shadow-inner border border-amber-500/30">
-            👑
+          <div className="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner border border-amber-500/30">
+            <Crown className="w-10 h-10 text-amber-400" />
           </div>
           <div className="space-y-3 max-w-2xl mx-auto">
-            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
-              🚀 Marigold Insights Pro Gateway
+            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Rocket className="w-3.5 h-3.5 text-amber-400" />
+              <span>Marigold Insights Pro Gateway</span>
             </span>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white pt-2">No Active Group Workspace Associated</h2>
             <p className="text-slate-300 text-sm md:text-base leading-relaxed">
@@ -121,7 +123,9 @@ export default function DashboardPage() {
             {/* CTA 1: Join or Create Group */}
             <div className="bg-slate-800/80 p-6 sm:p-8 rounded-2xl border border-slate-700 hover:border-amber-500/60 transition-all flex flex-col justify-between space-y-6 shadow-lg">
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl font-bold">🤝</div>
+                <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-amber-400" />
+                </div>
                 <h3 className="font-bold text-white text-xl">Join or Create a Group</h3>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   Join an existing organization using a private invitation UUID code, or establish a new volunteer network workspace for your jurisdiction.
@@ -138,7 +142,9 @@ export default function DashboardPage() {
             {/* CTA 2: Link Local Voter Roll Shard */}
             <div className="bg-slate-800/80 p-6 sm:p-8 rounded-2xl border border-slate-700 hover:border-emerald-500/60 transition-all flex flex-col justify-between space-y-6 shadow-lg">
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">📂</div>
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Folder className="w-6 h-6 text-emerald-400" />
+                </div>
                 <h3 className="font-bold text-white text-xl">Link Local Voter Roll Shard</h3>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   Have an official state dataset (CSV/TXT) or want to evaluate our benchmark sample? Initialize an independent session to inspect rows inside local browser RAM.
@@ -165,9 +171,10 @@ export default function DashboardPage() {
             <span>Have an official organization invite code?</span>
             <Link
               href="/join/msfe"
-              className="text-amber-400 hover:text-amber-300 font-bold bg-amber-500/10 hover:bg-amber-500/20 px-3.5 py-2 rounded-lg border border-amber-500/30 transition-all"
+              className="text-amber-400 hover:text-amber-300 font-bold bg-amber-500/10 hover:bg-amber-500/20 px-3.5 py-2 rounded-lg border border-amber-500/30 transition-all inline-flex items-center gap-1.5"
             >
-              🔑 Enter Invite Code or Join Link →
+              <Key className="w-3.5 h-3.5" />
+              <span>Enter Invite Code or Join Link →</span>
             </Link>
           </div>
         </div>
@@ -196,10 +203,14 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E5E0D8] pb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="bg-[#D96B27]/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                👑 Active Jurisdiction Workspace
+              <span className="bg-[#D96B27]/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+                <Crown className="w-3.5 h-3.5" />
+                <span>Active Jurisdiction Workspace</span>
               </span>
-              <span className="text-xs font-mono text-[#646A7A]">🔒 Local In-Memory Air-Gap</span>
+              <span className="text-xs font-mono text-[#646A7A] inline-flex items-center gap-1">
+                <Shield className="w-3 h-3" />
+                <span>Local In-Memory Air-Gap</span>
+              </span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#2D3142]">{groupName}</h1>
@@ -210,11 +221,12 @@ export default function DashboardPage() {
                 }}
                 className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#E5E0D8] transition-colors flex items-center gap-1.5 shadow-2xs"
               >
-                <span>⚙️ Switch Jurisdiction / Group</span>
+                <Settings className="w-3.5 h-3.5" />
+                <span>Switch Jurisdiction / Group</span>
               </button>
             </div>
             <p className="text-sm text-[#4A5060]">
-              Signed in as <strong className="text-[#2D3142] font-bold">{displayName}</strong> ({isAdmin && !previewAsVolunteer ? "👑 Group Administrator" : "Verified Volunteer"})
+              Signed in as <strong className="text-[#2D3142] font-bold">{displayName}</strong> ({isAdmin && !previewAsVolunteer ? "Group Administrator" : "Verified Volunteer"})
             </p>
           </div>
 
@@ -225,27 +237,31 @@ export default function DashboardPage() {
                 href="/analysis"
                 className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
               >
-                <span>🔍 Review Voter Records ({(loadedRowCount || 2002923).toLocaleString()}) →</span>
+                <Search className="w-4 h-4" />
+                <span>Review Voter Records ({(loadedRowCount || 2002923).toLocaleString()}) →</span>
               </Link>
             ) : (
               <Link
                 href="/data-prep"
                 className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2"
               >
-                <span>📂 Connect Local Voter Roll File →</span>
+                <Folder className="w-4 h-4" />
+                <span>Connect Local Voter Roll File →</span>
               </Link>
             )}
             <Link
               href="/playbooks"
               className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-4 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
             >
-              <span>📋 Step-by-Step Guides</span>
+              <BookOpen className="w-4 h-4" />
+              <span>Step-by-Step Guides</span>
             </Link>
             <Link
               href="/data-prep"
               className="bg-white hover:bg-[#EAE5DC] text-[#646A7A] hover:text-[#2D3142] font-semibold px-3.5 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1"
             >
-              <span>⚙️ Data Settings</span>
+              <Settings className="w-4 h-4" />
+              <span>Data Settings</span>
             </Link>
           </div>
         </div>
@@ -312,9 +328,10 @@ export default function DashboardPage() {
             {isSuperUser && (
               <button
                 onClick={() => setPreviewAsVolunteer(!previewAsVolunteer)}
-                className="text-[10px] font-bold text-[#D96B27] hover:underline block pt-0.5"
+                className="text-[10px] font-bold text-[#D96B27] hover:underline flex items-center gap-1 pt-0.5"
               >
-                {previewAsVolunteer ? "Return to Admin Mode" : "👁️ Volunteer Preview"}
+                <Eye className="w-3 h-3 inline" />
+                <span>{previewAsVolunteer ? "Return to Admin Mode" : "Volunteer Preview"}</span>
               </button>
             )}
           </div>
@@ -336,7 +353,8 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center border-b border-amber-200 pb-3">
               <div>
                 <h3 className="font-bold text-amber-950 flex items-center gap-2 text-lg">
-                  👑 Shared Missions &amp; Group Controls
+                  <Crown className="w-5 h-5 text-amber-600" />
+                  <span>Shared Missions &amp; Group Controls</span>
                 </h3>
                 <p className="text-xs text-amber-800 mt-0.5">Invite team members or family auditors to collaborate on shared missions across your selected jurisdiction.</p>
               </div>
@@ -363,7 +381,7 @@ export default function DashboardPage() {
                       type="button"
                       onClick={() => {
                         if(inviteEmail) {
-                          setTeamMembers([...teamMembers, { email: inviteEmail, role: "🛡️ Mission Lead", status: "Invited" }]);
+                          setTeamMembers([...teamMembers, { email: inviteEmail, role: "Mission Lead", status: "Invited" }]);
                           setInviteEmail("");
                         }
                       }}
@@ -381,7 +399,8 @@ export default function DashboardPage() {
                     }}
                     className="w-full bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-slate-700"
                   >
-                    <span>{copiedInvite ? "✓ Invitation Link Copied!" : "🔗 Copy Direct Group Invite URL"}</span>
+                    <Link2 className="w-3.5 h-3.5" />
+                    <span>{copiedInvite ? "✓ Invitation Link Copied!" : "Copy Direct Group Invite URL"}</span>
                   </button>
                 </div>
               </div>
@@ -389,7 +408,10 @@ export default function DashboardPage() {
               {/* Roster Table */}
               <div className="lg:col-span-2 bg-white p-4 rounded-xl border border-amber-200 shadow-sm space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-800 text-sm">👥 Active Group Roster ({teamMembers.length})</span>
+                  <span className="font-bold text-slate-800 text-sm inline-flex items-center gap-1.5">
+                    <Users className="w-4 h-4" />
+                    <span>Active Group Roster ({teamMembers.length})</span>
+                  </span>
                   <span className="text-xs font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Shared Missions Sync Enabled</span>
                 </div>
                 <div className="divide-y divide-slate-100 max-h-36 overflow-y-auto pr-1">
@@ -413,7 +435,10 @@ export default function DashboardPage() {
 
       {/* The Happy Path Workflow Guide */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-extrabold text-primary">🚀 Daily Audit Workflow (&quot;The Happy Path&quot;)</h2>
+        <h2 className="text-2xl font-extrabold text-primary flex items-center gap-2.5">
+          <Rocket className="w-6 h-6 text-primary" />
+          <span>Daily Audit Workflow (&quot;The Happy Path&quot;)</span>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
             <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white font-extrabold flex items-center justify-center text-sm shadow">1</span>
@@ -448,7 +473,10 @@ export default function DashboardPage() {
       <div id="checklist" className="bg-white rounded-2xl border border-border p-6 shadow-sm space-y-6">
         <div className="flex justify-between items-center border-b border-border pb-4">
           <div>
-            <h3 className="text-xl font-bold text-primary">📋 Active Investigation Checklist</h3>
+            <h3 className="text-xl font-bold text-primary flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-primary" />
+              <span>Active Investigation Checklist</span>
+            </h3>
             <p className="text-xs text-muted-foreground mt-0.5">Records flagged by organization audit templates awaiting verification.</p>
           </div>
           <span className="bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-full">
@@ -458,7 +486,7 @@ export default function DashboardPage() {
 
         {anomalies.length === 0 ? (
           <div className="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 space-y-4">
-            <span className="text-4xl block">📂</span>
+            <Folder className="w-12 h-12 text-slate-400 mx-auto" />
             <h4 className="text-lg font-bold text-primary">No Audit Records Loaded in Client Memory</h4>
             <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
               To populate your investigation checklist with verified discrepancies across counties, connect your statewide voter file above or run an active Mission Playbook.
@@ -487,8 +515,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex gap-2">
                     {anomaly.flags.map(f => (
-                      <span key={f} className="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
-                        ⚠️ {f.replace(/_/g, ' ')}
+                      <span key={f} className="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded inline-flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-700" />
+                        <span>{f.replace(/_/g, ' ')}</span>
                       </span>
                     ))}
                   </div>

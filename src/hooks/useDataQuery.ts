@@ -332,7 +332,8 @@ export function useDataQuery() {
                     occupant_count: count,
                     risk_level: 'HIGH',
                     details: `Potential intra-county duplicate: ${count} registrations with identical Name & Zip across ${addrs.size} addresses.`,
-                    raw: sample.raw
+                    raw: sample.raw,
+                    duplicateAddresses: Array.from(addrs)
                   });
                 }
               }
