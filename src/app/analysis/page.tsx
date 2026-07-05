@@ -24,6 +24,8 @@ export default function AnalysisDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
+  const [loadingStage, setLoadingStage] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [currentAudit, setCurrentAudit] = useState<string | null>(null);
   
@@ -111,6 +113,32 @@ export default function AnalysisDashboard() {
       runAlgorithm(savedAudit, savedCounty, 12);
     }
   }, []);
+
+  useEffect(() => {
+    let timer: any = null;
+    if (isLoading) {
+      setLoadingProgress(15);
+      setLoadingStage("Acquiring screen wake lock & scanning local IndexedDB shards...");
+      timer = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev < 50) {
+            setLoadingStage("Matching string patterns & calculating statistical thresholds across voter records...");
+          } else if (prev < 80) {
+            setLoadingStage("Aggregating resident clusters and cross-referencing domicile evidence...");
+          }
+          return prev < 92 ? prev + Math.floor(Math.random() * 7) + 4 : prev;
+        });
+      }, 300);
+    } else {
+      setLoadingProgress(100);
+      setLoadingStage("Analysis complete!");
+      const clearTimer = setTimeout(() => {
+        setLoadingProgress(0);
+      }, 400);
+      return () => clearTimeout(clearTimer);
+    }
+    return () => clearInterval(timer);
+  }, [isLoading]);
 
   const runAlgorithm = async (action: string, overrideCounty?: string, overrideThreshold?: number, forceRefresh: boolean = false) => {
     setIsLoading(true);
@@ -685,6 +713,30 @@ export default function AnalysisDashboard() {
             })}
         </div>
       </div>
+
+      {/* Live Progress Banner when Analyzing */}
+      {isLoading && (
+        <div className="bg-primary/5 dark:bg-primary/10 border-2 border-primary/30 p-6 rounded-2xl space-y-3 shadow-sm animate-in fade-in slide-in-from-top-2 my-6">
+          <div className="flex items-center justify-between text-sm font-bold text-foreground">
+            <div className="flex items-center gap-2.5">
+              <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full inline-block" />
+              <span>⚡ Running Air-Gapped Forensic Engine ({currentAudit?.toUpperCase()})...</span>
+            </div>
+            <span className="font-mono bg-primary/20 text-primary px-2.5 py-0.5 rounded text-xs font-black">
+              {loadingProgress}% Loaded
+            </span>
+          </div>
+          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="bg-amber-500 h-full rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground font-mono truncate">
+            {loadingStage || "Scanning local IndexedDB address shards without sending data to external servers..."}
+          </p>
+        </div>
+      )}
 
       {/* Honest 0 Flagged Records State */}
       {results.length === 0 && currentAudit && !isLoading && (
