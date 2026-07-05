@@ -96,8 +96,8 @@ export function useDataQuery() {
       const store = transaction.objectStore('rows');
       
       // Memory optimization: collect targeted anomaly structures
-      const addressCounts: Map<string, { count: number; sample: Record<string, any> }> = new Map();
-      const dateCounts: Map<string, { count: number; sample: Record<string, any> }> = new Map();
+      const addressCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
+      const dateCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
       const phantomList: Array<Record<string, any>> = [];
       const ncoaList: Array<Record<string, any>> = [];
       const dupMap: Map<string, { count: number; sample: Record<string, any>; addrs: Set<string> }> = new Map();
@@ -131,6 +131,9 @@ export function useDataQuery() {
                 const existing = addressCounts.get(addr);
                 if (existing) {
                   existing.count++;
+                  if (existing.residents && existing.residents.length < 50) {
+                    existing.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered });
+                  }
                 } else {
                   addressCounts.set(addr, {
                     count: 1,
@@ -143,7 +146,8 @@ export function useDataQuery() {
                       zip: std.zip,
                       county: rCounty,
                       raw: std.raw
-                    }
+                    },
+                    residents: [{ name: std.name, id: std.voter_id, date: std.date_registered }]
                   });
                 }
               }
@@ -153,6 +157,9 @@ export function useDataQuery() {
                 const dExisting = dateCounts.get(std.date_registered);
                 if (dExisting) {
                   dExisting.count++;
+                  if (dExisting.residents && dExisting.residents.length < 50) {
+                    dExisting.residents.push({ name: std.name, id: std.voter_id, city: std.city || rCounty || 'Unknown' });
+                  }
                 } else {
                   dateCounts.set(std.date_registered, {
                     count: 1,
@@ -165,7 +172,8 @@ export function useDataQuery() {
                       zip: std.zip,
                       county: rCounty,
                       raw: std.raw
-                    }
+                    },
+                    residents: [{ name: std.name, id: std.voter_id, city: std.city || rCounty || 'Unknown' }]
                   });
                 }
               }
@@ -192,6 +200,7 @@ export function useDataQuery() {
               // Track NCOA / Out of state
               if (std.ncoa_flag || (std.raw && (std.raw.mail_state || std.raw.MAIL_ST) && String(std.raw.mail_state || std.raw.MAIL_ST).toUpperCase() !== 'MS')) {
                 if (ncoaList.length < 100) {
+                  const mailAddr = std.raw?.mail_address || std.raw?.mailing_address || std.raw?.mail_street || std.raw?.MAIL_ADDR || std.raw?.MAIL_STREET || `${std.raw?.mail_city || std.raw?.MAIL_CITY || ''}, ${std.raw?.mail_state || std.raw?.MAIL_ST || 'Out of State'} ${std.raw?.mail_zip || std.raw?.MAIL_ZIP || ''}`;
                   ncoaList.push({
                     id: std.voter_id,
                     name: std.name,
@@ -203,7 +212,8 @@ export function useDataQuery() {
                     occupant_count: 1,
                     risk_level: 'HIGH',
                     details: `National Change of Address (NCOA) flag triggered or out-of-state mailing domicile.`,
-                    raw: std.raw
+                    raw: std.raw,
+                    mailingAddress: String(mailAddr || 'Out-of-State Address Filed')
                   });
                 }
               }
@@ -238,7 +248,7 @@ export function useDataQuery() {
             setIsQuerying(false);
             // Process aggregated results based on auditType
             if (auditType === 'density') {
-              for (const [addr, { count, sample }] of addressCounts.entries()) {
+              for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
                 if (count >= threshold) {
                   results.push({
                     id: sample.voter_id,
@@ -251,12 +261,13 @@ export function useDataQuery() {
                     occupant_count: count,
                     risk_level: count > 20 ? 'CRITICAL' : 'HIGH',
                     details: `${count} distinct voter IDs registered to this single residential location.`,
-                    raw: sample.raw
+                    raw: sample.raw,
+                    residentCluster: residents || []
                   });
                 }
               }
             } else if (auditType === 'missing-dorm') {
-              for (const [addr, { count, sample }] of addressCounts.entries()) {
+              for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
                 const upper = addr.toUpperCase();
                 const isDormLike = count >= (threshold > 12 ? threshold : 25) &&
                   !upper.includes('APT') && !upper.includes('RM') && !upper.includes('ROOM') &&
@@ -273,12 +284,13 @@ export function useDataQuery() {
                     occupant_count: count,
                     risk_level: 'HIGH',
                     details: `${count} residents without unit/room numbers. Potential unsegmented campus dorm.`,
-                    raw: sample.raw
+                    raw: sample.raw,
+                    residentCluster: residents || []
                   });
                 }
               }
             } else if (auditType === 'po-box') {
-              for (const [addr, { count, sample }] of addressCounts.entries()) {
+              for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
                 const upper = addr.toUpperCase();
                 if (upper.includes('P O BOX') || upper.includes('PO BOX') || upper.includes('P.O. BOX')) {
                   results.push({
@@ -292,12 +304,13 @@ export function useDataQuery() {
                     occupant_count: count,
                     risk_level: 'CRITICAL',
                     details: `Commercial / P.O. Box address listed as primary residential domicile.`,
-                    raw: sample.raw
+                    raw: sample.raw,
+                    residentCluster: residents || []
                   });
                 }
               }
             } else if (auditType === 'spikes') {
-              for (const [regDate, { count, sample }] of dateCounts.entries()) {
+              for (const [regDate, { count, sample, residents }] of dateCounts.entries()) {
                 if (count >= (threshold || 50)) {
                   results.push({
                     id: sample.voter_id,
@@ -310,7 +323,8 @@ export function useDataQuery() {
                     occupant_count: count,
                     risk_level: count > 500 ? 'CRITICAL' : 'HIGH',
                     details: `Unusual registration surge: ${count} new registrations recorded on single day (${regDate}).`,
-                    raw: sample.raw
+                    raw: sample.raw,
+                    residentCluster: residents || []
                   });
                 }
               }

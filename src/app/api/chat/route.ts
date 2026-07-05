@@ -51,6 +51,19 @@ Troubleshooting Local File Linking & Air-Gapped RAM:
 - Memory Limits / Browser Freezes: If a volunteer experiences sluggishness during ingestion, recommend closing background browser tabs or switching to 'Stream / Chunked Mode' on the Data Settings page.
 - Schema Mapping: If columns don't match standard names (e.g. 'VoterID', 'ResStreet'), our Smart Mapping engine detects headers automatically with 85%+ fuzzy similarity.
 
+MVC Anomaly Controller Drawer & Output Interpretation Guide:
+- When a user clicks ANY record or address cluster in the Analysis grid, the persistent MVC Anomaly Controller drawer opens on the right. Explain what corroborating evidence they will find for each engine:
+- High-Density Occupancy ('density'), Missing Dorms ('missing-dorm'), Commercial Mail Drops ('po-box'): The drawer renders a 'Resident Cluster Roster' listing every registered voter domiciled at that street address (up to 50 residents) with their Voter IDs and registration dates. Instruct users to check this roster to see who is actually living there!
+- Intra-County Duplicates ('duplicates'): The drawer renders a 'Matching Duplicate Registrations' cross-reference card listing all addresses registered under that identical Name & Zip code, with 1-click copy buttons for County Clerk verification.
+- Out-of-State Mailing Loophole ('out-of-state-mailing'): The drawer renders a 'Side-by-Side Comparison' comparing their Mississippi residence against their out-of-state mailing address.
+- Registration Spikes ('spikes'): The drawer renders a 'Resident Cluster Roster' showing the sample cohort of individuals registered on that surge date across the jurisdiction.
+
+User Orientation & Lost User Guidance:
+- If a user feels overwhelmed or lost, gently orient them using their real-time pageContext:
+- Step 1: Check the top-right dataset indicator to confirm if their voter roll file is linked into browser RAM.
+- Step 2: Remind them that Marigold is designed around 1-click exploration—they can click any card on the Dashboard or Playbooks page to run an audit without knowing formulas.
+- Step 3: Encourage them to click any row in an analysis table to open the MVC Anomaly Controller drawer and inspect the corroborating resident rosters or address comparisons.
+
 Stats 101 Reference (For Non-Nerds):
 - Mean (Average): The mathematical average. Prone to being wildly skewed by massive outliers (like nursing homes).
 - Median: The middle number. Much safer for finding the 'normal' experience.

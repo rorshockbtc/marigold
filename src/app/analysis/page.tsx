@@ -1203,6 +1203,84 @@ export default function AnalysisDashboard() {
             </div>
           )}
 
+          {/* Resident Cluster Roster (All Occupants at Domicile / Date) */}
+          {selectedInspectRecord.residentCluster && selectedInspectRecord.residentCluster.length > 0 && (
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-blue-500/10 dark:bg-blue-500/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                  <span>👥 Resident Cluster Roster</span>
+                </span>
+                <span className="text-[10px] font-mono bg-blue-500/20 text-blue-950 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
+                  {selectedInspectRecord.residentCluster.length} Total Occupants
+                </span>
+              </div>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                {currentAudit === 'spikes'
+                  ? "Below is the sample cohort of individuals registered on this surge date across the jurisdiction:"
+                  : "For official verification, below is the roster of registered voters domiciled at this exact street address:"}
+              </p>
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {selectedInspectRecord.residentCluster.map((res: any, idx: number) => (
+                  <div 
+                    key={idx} 
+                    className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between gap-2 font-mono font-bold text-slate-800 dark:text-slate-200 shadow-2xs"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-900 dark:text-blue-300 flex items-center justify-center text-[10px] shrink-0 font-black">
+                        #{idx + 1}
+                      </span>
+                      <div className="truncate">
+                        <div className="font-extrabold text-slate-900 dark:text-white truncate">{res.name || 'Resident Name'}</div>
+                        <div className="text-[10px] text-slate-500 font-normal">ID: {res.id || 'N/A'} {res.date ? `• Reg: ${res.date}` : res.city ? `• City: ${res.city}` : ''}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${res.name} (ID: ${res.id})`);
+                        alert("Resident details copied!");
+                      }}
+                      className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white px-1.5 py-0.5 rounded shrink-0 underline"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Out-of-State Mailing Loophole Side-by-Side Comparison */}
+          {(selectedInspectRecord.mailingAddress || currentAudit === 'out-of-state-mailing') && (
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-purple-500/10 dark:bg-purple-500/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
+                  <span>📬 Domicile vs. Mailing Comparison</span>
+                </span>
+                <span className="text-[10px] font-mono bg-purple-500/20 text-purple-950 dark:text-purple-200 px-2 py-0.5 rounded font-bold">
+                  Interstate Loophole Check
+                </span>
+              </div>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                This voter maintains an active residential registration in Mississippi while directing official mail to an out-of-state address:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">📍 MS Residence (Domicile)</div>
+                  <div className="text-xs font-bold font-mono text-slate-900 dark:text-white break-words">
+                    {selectedInspectRecord.address || 'Unknown Address'}<br />
+                    {selectedInspectRecord.city || 'City'}, MS {selectedInspectRecord.zip || ''}
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/60 border-2 border-purple-400 dark:border-purple-700 space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-purple-800 dark:text-purple-300">✈️ Out-of-State Mailing</div>
+                  <div className="text-xs font-bold font-mono text-purple-950 dark:text-purple-100 break-words">
+                    {selectedInspectRecord.mailingAddress || selectedInspectRecord.raw?.mail_address || selectedInspectRecord.raw?.mailing_address || selectedInspectRecord.raw?.MAIL_ADDR || 'Out-of-State Address Filed'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Raw Supporting Data Grid */}
           <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
             <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">All Extracted Attributes & Raw Data</h4>
