@@ -24,6 +24,10 @@ export default function GroupAdminSettingsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
 
   const [roster, setRoster] = useState<{ name: string; email: string; role: string; joined: string }[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("👤 Group Member");
 
   useEffect(() => {
     const savedGroup = localStorage.getItem("marigold_active_group");
@@ -50,7 +54,16 @@ export default function GroupAdminSettingsPage() {
     if (user?.fullName) {
       localStorage.setItem("marigold_user_name", user.fullName);
     }
-    setRoster([{ name: userName, email: userEmail, role: userRole, joined: "Active Member" }]);
+    const savedRoster = localStorage.getItem("marigold_group_roster");
+    if (savedRoster) {
+      try {
+        setRoster(JSON.parse(savedRoster));
+        return;
+      } catch (e) {}
+    }
+    const initialRoster = [{ name: userName, email: userEmail, role: userRole, joined: "Active Member" }];
+    setRoster(initialRoster);
+    localStorage.setItem("marigold_group_roster", JSON.stringify(initialRoster));
   }, [user]);
 
   const handleSimulateApplicant = () => {
@@ -69,10 +82,12 @@ export default function GroupAdminSettingsPage() {
   };
 
   const handleApprove = (app: Application) => {
-    const updated = applications.map(a => a.id === app.id ? { ...a, status: 'approved' as const } : a);
-    setApplications(updated);
-    localStorage.setItem("marigold_group_applications", JSON.stringify(updated));
-    setRoster([...roster, { name: app.name, email: app.email, role: '👤 Group Member', joined: 'Just Approved' }]);
+    const updatedApps = applications.map(a => a.id === app.id ? { ...a, status: 'approved' as const } : a);
+    setApplications(updatedApps);
+    localStorage.setItem("marigold_group_applications", JSON.stringify(updatedApps));
+    const updatedRoster = [...roster, { name: app.name, email: app.email, role: '👤 Group Member', joined: 'Just Approved' }];
+    setRoster(updatedRoster);
+    localStorage.setItem("marigold_group_roster", JSON.stringify(updatedRoster));
   };
 
   const handleReject = (app: Application) => {
@@ -82,13 +97,26 @@ export default function GroupAdminSettingsPage() {
   };
 
   const handleToggleRole = (email: string) => {
-    setRoster(roster.map(m => {
+    const updated = roster.map(m => {
       if (m.email === email) {
         const newRole = m.role === '👑 Group Admin' ? '👤 Group Member' : '👑 Group Admin';
         return { ...m, role: newRole };
       }
       return m;
-    }));
+    });
+    setRoster(updated);
+    localStorage.setItem("marigold_group_roster", JSON.stringify(updated));
+  };
+
+  const handleAddManualMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberName || !newMemberEmail) return;
+    const updated = [...roster, { name: newMemberName, email: newMemberEmail, role: newMemberRole, joined: "Manually Enrolled" }];
+    setRoster(updated);
+    localStorage.setItem("marigold_group_roster", JSON.stringify(updated));
+    setNewMemberName("");
+    setNewMemberEmail("");
+    setShowAddModal(false);
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -269,10 +297,81 @@ export default function GroupAdminSettingsPage() {
                 <h3 className="font-bold text-lg text-primary">👥 Active Group Roster ({roster.length})</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Members authorized to synchronize zero-PII summary cartridges.</p>
               </div>
-              <span className="text-xs font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 font-bold">
-                🔒 PII Cartridge Lock Active
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(!showAddModal)}
+                  className="bg-primary hover:bg-slate-800 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition-all flex items-center gap-1"
+                >
+                  <span>➕ Manually Add Member</span>
+                </button>
+                <span className="text-xs font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 font-bold hidden sm:inline-block">
+                  🔒 PII Cartridge Lock Active
+                </span>
+              </div>
             </div>
+
+            {showAddModal && (
+              <form onSubmit={handleAddManualMember} className="bg-slate-50 p-4 rounded-xl border border-slate-300 space-y-3 text-xs animate-in fade-in slide-in-from-top-2">
+                <div className="font-bold text-slate-800 text-sm flex items-center justify-between">
+                  <span>➕ Manually Add Volunteer / Family Member to Roster</span>
+                  <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-normal">✕ Close</button>
+                </div>
+                <p className="text-slate-600">
+                  Directly enroll a team member or family member (like your mom or dad) without waiting for them to submit an application link.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Member Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Mary Cyree"
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white font-medium text-slate-900 focus:border-amber-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="e.g. mary@example.com"
+                      value={newMemberEmail}
+                      onChange={(e) => setNewMemberEmail(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white font-medium text-slate-900 focus:border-amber-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Group Role</label>
+                    <select
+                      value={newMemberRole}
+                      onChange={(e) => setNewMemberRole(e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white font-medium text-slate-900 focus:border-amber-500 outline-none"
+                    >
+                      <option value="👤 Group Member">👤 Group Member (Standard)</option>
+                      <option value="👑 Group Admin">👑 Group Admin</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-3 py-1.5 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-1.5 rounded-lg shadow"
+                  >
+                    Add to Roster →
+                  </button>
+                </div>
+              </form>
+            )}
 
             <div className="divide-y divide-border text-sm">
               {roster.map((m, idx) => (
