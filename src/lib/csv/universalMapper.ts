@@ -106,14 +106,17 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
     clean: h.toLowerCase().replace(/[^a-z0-9]/g, '')
   }));
 
+  const mappedCols = new Set<string>();
+
   // 1. Exact clean matches first
   for (const [fieldKey, synonyms] of Object.entries(FIELD_SYNONYMS)) {
     const key = fieldKey as keyof ColumnMappingSchema;
     for (const syn of synonyms) {
       if (mapping[key]) break;
-      const match = cleanMap.find(c => c.clean === syn);
+      const match = cleanMap.find(c => c.clean === syn && !mappedCols.has(c.original));
       if (match) {
         mapping[key] = match.original;
+        mappedCols.add(match.original);
       }
     }
   }
@@ -126,9 +129,10 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
     for (const syn of synonyms) {
       if (syn.length <= 3) continue;
       if (mapping[key]) break;
-      const match = cleanMap.find(c => c.clean.includes(syn) || syn.includes(c.clean));
+      const match = cleanMap.find(c => (c.clean.includes(syn) || syn.includes(c.clean)) && !mappedCols.has(c.original));
       if (match) {
         mapping[key] = match.original;
+        mappedCols.add(match.original);
       }
     }
   }
@@ -156,7 +160,12 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     };
   }
 
-  const activeMapping = mapping || interpretColumnMappings(Object.keys(rawRow));
+  const activeMapping = { ...(mapping || interpretColumnMappings(Object.keys(rawRow))) };
+
+  // Self-healing check: if full_name collides with first_name or last_name, clear it
+  if (activeMapping.full_name && (activeMapping.full_name === activeMapping.first_name || activeMapping.full_name === activeMapping.last_name)) {
+    activeMapping.full_name = '';
+  }
 
   const getValue = (headerKey: string, fallbackKeywords: string[], defaultVal = '') => {
     if (headerKey && rawRow[headerKey] !== undefined && rawRow[headerKey] !== null) {
