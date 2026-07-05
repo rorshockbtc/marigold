@@ -1,5 +1,23 @@
 import { useState, useCallback } from 'react';
-import { normalizeRowWithMapping } from '@/lib/csv/universalMapper';
+import { normalizeRowWithMapping, interpretColumnMappings } from '@/lib/csv/universalMapper';
+
+// Helper to manage Screen Wake Lock during heavy local browser RAM traversal
+async function requestScreenWakeLock(): Promise<any> {
+  try {
+    if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+      return await (navigator as any).wakeLock.request('screen');
+    }
+  } catch (err) {
+    console.warn("Screen Wake Lock not available or denied:", err);
+  }
+  return null;
+}
+
+function releaseScreenWakeLock(wakeLock: any) {
+  if (wakeLock && wakeLock.release) {
+    wakeLock.release().catch(() => {});
+  }
+}
 
 export interface QueryResult {
   rows: Array<Record<string, any>>;
@@ -16,12 +34,14 @@ export function useDataQuery() {
     offset: number = 0
   ): Promise<QueryResult> => {
     setIsQuerying(true);
+    const wakeLock = await requestScreenWakeLock();
     try {
       const db = await openDatabase();
       const transaction = db.transaction(['rows'], 'readonly');
       const store = transaction.objectStore('rows');
       const allRows: Array<Record<string, any>> = [];
       let matchCount = 0;
+      let activeMapping: any = null;
 
       return new Promise((resolve, reject) => {
         const request = store.openCursor();
@@ -30,24 +50,34 @@ export function useDataQuery() {
           if (cursor) {
             const val = cursor.value;
             const rowData = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
-            
+            if (!activeMapping) {
+              try {
+                const savedMap = typeof window !== 'undefined' ? localStorage.getItem("marigold_file_mapping") : null;
+                if (savedMap) activeMapping = JSON.parse(savedMap);
+              } catch (e) {}
+              if (!activeMapping) {
+                activeMapping = interpretColumnMappings(Object.keys(rowData));
+              }
+            }
             const matches = !searchTerm || columns.some(col =>
               String(rowData[col] || '').toLowerCase().includes(searchTerm.toLowerCase())
             );
             if (matches) {
               matchCount++;
-              if (matchCount > offset && allRows.length < limit) allRows.push(normalizeRowWithMapping(rowData));
+              if (matchCount > offset && allRows.length < limit) allRows.push(normalizeRowWithMapping(rowData, activeMapping));
             }
             cursor.continue();
           } else {
             setIsQuerying(false);
+            releaseScreenWakeLock(wakeLock);
             resolve({ rows: allRows, totalMatches: matchCount });
           }
         };
-        request.onerror = () => { setIsQuerying(false); reject(request.error); };
+        request.onerror = () => { setIsQuerying(false); releaseScreenWakeLock(wakeLock); reject(request.error); };
       });
     } catch (error) {
       setIsQuerying(false);
+      releaseScreenWakeLock(wakeLock);
       throw error;
     }
   }, []);
@@ -59,6 +89,7 @@ export function useDataQuery() {
     threshold: number = 12
   ): Promise<Array<Record<string, any>>> => {
     setIsQuerying(true);
+    const wakeLock = await requestScreenWakeLock();
     try {
       const db = await openDatabase();
       const transaction = db.transaction(['rows'], 'readonly');
@@ -71,6 +102,7 @@ export function useDataQuery() {
       const ncoaList: Array<Record<string, any>> = [];
       const dupMap: Map<string, { count: number; sample: Record<string, any>; addrs: Set<string> }> = new Map();
       const results: Array<Record<string, any>> = [];
+      let activeMapping: any = null;
 
       return new Promise((resolve, reject) => {
         const request = store.openCursor();
@@ -79,7 +111,16 @@ export function useDataQuery() {
           if (cursor) {
             const val = cursor.value;
             const raw = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
-            const std = normalizeRowWithMapping(raw);
+            if (!activeMapping) {
+              try {
+                const savedMap = typeof window !== 'undefined' ? localStorage.getItem("marigold_file_mapping") : null;
+                if (savedMap) activeMapping = JSON.parse(savedMap);
+              } catch (e) {}
+              if (!activeMapping) {
+                activeMapping = interpretColumnMappings(Object.keys(raw));
+              }
+            }
+            const std = normalizeRowWithMapping(raw, activeMapping);
             
             const rCounty = std.county || 'Statewide';
             const filterCounty = (countyFilter || '').toLowerCase();
@@ -317,13 +358,15 @@ export function useDataQuery() {
               }
             }
             results.sort((a, b) => (b.occupant_count || 0) - (a.occupant_count || 0));
+            releaseScreenWakeLock(wakeLock);
             resolve(results);
           }
         };
-        request.onerror = () => { setIsQuerying(false); reject(request.error); };
+        request.onerror = () => { setIsQuerying(false); releaseScreenWakeLock(wakeLock); reject(request.error); };
       });
     } catch (error) {
       setIsQuerying(false);
+      releaseScreenWakeLock(wakeLock);
       throw error;
     }
   }, []);

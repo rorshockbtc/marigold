@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
+import { FlaskConical } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -61,9 +62,10 @@ export function Footer() {
             </a>
             <a 
               href="/sandbox" 
-              className="text-orange-400 font-extrabold hover:underline transition-all"
+              className="text-orange-400 font-extrabold hover:underline transition-all flex items-center gap-1"
             >
-              🧪 ACME Sandbox (Mock Data Demo)
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>ACME Sandbox (Mock Data Demo)</span>
             </a>
             <a 
               href="/compliance" 

@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, 
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar 
 } from 'recharts';
+import { Settings, Database, Shield, RefreshCw, Plus, Sparkles, Link2, CheckCircle2, FileText, AlertTriangle, ArrowRight, Layers, BarChart3 } from 'lucide-react';
 
 // Data definitions for visual impact
 const CATEGORY_DATA = [
@@ -235,8 +236,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
     if (isIngesting) {
       return (
         <div className="bg-slate-900 text-white rounded-2xl p-10 border border-amber-500/50 shadow-2xl space-y-8 animate-in fade-in max-w-4xl mx-auto text-center">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-3xl font-bold animate-pulse border border-amber-500/40">
-            ⚙️
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/40">
+            <Settings className="w-8 h-8 text-amber-400 animate-spin" />
           </div>
           <div className="space-y-3">
             <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -289,8 +290,9 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         <div className="bg-slate-900 text-white rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
             <div>
-              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                📦 Multi-File Shard Staging Queue ({stagedFiles.length} file{stagedFiles.length > 1 ? 's' : ''} staged)
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5" />
+                <span>Multi-File Shard Staging Queue ({stagedFiles.length} file{stagedFiles.length > 1 ? 's' : ''} staged)</span>
               </span>
               <h3 className="text-2xl font-bold font-serif text-white mt-3">Ready to Execute Cryptographic Ingestion</h3>
               <p className="text-slate-300 text-sm max-w-2xl mt-1 leading-relaxed">
@@ -314,7 +316,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   <div key={idx} className="bg-slate-800 p-3.5 rounded-xl border border-slate-700 space-y-2 text-xs font-mono">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2 truncate pr-2">
-                        <span className="text-amber-400">📄</span>
+                        <FileText className="w-4 h-4 text-amber-400 flex-shrink-0" />
                         <span className="text-white font-bold truncate">{f.name}</span>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
@@ -330,12 +332,14 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                     </div>
                     <div className="pt-1 border-t border-slate-700/60 flex items-center justify-between font-sans text-[11px]">
                       {isWeekly ? (
-                        <span className="text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30 font-bold">
-                          🔄 Weekly Delta / Update Shard
+                        <span className="text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30 font-bold flex items-center gap-1">
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Weekly Delta / Update Shard</span>
                         </span>
                       ) : (
-                        <span className="text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
-                          🏛️ Historical Master Baseline Roll
+                        <span className="text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 font-bold flex items-center gap-1">
+                          <Shield className="w-3 h-3" />
+                          <span>Historical Master Baseline Roll</span>
                         </span>
                       )}
                       <span className="text-slate-400 font-mono text-[10px]">RAM Verified</span>
@@ -348,7 +352,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
 
           <div className="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-start gap-2.5">
-              <span className="text-emerald-400 text-base">🔒</span>
+              <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
               <div className="space-y-0.5">
                 <strong className="text-white block font-sans">Zero-Exfiltration Authorization & Legal Compliance</strong>
                 <p className="text-slate-300 font-sans text-[11px] leading-relaxed">
@@ -363,14 +367,20 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
 
           <div className="flex flex-col sm:flex-row gap-4 pt-2 border-t border-slate-800">
             <label className="flex-1 text-center inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-3.5 rounded-xl border border-slate-600 shadow cursor-pointer transition-colors text-xs">
-              <span>➕ Append Another Weekly Shard / Part File</span>
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <Plus className="w-4 h-4" />
+                <span>Append Another Weekly Shard / Part File</span>
+              </span>
               <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => handleStageFiles(e, true)} className="hidden" />
             </label>
             <button
               onClick={() => runIngestionEngine(stagedFiles)}
               className="flex-1 text-center bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2"
             >
-              <span>🚀 Validate & Run Telemetry Engine ({stagedFiles.length} Shard{stagedFiles.length > 1 ? 's' : ''}) →</span>
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <Sparkles className="w-4 h-4" />
+                <span>Validate & Run Telemetry Engine ({stagedFiles.length} Shard{stagedFiles.length > 1 ? 's' : ''}) →</span>
+              </span>
             </button>
           </div>
         </div>
@@ -381,8 +391,9 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
       <div className="bg-slate-900 text-white rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
           <div>
-            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              ⚡ Statewide Audit Telemetry Hub (Awaiting Data Ingestion)
+            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Statewide Audit Telemetry Hub (Awaiting Data Ingestion)</span>
             </span>
             <h3 className="text-2xl font-bold font-serif text-white mt-3">No Voter Roll Dataset Connected</h3>
             <p className="text-slate-300 text-sm max-w-2xl mt-1 leading-relaxed">
@@ -406,14 +417,20 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               </p>
             </div>
             <div className="space-y-2.5 pt-1">
-              <Link href="/data-prep" className="w-full text-center inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition-colors text-xs flex items-center justify-center gap-1.5">
-                <span>🚀 Launch Data Chunking Studio →</span>
+              <Link href="/data-prep" className="w-full text-center inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition-colors text-xs">
+                <span className="inline-flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Launch Data Chunking Studio →</span>
+                </span>
               </Link>
               <details className="text-[11px] text-slate-400 pt-1 border-t border-slate-700/60">
                 <summary className="cursor-pointer hover:text-amber-300 transition-colors font-mono">Deprecated Fallback: Direct Sandbox Load</summary>
                 <div className="pt-2">
                   <label className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold px-3 py-2 rounded-lg shadow cursor-pointer transition-colors text-xs">
-                    <span>📂 Direct RAM Buffer Load (Small Files Only)</span>
+                    <span className="inline-flex items-center justify-center gap-1.5">
+                      <Database className="w-3.5 h-3.5" />
+                      <span>Direct RAM Buffer Load (Small Files Only)</span>
+                    </span>
                     <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => handleStageFiles(e, false)} className="hidden" />
                   </label>
                 </div>
@@ -432,7 +449,10 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             </div>
             <div>
               <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs">
-                🌐 Visit 50-State Data Registry →
+                <span className="inline-flex items-center justify-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Visit 50-State Data Registry →</span>
+                </span>
               </Link>
             </div>
           </div>

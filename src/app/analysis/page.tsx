@@ -6,6 +6,7 @@ import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import { CryptographicNoteModal } from "@/components/CryptographicNoteModal";
 import { useDataQuery } from "@/hooks/useDataQuery";
 import { useDataStats } from "@/hooks/useDataStats";
+import { BarChart3, Link2, FileText, MessageSquare, Settings, RotateCcw, Plus, X, CheckCircle2, Sparkles, Search, Shield, ArrowRight, Database, AlertTriangle, Download, RefreshCw, Layers } from 'lucide-react';
 
 // Simple mapping for known institutional addresses to prevent false positives
 const categorizeAddress = (address: string) => {
@@ -35,6 +36,7 @@ export default function AnalysisDashboard() {
   const [thresholdFilter, setThresholdFilter] = useState(12);
   const [playbookName, setPlaybookName] = useState('');
   const [isSavingPlaybook, setIsSavingPlaybook] = useState(false);
+  const [filterMode, setFilterMode] = useState<'replace' | 'combine'>('replace');
   
   // New Interactive Controls & Cryptographic SHA-256 State
   const [sortOrder, setSortOrder] = useState<'default' | 'az' | 'za' | 'severity'>('default');
@@ -113,11 +115,18 @@ export default function AnalysisDashboard() {
   const runAlgorithm = async (action: string, overrideCounty?: string, overrideThreshold?: number, forceRefresh: boolean = false) => {
     setIsLoading(true);
     setError(null);
+    const prevAudit = currentAudit;
     setCurrentAudit(action);
     setResults([]);
     
-    const finalCounty = overrideCounty !== undefined ? overrideCounty : countyFilter;
-    const finalThreshold = overrideThreshold !== undefined ? overrideThreshold : thresholdFilter;
+    let finalCounty = overrideCounty !== undefined ? overrideCounty : countyFilter;
+    let finalThreshold = overrideThreshold !== undefined ? overrideThreshold : thresholdFilter;
+    
+    if (filterMode === 'replace' && overrideCounty === undefined && prevAudit && prevAudit !== action) {
+      finalCounty = '';
+      setCountyFilter('');
+    }
+    
     const cacheKey = `marigold_cached_results_${action}_${finalCounty || 'all'}_${finalThreshold}`;
     
     try {
@@ -475,7 +484,7 @@ export default function AnalysisDashboard() {
         <a href="/advanced-stats" className="p-4 bg-card border border-border rounded-xl hover:border-amber-500/80 hover:shadow-md transition-all group flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">📊</span>
+              <BarChart3 className="w-6 h-6 text-amber-500" />
               <span className="text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded border border-amber-500/20">Cartridge</span>
             </div>
             <h4 className="font-bold text-sm text-foreground group-hover:text-amber-500 transition-colors">Benford&apos;s Law Curve</h4>
@@ -487,7 +496,7 @@ export default function AnalysisDashboard() {
         <a href="/data-linkage" className="p-4 bg-card border border-border rounded-xl hover:border-emerald-500/80 hover:shadow-md transition-all group flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">🔗</span>
+              <Link2 className="w-6 h-6 text-emerald-500" />
               <span className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20">Matching</span>
             </div>
             <h4 className="font-bold text-sm text-foreground group-hover:text-emerald-500 transition-colors">Cross-Precinct Linkage</h4>
@@ -499,7 +508,7 @@ export default function AnalysisDashboard() {
         <a href="/playbooks" className="p-4 bg-card border border-border rounded-xl hover:border-blue-500/80 hover:shadow-md transition-all group flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">📋</span>
+              <FileText className="w-6 h-6 text-blue-500" />
               <span className="text-[10px] font-mono font-bold bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded border border-blue-500/20">Templates</span>
             </div>
             <h4 className="font-bold text-sm text-foreground group-hover:text-blue-500 transition-colors">Mission Playbooks</h4>
@@ -511,7 +520,7 @@ export default function AnalysisDashboard() {
         <a href="/chat" className="p-4 bg-card border border-border rounded-xl hover:border-purple-500/80 hover:shadow-md transition-all group flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">💬</span>
+              <MessageSquare className="w-6 h-6 text-purple-500" />
               <span className="text-[10px] font-mono font-bold bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded border border-purple-500/20">AI Query</span>
             </div>
             <h4 className="font-bold text-sm text-foreground group-hover:text-purple-500 transition-colors">Natural Language AI</h4>
@@ -523,9 +532,48 @@ export default function AnalysisDashboard() {
 
       {/* Control Panel */}
       <div className="card bg-muted/10 border-primary/20">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          ⚙️ Global Search Parameters
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-border/60 pb-3">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Settings className="w-5 h-5 text-[#D96B27]" />
+            <span>Global Search Parameters</span>
+          </h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center bg-slate-200 dark:bg-slate-800 p-1 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setFilterMode('replace')}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'replace' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                title="When switching Forensic Engines, start a fresh search without inheriting previous county/density filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Replace Search (Fresh)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('combine')}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'combine' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                title="Keep current County & Threshold filters when switching Forensic Engines (Nested AND search)"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Combine / Refine (AND)</span>
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setCountyFilter('');
+                setThresholdFilter(12);
+                setResults([]);
+                setCurrentAudit(null);
+                setSortOrder('default');
+              }}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl border border-slate-600 text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Reset All Filters</span>
+            </button>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-semibold mb-1">Target County</label>
@@ -641,8 +689,8 @@ export default function AnalysisDashboard() {
       {/* Honest 0 Flagged Records State */}
       {results.length === 0 && currentAudit && !isLoading && (
         <div className="bg-card border border-border p-8 rounded-2xl text-center space-y-4 shadow-sm my-6">
-          <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto text-2xl font-bold">
-            ✅
+          <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-7 h-7 text-emerald-500" />
           </div>
           <h3 className="text-lg font-bold text-foreground">0 Flagged Records Identified</h3>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -908,7 +956,7 @@ export default function AnalysisDashboard() {
                   <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-white space-y-4 shadow-lg">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">✨</span>
+                        <Sparkles className="w-6 h-6 text-amber-500" />
                         <div>
                           <h4 className="text-base font-bold text-white">Gemini AI Executive Synthesis Hub</h4>
                           <p className="text-xs text-slate-400">On-demand intelligence powered by local statistical vectors.</p>
@@ -1020,8 +1068,9 @@ export default function AnalysisDashboard() {
             </div>
           )}
           {hasGivenFeedback && (
-            <div className="bg-green-50 border border-green-200 p-4 rounded-xl text-green-800 text-center font-medium mt-6">
-              ✅ Thank you! The Predicted Accuracy score has been updated for the entire organization based on your feedback.
+            <div className="bg-green-50 border border-green-200 p-4 rounded-xl text-green-800 text-center font-medium mt-6 flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span>Thank you! The Predicted Accuracy score has been updated for the entire organization based on your feedback.</span>
             </div>
           )}
         </div>
@@ -1033,7 +1082,7 @@ export default function AnalysisDashboard() {
           {/* Side Sheet Header */}
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="text-2xl">🔍</span>
+              <Search className="w-6 h-6 text-slate-500 dark:text-slate-400 flex-shrink-0" />
               <div>
                 <h3 className="font-black text-base text-slate-900 dark:text-white uppercase tracking-wider">MVC Anomaly Controller</h3>
                 <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Persistent Forensic Inspection Drawer</p>

@@ -55,19 +55,37 @@ export function useCSVParser() {
           }));
           break;
         case 'complete':
+          let finalMapping = message.columnMapping;
           if (typeof window !== "undefined") {
             localStorage.setItem("marigold_file_connected", "true");
             localStorage.setItem("marigold_file_rows", String(message.totalRows));
             localStorage.setItem("marigold_file_name", file.name);
-            if (message.columnMapping) {
-              localStorage.setItem("marigold_file_mapping", JSON.stringify(message.columnMapping));
+            
+            // Smart Mapping Reuse: check if old map in localStorage is compatible with new columns
+            try {
+              const oldMapStr = localStorage.getItem("marigold_file_mapping");
+              if (oldMapStr && message.columns && message.columns.length > 0) {
+                const oldMap = JSON.parse(oldMapStr);
+                const mappedValues = Object.values(oldMap).filter(Boolean) as string[];
+                if (mappedValues.length > 0) {
+                  const matchingCount = mappedValues.filter(val => message.columns.includes(val)).length;
+                  const similarity = matchingCount / mappedValues.length;
+                  if (similarity >= 0.85) {
+                    finalMapping = oldMap;
+                  }
+                }
+              }
+            } catch (e) {}
+
+            if (finalMapping) {
+              localStorage.setItem("marigold_file_mapping", JSON.stringify(finalMapping));
             }
           }
           setState(prev => ({
             ...prev,
             isProcessing: false,
             columns: message.columns,
-            columnMapping: message.columnMapping,
+            columnMapping: finalMapping,
             totalRows: message.totalRows,
             progress: 100,
           }));

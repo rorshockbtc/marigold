@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
+import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname() || '';
@@ -43,23 +44,27 @@ export function Navbar() {
                 className="flex items-center gap-1 hover:text-white py-2 transition-colors focus:outline-none"
               >
                 <span>More</span>
-                <span className="text-xs">▾</span>
+                <ChevronDown className="w-3.5 h-3.5" />
               </button>
               
               {moreDropdownOpen && (
                 <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 z-50 text-xs">
-                  <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="block px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                    🌐 Worldviews &amp; FAQ
+                  <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                    <span>Worldviews &amp; FAQ</span>
                   </Link>
-                  <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="block px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                    🗺️ Technical Roadmap
+                  <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                    <Map className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span>Technical Roadmap</span>
                   </Link>
-                  <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="block px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                    🏛️ Bring to Your State
+                  <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <span>Bring to Your State</span>
                   </Link>
                   <div className="border-t border-slate-800 my-1"></div>
-                  <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="block px-4 py-2.5 text-amber-400 font-bold hover:bg-slate-800 transition-colors">
-                    🎆 250th Celebration
+                  <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-400 font-bold hover:bg-slate-800 transition-colors flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <span>250th Celebration</span>
                   </Link>
                 </div>
               )}
@@ -87,7 +92,7 @@ export function Navbar() {
                 className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 text-xs sm:text-sm rounded-lg shadow transition-all flex items-center gap-1.5"
               >
                 <span>Workspace</span>
-                <span>→</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <UserButton />
             </Show>
@@ -98,22 +103,34 @@ export function Navbar() {
               className="lg:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 focus:outline-none"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? '✕' : '☰'}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <nav className="lg:hidden mt-4 pt-4 border-t border-slate-800 flex flex-col gap-3 text-sm font-medium text-slate-300 px-2 pb-2">
+          <nav className="lg:hidden mt-4 pt-4 border-t border-slate-800 flex flex-col gap-2 text-sm font-medium text-slate-300 px-2 pb-2">
             <Link href="/sandbox" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Public Sandbox</Link>
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Audit Checklists</Link>
             <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">State Registry</Link>
             <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">FEMA Compliance</Link>
-            <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Worldviews &amp; FAQ</Link>
-            <Link href="/roadmap" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Technical Roadmap</Link>
-            <Link href="/deploy" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Bring to Your State</Link>
-            <Link href="/anniversary" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 text-amber-400 font-bold">🎆 250th Celebration</Link>
+            <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-blue-400" />
+              <span>Worldviews &amp; FAQ</span>
+            </Link>
+            <Link href="/roadmap" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
+              <Map className="w-4 h-4 text-emerald-400" />
+              <span>Technical Roadmap</span>
+            </Link>
+            <Link href="/deploy" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-purple-400" />
+              <span>Bring to Your State</span>
+            </Link>
+            <Link href="/anniversary" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 text-amber-400 font-bold flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>250th Celebration</span>
+            </Link>
           </nav>
         )}
       </header>
