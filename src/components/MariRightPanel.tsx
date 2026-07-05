@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ChatInterface from '@/components/ChatInterface';
+import { MarigoldIcon } from '@/components/MarigoldIcon';
 
 export default function MariRightPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function MariRightPanel() {
           className="fixed bottom-6 right-6 z-40 bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all transform hover:scale-105 active:scale-95 border-2 border-white"
           title="Open Mari AI Assistant in Side Panel"
         >
-          <span className="text-xl">💬</span>
+          <MarigoldIcon className="w-5 h-5 flex-shrink-0 drop-shadow-sm" />
           <span className="text-sm tracking-wide">Ask Mari AI</span>
         </button>
       )}
@@ -49,8 +50,8 @@ export default function MariRightPanel() {
           {/* Header */}
           <div className="bg-[#F0ECE3] border-b border-[#E5E0D8] px-5 py-3.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#D96B27]/20 border border-[#D96B27]/40 text-[#D96B27] flex items-center justify-center font-bold text-lg shadow-inner">
-                🌼
+              <div className="w-9 h-9 rounded-xl bg-[#D96B27]/15 border border-[#D96B27]/30 flex items-center justify-center shadow-inner">
+                <MarigoldIcon className="w-6 h-6 flex-shrink-0 drop-shadow-sm" />
               </div>
               <div>
                 <h3 className="font-black text-[#2D3142] text-sm leading-tight">Mari AI Guidance Co-Pilot</h3>

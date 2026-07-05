@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getSearchRecipes, saveSearchRecipe, SearchRecipe } from "@/lib/firebase/db";
 import ReactMarkdown from 'react-markdown';
 
@@ -22,6 +22,13 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (query === "" && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, [query]);
   
   // Friendly Guide vs Pro Mode
   const [isFriendlyMode, setIsFriendlyMode] = useState(true);
@@ -66,7 +73,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     recognition.start();
   };
 
-  // Read aloud helper
+  // Read aloud helper with natural voice selection
   const handleSpeakText = (text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
@@ -74,6 +81,18 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     const cleanText = text.replace(/[*#`~_]/g, "").replace(/\[.*?\]\(.*?\)/g, "");
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = 1.0;
+
+    // Select the most natural English voice available (e.g. Samantha, Alex, Google US)
+    const voices = window.speechSynthesis.getVoices();
+    const preferredNames = ["Samantha", "Alex", "Google US English", "Daniel", "Karen", "Oliver", "Ava", "Victoria"];
+    let selectedVoice = voices.find(v => preferredNames.includes(v.name));
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang.startsWith("en") && !v.name.toLowerCase().includes("compact") && !v.name.toLowerCase().includes("robotic") && !v.name.toLowerCase().includes("zarvox"));
+    }
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
     window.speechSynthesis.speak(utterance);
   };
 
@@ -421,31 +440,49 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
 
         {/* Clean Modern Input Form */}
         <div className="p-4 bg-white border-t border-[#E5E0D8]">
-          <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+          <form onSubmit={handleSubmit} className="flex gap-2 items-end">
             <div className="relative flex-1">
-              <input 
-                type="text" 
+              <textarea 
+                ref={textareaRef}
+                rows={1}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full bg-[#FAF8F5] border border-[#E5E0D8] focus:border-[#D96B27] rounded-xl px-4 py-3 pr-10 text-sm text-[#2D3142] outline-none font-medium placeholder-[#646A7A]" 
-                placeholder={isListening ? "🎙️ Listening... speak now..." : "Type a question or ask for guidance..."} 
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (query.trim() && !isLoading && !isListening) {
+                      handleSubmit(e as any);
+                    }
+                  }
+                }}
+                className="w-full bg-[#FAF8F5] border border-[#E5E0D8] focus:border-[#D96B27] rounded-xl px-4 py-3 pr-11 text-sm text-[#2D3142] outline-none font-medium placeholder-[#646A7A] resize-none overflow-y-auto leading-relaxed" 
+                placeholder={isListening ? "Listening... speak now..." : "Type a question or ask for guidance... (Shift+Enter for new line)"} 
                 disabled={isLoading || isListening}
               />
               <button
                 type="button"
                 onClick={toggleSpeechRecognition}
-                className={`absolute right-2 top-1.5 bottom-1.5 px-2.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center ${isListening ? 'bg-rose-600 text-white animate-pulse' : 'text-[#646A7A] hover:text-[#D96B27] hover:bg-[#EAE5DC]'}`}
+                className={`absolute right-2 bottom-2 p-2 rounded-lg transition-all flex items-center justify-center ${isListening ? 'bg-rose-600 text-white animate-pulse' : 'text-[#646A7A] hover:text-[#D96B27] hover:bg-[#EAE5DC]'}`}
                 title="Speak your question out loud"
               >
-                🎙️
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
               </button>
             </div>
             <button 
               type="submit" 
-              className="bg-[#D96B27] hover:bg-[#C85A1B] disabled:opacity-50 text-white font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0" 
+              className="bg-[#D96B27] hover:bg-[#C85A1B] disabled:opacity-50 text-white font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0 flex items-center gap-2" 
               disabled={isLoading || isListening || !query.trim()}
             >
-              Send
+              <span>Send</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </button>
           </form>
           <p className="text-[11px] text-[#646A7A] mt-2 text-center">
