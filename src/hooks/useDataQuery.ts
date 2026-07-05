@@ -26,6 +26,7 @@ export interface QueryResult {
 
 export function useDataQuery() {
   const [isQuerying, setIsQuerying] = useState(false);
+  const [queryProgress, setQueryProgress] = useState(0);
 
   const query = useCallback(async (
     searchTerm: string,
@@ -89,6 +90,7 @@ export function useDataQuery() {
     threshold: number = 12
   ): Promise<Array<Record<string, any>>> => {
     setIsQuerying(true);
+    setQueryProgress(0);
     const wakeLock = await requestScreenWakeLock();
     try {
       const db = await openDatabase();
@@ -105,10 +107,21 @@ export function useDataQuery() {
       let activeMapping: any = null;
 
       return new Promise((resolve, reject) => {
+        const countReq = store.count();
+        let totalCount = 0;
+        countReq.onsuccess = () => {
+          totalCount = countReq.result || 0;
+        };
+
         const request = store.openCursor();
+        let processed = 0;
         request.onsuccess = (event) => {
           const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
           if (cursor) {
+            processed++;
+            if (processed % 4000 === 0 && totalCount > 0) {
+              setQueryProgress(Math.min(95, Math.floor((processed / totalCount) * 100)));
+            }
             const val = cursor.value;
             const raw = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
             if (!activeMapping) {
@@ -369,21 +382,23 @@ export function useDataQuery() {
                 }
               }
             }
+            setQueryProgress(100);
             results.sort((a, b) => (b.occupant_count || 0) - (a.occupant_count || 0));
             releaseScreenWakeLock(wakeLock);
             resolve(results);
           }
         };
-        request.onerror = () => { setIsQuerying(false); releaseScreenWakeLock(wakeLock); reject(request.error); };
+        request.onerror = () => { setIsQuerying(false); setQueryProgress(0); releaseScreenWakeLock(wakeLock); reject(request.error); };
       });
     } catch (error) {
       setIsQuerying(false);
+      setQueryProgress(0);
       releaseScreenWakeLock(wakeLock);
       throw error;
     }
   }, []);
 
-  return { query, runLocalAudit, isQuerying };
+  return { query, runLocalAudit, isQuerying, queryProgress };
 }
 
 function openDatabase(): Promise<IDBDatabase> {

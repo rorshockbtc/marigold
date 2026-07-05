@@ -28,6 +28,7 @@ export default function AnalysisDashboard() {
   const [loadingStage, setLoadingStage] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [currentAudit, setCurrentAudit] = useState<string | null>(null);
+  const [displayLimit, setDisplayLimit] = useState(100);
   
   // Phase 8 Feedback State
   const [predictedAccuracy, setPredictedAccuracy] = useState<number | null>(null);
@@ -52,7 +53,7 @@ export default function AnalysisDashboard() {
   const [resultsViewMode, setResultsViewMode] = useState<'table' | 'heatmap' | 'ai'>('table');
   const [aiBriefingGenerated, setAiBriefingGenerated] = useState(false);
 
-  const { runLocalAudit } = useDataQuery();
+  const { runLocalAudit, queryProgress } = useDataQuery();
   const { analyze: analyzeLocalStats } = useDataStats();
 
   const fetchStats = async () => {
@@ -115,20 +116,20 @@ export default function AnalysisDashboard() {
   }, []);
 
   useEffect(() => {
-    let timer: any = null;
     if (isLoading) {
-      setLoadingProgress(15);
-      setLoadingStage("Acquiring screen wake lock & scanning local IndexedDB shards...");
-      timer = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev < 50) {
-            setLoadingStage("Matching string patterns & calculating statistical thresholds across voter records...");
-          } else if (prev < 80) {
-            setLoadingStage("Aggregating resident clusters and cross-referencing domicile evidence...");
-          }
-          return prev < 92 ? prev + Math.floor(Math.random() * 7) + 4 : prev;
-        });
-      }, 300);
+      if (queryProgress > 0) {
+        setLoadingProgress(queryProgress);
+        if (queryProgress < 40) {
+          setLoadingStage(`Scanning local database shard... (${queryProgress}% calculated)`);
+        } else if (queryProgress < 75) {
+          setLoadingStage(`Matching string patterns & calculating statistical thresholds... (${queryProgress}% calculated)`);
+        } else {
+          setLoadingStage(`Aggregating resident clusters and cross-referencing evidence... (${queryProgress}% calculated)`);
+        }
+      } else {
+        setLoadingProgress(15);
+        setLoadingStage("Acquiring screen wake lock & scanning local IndexedDB shards...");
+      }
     } else {
       setLoadingProgress(100);
       setLoadingStage("Analysis complete!");
@@ -137,8 +138,7 @@ export default function AnalysisDashboard() {
       }, 400);
       return () => clearTimeout(clearTimer);
     }
-    return () => clearInterval(timer);
-  }, [isLoading]);
+  }, [isLoading, queryProgress]);
 
   const runAlgorithm = async (action: string, overrideCounty?: string, overrideThreshold?: number, forceRefresh: boolean = false) => {
     setIsLoading(true);
@@ -146,6 +146,7 @@ export default function AnalysisDashboard() {
     const prevAudit = currentAudit;
     setCurrentAudit(action);
     setResults([]);
+    setDisplayLimit(100);
     
     let finalCounty = overrideCounty !== undefined ? overrideCounty : countyFilter;
     let finalThreshold = overrideThreshold !== undefined ? overrideThreshold : thresholdFilter;
@@ -171,6 +172,7 @@ export default function AnalysisDashboard() {
           if (Array.isArray(parsed) && parsed.length > 0) {
             setResults(parsed);
             setIsLoading(false);
+            setDisplayLimit(100);
             return;
           }
         }
@@ -340,99 +342,118 @@ export default function AnalysisDashboard() {
       return 0;
     });
 
+    const visibleResults = sortedResults.slice(0, displayLimit);
     return (
-      <div className="overflow-x-auto border-2 border-slate-300 dark:border-slate-700 rounded-xl shadow-sm">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b-2 border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-900 text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-              <th className="p-4">1. Location / Cluster Summary</th>
-              <th className="p-4">2. Signal Classification</th>
-              <th className="p-4">3. Plain-English Synthesis</th>
-              <th className="p-4 text-right">4. Verification CTA</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
-            {sortedResults.map((r, i) => {
-              const exclusionValue = r.address || r.address1 || r.date_registered || '';
-              const occ = Number(r.occupant_count || r.registrations || 1);
-              const isCluster = occ > 1;
-              const isCritical = occ > 20 || r.risk_level === 'CRITICAL';
-              return (
-                <tr 
-                  key={i} 
-                  onClick={() => setSelectedInspectRecord(r)}
-                  className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 dark:hover:bg-slate-900/60'}`}
-                >
-                  <td className="p-4 space-y-1.5 max-w-sm">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-black text-slate-950 dark:text-white text-base">
-                        {r.name || (r.residentCluster && r.residentCluster[0]?.name ? `${r.residentCluster[0].name}${occ > 1 ? ` (+${occ - 1} Co-Residents)` : ''}` : 'Resident Record')}
-                      </span>
-                      {isCluster ? (
-                        <span className="text-[11px] font-mono bg-amber-100 dark:bg-amber-950/80 px-2.5 py-0.5 rounded-md font-black text-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-700">
-                          🏢 Multi-Voter Domicile ({occ} Occupants)
+      <div className="space-y-4">
+        <div className="overflow-x-auto border-2 border-slate-300 dark:border-slate-700 rounded-xl shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b-2 border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-900 text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                <th className="p-4">1. Location / Cluster Summary</th>
+                <th className="p-4">2. Signal Classification</th>
+                <th className="p-4">3. Plain-English Synthesis</th>
+                <th className="p-4 text-right">4. Verification CTA</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+              {visibleResults.map((r, i) => {
+                const exclusionValue = r.address || r.address1 || r.date_registered || '';
+                const occ = Number(r.occupant_count || r.registrations || 1);
+                const isCluster = occ > 1;
+                const isCritical = occ > 20 || r.risk_level === 'CRITICAL';
+                return (
+                  <tr 
+                    key={i} 
+                    onClick={() => setSelectedInspectRecord(r)}
+                    className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 dark:hover:bg-slate-900/60'}`}
+                  >
+                    <td className="p-4 space-y-1.5 max-w-sm">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-slate-950 dark:text-white text-base">
+                          {r.name || (r.residentCluster && r.residentCluster[0]?.name ? `${r.residentCluster[0].name}${occ > 1 ? ` (+${occ - 1} Co-Residents)` : ''}` : 'Resident Record')}
                         </span>
-                      ) : (
-                        <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-extrabold text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600">
-                          REC-ID: {r.id || 'LOCAL-1'}
+                        {isCluster ? (
+                          <span className="text-[11px] font-mono bg-amber-100 dark:bg-amber-950/80 px-2.5 py-0.5 rounded-md font-black text-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-700">
+                            🏢 Multi-Voter Domicile ({occ} Occupants)
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-extrabold text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600">
+                            REC-ID: {r.id || 'LOCAL-1'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-slate-950 dark:text-white font-extrabold truncate">
+                        📍 {r.address || r.address1 || 'Unknown Street Address'}
+                      </div>
+                      <div className="text-xs text-slate-800 dark:text-slate-200 font-bold flex items-center gap-1.5">
+                        <span>{r.city || 'City'}, {r.state || 'MS'} {r.zip || ''}</span>
+                        <span>•</span>
+                        <span className="font-black text-amber-800 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded">{r.county || 'Statewide'} County</span>
+                      </div>
+                    </td>
+                    <td className="p-4 whitespace-nowrap align-top">
+                      <div className="flex flex-col gap-1.5 items-start mt-0.5">
+                        <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-[#D9534F] text-white border border-[#B52B27]' : 'bg-[#232733] text-white border border-[#1E222B]'}`}>
+                          {occ} Total Registered
                         </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-slate-950 dark:text-white font-extrabold truncate">
-                      📍 {r.address || r.address1 || 'Unknown Street Address'}
-                    </div>
-                    <div className="text-xs text-slate-800 dark:text-slate-200 font-bold flex items-center gap-1.5">
-                      <span>{r.city || 'City'}, {r.state || 'MS'} {r.zip || ''}</span>
-                      <span>•</span>
-                      <span className="font-black text-amber-800 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded">{r.county || 'Statewide'} County</span>
-                    </div>
-                  </td>
-                  <td className="p-4 whitespace-nowrap align-top">
-                    <div className="flex flex-col gap-1.5 items-start mt-0.5">
-                      <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-[#D9534F] text-white border border-[#B52B27]' : 'bg-[#232733] text-white border border-[#1E222B]'}`}>
-                        {occ} Total Registered
-                      </span>
-                      <span className="text-[11px] font-black tracking-wider uppercase text-[#D96B27] bg-[#D96B27]/10 border border-[#D96B27]/20 px-2 py-0.5 rounded">
-                        {r.risk_level || (isCritical ? 'CRITICAL SURGE FLAG' : 'HIGH DENSITY FLAG')}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 max-w-md text-sm font-bold text-slate-900 dark:text-slate-100 leading-relaxed align-top">
-                    <p className="mt-0.5">{r.details || `Forensic check triggered: ${occ} distinct voter registrations recorded at this single physical address.`}</p>
-                  </td>
-                  <td className="p-4 text-right whitespace-nowrap align-top" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2 mt-0.5">
-                      <button 
-                        onClick={() => setSelectedInspectRecord(r)}
-                        className="px-3.5 py-2 rounded-lg bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black transition-all text-xs flex items-center gap-1 shadow-sm border border-[#C85A1B]"
-                        title="Open Inline Forensic Controller"
-                      >
-                        <span>🔍 Review Findings</span>
-                      </button>
-                      <button 
-                        onClick={() => {
-                          navigator.clipboard.writeText(String(r.address || r.address1 || ""));
-                          alert("Address copied to clipboard! Paste into a new browser tab or mapping app to look up without sharing tracking referrers.");
-                        }}
-                        className="px-2.5 py-2 rounded-lg bg-white hover:bg-[#F0ECE3] text-[#2D3142] font-extrabold transition-all text-xs border border-[#E5E0D8] flex items-center gap-1 shadow-sm"
-                        title="Copy address to clipboard for private external lookup"
-                      >
-                        <span>📋 Copy</span>
-                      </button>
-                      <button 
-                        onClick={() => setSelectedNoteRecord(r)}
-                        className="px-2.5 py-2 rounded-lg bg-[#D96B27]/15 hover:bg-[#D96B27]/25 text-[#D96B27] font-black transition-colors text-xs border border-[#D96B27]/30 shadow-sm"
-                        title="Attach volunteer field note"
-                      >
-                        📝 Note
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        <span className="text-[11px] font-black tracking-wider uppercase text-[#D96B27] bg-[#D96B27]/10 border border-[#D96B27]/20 px-2 py-0.5 rounded">
+                          {r.risk_level || (isCritical ? 'CRITICAL SURGE FLAG' : 'HIGH DENSITY FLAG')}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 max-w-md text-sm font-bold text-slate-900 dark:text-slate-100 leading-relaxed align-top">
+                      <p className="line-clamp-2">{r.details || 'Identified with structural/locational compliance flag.'}</p>
+                    </td>
+                    <td className="p-4 align-top" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(exclusionValue);
+                            alert("Address copied to clipboard! Paste into a new browser tab or mapping app to look up without sharing tracking referrers.");
+                          }}
+                          className="px-2.5 py-2 rounded-lg bg-white hover:bg-[#F0ECE3] text-[#2D3142] font-extrabold transition-all text-xs border border-[#E5E0D8] flex items-center gap-1 shadow-sm"
+                          title="Copy address to clipboard for private external lookup"
+                        >
+                          <span>📋 Copy</span>
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNoteRecord(r)}
+                          className="px-2.5 py-2 rounded-lg bg-[#D96B27]/15 hover:bg-[#D96B27]/25 text-[#D96B27] font-black transition-colors text-xs border border-[#D96B27]/30 shadow-sm"
+                          title="Attach volunteer field note"
+                        >
+                          📝 Note
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {sortedResults.length > displayLimit && (
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">
+              Showing the first <strong className="text-slate-900 dark:text-white font-bold">{displayLimit}</strong> of <strong className="text-slate-900 dark:text-white font-bold">{sortedResults.length}</strong> total flagged records.
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDisplayLimit(prev => prev + 150)}
+                className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm"
+              >
+                Load 150 More
+              </button>
+              <button
+                type="button"
+                onClick={() => setDisplayLimit(sortedResults.length)}
+                className="bg-primary hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-lg transition-all shadow-sm"
+              >
+                Load All {sortedResults.length} Records →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
