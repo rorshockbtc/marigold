@@ -131,7 +131,7 @@ export function useDataQuery() {
                 const existing = addressCounts.get(addr);
                 if (existing) {
                   existing.count++;
-                  if (existing.residents && existing.residents.length < 50) {
+                  if (existing.residents) {
                     existing.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered });
                   }
                 } else {
@@ -157,8 +157,8 @@ export function useDataQuery() {
                 const dExisting = dateCounts.get(std.date_registered);
                 if (dExisting) {
                   dExisting.count++;
-                  if (dExisting.residents && dExisting.residents.length < 50) {
-                    dExisting.residents.push({ name: std.name, id: std.voter_id, city: std.city || rCounty || 'Unknown' });
+                  if (dExisting.residents) {
+                    dExisting.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered });
                   }
                 } else {
                   dateCounts.set(std.date_registered, {
@@ -180,42 +180,38 @@ export function useDataQuery() {
 
               // Track phantom precincts
               if (!std.precinct_code || std.precinct_code === '0' || std.precinct_code.toUpperCase() === 'UNASSIGNED') {
-                if (phantomList.length < 100) {
-                  phantomList.push({
-                    id: std.voter_id,
-                    name: std.name,
-                    address: std.address || 'Unlisted Domicile',
-                    city: std.city,
-                    state: std.state,
-                    zip: std.zip,
-                    county: rCounty,
-                    occupant_count: 1,
-                    risk_level: 'HIGH',
-                    details: `Active voter record missing mandatory voting precinct code assignment.`,
-                    raw: std.raw
-                  });
-                }
+                phantomList.push({
+                  id: std.voter_id,
+                  name: std.name,
+                  address: std.address || 'Unlisted Domicile',
+                  city: std.city,
+                  state: std.state,
+                  zip: std.zip,
+                  county: rCounty,
+                  occupant_count: 1,
+                  risk_level: 'HIGH',
+                  details: `Active voter record missing mandatory voting precinct code assignment.`,
+                  raw: std.raw
+                });
               }
 
               // Track NCOA / Out of state
               if (std.ncoa_flag || (std.raw && (std.raw.mail_state || std.raw.MAIL_ST) && String(std.raw.mail_state || std.raw.MAIL_ST).toUpperCase() !== 'MS')) {
-                if (ncoaList.length < 100) {
-                  const mailAddr = std.raw?.mail_address || std.raw?.mailing_address || std.raw?.mail_street || std.raw?.MAIL_ADDR || std.raw?.MAIL_STREET || `${std.raw?.mail_city || std.raw?.MAIL_CITY || ''}, ${std.raw?.mail_state || std.raw?.MAIL_ST || 'Out of State'} ${std.raw?.mail_zip || std.raw?.MAIL_ZIP || ''}`;
-                  ncoaList.push({
-                    id: std.voter_id,
-                    name: std.name,
-                    address: std.address || 'Unlisted Domicile',
-                    city: std.city,
-                    state: std.state,
-                    zip: std.zip,
-                    county: rCounty,
-                    occupant_count: 1,
-                    risk_level: 'HIGH',
-                    details: `National Change of Address (NCOA) flag triggered or out-of-state mailing domicile.`,
-                    raw: std.raw,
-                    mailingAddress: String(mailAddr || 'Out-of-State Address Filed')
-                  });
-                }
+                const mailAddr = std.raw?.mail_address || std.raw?.mailing_address || std.raw?.mail_street || std.raw?.MAIL_ADDR || std.raw?.MAIL_STREET || `${std.raw?.mail_city || std.raw?.MAIL_CITY || ''}, ${std.raw?.mail_state || std.raw?.MAIL_ST || 'Out of State'} ${std.raw?.mail_zip || std.raw?.MAIL_ZIP || ''}`;
+                ncoaList.push({
+                  id: std.voter_id,
+                  name: std.name,
+                  address: std.address || 'Unlisted Domicile',
+                  city: std.city,
+                  state: std.state,
+                  zip: std.zip,
+                  county: rCounty,
+                  occupant_count: 1,
+                  risk_level: 'HIGH',
+                  details: `Out-of-state mailing address detected: ${mailAddr}`,
+                  raw: std.raw,
+                  mailingAddress: String(mailAddr || 'Out-of-State Address Filed')
+                });
               }
 
               // Track intra-county duplicates
@@ -289,10 +285,10 @@ export function useDataQuery() {
                   });
                 }
               }
-            } else if (auditType === 'po-box') {
+            } else if (auditType === 'po-box' || auditType === 'commercial') {
               for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
                 const upper = addr.toUpperCase();
-                if (upper.includes('P O BOX') || upper.includes('PO BOX') || upper.includes('P.O. BOX')) {
+                if (upper.includes('P O BOX') || upper.includes('PO BOX') || upper.includes('P.O. BOX') || upper.includes('UPS STORE') || upper.includes('PMB') || upper.includes('FEDEX') || upper.includes('SUITE') || upper.includes('STE') || upper.includes('COMMERCIAL') || upper.includes('BLDG')) {
                   results.push({
                     id: sample.voter_id,
                     name: sample.name,
@@ -303,7 +299,7 @@ export function useDataQuery() {
                     county: sample.county,
                     occupant_count: count,
                     risk_level: 'CRITICAL',
-                    details: `Commercial / P.O. Box address listed as primary residential domicile.`,
+                    details: `Commercial mail drop, P.O. Box, or business building listed as primary residential domicile.`,
                     raw: sample.raw,
                     residentCluster: residents || []
                   });
@@ -352,9 +348,9 @@ export function useDataQuery() {
                 }
               }
             } else {
-              // Default fallback: return top dense addresses
+              // Default fallback: return matching addresses
               const sorted = Array.from(addressCounts.entries()).sort((a, b) => b[1].count - a[1].count);
-              for (const [addr, { count, sample }] of sorted.slice(0, 50)) {
+              for (const [addr, { count, sample, residents }] of sorted) {
                 if (count > 1) {
                   results.push({
                     id: sample.voter_id,
@@ -365,9 +361,10 @@ export function useDataQuery() {
                     zip: sample.zip,
                     county: sample.county,
                     occupant_count: count,
-                    risk_level: 'MEDIUM',
+                    risk_level: count > 20 ? 'CRITICAL' : 'MEDIUM',
                     details: `${count} residents registered at this address.`,
-                    raw: sample.raw
+                    raw: sample.raw,
+                    residentCluster: residents || []
                   });
                 }
               }

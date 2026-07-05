@@ -366,7 +366,7 @@ export default function AnalysisDashboard() {
                   <td className="p-4 space-y-1.5 max-w-sm">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-black text-slate-950 dark:text-white text-base">
-                        {isCluster ? `🏠 Address Cluster` : (r.name || 'Resident Record')}
+                        {r.name || (r.residentCluster && r.residentCluster[0]?.name ? `${r.residentCluster[0].name}${occ > 1 ? ` (+${occ - 1} Co-Residents)` : ''}` : 'Resident Record')}
                       </span>
                       {isCluster ? (
                         <span className="text-[11px] font-mono bg-amber-100 dark:bg-amber-950/80 px-2.5 py-0.5 rounded-md font-black text-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-700">

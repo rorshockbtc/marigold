@@ -314,18 +314,18 @@ export default function GroupAdminSettingsPage() {
             {showAddModal && (
               <form onSubmit={handleAddManualMember} className="bg-slate-50 p-4 rounded-xl border border-slate-300 space-y-3 text-xs animate-in fade-in slide-in-from-top-2">
                 <div className="font-bold text-slate-800 text-sm flex items-center justify-between">
-                  <span>➕ Manually Add Volunteer / Family Member to Roster</span>
+                  <span>➕ Manually Add Volunteer / Auditor to Roster</span>
                   <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-normal">✕ Close</button>
                 </div>
                 <p className="text-slate-600">
-                  Directly enroll a team member or family member (like your mom or dad) without waiting for them to submit an application link.
+                  Directly enroll a team member, field investigator, or partner auditor into your organization roster without waiting for an invitation link submission.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Member Full Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Mary Cyree"
+                      placeholder="e.g. Jane Doe"
                       value={newMemberName}
                       onChange={(e) => setNewMemberName(e.target.value)}
                       required
