@@ -272,7 +272,7 @@ export default function DashboardPage() {
             <label className="text-xs font-black text-[#D96B27] uppercase tracking-wider block">Select Preset Jurisdiction or Enter Custom Group Name:</label>
             <div className="flex flex-wrap gap-2 text-xs">
               {[
-                "Mississippi Fair Elections (MSFE Pilot)",
+                "Statewide Civic Integrity Network (Pilot)",
                 "ACME Civic Data Sandbox (Demo Environment)"
               ].map((preset) => (
                 <button
@@ -315,8 +315,8 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-1">
-            <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Forensic Cartridge</span>
-            <div className="text-lg md:text-xl font-black text-[#D96B27]">Cartridge 2.0</div>
+            <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Forensic Playbook</span>
+            <div className="text-lg md:text-xl font-black text-[#D96B27]">Playbook 2.0</div>
             <div className="text-[11px] text-[#646A7A] font-medium">HSGP & FEMA Validated</div>
           </div>
 

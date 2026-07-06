@@ -139,7 +139,7 @@ export default function GroupAdminSettingsPage() {
             </span>
           </div>
           <h1 className="text-3xl font-serif font-bold text-primary mt-1">Group Administration &amp; Roster Management</h1>
-          <p className="text-sm text-muted-foreground">Manage your organization credentials, review applicant requests, and govern zero-PII cartridge broadcast rules.</p>
+          <p className="text-sm text-muted-foreground">Manage your organization credentials, review applicant requests, and govern zero-PII Playbook broadcast rules.</p>
         </div>
 
         <div className="flex gap-3">
@@ -287,7 +287,7 @@ export default function GroupAdminSettingsPage() {
               <div className="space-y-1">
                 <strong className="font-bold block text-emerald-900">Organization Data Ingestion Policy</strong>
                 <p className="text-emerald-800 leading-relaxed">
-                  To maintain strict compliance with state privacy statutes, all group members must stream and chunk raw voter rolls locally on their individual devices using the <Link href="/data-prep" className="underline font-bold">Data Chunking Studio</Link>. Only zero-PII statistical frequency summaries (Cartridges) synchronize across group accounts.
+                  To maintain strict compliance with state privacy statutes, all group members must stream and chunk raw voter rolls locally on their individual devices using the <Link href="/data-prep" className="underline font-bold">Data Chunking Studio</Link>. Only zero-PII statistical frequency summaries (Shared Playbooks) synchronize across group accounts.
                 </p>
               </div>
             </div>
@@ -295,7 +295,7 @@ export default function GroupAdminSettingsPage() {
             <div className="flex justify-between items-center border-b border-border pb-3">
               <div>
                 <h3 className="font-bold text-lg text-primary">👥 Active Group Roster ({roster.length})</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Members authorized to synchronize zero-PII summary cartridges.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Members authorized to synchronize zero-PII Shared Playbooks.</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -306,7 +306,7 @@ export default function GroupAdminSettingsPage() {
                   <span>➕ Manually Add Member</span>
                 </button>
                 <span className="text-xs font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 font-bold hidden sm:inline-block">
-                  🔒 PII Cartridge Lock Active
+                  🔒 PII Playbook Lock Active
                 </span>
               </div>
             </div>

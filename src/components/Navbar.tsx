@@ -11,6 +11,21 @@ export function Navbar() {
   const pathname = usePathname() || '';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setMoreDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setMoreDropdownOpen(false);
+    }, 250);
+  };
 
   return (
     <>
@@ -35,37 +50,46 @@ export function Navbar() {
             <Link href="/store" className="hover:text-amber-400 transition-colors">Audit Checklists</Link>
             <Link href="/registry" className="hover:text-amber-400 transition-colors">State Registry</Link>
             <Link href="/compliance" className="hover:text-amber-400 transition-colors">FEMA Compliance</Link>
+            <Link href="/partners" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1.5 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30 shadow-sm">
+              <span>🤝 Partnerships</span>
+            </Link>
             
             {/* More Resources Dropdown */}
-            <div className="relative" onMouseLeave={() => setMoreDropdownOpen(false)}>
+            <div 
+              className="relative" 
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
-                onMouseEnter={() => setMoreDropdownOpen(true)}
                 onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
                 className="flex items-center gap-1 hover:text-white py-2 transition-colors focus:outline-none"
+                aria-expanded={moreDropdownOpen}
               >
                 <span>More</span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
               
               {moreDropdownOpen && (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 z-50 text-xs">
-                  <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                    <span>Worldviews &amp; FAQ</span>
-                  </Link>
-                  <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
-                    <Map className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Technical Roadmap</span>
-                  </Link>
-                  <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                    <span>Bring to Your State</span>
-                  </Link>
-                  <div className="border-t border-slate-800 my-1"></div>
-                  <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-400 font-bold hover:bg-slate-800 transition-colors flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                    <span>250th Celebration</span>
-                  </Link>
+                <div className="absolute right-0 top-full pt-2 w-56 z-50">
+                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 text-xs">
+                    <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      <span>Worldviews &amp; FAQ</span>
+                    </Link>
+                    <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                      <Map className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>Technical Roadmap</span>
+                    </Link>
+                    <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                      <span>Bring to Your State</span>
+                    </Link>
+                    <div className="border-t border-slate-800 my-1"></div>
+                    <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-400 font-bold hover:bg-slate-800 transition-colors flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <span>250th Celebration</span>
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -115,6 +139,9 @@ export function Navbar() {
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Audit Checklists</Link>
             <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">State Registry</Link>
             <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">FEMA Compliance</Link>
+            <Link href="/partners" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500/10 text-amber-400 font-bold flex items-center gap-2 border border-amber-500/30">
+              <span>🤝 Beta Partnerships &amp; Grants</span>
+            </Link>
             <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-400" />
               <span>Worldviews &amp; FAQ</span>

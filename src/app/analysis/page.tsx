@@ -20,6 +20,36 @@ const categorizeAddress = (address: string) => {
   return "⚠️ Review Recommended";
 };
 
+// Helper to dynamically build full name + suffix from raw fields to support already-ingested databases
+function getExhaustiveFullName(r: any): string {
+  if (!r) return 'Resident Record';
+  const raw = r.raw || {};
+  
+  const findValue = (keys: string[]) => {
+    const rawKeys = Object.keys(raw);
+    for (const key of keys) {
+      const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const rk of rawKeys) {
+        const cleanRk = rk.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanRk === cleanKey && raw[rk]) {
+          return String(raw[rk]).trim();
+        }
+      }
+    }
+    return '';
+  };
+
+  const first = findValue(['firstname', 'first', 'first_name', 'fname', 'voterfirstname']);
+  const last = findValue(['lastname', 'last', 'last_name', 'lname', 'voterlastname']);
+  const suffix = findValue(['suffix', 'suffixname', 'namesuffix', 'votersuffix', 'generation']);
+  const middle = findValue(['middlename', 'middle', 'mname', 'middlename', 'votermiddlename']);
+
+  if (first || last) {
+    return [first, middle, last, suffix].filter(Boolean).join(' ');
+  }
+  return r.name || 'Resident Record';
+}
+
 export default function AnalysisDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [results, setResults] = useState<any[]>([]);
@@ -370,7 +400,7 @@ export default function AnalysisDashboard() {
                     <td className="p-4 space-y-1.5 max-w-sm">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-black text-slate-950 dark:text-white text-base">
-                          {r.name || (r.residentCluster && r.residentCluster[0]?.name ? `${r.residentCluster[0].name}${occ > 1 ? ` (+${occ - 1} Co-Residents)` : ''}` : 'Resident Record')}
+                          {getExhaustiveFullName(r)}
                         </span>
                         {isCluster ? (
                           <span className="text-[11px] font-mono bg-amber-100 dark:bg-amber-950/80 px-2.5 py-0.5 rounded-md font-black text-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-700">
@@ -512,29 +542,27 @@ export default function AnalysisDashboard() {
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <span className="font-bold text-sm">✓ Data Parity Verified</span>
-            <span className="bg-emerald-200 text-emerald-900 text-[10px] font-mono px-2 py-0.5 rounded">Group Cartridge Active</span>
+            <span className="bg-emerald-200 text-emerald-900 text-[10px] font-mono px-2 py-0.5 rounded">Shared Playbook Active</span>
           </div>
           <p className="text-xs text-emerald-900">
             Running collaborative analysis against your local dataset copy. If your file differs from your group standard, download the latest version below.
           </p>
         </div>
         <a
-          href="https://www.sos.ms.gov/elections-voting/voter-registration-information"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/registry"
           className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
         >
           <span>🌐 Download Official State Dataset ↗</span>
         </a>
       </div>
 
-      {/* Cartridge Quick-Launch Grid */}
+      {/* Playbook Quick-Launch Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <a href="/advanced-stats" className="p-4 bg-card border border-border rounded-xl hover:border-amber-500/80 hover:shadow-md transition-all group flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <BarChart3 className="w-6 h-6 text-amber-500" />
-              <span className="text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded border border-amber-500/20">Cartridge</span>
+              <span className="text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded border border-amber-500/20">Playbook</span>
             </div>
             <h4 className="font-bold text-sm text-foreground group-hover:text-amber-500 transition-colors">Benford&apos;s Law Curve</h4>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Inspect leading digit address distributions &amp; synthetic anomalies.</p>
@@ -694,12 +722,12 @@ export default function AnalysisDashboard() {
             { id: 'density', label: 'High-Density Occupancy', icon: '⚡', phase: 'phase2', desc: `Cutoff: ${thresholdFilter}+ voters per domicile.` },
             { id: 'missing-dorm', label: 'Missing Dorm / Unit #', icon: '🏢', phase: 'phase2', desc: 'Large communal buildings missing apt numbers.' },
             { id: 'po-box', label: 'P.O. Box Residence', icon: '📬', phase: 'phase2', desc: 'PO Box in physical address field.' },
-            { id: 'typo-names', label: 'Fat-Finger Typo Check', icon: '⌨️', phase: 'phase3', desc: '1-character first or last names.' },
+            { id: 'typo-names', label: 'Clerical Typo Check', icon: '⌨️', phase: 'phase3', desc: '1-character first or last names.' },
             { id: 'duplicates', label: 'Intra-County Duplicates', icon: '👯', phase: 'phase3', desc: 'Same name & zip at different addresses.' },
             { id: 'commercial', label: 'Commercial Disguises', icon: '🏪', phase: 'phase3', desc: 'UPS Stores / commercial PMBs.' },
             { id: 'spikes', label: 'Registration Surge Spikes', icon: '📈', phase: 'phase4', desc: 'Massive single-day temporal volume surges.' },
             { id: 'phantom-precincts', label: 'Phantom Precinct Assignment', icon: '👻', phase: 'phase4', desc: 'Active voters with missing/null precinct code.' },
-            { id: 'out-of-state-mailing', label: 'Out-of-State Mailing Loophole', icon: '✈️', phase: 'phase4', desc: 'MS voter residing out of state via mail.' },
+            { id: 'out-of-state-mailing', label: 'Out-of-State Mailing Loophole', icon: '✈️', phase: 'phase4', desc: 'Voter residing out of state via mail.' },
           ]
             .filter(item => auditTabCategory === 'all' || item.phase === auditTabCategory)
             .map(item => {
@@ -910,7 +938,7 @@ export default function AnalysisDashboard() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/60 pb-3">
                   <div>
                     <span className="text-xs font-mono uppercase tracking-wider font-bold text-foreground flex items-center gap-1.5">
-                      <span>🗺️ Interactive Geographic Map of Mississippi Counties</span>
+                      <span>🗺️ Interactive Geographic Map of County Densities</span>
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-0.5">Click any region or county polygon below to isolate forensic rows inside the table.</p>
                   </div>
@@ -924,7 +952,7 @@ export default function AnalysisDashboard() {
                 {/* Stylized Geographic Regional Map Grid */}
                 <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl text-white space-y-4 shadow-inner relative overflow-hidden">
                   <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2 font-mono">
-                    <span>MISSISSIPPI JURISDICTIONAL DENSITY HEATMAP</span>
+                    <span>JURISDICTIONAL DENSITY HEATMAP</span>
                     <span className="flex items-center gap-3">
                       <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-500 inline-block"/> High Concentration (&gt;15)</span>
                       <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block"/> Moderate (8-15)</span>
@@ -1218,7 +1246,7 @@ export default function AnalysisDashboard() {
                   <span>📋 Copy Address</span>
                 </button>
               </div>
-              <div className="text-base font-black text-slate-900 dark:text-white">{selectedInspectRecord.name || 'Resident Record'}</div>
+              <div className="text-base font-black text-slate-900 dark:text-white">{getExhaustiveFullName(selectedInspectRecord)}</div>
               <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Voter ID: {selectedInspectRecord.id || 'N/A'}</div>
               <div className="text-sm text-slate-900 dark:text-slate-100 font-extrabold pt-1">
                 📍 {selectedInspectRecord.address || selectedInspectRecord.address1 || 'Unknown Address'}
@@ -1244,7 +1272,7 @@ export default function AnalysisDashboard() {
                 </p>
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {(selectedInspectRecord.duplicateAddresses || results
-                    .filter(r => r.name === selectedInspectRecord.name && r.address !== selectedInspectRecord.address)
+                    .filter(r => getExhaustiveFullName(r) === getExhaustiveFullName(selectedInspectRecord) && r.address !== selectedInspectRecord.address)
                     .map(r => r.address)
                     .concat([selectedInspectRecord.address])
                     .filter((v, i, a) => a.indexOf(v) === i)
@@ -1358,13 +1386,15 @@ export default function AnalysisDashboard() {
                 <span>📋 All Extracted Attributes &amp; Raw Data</span>
               </span>
               {selectedInspectRecord.raw && Object.keys(selectedInspectRecord.raw).length > 0 ? (
-                <div className="grid grid-cols-1 gap-2.5">
-                  {Object.entries(selectedInspectRecord.raw).map(([key, value]) => (
-                    <div key={key} className="bg-slate-100 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
-                      <span className="text-[11px] font-extrabold text-slate-600 dark:border-slate-400 uppercase">{key.replace(/_/g, ' ')}</span>
-                      <span className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 break-all">{String(value !== null && value !== undefined ? value : '—')}</span>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                  {Object.entries(selectedInspectRecord.raw)
+                    .filter(([_, val]) => val !== null && val !== undefined && String(val).trim() !== '')
+                    .map(([key, value]) => (
+                      <div key={key} className="bg-slate-100 dark:bg-slate-800/40 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-0.5">
+                        <span className="text-[10px] font-extrabold text-slate-500 uppercase truncate">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 break-all">{String(value)}</span>
+                      </div>
+                    ))}
                 </div>
               ) : (
                 <div className="text-sm text-slate-700 dark:text-slate-300 font-medium bg-slate-100 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">

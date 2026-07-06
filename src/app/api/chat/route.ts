@@ -22,14 +22,14 @@ Phase 2 Audits:
 - P.O. Box in Residence: Physical addresses that are P.O. Boxes.
 
 Phase 3 Audits:
-- Fat-Finger Typo Check: First/Last names that are 1 character long.
+- Clerical Typo Check: First/Last names that are 1 character long.
 - Intra-County Duplicates: Same Name + Zip, different street address.
 - Commercial Disguises: Residences with 'STE', 'BLDG'.
 
 Phase 4 Audits:
 - Registration Spikes: Massive single-day registration surges.
 - Phantom Precincts: Active voters with no precinct assigned.
-- Out-of-State Mailing Loophole: Active MS voters with out-of-state mail.
+- Out-of-State Mailing Loophole: Active voters with out-of-state mail.
 
 Phase 5 & Organization Workflows:
 - Mission Control: A page of pre-configured, 1-click Playbooks for volunteers.

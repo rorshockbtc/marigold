@@ -61,17 +61,29 @@ export function Footer() {
               Privacy Policy
             </a>
             <a 
-              href="/sandbox" 
-              className="text-orange-400 font-extrabold hover:underline transition-all flex items-center gap-1"
+              href="/cookies" 
+              className="text-amber-400 hover:underline transition-all"
             >
-              <FlaskConical className="w-3.5 h-3.5" />
-              <span>ACME Sandbox (Mock Data Demo)</span>
+              Cookie Policy
+            </a>
+            <a 
+              href="/accessibility" 
+              className="text-amber-400 hover:underline transition-all"
+            >
+              Section 508 / WCAG Accessibility
             </a>
             <a 
               href="/compliance" 
               className="text-sky-300 hover:underline transition-all"
             >
               Statutory Compliance
+            </a>
+            <a 
+              href="/sandbox" 
+              className="text-orange-400 font-extrabold hover:underline transition-all flex items-center gap-1"
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>ACME Sandbox (Mock Data Demo)</span>
             </a>
           </div>
         </div>

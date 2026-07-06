@@ -191,7 +191,7 @@ export default function OnboardingPage() {
             <ul className="list-disc pl-5 space-y-1 text-amber-900 font-medium">
               <li>You will never transmit or upload raw citizen files across public cloud servers.</li>
               <li>You will run all voter file analyses strictly inside your local browser memory using Marigold&apos;s zero-PII execution engine.</li>
-              <li>Published group reports must contain only aggregate statistical summaries (Cartridge Summaries) without individual PII.</li>
+              <li>Published group reports must contain only aggregate statistical summaries (Playbook Summaries) without individual PII.</li>
             </ul>
           </div>
 
@@ -229,7 +229,7 @@ export default function OnboardingPage() {
           <div className="border-b border-border pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-xl font-bold text-primary">2. Connect with an Organization Group</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Collaborate securely by sharing aggregate audit cartridges with teammates.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Collaborate securely by sharing aggregate audit playbooks with teammates.</p>
             </div>
             <button onClick={() => setStep(1)} className="text-xs text-slate-500 font-bold hover:underline">
               ← Back to Jurisdiction
@@ -398,7 +398,7 @@ export default function OnboardingPage() {
           {actionType === 'create' && (
             <div className="space-y-5 pt-2">
               <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-xl text-xs text-amber-950">
-                👑 Establishing a new organization grants you full Group Admin controls, application queue management, and summary cartridge broadcasting.
+                👑 Establishing a new organization grants you full Group Admin controls, application queue management, and summary playbook broadcasting.
               </div>
 
               <div className="space-y-4 text-sm">

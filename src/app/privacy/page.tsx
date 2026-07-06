@@ -29,9 +29,9 @@ export default function PrivacyPage() {
           </section>
 
           <section className="space-y-3 bg-emerald-950/40 border border-emerald-500/30 p-5 rounded-2xl">
-            <h2 className="text-lg font-bold text-emerald-400 uppercase tracking-wider">2. How Collaborative Cartridges Work Without Leaking Data</h2>
+            <h2 className="text-lg font-bold text-emerald-400 uppercase tracking-wider">2. How Shared Playbooks Work Without Leaking Data</h2>
             <p>
-              When collaborative audit groups work together on Marigold Insights, our servers route only lightweight **JSON Cartridges** containing mathematical rules and aggregate counts (e.g., *&quot;Flag count: 850 P.O. Box registrations&quot;*).
+              When collaborative audit groups work together on Marigold Insights, our servers route only lightweight **JSON Playbooks** containing verification rules and aggregate counts (e.g., *&quot;Flag count: 850 P.O. Box registrations&quot;*).
             </p>
             <p>
               To inspect specific addresses behind a flag, group teammates must load their own local copy of the state dataset into their browser. The client node verifies data parity locally and renders the plain-text addresses on the user&apos;s display.

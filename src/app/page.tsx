@@ -275,6 +275,12 @@ export default function MarketingHomePage() {
         <div className="relative z-10 space-y-8 max-w-6xl mx-auto">
           {/* Top Badges */}
           <div className="flex flex-wrap justify-center gap-3 mb-4">
+            <Link 
+              href="/partners" 
+              className="bg-amber-500 text-slate-950 font-extrabold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider hover:bg-amber-400 transition-colors shadow-md flex items-center gap-1.5"
+            >
+              <span>🤝 Pilot Partnership Program →</span>
+            </Link>
             <span className="bg-amber-400/20 text-amber-300 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-400/30 shadow-sm">
               FY26 FEMA HSGP Compliant
             </span>
@@ -314,6 +320,9 @@ export default function MarketingHomePage() {
           <div className="pt-4 flex flex-wrap justify-center items-center gap-4">
             <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
               Try Public Sandbox →
+            </Link>
+            <Link href="/partners" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-900/90 text-white border border-amber-500/40 hover:bg-slate-800 hover:border-amber-400 transition-all transform hover:-translate-y-0.5">
+              🤝 Partner With Us
             </Link>
             <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all">
               Find Your Role Guide ↓
@@ -432,6 +441,212 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
+      {/* The Open Library of Civic Checklists (Core Audit Engines) */}
+      <section className="space-y-10 max-w-6xl mx-auto px-2">
+        <div className="text-center space-y-3">
+          <div className="inline-block bg-amber-500/10 text-amber-600 font-mono text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-500/20">
+            True Non-Partisan Infrastructure
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary">An Open Library of Civic Audit Checklists</h2>
+          <p className="text-muted-foreground text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
+            Marigold Insights provides an expanding, non-partisan library of verification algorithms designed to protect voting rights and ensure data integrity. Built for state procurement officers, county clerks, and citizen volunteers alike—with new checklists contributed by real users nationwide.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Engine 1: Clerical Typos & Discrepancies */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-3 hover:border-amber-400 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl bg-amber-100 p-2 rounded-xl">⌨️</span>
+              <h3 className="font-serif font-bold text-primary text-lg">Clerical Typo Remediation</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Catch data-entry formatting errors and 1-character name glitches. Helps county clerks proactively correct legitimate citizen records before eligible voters experience friction or wrongful removal at the ballot box.
+            </p>
+            <span className="text-[11px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded inline-block border border-amber-200">
+              Voter Purge Protection
+            </span>
+          </div>
+
+          {/* Engine 2: Dorms & Multi-Family Housing */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-3 hover:border-sky-400 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl bg-sky-100 p-2 rounded-xl">🎓</span>
+              <h3 className="font-serif font-bold text-primary text-lg">Student &amp; Apartment Rights</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Ensure college students living in campus dormitories and citizens in multi-family housing complexes are properly segmented with unit/room numbers—preventing accidental clustering or wrongful residence challenges.
+            </p>
+            <span className="text-[11px] font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded inline-block border border-sky-200">
+              Equal Civic Access
+            </span>
+          </div>
+
+          {/* Engine 3: High-Density Occupancy */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-3 hover:border-emerald-400 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl bg-emerald-100 p-2 rounded-xl">🏘️</span>
+              <h3 className="font-serif font-bold text-primary text-lg">High-Density Occupancy</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Identify abnormal registration clustering (e.g., 12+ or 20+ active voters at a single single-family domicile). Automatically excludes historic inactive or deceased records to guarantee zero false-positive traps.
+            </p>
+            <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded inline-block border border-emerald-200">
+              Airtight Data Hygiene
+            </span>
+          </div>
+
+          {/* Engine 4: P.O. Box & Commercial Domiciles */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-3 hover:border-purple-400 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl bg-purple-100 p-2 rounded-xl">🏢</span>
+              <h3 className="font-serif font-bold text-primary text-lg">Commercial &amp; Box Domiciles</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Separate P.O. Boxes, UPS Stores, Private Mailboxes (PMBs), and business office suites from physical residential domiciles using independent, zero-noise verification algorithms.
+            </p>
+            <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded inline-block border border-purple-200">
+              Address Standardization
+            </span>
+          </div>
+
+          {/* Engine 5: Single-Day Surge Spikes */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-3 hover:border-orange-400 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl bg-orange-100 p-2 rounded-xl">📈</span>
+              <h3 className="font-serif font-bold text-primary text-lg">Statistical Surge Spikes</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Detect statistically abnormal single-day registration surges across county lines. Enforces a mathematical significance baseline so routine daily administrative volumes are never falsely flagged.
+            </p>
+            <span className="text-[11px] font-mono font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded inline-block border border-orange-200">
+              Macro Trend Analysis
+            </span>
+          </div>
+
+          {/* Engine 6: State-Agnostic NCOA & Duplicates */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-3 hover:border-slate-400 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl bg-slate-100 p-2 rounded-xl">🔄</span>
+              <h3 className="font-serif font-bold text-primary text-lg">State-Agnostic Duplicates</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Perform probabilistic fuzzy matching on names and zip codes across different addresses. Adapts dynamically to whichever state&apos;s data is loaded without hardcoded state comparisons.
+            </p>
+            <span className="text-[11px] font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded inline-block border border-slate-300">
+              Probabilistic Linkage
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Universal CSV Ingestion & Zero-PII Collaboration */}
+      <section className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl border border-slate-800 max-w-6xl mx-auto space-y-12">
+        <div className="text-center space-y-3">
+          <span className="bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-emerald-500/30">
+            Enterprise &amp; Grassroots Superpowers
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold">Universal Ingestion &amp; Zero-PII Collaboration</h2>
+          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            We eliminated the two biggest bottlenecks in civic auditing: messy spreadsheet cleanup and the legal liabilities of sharing data across teams.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-stretch">
+          {/* Superpower 1: Self-Healing CSV Mapper */}
+          <div className="bg-slate-800/80 p-8 rounded-2xl border border-slate-700 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold bg-amber-400 text-slate-950 px-2.5 py-1 rounded">LOCAL MEMORY SPEED</span>
+                <span className="text-xs text-slate-400 font-mono">100k Rows / Sec</span>
+              </div>
+              <h3 className="font-serif font-bold text-white text-2xl">Universal CSV Self-Healing Mapper</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Every state and county exports voter rolls in a different layout. Our intelligent client-side engine automatically detects column headers, splits full names, and normalizes messy formatting in seconds.
+              </p>
+            </div>
+            <div className="pt-4 border-t border-slate-700/80 text-xs text-amber-300 font-medium flex items-center gap-2">
+              <span>✓ Drop in any 50-state CSV export—no manual Excel formatting required.</span>
+            </div>
+          </div>
+
+          {/* Superpower 2: Zero-PII Secure Notes & Playbooks */}
+          <div className="bg-slate-800/80 p-8 rounded-2xl border border-slate-700 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold bg-sky-400 text-slate-950 px-2.5 py-1 rounded">LEGAL PROTECTION</span>
+                <span className="text-xs text-slate-400 font-mono">Zero Cloud PII</span>
+              </div>
+              <h3 className="font-serif font-bold text-white text-2xl">Zero-PII Secure Notes &amp; Playbooks</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                When your coalition explores data together, you inherit shared expertise without legal risk. Team members share plain-English investigative notes and verification checklists (<strong className="text-white">Shared Playbooks</strong>) while the platform automatically strips out regulated citizen PII.
+              </p>
+            </div>
+            <div className="pt-4 border-t border-slate-700/80 text-xs text-sky-300 font-medium flex items-center gap-2">
+              <span>✓ Collaborate across county lines without transmitting protected data over cloud servers.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Public Sandbox Interactive CTA Banner */}
+      <section className="bg-amber-500 text-slate-950 rounded-3xl p-8 sm:p-12 shadow-2xl max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 border-4 border-amber-400">
+        <div className="space-y-3 max-w-2xl text-center md:text-left">
+          <div className="inline-block bg-slate-950 text-amber-400 font-mono text-[11px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-sm">
+            Interactive Live Simulator
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-tight">Want to Test the Algorithms Yourself?</h2>
+          <p className="text-slate-900 text-base sm:text-lg font-medium leading-relaxed">
+            Step inside our Public Sandbox to test our probabilistic matching engines and anomaly inspection drawers using <strong className="font-extrabold underline">100% simulated, fictional municipal data</strong>.
+          </p>
+          <div className="text-xs font-bold text-slate-900 bg-amber-400/80 p-3 rounded-xl border border-slate-900/10 inline-block">
+            💻 <strong>Desktop Recommendation:</strong> For the most immersive analytical view of multi-column data tables and side-sheet drawers, we recommend opening the Sandbox in full-screen mode on a desktop browser.
+          </div>
+        </div>
+        <div className="flex-shrink-0">
+          <Link 
+            href="/sandbox" 
+            className="bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-base sm:text-lg px-8 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 block text-center whitespace-nowrap"
+          >
+            Launch Public Sandbox →
+          </Link>
+        </div>
+      </section>
+
+      {/* Institutional Beta Partnership & Strategic Funding Banner */}
+      <section className="bg-gradient-to-br from-slate-900 via-primary to-slate-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl border-2 border-amber-500/40 max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+        <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="space-y-4 max-w-2xl text-center md:text-left relative z-10">
+          <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            <span>🤝 Call for Partners &amp; Strategic Funding</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-tight text-white">
+            Unbiased Statistical Mapping. <br />
+            <span className="text-amber-400">Zero Political Narrative.</span>
+          </h2>
+          <p className="text-slate-300 text-base sm:text-lg font-normal leading-relaxed">
+            We are selecting civic organizations, researchers, and state-level data teams for our **Beta Partnership Program**—providing turnkey tool access in exchange for localized testing and feedback.
+          </p>
+          <div className="text-xs font-bold text-amber-300/90 font-mono pt-1">
+            💡 For angel funding, foundation grants, or strategic investment inquiries, contact our executive desk directly.
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 relative z-10 w-full md:w-auto">
+          <Link 
+            href="/partners" 
+            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-base px-8 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 text-center whitespace-nowrap"
+          >
+            Explore Pilot Partnerships →
+          </Link>
+          <Link 
+            href="/deploy" 
+            className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-base px-6 py-5 rounded-2xl border border-slate-600 transition-all text-center whitespace-nowrap"
+          >
+            Bring to Your State
+          </Link>
+        </div>
+      </section>
+
       {/* Feature Showcase Grid */}
       <section className="space-y-8 max-w-6xl mx-auto px-2">
         <h2 className="text-3xl font-serif font-bold text-primary text-center">Explore Core System Modules</h2>
@@ -480,6 +695,12 @@ export default function MarketingHomePage() {
           <Link href="/terms" className="hover:text-amber-400 transition-colors">Terms of Service &amp; Statutory Liability</Link>
           <span>•</span>
           <Link href="/privacy" className="hover:text-amber-400 transition-colors">Zero-Knowledge Privacy Policy</Link>
+          <span>•</span>
+          <Link href="/partners" className="text-amber-400 font-bold hover:underline transition-colors">🤝 Beta Partnerships &amp; Grants</Link>
+          <span>•</span>
+          <Link href="/cookies" className="hover:text-amber-400 transition-colors">Cookie &amp; Storage Policy</Link>
+          <span>•</span>
+          <Link href="/accessibility" className="hover:text-amber-400 transition-colors">Section 508 / WCAG Accessibility</Link>
           <span>•</span>
           <Link href="/compliance" className="hover:text-amber-400 transition-colors">Security &amp; Statutory Compliance</Link>
           <span>•</span>

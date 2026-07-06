@@ -4,6 +4,8 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import AppNavigationWrapper from "@/components/AppNavigationWrapper";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const lora = Lora({
   variable: "--font-serif",
@@ -49,6 +51,8 @@ export default function RootLayout({
               {children}
             </AppNavigationWrapper>
           </AuthProvider>
+          <Analytics />
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>

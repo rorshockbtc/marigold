@@ -144,7 +144,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
 
     setTimeout(() => {
       setIngestionPhase(3);
-      setIngestionText("Phase 3/4: Executing Cartridge 2.0 anomaly detection algorithms across records...");
+      setIngestionText("Phase 3/4: Executing Playbook 2.0 anomaly detection algorithms across records...");
     }, 1700);
 
     setTimeout(() => {
@@ -181,7 +181,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   const runBenchmarkIngestion = () => {
     setIsIngesting(true);
     setIngestionPhase(1);
-    setIngestionText("Phase 1/3: Loading synthesized 100,000 record Mississippi benchmark roll into RAM...");
+    setIngestionText("Phase 1/3: Loading synthesized 100,000 record statewide benchmark roll into RAM...");
     setTimeout(() => {
       setIngestionPhase(2);
       setIngestionText("Phase 2/3: Generating baseline statistical distributions...");
@@ -484,10 +484,10 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             <div className="space-y-1">
               <strong className="text-white font-bold block">Dataset Parity Error: Jurisdiction Mismatch</strong>
               <p>
-                You uploaded a file that does not match your active group jurisdiction (Mississippi Fair Elections). To prevent data corruption or misaligned statistical auditing, the file was rejected.
+                You uploaded a file that does not match your active group jurisdiction. To prevent data corruption or misaligned statistical auditing, the file was rejected.
               </p>
               <Link href="/registry" className="text-amber-400 hover:underline font-bold inline-block pt-1">
-                View Official Mississippi Acquisition Link in Registry →
+                View Official State Acquisition Link in Registry →
               </Link>
             </div>
           </div>
@@ -515,7 +515,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               onClick={() => setCartridgeVersion(cartridgeVersion === '1.0' ? '2.0' : '1.0')}
               className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg border border-slate-300 transition-colors"
             >
-              ⚙️ Algorithm: {cartridgeVersion === '2.0' ? 'Cartridge 2.0 (July 2026)' : 'Cartridge 1.0 (Nov 2025)'}
+              ⚙️ Algorithm: {cartridgeVersion === '2.0' ? 'Playbook 2.0 (July 2026)' : 'Playbook 1.0 (Nov 2025)'}
             </button>
           </div>
         </div>
@@ -658,11 +658,11 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-3">
           <div>
             <h3 className="font-bold text-primary text-base flex items-center gap-2">
-              <span>📍 Top County Investigation Priorities (Mississippi)</span>
+              <span>📍 Top County Investigation Priorities (Active Jurisdiction)</span>
               <span className="bg-emerald-100 text-emerald-900 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase">Local Dataset Verified</span>
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Geographic breakdown of priority audit flags across active Mississippi jurisdictions ({activeStats.totalVoters.toLocaleString()} total records).
+              Geographic breakdown of priority audit flags across active state jurisdictions ({activeStats.totalVoters.toLocaleString()} total records).
             </p>
           </div>
           <span className="text-xs font-mono bg-white px-2.5 py-1 rounded border border-slate-200 text-slate-700">
@@ -677,7 +677,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             { name: "Harrison County (Gulfport)", flags: Math.round(activeStats.totalFlagged * 0.170), pct: 17.0, color: "bg-indigo-500" },
             { name: "DeSoto County (Southaven)", flags: Math.round(activeStats.totalFlagged * 0.140), pct: 14.0, color: "bg-emerald-500" },
             { name: "Madison County (Canton)", flags: Math.round(activeStats.totalFlagged * 0.110), pct: 11.0, color: "bg-purple-500" },
-            { name: "All Other MS Counties", flags: Math.round(activeStats.totalFlagged * 0.048), pct: 4.8, color: "bg-slate-500" },
+            { name: "All Other Counties", flags: Math.round(activeStats.totalFlagged * 0.048), pct: 4.8, color: "bg-slate-500" },
           ].map((c, i) => (
             <div key={i} className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-sm space-y-2">
               <div className="flex justify-between items-center text-xs">
@@ -780,7 +780,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               {selectedMetric.desc}
             </div>
 
-            {/* Interactive Cartridge PII Gate & Defensive Mismatch Overlay */}
+            {/* Interactive Playbook PII Gate & Defensive Mismatch Overlay */}
             {fileMismatchError ? (
               <div className="bg-red-50 border-2 border-red-300 p-6 rounded-2xl space-y-4 animate-in fade-in text-red-950">
                 <div className="flex items-center gap-3">
@@ -797,9 +797,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <strong className="text-slate-800">Need the correct dataset?</strong>
                     <a 
-                      href="https://www.sos.ms.gov/elections-voting/voter-registration-information" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                      href="/registry" 
                       className="bg-accent hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded shadow transition-all flex items-center gap-1"
                     >
                       <span>🌐 Download Official State Dataset ↗</span>

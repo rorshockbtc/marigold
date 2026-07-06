@@ -49,7 +49,7 @@ export default function MissionControl() {
       'density': 'High-Density Occupancy',
       'missing-dorm': 'Missing Unit/Dorm',
       'po-box': 'P.O. Box in Residence',
-      'typo-names': 'Fat-Finger Typo',
+      'typo-names': 'Clerical Typo',
       'duplicates': 'Intra-County Duplicates',
       'commercial': 'Commercial Disguises',
       'spikes': 'Registration Spikes',
@@ -127,15 +127,13 @@ export default function MissionControl() {
           {/* Collaborative Parity & Dataset Governance Banner */}
           <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-emerald-950 shadow-sm mb-4">
             <div className="space-y-0.5">
-              <strong className="font-bold text-sm block">Local Cartridge Protocol Active</strong>
+              <strong className="font-bold text-sm block">Shared Playbook Protocol Active</strong>
               <p className="text-xs text-emerald-900">
                 Playbook missions execute strictly inside your browser memory. If your state file differs from your group standard, download the latest version below.
               </p>
             </div>
             <a
-              href="https://www.sos.ms.gov/elections-voting/voter-registration-information"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/registry"
               className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
             >
               <span>🌐 Download Official State Dataset ↗</span>

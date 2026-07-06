@@ -62,7 +62,7 @@ export function getDb() {
       ['[MS Mission] Statewide NCOA Interstate Relocation', 'out-of-state-mailing', 0, ''],
       ['[MS Mission] Madison County Intra-County Duplicates', 'duplicates', 0, 'Madison'],
       ['[MS Mission] Rankin County Missing Unit / Dorm Filter', 'missing-dorm', 50, 'Rankin'],
-      ['[MS Mission] Jackson County Fat-Finger Typo Names', 'typo-names', 0, 'Jackson'],
+      ['[MS Mission] Jackson County Clerical Typo Names', 'typo-names', 0, 'Jackson'],
       ['[MS Mission] Lee County Phantom Precincts Check', 'phantom-precincts', 0, 'Lee'],
       ['[NC Mission] Wake County High-Density Occupancy (>15)', 'density', 15, 'Wake'],
       ['[NC Mission] Mecklenburg County Registration Spikes', 'spikes', 0, 'Mecklenburg'],
@@ -188,6 +188,7 @@ export function findHighDensityAddresses(threshold = 12, county = '') {
     SELECT address, city, state, zip, county, COUNT(*) as occupant_count
     FROM voters
     WHERE address != '' ${countyFilter}
+      AND status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'density')
     GROUP BY address, city, state, zip, county
     HAVING COUNT(*) > ?
@@ -207,6 +208,7 @@ export function findMissingDormNumbers(threshold = 50, county = '') {
     SELECT address, city, state, zip, county, COUNT(*) as occupant_count
     FROM voters
     WHERE address != '' ${countyFilter}
+      AND status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND address NOT LIKE '%APT%' 
       AND address NOT LIKE '%ROOM%' 
       AND address NOT LIKE '%RM%' 
@@ -231,7 +233,8 @@ export function findPOBoxResidences(county = '') {
   const rows = db.prepare(`
     SELECT address, city, state, zip, county, COUNT(*) as occupant_count
     FROM voters
-    WHERE (address LIKE '%P O BOX%' OR address LIKE '%PO BOX%' OR address LIKE '%P.O. BOX%') ${countyFilter}
+    WHERE (address LIKE '%P O BOX%' OR address LIKE '%PO BOX%' OR address LIKE '%P.O. BOX%' OR address LIKE '%POST OFFICE BOX%' OR address LIKE '%UPS STORE%' OR address LIKE '%PMB%' OR address LIKE '%FEDEX%' OR address LIKE '%MAILBOX%' OR address LIKE '%BOX #%' OR address LIKE '%BOX NO%') ${countyFilter}
+      AND status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'po-box')
     GROUP BY address, city, state, zip, county
     ORDER BY occupant_count DESC
@@ -271,6 +274,8 @@ export function findIntraCountyDuplicates(county = '') {
                  AND a.last_name = b.last_name 
                  AND a.zip = b.zip
     WHERE a.address != b.address AND a.id < b.id ${countyFilter}
+      AND a.status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
+      AND b.status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND a.address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'duplicates')
     LIMIT 50
   `).all();
@@ -286,8 +291,9 @@ export function findCommercialAddresses(county = '') {
   const rows = db.prepare(`
     SELECT address, city, state, zip, county, COUNT(*) as occupant_count
     FROM voters
-    WHERE (address LIKE '%STE %' OR address LIKE '%SUITE %' OR address LIKE '%BLDG %')
+    WHERE (address LIKE '%STE %' OR address LIKE '%SUITE %' OR address LIKE '%BLDG %' OR address LIKE '%BUILDING%' OR address LIKE '%FL %' OR address LIKE '%FLOOR%' OR address LIKE '%COMMERCIAL%' OR address LIKE '%OFFICE%' OR address LIKE '%PLAZA%' OR address LIKE '%CTR %' OR address LIKE '%CENTER%' OR address LIKE '%MALL%' OR address LIKE '%WAREHOUSE%' OR address LIKE '%INDUSTRIAL%')
       AND address NOT LIKE '%APT%' ${countyFilter}
+      AND status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'commercial')
     GROUP BY address, city, state, zip, county
     HAVING COUNT(*) > 2
@@ -307,9 +313,10 @@ export function findRegistrationSpikes(county = '') {
     SELECT date_registered, county, COUNT(*) as registrations
     FROM voters
     WHERE date_registered != '' AND date_registered IS NOT NULL ${countyFilter}
+      AND status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND date_registered NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'spikes')
     GROUP BY date_registered, county
-    HAVING COUNT(*) > 500
+    HAVING COUNT(*) > 25
     ORDER BY registrations DESC
     LIMIT 50
   `).all();
@@ -325,7 +332,7 @@ export function findPhantomPrecincts(county = '') {
   const rows = db.prepare(`
     SELECT first_name, last_name, address, city, county, status
     FROM voters
-    WHERE status = 'A' AND (precinct_code = '' OR precinct_code IS NULL) ${countyFilter}
+    WHERE status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE') AND (precinct_code = '' OR precinct_code IS NULL OR precinct_code = '0' OR UPPER(precinct_code) = 'UNASSIGNED') ${countyFilter}
       AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'phantom-precincts')
     LIMIT 50
   `).all();
@@ -341,7 +348,8 @@ export function findOutOfStateMailing(county = '') {
   const rows = db.prepare(`
     SELECT first_name, last_name, address, city, county, mail_state
     FROM voters
-    WHERE mail_state != 'MS' AND mail_state != '' AND mail_state IS NOT NULL ${countyFilter}
+    WHERE mail_state != '' AND mail_state IS NOT NULL AND mail_state != state AND mail_state NOT IN ('NONE', 'NULL', 'NA', 'N/A', 'SAME') ${countyFilter}
+      AND status NOT IN ('I', 'INACTIVE', 'C', 'CANCELLED', 'CANCELED', 'P', 'PURGED', 'D', 'DENIED', 'REMOVED', 'R', 'DECEASED', 'INACT', 'S', 'SUSPENSE')
       AND address NOT IN (SELECT value FROM exclusion_list WHERE audit_type = 'out-of-state-mailing')
     LIMIT 50
   `).all();

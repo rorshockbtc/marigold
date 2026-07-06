@@ -187,9 +187,18 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     return defaultVal;
   };
 
-  const first = getValue(activeMapping.first_name, ['firstname', 'first'], '');
-  const last = getValue(activeMapping.last_name, ['lastname', 'last'], '');
-  let fullName = getValue(activeMapping.full_name, ['fullname', 'name'], '');
+  let first = getValue(activeMapping.first_name, ['firstname', 'first', 'voterfirstname', 'fname', 'givenname'], '');
+  let last = getValue(activeMapping.last_name, ['lastname', 'last', 'voterlastname', 'lname', 'surname'], '');
+  let fullName = getValue(activeMapping.full_name, ['fullname', 'votername', 'name', 'voterfullname', 'displayname'], '');
+
+  if ((!first || !last) && fullName) {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      if (!first) first = parts[0];
+      if (!last) last = parts[parts.length - 1];
+    }
+  }
+
   if (!fullName && (first || last)) {
     fullName = [first, last].filter(Boolean).join(' ');
   }

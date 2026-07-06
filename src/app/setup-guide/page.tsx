@@ -35,7 +35,7 @@ const DOCS_DATA = [
     description: "Identifies records using a P.O. Box as their physical residential address. Under most state laws, voters must register at a physical domicile, not a postal box."
   },
   {
-    title: "Fat-Finger Typo Check",
+    title: "Clerical Typo Check",
     category: "Phase 3 Audits",
     description: "Finds voters whose first or last name is exactly 1 character long (e.g., 'J Smith'). This indicates a clerk data-entry error that could cause ID-matching issues at the polls."
   },

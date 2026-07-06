@@ -29,7 +29,7 @@ export default function OrganizationsPage() {
               href="/store" 
               className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 h-12 rounded-lg border border-slate-600 flex items-center justify-center transition-all text-sm"
             >
-              Explore Cartridge Marketplace
+              Explore Playbook Marketplace
             </Link>
           </div>
         </div>
