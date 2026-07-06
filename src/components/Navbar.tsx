@@ -46,7 +46,7 @@ export function Navbar() {
 
           {/* Desktop Primary Navigation */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300">
-            <Link href="/sandbox" className="hover:text-amber-400 transition-colors">Public Sandbox</Link>
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Public Sandbox ↗</a>
             <Link href="/store" className="hover:text-amber-400 transition-colors">Audit Checklists</Link>
             <Link href="/registry" className="hover:text-amber-400 transition-colors">State Registry</Link>
             <Link href="/compliance" className="hover:text-amber-400 transition-colors">FEMA Compliance</Link>
@@ -135,7 +135,7 @@ export function Navbar() {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <nav className="lg:hidden mt-4 pt-4 border-t border-slate-800 flex flex-col gap-2 text-sm font-medium text-slate-300 px-2 pb-2">
-            <Link href="/sandbox" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Public Sandbox</Link>
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Public Sandbox ↗</a>
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">Audit Checklists</Link>
             <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">State Registry</Link>
             <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">FEMA Compliance</Link>

@@ -19,12 +19,14 @@ export default function CitizensPage() {
             You don&apos;t need to be a programmer or a spreadsheet expert to participate in civic transparency. Think of Marigold as a smart magnifying glass that runs right on your own computer desk.
           </p>
           <div className="pt-4 flex flex-wrap justify-center gap-4">
-            <Link 
+            <a 
               href="/sandbox" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-accent hover:bg-amber-600 text-white font-bold px-8 h-12 rounded-lg shadow-md flex items-center justify-center transition-all text-sm"
             >
-              Try the Free Public Sandbox →
-            </Link>
+              Try the Free Public Sandbox ↗
+            </a>
             <Link 
               href="/sign-up" 
               className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 h-12 rounded-lg border border-slate-600 flex items-center justify-center transition-all text-sm"

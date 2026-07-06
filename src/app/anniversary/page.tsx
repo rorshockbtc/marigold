@@ -45,12 +45,14 @@ export default function SemiquincentennialPage() {
             >
               Explore Worldviews & Data
             </Link>
-            <Link
+            <a
               href="/sandbox"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-8 py-4 rounded-2xl bg-slate-900/80 border border-slate-700 text-white font-semibold hover:bg-slate-800 transition-all duration-200 backdrop-blur-md"
             >
-              Launch Local Sandbox
-            </Link>
+              Launch Local Sandbox ↗
+            </a>
           </div>
         </div>
       </section>

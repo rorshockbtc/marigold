@@ -27,9 +27,9 @@ export default function PerspectivesGuide() {
               Data is effectively dead until it is observed—and those who observe inevitably bias the output via their specific inquiries. At Marigold Insights, we treat public voter rolls not as a weapon for partisan attack, but as a mirror reflecting different values across the American political spectrum.
             </p>
             <div className="pt-4 flex flex-wrap gap-4">
-              <Link href="/sandbox" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all">
-                Try Public Sandbox →
-              </Link>
+              <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all">
+                Try Public Sandbox ↗
+              </a>
               <Link href="/playbooks" className="bg-slate-800/80 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-xl border border-slate-600 transition-all">
                 Explore Mission Playbooks
               </Link>

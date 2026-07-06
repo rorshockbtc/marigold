@@ -318,9 +318,9 @@ export default function MarketingHomePage() {
 
           {/* Streamlined Action Buttons */}
           <div className="pt-4 flex flex-wrap justify-center items-center gap-4">
-            <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
-              Try Public Sandbox →
-            </Link>
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
+              Try Public Sandbox ↗
+            </a>
             <Link href="/partners" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-900/90 text-white border border-amber-500/40 hover:bg-slate-800 hover:border-amber-400 transition-all transform hover:-translate-y-0.5">
               🤝 Partner With Us
             </Link>
@@ -604,12 +604,14 @@ export default function MarketingHomePage() {
           </div>
         </div>
         <div className="flex-shrink-0">
-          <Link 
+          <a 
             href="/sandbox" 
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-base sm:text-lg px-8 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 block text-center whitespace-nowrap"
           >
-            Launch Public Sandbox →
-          </Link>
+            Launch Public Sandbox ↗
+          </a>
         </div>
       </section>
 

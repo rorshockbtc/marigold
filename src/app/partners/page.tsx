@@ -275,12 +275,14 @@ export default function PartnersPage() {
                 >
                   Submit another inquiry
                 </button>
-                <Link 
+                <a 
                   href="/sandbox"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-xs bg-primary hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl shadow transition-all"
                 >
-                  Explore Public Sandbox →
-                </Link>
+                  Explore Public Sandbox ↗
+                </a>
               </div>
             </div>
           ) : (
