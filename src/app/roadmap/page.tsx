@@ -1,7 +1,12 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Technical Product Roadmap & Integrations | Marigold Insights",
+  description: "Explore our development schedule for NCOA change-of-address databases, municipal GIS map layers, and multi-state data standards.",
+  keywords: ["product roadmap", "data integration", "USPS NCOA", "GIS maps", "interoperability framework"],
+};
 
 export default function RoadmapPage() {
   return (

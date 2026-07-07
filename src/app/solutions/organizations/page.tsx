@@ -1,7 +1,12 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Good-Governance Groups & Coalitions | Marigold Insights",
+  description: "Coordinate multi-county voter verification teams. Share playbooks, checklist rules, and secure audit workflows without compromising citizen privacy.",
+  keywords: ["civic group audit", "governance coalitions", "playbook sharing", "team coordinator", "secure checklists"],
+};
 
 export default function OrganizationsPage() {
   return (

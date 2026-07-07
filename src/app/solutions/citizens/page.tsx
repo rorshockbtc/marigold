@@ -1,7 +1,12 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Citizen-Led Voter Verification | Marigold Insights",
+  description: "Verify local voter rolls using plain, everyday language. A secure, smart magnifying glass running 100% locally on your computer to assist volunteers and retirees.",
+  keywords: ["citizen audit", "local data verification", "voter roll compliance", "non-partisan transparency", "retiree volunteering"],
+};
 
 export default function CitizensPage() {
   return (

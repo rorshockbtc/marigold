@@ -253,8 +253,26 @@ export default function MarketingHomePage() {
   const nextRegion = shuffledIndices.length > 0 ? shuffledIndices[(currentIndex + 1) % REGIONS.length] : 0;
   const current = REGIONS[activeRegion];
 
+  const schemaMarkup = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Marigold Insights",
+    "operatingSystem": "All",
+    "applicationCategory": "Government & Business Application",
+    "description": "Air-gapped, zero-cloud civic data auditing platform executing 100% locally in browser memory.",
+    "offers": {
+      "@type": "Offer",
+      "price": "1500.00",
+      "priceCurrency": "USD"
+    }
+  };
+
   return (
     <div className="pb-24 font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
+      />
       {/* Full-Width Edge-to-Edge Hero Section */}
       <section className="w-full text-center py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
         {/* Isolated Absolute Background Layers & Overlays */}

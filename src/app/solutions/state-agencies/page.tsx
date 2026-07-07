@@ -1,7 +1,12 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "FEMA-Compliant Election Security for Agencies | Marigold Insights",
+  description: "Risk-free statutory voter list maintenance. Zero-PII local compute engine, micro-purchase contracting, and allowable FY26 FEMA HSGP grant alignment.",
+  keywords: ["state agency election security", "county clerk audit tool", "FEMA HSGP compliance", "voter list maintenance", "government procurement"],
+};
 
 export default function StateAgenciesPage() {
   return (
