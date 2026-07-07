@@ -209,6 +209,41 @@ export default function AnalysisDashboard() {
       } catch (e) {}
     }
 
+    const activeGroup = typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") : null;
+    if (activeGroup === "ACME Civic Data Sandbox (Demo Environment)") {
+      setIsLoading(true);
+      setTimeout(() => {
+        let mockData = [];
+        if (action === 'density' || action === 'high_density') {
+          mockData = [
+            { id: "md1", address: "123 UNIVERSITY WAY (Simulated Student Dorm)", occupant_count: 423, county: "Simulated Hinds County", risk_level: "HIGH" },
+            { id: "md2", address: "789 MAPLE AVENUE, LOT 12 (Simulated Mobile Park)", occupant_count: 14, county: "Simulated Harrison County", risk_level: "MEDIUM" },
+            { id: "md3", address: "202 ELM STREET, UNIT 100 (Simulated Clerical Anomaly)", occupant_count: 42, county: "Simulated Rankin County", risk_level: "CRITICAL" },
+            { id: "md4", address: "101 PINE BOULEVARD, APT 3B", occupant_count: 6, county: "Simulated Hinds County", risk_level: "LOW" }
+          ];
+        } else if (action === 'po_box' || action === 'po_box_disguise') {
+          mockData = [
+            { id: "mp1", address: "456 MAIN STREET, SUITE 400 (UPS Mailbox Ste 400)", occupant_count: 85, county: "Simulated Hinds County", risk_level: "CRITICAL" },
+            { id: "mp2", address: "889 POST ROAD, UNIT 202 (UPS Mailbox Ste 202)", occupant_count: 24, county: "Simulated DeSoto County", risk_level: "HIGH" },
+            { id: "mp3", address: "1002 COMMERCE DRIVE, #105", occupant_count: 12, county: "Simulated Harrison County", risk_level: "MEDIUM" }
+          ];
+        } else if (action === 'ncoa') {
+          mockData = [
+            { id: "mn1", name: "John Doe (Simulated Interstate Mover)", address: "554 ELM STREET", county: "Simulated Hinds County", risk_level: "HIGH", date_registered: "Moved to Texas in 2025" },
+            { id: "mn2", name: "Jane Smith (Simulated Interstate Mover)", address: "102 OAK ROAD", county: "Simulated Jackson County", risk_level: "HIGH", date_registered: "Moved to Florida in 2026" }
+          ];
+        } else {
+          mockData = [
+            { id: "mg1", address: "305 BROADWAY STREET", occupant_count: 5, county: "Simulated Hinds County", risk_level: "LOW" },
+            { id: "mg2", address: "702 FRANKLIN AVENUE", occupant_count: 3, county: "Simulated Hinds County", risk_level: "LOW" }
+          ];
+        }
+        setResults(mockData);
+        setIsLoading(false);
+      }, 800);
+      return;
+    }
+
     try {
       // Step 1: Query local client-side VoterDataDB IndexedDB first
       try {
@@ -488,8 +523,25 @@ export default function AnalysisDashboard() {
     );
   };
 
+  const isDemoMode = typeof window !== 'undefined' && localStorage.getItem("marigold_active_group") === "ACME Civic Data Sandbox (Demo Environment)";
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+    <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4">
+      {/* Demo Warning Banner */}
+      {isDemoMode && (
+        <div className="bg-orange-600 text-white p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-orange-500 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl shrink-0">🎥</span>
+            <span className="leading-relaxed">
+              <strong>DEMO MODE ACTIVE:</strong> Showing simulated records for video demonstration. Your real local voter database is completely isolated and protected.
+            </span>
+          </div>
+          <span className="bg-orange-950/60 text-orange-200 px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold whitespace-nowrap shrink-0 border border-orange-400/30">
+            Fictional Data Explorer
+          </span>
+        </div>
+      )}
+
       <header className="mb-8 bg-amber-50 dark:bg-slate-900 border-2 border-amber-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3.5 mb-2">
           <span className="text-3xl">🧭</span>

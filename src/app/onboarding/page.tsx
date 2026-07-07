@@ -43,6 +43,36 @@ export default function OnboardingPage() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupWebsite, setNewGroupWebsite] = useState("");
 
+  // Onboarding Web3Form & Danger Zone
+  const [onboardingSubmitted, setOnboardingSubmitted] = useState(false);
+  const [onboardingLoading, setOnboardingLoading] = useState(false);
+  const [showDangerZoneModal, setShowDangerZoneModal] = useState(false);
+  const [dangerZoneUnlocked, setDangerZoneUnlocked] = useState(false);
+
+  const handleOnboardingSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setOnboardingLoading(true);
+    const formData = new FormData(e.currentTarget);
+    
+    // Web3Forms access key
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "0a997a5d-fccb-46f4-bc7b-7df7ec33d90d";
+    formData.append("access_key", accessKey);
+    formData.append("subject", `New Onboarding & Calibration Request: ${selectedState}`);
+    formData.append("source", "Onboarding Group Calibration Form");
+
+    try {
+      await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      setOnboardingSubmitted(true);
+    } catch {
+      alert("Submission failed. Please email us directly at partnerships@colonhyphenbracket.com.");
+    } finally {
+      setOnboardingLoading(false);
+    }
+  };
+
   const userEmail = user?.primaryEmailAddress?.emailAddress || "";
   const fallbackName = user?.fullName || userEmail.split('@')[0] || "New Auditor";
 
@@ -396,45 +426,171 @@ export default function OnboardingPage() {
 
           {/* CREATE NEW GROUP FLOW */}
           {actionType === 'create' && (
-            <div className="space-y-5 pt-2">
-              <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-xl text-xs text-amber-950">
-                👑 Establishing a new organization grants you full Group Admin controls, application queue management, and summary playbook broadcasting.
-              </div>
+            <div className="space-y-6 pt-2">
+              {!onboardingSubmitted ? (
+                <div className="space-y-5">
+                  <div className="bg-slate-900 text-slate-100 p-5 rounded-2xl border border-slate-800 space-y-3 shadow-lg">
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-400 block">
+                      💡 Recommended: Request Developer Calibration &amp; Setup
+                    </span>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      State voter registries utilize highly variable CSV and database layouts. Running voter rolls without official calibration will likely yield inaccurate statistics or database ingestion errors.
+                    </p>
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                      Submit a setup request to have Kyle (system developer) map your state&apos;s schema columns, verify index headers, and calibrate Benford&apos;s Law algorithms.
+                    </p>
+                  </div>
 
-              <div className="space-y-4 text-sm">
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Organization / Group Name *</label>
-                  <input
-                    type="text"
-                    value={newGroupName}
-                    onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="e.g., Madison County Civic Audit Coalition"
-                    className="w-full px-4 py-2.5 border border-border rounded-xl font-medium focus:border-amber-500 outline-none"
-                  />
+                  <form onSubmit={handleOnboardingSubmit} className="space-y-4 text-sm bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">State / Jurisdiction *</label>
+                        <input type="text" name="jurisdiction" readOnly value={selectedState} className="w-full px-3 py-2 bg-slate-200 border border-slate-300 rounded-lg text-slate-600 font-bold" />
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Volunteers Network Size (approx) *</label>
+                        <select name="volunteers_count" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800">
+                          <option value="1-5 volunteers">1-5 volunteers</option>
+                          <option value="6-20 volunteers">6-20 volunteers</option>
+                          <option value="20+ volunteers">20+ volunteers</option>
+                          <option value="State Agency / Official Group">State Agency / Official Group</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Target Organization / Group Name *</label>
+                      <input required type="text" name="organization" placeholder="e.g. Madison County Civic Audit Coalition" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800 focus:border-amber-500 outline-none" />
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Additional Notes / Calibration Needs</label>
+                      <textarea rows={2} name="notes" placeholder="Tell us about the voter file columns, your target timeline, or state regulations..." className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800 focus:border-amber-500 outline-none" />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={onboardingLoading}
+                      className="w-full bg-primary hover:bg-slate-800 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
+                    >
+                      {onboardingLoading ? "Transmitting Calibration Request..." : "Request Developer Calibration & Setup Briefing →"}
+                    </button>
+                  </form>
+
+                  {/* Danger Zone Link */}
+                  <div className="pt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowDangerZoneModal(true)}
+                      className="text-xs text-pink-600 hover:text-pink-700 font-extrabold underline transition-all"
+                    >
+                      Bypass Calibration &amp; Setup Independently (Danger Zone)
+                    </button>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Official Organization Website URL (Optional)</label>
-                  <input
-                    type="url"
-                    value={newGroupWebsite}
-                    onChange={(e) => setNewGroupWebsite(e.target.value)}
-                    placeholder="https://yourcivicgroup.org"
-                    className="w-full px-4 py-2.5 border border-border rounded-xl font-medium focus:border-amber-500 outline-none"
-                  />
+              ) : (
+                <div className="bg-emerald-50 border border-emerald-300 p-6 rounded-xl text-center space-y-4 animate-in fade-in">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500 text-white font-bold text-2xl flex items-center justify-center mx-auto shadow font-sans">✓</div>
+                  <h3 className="font-bold text-lg text-emerald-950">Setup Request Transmitted!</h3>
+                  <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
+                    Thank you! Kyle has received your request. We will contact you within 24 hours to schedule your calibration briefing and terms check.
+                  </p>
+                  <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+                    In the meantime, you have full access to explore the sandbox workspace with simulated voter files.
+                  </p>
+                  <button
+                    onClick={() => handleCompleteOnboarding("ACME Civic Data Sandbox (Demo Environment)", "Verified Tester")}
+                    className="bg-primary hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
+                  >
+                    Enter Sandbox Workspace Now →
+                  </button>
                 </div>
-              </div>
+              )}
 
-              <button
-                onClick={() => handleCompleteOnboarding(newGroupName || `${selectedState} Audit Group`, "👑 Group Admin")}
-                disabled={!newGroupName}
-                className="w-full bg-accent hover:bg-amber-600 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
-              >
-                <span>Create Group &amp; Enter Dashboard</span>
-                <span>→</span>
-              </button>
+              {/* Danger Zone Setup Input Fields (unlocked only if dangerZoneUnlocked) */}
+              {dangerZoneUnlocked && (
+                <div className="border-t border-slate-200 pt-6 space-y-4 animate-in fade-in">
+                  <div className="bg-pink-50 border border-pink-200 p-4 rounded-xl text-xs text-pink-950 font-bold">
+                    🚨 DANGER ZONE OVERRIDE ACTIVE: You are force-creating an uncalibrated group. File uploading may fail unless headers match perfectly.
+                  </div>
+                  <div className="space-y-4 text-sm bg-white p-5 rounded-xl border border-slate-200">
+                    <div>
+                      <label className="font-bold text-slate-800 block mb-1">Organization / Group Name *</label>
+                      <input
+                        type="text"
+                        value={newGroupName}
+                        onChange={(e) => setNewGroupName(e.target.value)}
+                        placeholder="e.g., Madison County Civic Audit Coalition"
+                        className="w-full px-4 py-2.5 border border-border rounded-xl font-medium focus:border-amber-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-800 block mb-1">Official Organization Website URL (Optional)</label>
+                      <input
+                        type="url"
+                        value={newGroupWebsite}
+                        onChange={(e) => setNewGroupWebsite(e.target.value)}
+                        placeholder="https://yourcivicgroup.org"
+                        className="w-full px-4 py-2.5 border border-border rounded-xl font-medium focus:border-amber-500 outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleCompleteOnboarding(newGroupName || `${selectedState} Audit Group`, "👑 Group Admin")}
+                      disabled={!newGroupName}
+                      className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
+                    >
+                      <span>Create Uncalibrated Group &amp; Enter Dashboard</span>
+                      <span>→</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Danger Zone Modal */}
+      {showDangerZoneModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 sm:p-10 max-w-md w-full shadow-2xl border border-slate-200 space-y-6 text-slate-800 animate-in fade-in zoom-in-95 duration-150 text-left">
+            <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+              <h3 className="text-xl font-serif font-bold text-pink-600 flex items-center gap-2">
+                <span>⚠️ Danger Zone Override</span>
+              </h3>
+              <button onClick={() => setShowDangerZoneModal(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+            </div>
+
+            <div className="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+              <p>
+                Bypassing developer calibration means you are force-creating an uncalibrated workspace. 
+              </p>
+              <p className="bg-pink-50 p-4 rounded-xl border border-pink-200 text-pink-950 font-medium text-xs leading-normal">
+                State voter files use wildly differing column schemas, date encodings, and headers. Bypassing official calibration may lead to database ingestion failure, name column mismatching, chart errors, or statutory data compliance issues.
+              </p>
+              <p className="text-xs text-slate-500 font-medium">
+                You assume full responsibility for database mapping integrity.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col gap-2">
+              <button 
+                onClick={() => {
+                  setDangerZoneUnlocked(true);
+                  setShowDangerZoneModal(false);
+                }}
+                className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl text-sm transition-all shadow"
+              >
+                Yes, Proceed &amp; Assume All Liability
+              </button>
+              <button 
+                onClick={() => setShowDangerZoneModal(false)}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-all"
+              >
+                Cancel / Request Calibration Setup
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

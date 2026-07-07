@@ -25,11 +25,27 @@ export default function DashboardPage() {
   const [isSuperUser, setIsSuperUser] = useState(false);
 
   useEffect(() => {
-    getAnomalies().then(setAnomalies);
-    // Load custom group name if saved in localStorage
-    const savedGroup = localStorage.getItem("marigold_active_group");
-    if (savedGroup) {
-      setGroupName(savedGroup);
+    // Load custom group name or default to Sandbox Demo
+    let activeGroup = localStorage.getItem("marigold_active_group");
+    if (!activeGroup) {
+      activeGroup = "ACME Civic Data Sandbox (Demo Environment)";
+      localStorage.setItem("marigold_active_group", activeGroup);
+      localStorage.setItem("marigold_user_role", "Verified Tester");
+      localStorage.setItem("marigold_file_connected", "true");
+      localStorage.setItem("marigold_file_name", "ACME_Synthetic_Roll_2026.csv");
+      localStorage.setItem("marigold_file_rows", "100000");
+    }
+    setGroupName(activeGroup);
+
+    if (activeGroup === "ACME Civic Data Sandbox (Demo Environment)") {
+      setAnomalies([
+        { id: "s1", voterName: "Simulated Student Dormitory Cluster", address: "123 UNIVERSITY WAY (Dorm)", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
+        { id: "s2", voterName: "Simulated UPS Store Disguise", address: "456 MAIN STREET, SUITE 400", flags: ["po_box"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
+        { id: "s3", voterName: "Simulated Mobile Park Review", address: "789 MAPLE AVENUE, LOT 12", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
+        { id: "s4", voterName: "Simulated Clerical Anomaly", address: "202 ELM STREET, UNIT 100", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" }
+      ]);
+    } else {
+      getAnomalies().then(setAnomalies);
     }
 
     // Check localStorage first
@@ -88,6 +104,28 @@ export default function DashboardPage() {
   const handleSaveGroup = (newName: string) => {
     setGroupName(newName);
     localStorage.setItem("marigold_active_group", newName);
+    if (newName === "ACME Civic Data Sandbox (Demo Environment)") {
+      localStorage.setItem("marigold_file_connected", "true");
+      localStorage.setItem("marigold_file_name", "ACME_Synthetic_Roll_2026.csv");
+      localStorage.setItem("marigold_file_rows", "100000");
+      setIsDataConnected(true);
+      setLoadedRowCount(100000);
+      setLoadedFileName("ACME_Synthetic_Roll_2026.csv");
+      setAnomalies([
+        { id: "s1", voterName: "Simulated Student Dormitory Cluster", address: "123 UNIVERSITY WAY (Dorm)", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
+        { id: "s2", voterName: "Simulated UPS Store Disguise", address: "456 MAIN STREET, SUITE 400", flags: ["po_box"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
+        { id: "s3", voterName: "Simulated Mobile Park Review", address: "789 MAPLE AVENUE, LOT 12", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
+        { id: "s4", voterName: "Simulated Clerical Anomaly", address: "202 ELM STREET, UNIT 100", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" }
+      ]);
+    } else {
+      localStorage.removeItem("marigold_file_connected");
+      localStorage.removeItem("marigold_file_name");
+      localStorage.removeItem("marigold_file_rows");
+      setIsDataConnected(false);
+      setLoadedRowCount(null);
+      setLoadedFileName("");
+      getAnomalies().then(setAnomalies);
+    }
     setIsEditingGroup(false);
   };
 
@@ -272,8 +310,8 @@ export default function DashboardPage() {
             <label className="text-xs font-black text-[#D96B27] uppercase tracking-wider block">Select Preset Jurisdiction or Enter Custom Group Name:</label>
             <div className="flex flex-wrap gap-2 text-xs">
               {[
-                "Statewide Civic Integrity Network (Pilot)",
-                "ACME Civic Data Sandbox (Demo Environment)"
+                "ACME Civic Data Sandbox (Demo Environment)",
+                ...(isAdmin || isSuperUser || groupName === "Mississippi Fair Elections" ? ["Mississippi Fair Elections"] : [])
               ].map((preset) => (
                 <button
                   key={preset}

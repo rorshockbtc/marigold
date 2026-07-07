@@ -96,7 +96,15 @@ export default function SandboxPage() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-32 font-sans px-4 sm:px-6">
+    <div className="max-w-6xl mx-auto space-y-6 pb-32 font-sans px-4 sm:px-6">
+      {/* Hot-Pink Alpha Release Warning Banner */}
+      <div className="bg-pink-600 text-white p-4 sm:p-5 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center gap-3 shadow-lg border border-pink-500 animate-pulse">
+        <span className="text-xl shrink-0">⚠️</span>
+        <span className="leading-relaxed">
+          THIS IS ONLY A DEMONSTRATION. MARIGOLD IS CURRENTLY AN ALPHA RELEASE. Real voter verification pipelines are fully calibrated only for Mississippi.
+        </span>
+      </div>
+
       {/* Prominent Synthetic Warning Banner */}
       <div className="bg-orange-600 text-white p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-orange-500">
         <div className="flex items-center gap-3">
