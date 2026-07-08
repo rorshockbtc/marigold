@@ -21,19 +21,29 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Marigold Insights | Citizen Volunteer Network",
   description: "Air-gapped, zero-cloud civic data auditing platform. Perform non-partisan voter roll verification, NCOA anomaly checks, and FEMA HSGP compliance audits directly in your browser's local memory.",
+  metadataBase: new URL("https://marigoldinsights.org"),
   keywords: ["civic data", "voter roll audit", "local compute", "non-partisan", "FEMA compliance", "NCOA check", "citizen volunteer"],
   openGraph: {
     title: "Marigold Insights | Citizen Volunteer Network",
     description: "Air-gapped, zero-cloud civic data auditing platform. 100% local browser execution for secure, non-partisan voter and address verification.",
-    url: "https://marigold-insights.org",
+    url: "https://marigoldinsights.org",
     siteName: "Marigold Insights",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/hero-landscape.png",
+        width: 1200,
+        height: 630,
+        alt: "Marigold Insights - Non-Partisan Voter Verification",
+      }
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Marigold Insights | Citizen Volunteer Network",
     description: "Air-gapped, zero-cloud civic data auditing platform. 100% local browser execution for secure, non-partisan verification.",
+    images: ["/hero-landscape.png"],
   },
 };
 
