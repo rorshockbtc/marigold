@@ -5,7 +5,7 @@
  * to empirically establish Precision, Recall, F1-Score, and False Positive Rates.
  */
 
-import { fellegiSunterScore, LinkageRecord, FellegiSunterResult } from './fellegi-sunter';
+import { fellegiSunterScore, LinkageRecord } from './fellegi-sunter';
 
 export interface BenchmarkPair {
   id: string;

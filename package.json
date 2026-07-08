@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "npx -y tsx tests/linkage-benchmark.test.ts",
+    "test:linkage": "npx -y tsx tests/linkage-benchmark.test.ts",
     "deploy": "git push && npx vercel deploy --prod --yes"
   },
   "dependencies": {

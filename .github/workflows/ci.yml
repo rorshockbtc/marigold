@@ -1,0 +1,36 @@
+name: Marigold Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  audit-and-test:
+    name: 🧪 Linkage Benchmarks & Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci || npm install
+
+      - name: 🧹 Execute ESLint & Static Analysis
+        run: npm run lint
+
+      - name: 🧬 Execute 1,003-Pair Fellegi-Sunter Statistical Linkage Test Suite
+        run: npm test
+
+      - name: 🏗️ Verify Next.js Production Build Compilation
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
