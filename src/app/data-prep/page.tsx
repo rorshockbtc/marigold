@@ -5,6 +5,7 @@ import { useCSVParser } from "@/hooks/useCSVParser";
 import { useCSVExport } from "@/hooks/useCSVExport";
 import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import Link from "next/link";
+import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -80,7 +81,7 @@ export default function DataPrepPage() {
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Data Prep & Splitting</h1>
         <p className="text-muted-foreground mt-2">
-          Drop massive voter roll files (up to 1.5GB) here. This tool processes them entirely in your browser without uploading to any server, allowing you to split them into actionable chunks.
+          Drop massive voter roll files (up to 1.5GB) here. This tool processes them entirely in your browser without uploading to any server (<GlossaryTooltip term="Air-Gap" />), allowing you to split them into actionable <GlossaryTooltip term="Shard">shards</GlossaryTooltip> inside <GlossaryTooltip term="IndexedDB" />.
         </p>
       </header>
 
@@ -92,7 +93,7 @@ export default function DataPrepPage() {
               <span>⚡ Active Shared Device Shard Detected</span>
             </span>
             <span className="text-xs font-mono bg-slate-800 px-3 py-1 rounded border border-slate-700">
-              {existingShardCount.toLocaleString()} Records Ready in RAM
+              {existingShardCount.toLocaleString()} Records Ready in <GlossaryTooltip term="RAM" />
             </span>
           </div>
           <div className="space-y-2">
@@ -127,7 +128,7 @@ export default function DataPrepPage() {
         >
           <div className="text-4xl mb-4">📁</div>
           <h3 className="text-xl font-bold mb-2">Link &amp; Stream Local Voter Roll File</h3>
-          <p className="text-muted-foreground mb-6">Select your raw CSV/TXT file. Our browser Web Worker will stream and chunk rows locally into memory—0 records leave your machine.</p>
+          <p className="text-muted-foreground mb-6">Select your raw CSV/TXT file. Our browser Web Worker will stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes of citizen <GlossaryTooltip term="PII" /> ever leave your machine.</p>
           <input 
             type="file" 
             accept=".csv,.txt,.tsv" 

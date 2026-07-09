@@ -18,6 +18,7 @@ import {
   FileText
 } from "lucide-react";
 import { ExecutiveBriefingExport, PlaybookAuditSummary } from "@/components/ExecutiveBriefingExport";
+import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 
 export default function ComprehensiveAuditPage() {
   const [jurisdiction, setJurisdiction] = useState("Madison County, MS");
@@ -193,14 +194,14 @@ export default function ComprehensiveAuditPage() {
               </span>
               <span className="text-xs font-mono text-[#646A7A] inline-flex items-center gap-1">
                 <Shield className="w-3 h-3" />
-                <span>100% Client-Side In-Memory Air-Gap</span>
+                <span>100% Client-Side In-Memory <GlossaryTooltip term="Air-Gap" /></span>
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#2D3142]">
               Executive Health Sweep &amp; Scorecard
             </h1>
             <p className="text-sm text-[#4A5060]">
-              Active Jurisdiction: <strong className="text-[#2D3142] font-bold">{jurisdiction}</strong> ({totalRows.toLocaleString()} total citizen records locked in RAM)
+              Active Jurisdiction: <strong className="text-[#2D3142] font-bold">{jurisdiction}</strong> ({totalRows.toLocaleString()} total citizen records locked in <GlossaryTooltip term="RAM" />)
             </p>
           </div>
 
@@ -228,7 +229,7 @@ export default function ComprehensiveAuditPage() {
               <span>⚡ Automated Multi-Playbook Forensic Sweep</span>
             </h3>
             <p className="text-xs text-[#646A7A] max-w-2xl leading-relaxed">
-              Run all 9 verified Fellegi-Sunter and statistical anomaly cartridges across your entire {totalRows.toLocaleString()}-row file simultaneously. Our Web Worker processes the sweep in under 60 seconds without leaking a single byte of citizen PII (`0 bytes exfiltrated`).
+              Run all 9 verified Fellegi-Sunter and statistical anomaly cartridges across your entire {totalRows.toLocaleString()}-row file simultaneously. Our Web Worker processes the sweep in under 60 seconds without leaking a single byte of citizen <GlossaryTooltip term="PII" /> (`0 bytes exfiltrated`).
             </p>
           </div>
 
@@ -368,7 +369,7 @@ export default function ComprehensiveAuditPage() {
                   <span>Flagged Records in Local Client Memory ({selectedDrilldown.flaggedCount})</span>
                 </h4>
                 <span className="text-xs font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-bold">
-                  ✓ Citizen PII Protected
+                  ✓ Citizen <GlossaryTooltip term="PII" /> Protected
                 </span>
               </div>
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { getAnomalies, AnomalyRecord, updateAnomalyStatus } from '@/lib/firebase/db';
 import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
+import { GlossaryTooltip } from '@/components/GlossaryTooltip';
 import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -356,13 +357,13 @@ export default function DashboardPage() {
               <span className="bg-[#D96B27] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 ⚡ Executive Sales &amp; Audit Tool
               </span>
-              <span className="text-xs text-amber-300 font-mono">Zero-Cloud PII Air-Gap</span>
+              <span className="text-xs text-amber-300 font-mono">Zero-Cloud <GlossaryTooltip term="PII" /> <GlossaryTooltip term="Air-Gap" /></span>
             </div>
             <h3 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
               <span>Run 360° Comprehensive Jurisdiction Audit</span>
             </h3>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Execute all 9 verified Fellegi-Sunter and anomaly cartridges simultaneously across your entire {(loadedRowCount || 2002923).toLocaleString()}-row voter roll in RAM. Instantly generate a publication-ready Executive Briefing PDF and a Zero-PII JSON summary cartridge!
+              Execute all 9 verified Fellegi-Sunter and anomaly cartridges simultaneously across your entire {(loadedRowCount || 2002923).toLocaleString()}-row voter roll in <GlossaryTooltip term="RAM" />. Instantly generate a publication-ready Executive Briefing PDF and a Zero-<GlossaryTooltip term="PII" /> JSON summary cartridge!
             </p>
           </div>
           <Link

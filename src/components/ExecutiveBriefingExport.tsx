@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Download, Printer, ShieldCheck, CheckCircle2, Lock } from "lucide-react";
+import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 
 export interface PlaybookAuditSummary {
   id: string;
@@ -117,7 +118,7 @@ export function ExecutiveBriefingExport({
             <span>Institutional Export &amp; Sharing Engine</span>
           </h3>
           <p className="text-xs text-[#646A7A] mt-0.5 max-w-xl leading-relaxed">
-            Export a formal printed memo for your Board of Elections or share a cryptographic Zero-PII JSON summary with journalists and grant evaluators without risking citizen privacy.
+            Export a formal printed memo for your Board of Elections or share a cryptographic Zero-<GlossaryTooltip term="PII" /> JSON summary with journalists and grant evaluators without risking citizen privacy.
           </p>
         </div>
 

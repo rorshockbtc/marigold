@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Tooltip } from "@/components/Tooltip";
+import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 
 export default function MissionControl() {
   const [playbooks, setPlaybooks] = useState<any[]>([]);
@@ -60,8 +61,8 @@ export default function MissionControl() {
   };
 
   const getPlaybookSource = (name: string, type: string) => {
-    if (name.includes("Quantile Model") || name.includes("IQR")) return "🧮 Source: Tukey's Fences & Mathematical Outlier Benchmarks";
-    if (name.includes("Poisson")) return "📊 Source: Poisson Rare Event Probability Theory";
+    if (name.includes("Quantile Model") || name.includes("IQR")) return <>🧮 Source: <GlossaryTooltip term="Tukey">Tukey&apos;s Fences</GlossaryTooltip> &amp; Mathematical Outlier Benchmarks</>;
+    if (name.includes("Poisson")) return <>📊 Source: <GlossaryTooltip term="Poisson" /> Rare Event Probability Theory</>;
     if (name.includes("Good Governance") || name.includes("Suspense")) return "🏛️ Source: EAC Administrative Efficiency Guidelines";
     if (name.includes("Relocation") || name.includes("Merge")) return "📋 Source: Interstate Voter Registration Crosscheck Standards";
     if (name.includes("Voting Rights") || name.includes("Urban Precinct")) return "⚖️ Source: Brennan Center for Justice Polling Place Wait Time Study";
@@ -69,12 +70,12 @@ export default function MissionControl() {
     if (name.includes("Purge Surge") || name.includes("Inactive")) return "🛡️ Source: League of Women Voters / Voter Purge Project";
     if (type === "density") return "📚 Source: Heritage Foundation / Voter Roll Audit Standards";
     if (type === "spikes") return "📈 Source: Seth Keshel Statistical Trend Analysis";
-    if (type === "po-box" || type === "commercial") return "📬 Source: USPS NCOA Commercial Address Registry";
+    if (type === "po-box" || type === "commercial") return <>📬 Source: USPS <GlossaryTooltip term="NCOA" /> Commercial Address Registry</>;
     if (type === "missing-dorm") return "🏛️ Source: EAC (Election Assistance Commission) Housing Guidelines";
-    if (type === "typo-names") return "🔍 Source: State Auditor Data Validation Benchmarks";
-    if (type === "duplicates") return "📋 Source: National Voter Registration Act (NVRA) Title 8";
+    if (type === "typo-names") return <>🔍 Source: State Auditor <GlossaryTooltip term="OCR" /> Data Validation Benchmarks</>;
+    if (type === "duplicates") return <>📋 Source: <GlossaryTooltip term="NVRA" /> Title 8 &amp; <GlossaryTooltip term="Fellegi-Sunter" /></>;
     if (type === "phantom-precincts") return "🗺️ Source: Public Interest Legal Foundation (PILF)";
-    if (type === "out-of-state-mailing") return "📬 Source: Interstate Crosscheck / ERIC Standards";
+    if (type === "out-of-state-mailing") return <>📬 Source: Interstate Crosscheck / <GlossaryTooltip term="ERIC" /> Standards</>;
     return "💡 Source: Non-Partisan Election Integrity Standard";
   };
 
