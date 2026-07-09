@@ -145,6 +145,16 @@ export default function MissionControl() {
             Pre-configured statistical audits calibrated specifically for {selectedState === 'MS' ? 'Mississippi counties (Hinds, DeSoto, Harrison, etc.)' : 'North Carolina counties (Wake, Mecklenburg, Guilford, etc.)'}. Click a playbook below to launch an instant scan. False positives are automatically filtered out, and our non-partisan models learn from your verification feedback.
             Need help understanding the data? <Tooltip content="If the data looks confusing, hover over the ℹ️ icons or ask the AI Chat Guide to explain the math for you."><span className="text-primary font-semibold underline decoration-dotted">Hover here for a tip.</span></Tooltip>
           </p>
+
+          {/* Executive 360° Audit Launch Banner */}
+          <div className="pt-4">
+            <Link
+              href="/comprehensive-audit"
+              className="w-full sm:w-auto bg-gradient-to-r from-[#2D3142] to-[#1E212D] hover:from-[#1E212D] hover:to-black text-amber-300 font-extrabold px-6 py-4 rounded-xl shadow-md transition-all text-sm inline-flex items-center justify-center gap-2 border border-slate-700"
+            >
+              <span>🚀 Launch 360° Comprehensive Jurisdiction Audit across all 9 Playbooks →</span>
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2 border-t border-border">

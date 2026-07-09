@@ -303,6 +303,13 @@ export default function DashboardPage() {
               <BookOpen className="w-4 h-4" />
               <span>Step-by-Step Guides</span>
             </Link>
+            <Link
+              href="/comprehensive-audit"
+              className="bg-[#2D3142] hover:bg-[#1E212D] text-amber-400 font-extrabold px-4 py-3.5 rounded-xl shadow-sm transition-all text-xs flex items-center gap-1.5 border border-slate-700"
+            >
+              <Rocket className="w-4 h-4 text-[#D96B27]" />
+              <span>🚀 360° Comprehensive Audit →</span>
+            </Link>
           </div>
         </div>
 
@@ -341,6 +348,31 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Executive 360° Comprehensive Audit Command Banner */}
+        <div className="bg-gradient-to-r from-[#2D3142] to-[#1E212D] text-white p-6 rounded-2xl border border-slate-700 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="bg-[#D96B27] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                ⚡ Executive Sales &amp; Audit Tool
+              </span>
+              <span className="text-xs text-amber-300 font-mono">Zero-Cloud PII Air-Gap</span>
+            </div>
+            <h3 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+              <span>Run 360° Comprehensive Jurisdiction Audit</span>
+            </h3>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Execute all 9 verified Fellegi-Sunter and anomaly cartridges simultaneously across your entire {(loadedRowCount || 2002923).toLocaleString()}-row voter roll in RAM. Instantly generate a publication-ready Executive Briefing PDF and a Zero-PII JSON summary cartridge!
+            </p>
+          </div>
+          <Link
+            href="/comprehensive-audit"
+            className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-4 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 shrink-0 transform active:scale-[0.98]"
+          >
+            <Rocket className="w-4 h-4" />
+            <span>🚀 Execute 360° Comprehensive Audit →</span>
+          </Link>
+        </div>
 
         {/* 4-Column Real-Time Telemetry & System Status Widgets */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
