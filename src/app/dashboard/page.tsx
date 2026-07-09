@@ -271,20 +271,29 @@ export default function DashboardPage() {
           {/* Quick Actions Cluster */}
           <div className="flex flex-wrap items-center gap-3">
             {isDataConnected ? (
-              <Link
-                href="/analysis"
-                className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
-              >
-                <Search className="w-4 h-4" />
-                <span>Review Voter Records ({(loadedRowCount || 2002923).toLocaleString()}) →</span>
-              </Link>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Link
+                  href="/analysis"
+                  className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Review Voter Records ({(loadedRowCount || 2002923).toLocaleString()}) →</span>
+                </Link>
+                <Link
+                  href="/data-prep"
+                  className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-4 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
+                >
+                  <Folder className="w-4 h-4 text-[#D96B27]" />
+                  <span>📂 Re-Link Local File (/data-prep)</span>
+                </Link>
+              </div>
             ) : (
               <Link
                 href="/data-prep"
                 className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2"
               >
                 <Folder className="w-4 h-4" />
-                <span>Connect Local Voter Roll File →</span>
+                <span>Connect Local Voter Roll File (/data-prep) →</span>
               </Link>
             )}
             <Link
@@ -293,13 +302,6 @@ export default function DashboardPage() {
             >
               <BookOpen className="w-4 h-4" />
               <span>Step-by-Step Guides</span>
-            </Link>
-            <Link
-              href="/data-prep"
-              className="bg-white hover:bg-[#EAE5DC] text-[#646A7A] hover:text-[#2D3142] font-semibold px-3.5 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1"
-            >
-              <Settings className="w-4 h-4" />
-              <span>Data Settings</span>
             </Link>
           </div>
         </div>
@@ -484,7 +486,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Select your official statewide or weekly voter file shards. Marigold distills county-level anomaly distributions automatically in client memory.
             </p>
-            <button type="button" onClick={() => window.scrollTo({ top: 350, behavior: 'smooth' })} className="text-xs font-bold text-accent hover:underline block pt-2 text-left">Connect Shards Above ↑</button>
+            <Link href="/data-prep" className="text-xs font-bold text-accent hover:underline block pt-2 text-left">Connect Shards (/data-prep) →</Link>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
@@ -529,16 +531,27 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
               To populate your investigation checklist with verified discrepancies across counties, connect your statewide voter file above or run an active Mission Playbook.
             </p>
-            <div className="flex justify-center gap-3 pt-2">
+            <div className="flex justify-center gap-3 pt-2 flex-wrap">
+              <Link
+                href="/data-prep"
+                className="bg-primary hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
+              >
+                <Folder className="w-4 h-4" />
+                <span>Connect / Re-Link Local Voter File (/data-prep) →</span>
+              </Link>
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 350, behavior: 'smooth' })}
-                className="bg-primary hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all"
+                onClick={() => {
+                  localStorage.setItem("marigold_file_connected", "true");
+                  localStorage.setItem("marigold_file_rows", "2002923");
+                  window.location.href = "/analysis";
+                }}
+                className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
               >
-                Connect Statewide File Above ↑
+                <span>⚡ Load Synthetic Demo Shard (Instant RAM)</span>
               </button>
-              <Link href="/playbooks" className="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-5 py-2.5 rounded-xl border border-slate-300 transition-all">
-                Run Mission Playbooks
+              <Link href="/playbooks" className="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-5 py-2.5 rounded-xl border border-slate-300 transition-all flex items-center gap-1.5">
+                <span>Run Mission Playbooks</span>
               </Link>
             </div>
           </div>

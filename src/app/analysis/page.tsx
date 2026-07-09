@@ -579,10 +579,21 @@ export default function AnalysisDashboard() {
                   <li>Come back to this page, and all audit buttons (like High-Density) will automatically unlock!</li>
                 </ol>
               </div>
-              <div className="flex justify-center">
-                <a href="/data-linkage" className="btn-primary px-8 py-3 text-lg font-bold">
-                  Link Local Dataset
+              <div className="flex justify-center gap-4 flex-wrap">
+                <a href="/data-prep" className="btn-primary px-8 py-3 text-lg font-bold shadow-md">
+                  📂 Link Local Dataset (/data-prep)
                 </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem("marigold_file_connected", "true");
+                    localStorage.setItem("marigold_file_rows", "2002923");
+                    window.location.reload();
+                  }}
+                  className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-colors text-base flex items-center gap-2"
+                >
+                  ⚡ Load Synthetic Demo Shard (Instant RAM)
+                </button>
               </div>
             </>
           )}
