@@ -339,8 +339,8 @@ export default function MarketingHomePage() {
             <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
               Try Public Sandbox ↗
             </a>
-            <Link href="/partners" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-900/90 text-white border border-amber-500/40 hover:bg-slate-800 hover:border-amber-400 transition-all transform hover:-translate-y-0.5">
-              🤝 Partner With Us
+            <Link href="/learning-center" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-900/90 text-white border border-amber-500/40 hover:bg-slate-800 hover:border-amber-400 transition-all transform hover:-translate-y-0.5">
+              📖 Knowledge Base
             </Link>
             <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all">
               Find Your Role Guide ↓
@@ -359,6 +359,26 @@ export default function MarketingHomePage() {
 
       {/* Main Container for Rest of Content */}
       <div className="space-y-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+        
+        {/* Highlighted Learning Center Banner */}
+        <div className="bg-[#FAF8F5] border-2 border-amber-500/30 rounded-3xl p-8 sm:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center gap-8 justify-between max-w-6xl mx-auto group">
+          <div className="space-y-4 max-w-2xl relative z-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-400 text-amber-800 text-xs font-black uppercase tracking-wider shadow-sm">
+              ✨ New Release
+            </div>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">Explore the Knowledge Base</h2>
+            <p className="text-base text-slate-600 leading-relaxed">
+              We just published our comprehensive <strong>Citizen &amp; Agency Learning Center</strong>. Dive into plain-English summaries, understand the zero-cloud architecture, and review the exact academic math and legal statutes behind Marigold Insights.
+            </p>
+          </div>
+          <div className="relative z-10 shrink-0">
+            <Link href="/learning-center" className="bg-[#2D3142] hover:bg-black text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center gap-2">
+              <span>Read the Knowledge Base</span>
+              <span>→</span>
+            </Link>
+          </div>
+        </div>
+
         {/* The Three Major Stakeholder Groups */}
         <section id="stakeholders" className="space-y-10 max-w-6xl mx-auto px-2 scroll-mt-24">
           <div className="text-center space-y-3">

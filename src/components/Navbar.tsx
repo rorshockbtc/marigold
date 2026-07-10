@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown } from 'lucide-react';
+import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown, BookOpen } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname() || '';
@@ -72,6 +72,10 @@ export function Navbar() {
               {moreDropdownOpen && (
                 <div className="absolute right-0 top-full pt-2 w-56 z-50">
                   <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 text-xs">
+                    <Link href="/learning-center" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <span>Learning Center</span>
+                    </Link>
                     <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
                       <Globe className="w-4 h-4 text-blue-400 flex-shrink-0" />
                       <span>Worldviews &amp; FAQ</span>
@@ -141,6 +145,10 @@ export function Navbar() {
             <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400">FEMA Compliance</Link>
             <Link href="/partners" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500/10 text-amber-400 font-bold flex items-center gap-2 border border-amber-500/30">
               <span>🤝 Beta Partnerships &amp; Grants</span>
+            </Link>
+            <Link href="/learning-center" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-amber-500" />
+              <span>Learning Center</span>
             </Link>
             <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-400" />
