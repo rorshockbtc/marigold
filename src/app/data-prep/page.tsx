@@ -6,6 +6,7 @@ import { useCSVExport } from "@/hooks/useCSVExport";
 import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import Link from "next/link";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
+import { Download, Sparkles, AlertCircle, FileSpreadsheet } from 'lucide-react';
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -17,6 +18,11 @@ export default function DataPrepPage() {
   // Auto-detect existing local database shard on shared household devices
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const activeGroup = localStorage.getItem("marigold_active_group");
+    const fname = localStorage.getItem("marigold_file_name") || "";
+    if (activeGroup === "State of Roosevelt (Demo)" && !fname.toUpperCase().includes("DEMO")) {
+      return;
+    }
     try {
       const request = indexedDB.open("VoterDataDB", 1);
       request.onsuccess = (e) => {
@@ -52,16 +58,30 @@ export default function DataPrepPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [parseState.isProcessing, exportState.isExporting]);
 
+  const checkDemoFileAllowed = (file: File) => {
+    if (typeof window !== "undefined") {
+      const activeGroup = (localStorage.getItem("marigold_active_group") || "").toLowerCase();
+      const isDemo = activeGroup === "state of roosevelt (demo)" || activeGroup === "acme civic data sandbox (demo environment)" || activeGroup.includes("demo") || activeGroup.includes("roosevelt") || activeGroup.includes("acme") || activeGroup.includes("sandbox") || activeGroup.includes("synthetic");
+      if (isDemo && !file.name.toUpperCase().includes("DEMO")) {
+        alert("⚠️ Demo Environment Protection: To prevent commingling or exposing real PII during demonstrations, you cannot ingest non-demo voter rolls (" + file.name + ") while in a demo or sandbox group. Please use a DEMO_ file or switch to your real jurisdiction in the sidebar.");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      parseFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      if (checkDemoFileAllowed(file)) parseFile(file);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      parseFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (checkDemoFileAllowed(file)) parseFile(file);
     }
   };
 
@@ -85,8 +105,43 @@ export default function DataPrepPage() {
         </p>
       </header>
 
+      {/* Prominent State of Roosevelt (Demo) Download Banner */}
+      <div className="bg-gradient-to-r from-amber-900/90 via-amber-800 to-amber-950 text-amber-50 p-6 sm:p-8 rounded-2xl border border-amber-600/40 shadow-xl space-y-4 animate-in fade-in duration-300">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-700/50 pb-4">
+          <div className="flex items-center gap-2">
+            <span className="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Synthetic Training & Demo Dataset</span>
+            </span>
+            <span className="text-xs font-mono text-amber-200">Pre-engineered for State of Roosevelt (Demo)</span>
+          </div>
+          <span className="text-xs bg-amber-950/80 text-amber-200 px-3 py-1 rounded-lg border border-amber-500/30 font-mono font-bold">
+            ~1,800 Engineered Rows • 100% Zero-PII
+          </span>
+        </div>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <FileSpreadsheet className="w-6 h-6 text-amber-400 shrink-0" />
+              <span>Download & Link Synthetic Demo Roll (`DEMO_roosevelt_statewide_voter_roll.csv`)</span>
+            </h3>
+            <p className="text-xs sm:text-sm text-amber-100 leading-relaxed">
+              Want to test the software right away or record a video demo without exposing real citizen data? Download our pre-engineered synthetic CSV containing realistic single-character clerical typos, college dorm clusters (`100 CAMPUS DR`), UPS store commercial mail disguises (`STE 200`), and single-day registration surges.
+            </p>
+          </div>
+          <a
+            href="/api/demo-dataset"
+            download="DEMO_roosevelt_statewide_voter_roll.csv"
+            className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 shrink-0 transform active:scale-[0.98] w-full md:w-auto"
+          >
+            <Download className="w-5 h-5 text-slate-900" />
+            <span>📥 Download Synthetic CSV</span>
+          </a>
+        </div>
+      </div>
+
       {/* Shared Household Device Auto-Resume Banner */}
-      {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (
+      {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (typeof window === "undefined" || !((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || (localStorage.getItem("marigold_file_name") || "").toUpperCase().includes("DEMO")) && (
         <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 rounded-2xl p-8 text-white shadow-xl space-y-6 animate-in fade-in">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">

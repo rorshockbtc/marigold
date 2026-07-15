@@ -19,10 +19,67 @@ const NAV_ITEMS = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [activeGroup, setActiveGroup] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
+    }
+    return "State of Roosevelt (Demo)";
+  });
+  const [isSwitcherOpen, setIsSwitcherOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleGroupChange = (e: Event) => {
+        const customEvent = e as CustomEvent<{ group?: string }>;
+        if (customEvent && customEvent.detail && customEvent.detail.group) {
+          setActiveGroup(customEvent.detail.group);
+        } else {
+          setActiveGroup(localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)");
+        }
+      };
+      window.addEventListener('marigold-group-change', handleGroupChange);
+      return () => window.removeEventListener('marigold-group-change', handleGroupChange);
+    }
+  }, []);
 
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('sidebar-state-change', { detail: { isCollapsed } }));
   }, [isCollapsed]);
+
+  const handleSwitchGroup = (targetGroup: string) => {
+    setActiveGroup(targetGroup);
+    setIsSwitcherOpen(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("marigold_active_group", targetGroup);
+      const lower = targetGroup.toLowerCase();
+      const isDemo = targetGroup === "State of Roosevelt (Demo)" ||
+                     targetGroup === "ACME Civic Data Sandbox (Demo Environment)" ||
+                     lower.includes("demo") ||
+                     lower.includes("roosevelt") ||
+                     lower.includes("acme") ||
+                     lower.includes("sandbox") ||
+                     lower.includes("synthetic");
+      if (isDemo) {
+        localStorage.setItem("marigold_user_role", "Verified Tester");
+        const currentFileName = localStorage.getItem("marigold_file_name") || "";
+        if (!currentFileName.toUpperCase().includes("DEMO")) {
+          localStorage.setItem("marigold_file_connected", "false");
+          localStorage.setItem("marigold_file_rows", "0");
+          localStorage.setItem("marigold_file_name", "Synthetic DEMO_ dataset required");
+        }
+      } else if (targetGroup === "Mississippi Fair Elections") {
+        localStorage.setItem("marigold_user_role", "Group Admin");
+        const currentFileName = localStorage.getItem("marigold_file_name") || "";
+        if (currentFileName === "Synthetic DEMO_ dataset required" || currentFileName.toUpperCase().includes("DEMO")) {
+          localStorage.setItem("marigold_file_connected", "true");
+          localStorage.setItem("marigold_file_rows", "2002923");
+          localStorage.setItem("marigold_file_name", "ms_voter_roll_2024.csv");
+        }
+      }
+      window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: targetGroup } }));
+      window.location.reload();
+    }
+  };
 
   return (
     <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#F0ECE3] text-[#2D3142] flex flex-col h-screen fixed left-0 top-0 border-r border-[#E5E0D8] z-50 shadow-lg font-sans select-none transition-all duration-300`}>
@@ -40,13 +97,84 @@ export default function AppSidebar() {
           {isCollapsed ? <Menu className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
       </div>
-      {!isCollapsed && (
-        <div className="px-6 py-1.5 bg-[#EAE5DC]/40 border-b border-[#E5E0D8]">
-          <div className="inline-block bg-[#D96B27]/15 text-[#D96B27] font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-[#D96B27]/30">
-            Citizen Volunteer Network
+
+      {/* Universal Active Jurisdiction & Demo Mode Switcher */}
+      <div className="p-3 border-b border-[#E5E0D8] bg-[#FAF8F5]/90 relative">
+        <button
+          type="button"
+          onClick={() => !isCollapsed && setIsSwitcherOpen(!isSwitcherOpen)}
+          title={isCollapsed ? `Active: ${activeGroup}` : "Switch Active Group / Demo Mode"}
+          className={`w-full flex items-center justify-between gap-2 p-2 rounded-xl border border-[#E5E0D8] bg-white hover:border-[#D96B27]/60 shadow-2xs transition-all text-left ${isCollapsed ? 'justify-center p-1.5' : ''}`}
+        >
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-sm shrink-0">{activeGroup === "State of Roosevelt (Demo)" ? "🌲" : "👑"}</span>
+            {!isCollapsed && (
+              <div className="overflow-hidden">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[#D96B27] font-extrabold leading-none">
+                  {activeGroup === "State of Roosevelt (Demo)" ? "Demo Workspace" : "Jurisdiction Group"}
+                </div>
+                <div className="text-xs font-bold text-[#2D3142] truncate pt-0.5">
+                  {activeGroup || "State of Roosevelt (Demo)"}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+          {!isCollapsed && <span className="text-[10px] text-[#646A7A] shrink-0">▼</span>}
+        </button>
+
+        {/* Dropdown Menu */}
+        {isSwitcherOpen && !isCollapsed && (
+          <div className="absolute left-3 right-3 top-16 z-50 bg-white border-2 border-[#D96B27] rounded-xl shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-[#D96B27] font-black px-2 py-1">
+              Switch Jurisdiction or Mode:
+            </div>
+            <button
+              type="button"
+              onClick={() => handleSwitchGroup("State of Roosevelt (Demo)")}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "State of Roosevelt (Demo)" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+            >
+              <span>🌲 State of Roosevelt (Demo)</span>
+              {activeGroup === "State of Roosevelt (Demo)" && <span>✓</span>}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchGroup("ACME Civic Data Sandbox (Demo Environment)")}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+            >
+              <span>🧪 ACME Civic Data Sandbox</span>
+              {activeGroup === "ACME Civic Data Sandbox (Demo Environment)" && <span>✓</span>}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchGroup("Mississippi Fair Elections")}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Mississippi Fair Elections" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+            >
+              <span>👑 Mississippi Fair Elections</span>
+              {activeGroup === "Mississippi Fair Elections" && <span>✓</span>}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchGroup("Independent Audit Workspace")}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Independent Audit Workspace" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+            >
+              <span>🛡️ Independent Workspace</span>
+              {activeGroup === "Independent Audit Workspace" && <span>✓</span>}
+            </button>
+            <div className="border-t border-[#E5E0D8] pt-1 mt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const custom = window.prompt("Enter Organization or Group Name:", activeGroup);
+                  if (custom && custom.trim()) handleSwitchGroup(custom.trim());
+                }}
+                className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#D96B27] hover:bg-[#FAF8F5] transition-colors"
+              >
+                ➕ Custom Organization...
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5">

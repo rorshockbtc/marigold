@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Tooltip } from "@/components/Tooltip";
 import { DesktopImportGuide } from "@/components/DesktopImportGuide";
@@ -87,6 +88,32 @@ export default function AnalysisDashboard() {
   const { analyze: analyzeLocalStats } = useDataStats();
 
   const fetchStats = async () => {
+    const isDemoActive = typeof window !== 'undefined' && checkIsDemoGroup(localStorage.getItem("marigold_active_group"));
+    const fileName = typeof window !== 'undefined' ? localStorage.getItem("marigold_file_name") || "" : "";
+    const isDemoIsolated = isDemoActive && !fileName.toUpperCase().includes("DEMO");
+
+    if (isDemoIsolated) {
+      setStats({
+        total_voters: 0,
+        precinct_count: 0,
+        county_count: 6,
+        last_updated: "Synthetic Demo Required (`DEMO_roosevelt_statewide_voter_roll.csv`)"
+      });
+      setError(null);
+      return;
+    }
+
+    if (isDemoActive) {
+      setStats({
+        total_voters: 1800,
+        precinct_count: 42,
+        county_count: 6,
+        last_updated: "Verified Client RAM (" + fileName + ")"
+      });
+      setError(null);
+      return;
+    }
+
     try {
       const localStats = await analyzeLocalStats();
       if (localStats && localStats.totalRows > 0) {
@@ -210,39 +237,6 @@ export default function AnalysisDashboard() {
     }
 
     const activeGroup = typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") : null;
-    if (activeGroup === "ACME Civic Data Sandbox (Demo Environment)") {
-      setIsLoading(true);
-      setTimeout(() => {
-        let mockData = [];
-        if (action === 'density' || action === 'high_density') {
-          mockData = [
-            { id: "md1", address: "123 UNIVERSITY WAY (Simulated Student Dorm)", occupant_count: 423, county: "Simulated Hinds County", risk_level: "HIGH" },
-            { id: "md2", address: "789 MAPLE AVENUE, LOT 12 (Simulated Mobile Park)", occupant_count: 14, county: "Simulated Harrison County", risk_level: "MEDIUM" },
-            { id: "md3", address: "202 ELM STREET, UNIT 100 (Simulated Clerical Anomaly)", occupant_count: 42, county: "Simulated Rankin County", risk_level: "CRITICAL" },
-            { id: "md4", address: "101 PINE BOULEVARD, APT 3B", occupant_count: 6, county: "Simulated Hinds County", risk_level: "LOW" }
-          ];
-        } else if (action === 'po_box' || action === 'po_box_disguise') {
-          mockData = [
-            { id: "mp1", address: "456 MAIN STREET, SUITE 400 (UPS Mailbox Ste 400)", occupant_count: 85, county: "Simulated Hinds County", risk_level: "CRITICAL" },
-            { id: "mp2", address: "889 POST ROAD, UNIT 202 (UPS Mailbox Ste 202)", occupant_count: 24, county: "Simulated DeSoto County", risk_level: "HIGH" },
-            { id: "mp3", address: "1002 COMMERCE DRIVE, #105", occupant_count: 12, county: "Simulated Harrison County", risk_level: "MEDIUM" }
-          ];
-        } else if (action === 'ncoa') {
-          mockData = [
-            { id: "mn1", name: "John Doe (Simulated Interstate Mover)", address: "554 ELM STREET", county: "Simulated Hinds County", risk_level: "HIGH", date_registered: "Moved to Texas in 2025" },
-            { id: "mn2", name: "Jane Smith (Simulated Interstate Mover)", address: "102 OAK ROAD", county: "Simulated Jackson County", risk_level: "HIGH", date_registered: "Moved to Florida in 2026" }
-          ];
-        } else {
-          mockData = [
-            { id: "mg1", address: "305 BROADWAY STREET", occupant_count: 5, county: "Simulated Hinds County", risk_level: "LOW" },
-            { id: "mg2", address: "702 FRANKLIN AVENUE", occupant_count: 3, county: "Simulated Hinds County", risk_level: "LOW" }
-          ];
-        }
-        setResults(mockData);
-        setIsLoading(false);
-      }, 800);
-      return;
-    }
 
     try {
       // Step 1: Query local client-side VoterDataDB IndexedDB first
@@ -523,21 +517,91 @@ export default function AnalysisDashboard() {
     );
   };
 
-  const isDemoMode = typeof window !== 'undefined' && localStorage.getItem("marigold_active_group") === "ACME Civic Data Sandbox (Demo Environment)";
+  const checkIsDemoGroup = (grp: string | null) => {
+    if (!grp) return false;
+    const lower = grp.toLowerCase();
+    return grp === "State of Roosevelt (Demo)" ||
+           grp === "ACME Civic Data Sandbox (Demo Environment)" ||
+           lower.includes("demo") ||
+           lower.includes("roosevelt") ||
+           lower.includes("acme") ||
+           lower.includes("sandbox") ||
+           lower.includes("synthetic");
+  };
+
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return checkIsDemoGroup(localStorage.getItem("marigold_active_group"));
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleGroupChange = (e: Event) => {
+        const customEvent = e as CustomEvent<{ group?: string }>;
+        const currentGroup = customEvent?.detail?.group || localStorage.getItem("marigold_active_group");
+        setIsDemoMode(checkIsDemoGroup(currentGroup || null));
+        fetchStats();
+      };
+      window.addEventListener('marigold-group-change', handleGroupChange);
+      return () => window.removeEventListener('marigold-group-change', handleGroupChange);
+    }
+  }, []);
+
+  const isDemoDataMissing = isDemoMode && (typeof window !== 'undefined' ? !(localStorage.getItem("marigold_file_name") || "").toUpperCase().includes("DEMO") : false);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4">
-      {/* Demo Warning Banner */}
-      {isDemoMode && (
-        <div className="bg-orange-600 text-white p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-orange-500 animate-in slide-in-from-top-4 duration-300">
+      {/* Demo Warning / Isolation Banners */}
+      {isDemoMode && isDemoDataMissing && (
+        <div className="bg-gradient-to-br from-amber-950 via-slate-900 to-slate-900 text-white p-6 sm:p-8 rounded-2xl border-2 border-amber-500/60 shadow-2xl space-y-5 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-amber-500/30 pb-5">
+            <div className="space-y-2">
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+                <span>🌲 {typeof window !== 'undefined' ? (localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)") : "State of Roosevelt (Demo)"} — Air-Gapped Isolation Active</span>
+              </span>
+              <h2 className="text-2xl font-black font-serif text-white mt-1">Synthetic Demo Dataset Required</h2>
+              <p className="text-amber-100 text-sm max-w-3xl leading-relaxed">
+                You are currently inside a workshop staging environment (`{typeof window !== 'undefined' ? (localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)") : "State of Roosevelt (Demo)"}`). To prevent exposing real voter records or commingling jurisdictional data during workshops and demonstrations, your real voter file is automatically isolated and hidden (`0 rows loaded`).
+              </p>
+              <p className="text-xs text-amber-200/90 leading-relaxed font-mono">
+                Please download the official ~1,800-row synthetic Roosevelt demo roll below (`DEMO_roosevelt_statewide_voter_roll.csv`) and link it on Data Prep to explore or demo all statistical audit playbooks.
+              </p>
+            </div>
+            <div className="bg-amber-950/80 p-3.5 rounded-xl border border-amber-500/40 text-xs font-mono text-amber-200 shrink-0 space-y-1 shadow-inner">
+              <div>Status: <span className="text-amber-400 font-bold">Awaiting DEMO_ File</span></div>
+              <div>Real Data: <span className="text-emerald-400 font-bold">Suppressed (Air-Gapped)</span></div>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
+            <a
+              href="/api/demo-dataset"
+              download="DEMO_roosevelt_statewide_voter_roll.csv"
+              className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98]"
+            >
+              <span>📥 Download Synthetic Demo Roll (`DEMO_roosevelt_...csv`)</span>
+            </a>
+            <Link
+              href="/data-prep"
+              className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-4 rounded-xl border border-slate-600 transition-colors text-sm flex items-center justify-center gap-2"
+            >
+              <span>Link Demo File in /data-prep →</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {isDemoMode && !isDemoDataMissing && (
+        <div className="bg-amber-900 text-amber-50 p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-amber-600/50 animate-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-3">
             <span className="text-2xl shrink-0">🎥</span>
             <span className="leading-relaxed">
-              <strong>DEMO MODE ACTIVE:</strong> Showing simulated records for video demonstration. Your real local voter database is completely isolated and protected.
+              <strong>DEMO MODE ACTIVE ({typeof window !== 'undefined' ? (localStorage.getItem("marigold_active_group") || "State of Roosevelt") : "State of Roosevelt"}):</strong> Operating on synthetic Roosevelt voter roll data (`DEMO_roosevelt_statewide_voter_roll.csv`) designed for workshops, video recording, and public training.
             </span>
           </div>
-          <span className="bg-orange-950/60 text-orange-200 px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold whitespace-nowrap shrink-0 border border-orange-400/30">
-            Fictional Data Explorer
+          <span className="bg-amber-950/80 text-amber-300 px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold whitespace-nowrap shrink-0 border border-amber-400/30">
+            🌲 Synthetic Data Shard
           </span>
         </div>
       )}
@@ -587,7 +651,8 @@ export default function AnalysisDashboard() {
                   type="button"
                   onClick={() => {
                     localStorage.setItem("marigold_file_connected", "true");
-                    localStorage.setItem("marigold_file_rows", "2002923");
+                    localStorage.setItem("marigold_file_name", "DEMO_roosevelt_statewide_voter_roll.csv");
+                    localStorage.setItem("marigold_file_rows", "1842");
                     window.location.reload();
                   }}
                   className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-colors text-base flex items-center gap-2"
@@ -612,10 +677,11 @@ export default function AnalysisDashboard() {
           </p>
         </div>
         <a
-          href="/registry"
+          href={isDemoMode ? "/api/demo-dataset" : "/registry"}
+          download={isDemoMode ? "DEMO_roosevelt_statewide_voter_roll.csv" : undefined}
           className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
         >
-          <span>🌐 Download Official State Dataset ↗</span>
+          <span>{isDemoMode ? "📥 Download Roosevelt Demo Dataset (.csv)" : "🌐 Download Official State Dataset ↗"}</span>
         </a>
       </div>
 
@@ -860,9 +926,17 @@ export default function AnalysisDashboard() {
           <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
             The live forensic query completed across the connected local database shards. No records exceeded the mathematical cutoff threshold ({thresholdFilter}) for the selected audit parameter ({currentAudit}). If you have not loaded your jurisdiction roll into local memory yet, please stream your file below.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center gap-3 flex-wrap">
             <a href="/data-prep" className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow transition-colors">
               📁 Stream &amp; Chunk Dataset in Data Prep Studio →
+            </a>
+            <a
+              href="/api/demo-dataset"
+              download="DEMO_roosevelt_statewide_voter_roll.csv"
+              className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>📥 Download DEMO_...csv</span>
             </a>
           </div>
         </div>
@@ -1030,7 +1104,12 @@ export default function AnalysisDashboard() {
                       counts[c] = (counts[c] || 0) + 1;
                     });
 
-                    const regions = [
+                    const regions = isDemoMode ? [
+                      { name: "North / Capital Highlands", counties: ["Roosevelt", "Jefferson", "Franklin"] },
+                      { name: "Central / University Metro", counties: ["Madison", "Lincoln", "Liberty"] },
+                      { name: "East Central / Commerce District", counties: ["Washington", "Adams", "Monroe"] },
+                      { name: "South / Valley Plains", counties: ["Jackson", "Harrison (Demo)", "Perry"] }
+                    ] : [
                       { name: "North / Delta & Hills Region", counties: ["DeSoto", "Lee", "Lowndes"] },
                       { name: "Central / Capital Metro Region", counties: ["Hinds", "Rankin", "Madison"] },
                       { name: "Pine Belt & East Central Region", counties: ["Lauderdale", "Forrest", "Jones"] },

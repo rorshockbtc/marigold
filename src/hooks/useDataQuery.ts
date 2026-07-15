@@ -24,6 +24,22 @@ export interface QueryResult {
   totalMatches: number;
 }
 
+function isDemoDataMissingOrSuppressed(): boolean {
+  if (typeof window === 'undefined') return false;
+  const activeGroup = (localStorage.getItem("marigold_active_group") || "").trim();
+  const grpLower = activeGroup.toLowerCase();
+  const isDemoGroup = activeGroup === "State of Roosevelt (Demo)" ||
+                      activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ||
+                      grpLower.includes("demo") ||
+                      grpLower.includes("roosevelt") ||
+                      grpLower.includes("acme") ||
+                      grpLower.includes("sandbox") ||
+                      grpLower.includes("synthetic");
+  if (!isDemoGroup) return false;
+  const fileName = localStorage.getItem("marigold_file_name") || "";
+  return !fileName.toUpperCase().includes("DEMO");
+}
+
 export function useDataQuery() {
   const [isQuerying, setIsQuerying] = useState(false);
   const [queryProgress, setQueryProgress] = useState(0);
@@ -35,6 +51,10 @@ export function useDataQuery() {
     offset: number = 0
   ): Promise<QueryResult> => {
     setIsQuerying(true);
+    if (isDemoDataMissingOrSuppressed()) {
+      setIsQuerying(false);
+      return { rows: [], totalMatches: 0 };
+    }
     const wakeLock = await requestScreenWakeLock();
     try {
       const db = await openDatabase();
@@ -91,6 +111,11 @@ export function useDataQuery() {
   ): Promise<Array<Record<string, any>>> => {
     setIsQuerying(true);
     setQueryProgress(0);
+    if (isDemoDataMissingOrSuppressed()) {
+      setIsQuerying(false);
+      setQueryProgress(100);
+      return [];
+    }
     const wakeLock = await requestScreenWakeLock();
     try {
       const db = await openDatabase();

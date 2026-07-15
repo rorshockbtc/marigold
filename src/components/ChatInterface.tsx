@@ -29,12 +29,15 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
 
   const getPageContext = () => {
     if (typeof window === 'undefined') return null;
+    const activeGrp = localStorage.getItem("marigold_active_group") || "Independent Audit Workspace";
+    const fname = localStorage.getItem("marigold_file_name") || "No file linked";
+    const isDemoIsolated = activeGrp === "State of Roosevelt (Demo)" && !fname.toUpperCase().includes("DEMO");
     return {
       currentRoute: pathname,
-      activeGroup: localStorage.getItem("marigold_active_group") || "Independent Audit Workspace",
-      datasetName: localStorage.getItem("marigold_file_name") || "No file linked",
-      datasetRowCount: localStorage.getItem("marigold_file_rows") || "0",
-      isDataConnected: localStorage.getItem("marigold_file_connected") === "true"
+      activeGroup: activeGrp,
+      datasetName: isDemoIsolated ? "No demo file linked (`DEMO_roosevelt_...csv` required)" : fname,
+      datasetRowCount: isDemoIsolated ? "0" : (localStorage.getItem("marigold_file_rows") || "0"),
+      isDataConnected: isDemoIsolated ? false : (localStorage.getItem("marigold_file_connected") === "true")
     };
   };
 

@@ -6,7 +6,7 @@ import { useUser } from '@clerk/nextjs';
 import { getAnomalies, AnomalyRecord, updateAnomalyStatus } from '@/lib/firebase/db';
 import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 import { GlossaryTooltip } from '@/components/GlossaryTooltip';
-import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight } from 'lucide-react';
+import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight, Download } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -26,61 +26,81 @@ export default function DashboardPage() {
   const [isSuperUser, setIsSuperUser] = useState(false);
 
   useEffect(() => {
-    // Load custom group name or default to Sandbox Demo
     let activeGroup = localStorage.getItem("marigold_active_group");
     if (!activeGroup) {
-      activeGroup = "ACME Civic Data Sandbox (Demo Environment)";
+      activeGroup = "State of Roosevelt (Demo)";
       localStorage.setItem("marigold_active_group", activeGroup);
       localStorage.setItem("marigold_user_role", "Verified Tester");
-      localStorage.setItem("marigold_file_connected", "true");
-      localStorage.setItem("marigold_file_name", "ACME_Synthetic_Roll_2026.csv");
-      localStorage.setItem("marigold_file_rows", "100000");
     }
     setGroupName(activeGroup);
 
-    if (activeGroup === "ACME Civic Data Sandbox (Demo Environment)") {
-      setAnomalies([
-        { id: "s1", voterName: "Simulated Student Dormitory Cluster", address: "123 UNIVERSITY WAY (Dorm)", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
-        { id: "s2", voterName: "Simulated UPS Store Disguise", address: "456 MAIN STREET, SUITE 400", flags: ["po_box"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
-        { id: "s3", voterName: "Simulated Mobile Park Review", address: "789 MAPLE AVENUE, LOT 12", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
-        { id: "s4", voterName: "Simulated Clerical Anomaly", address: "202 ELM STREET, UNIT 100", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" }
-      ]);
-    } else {
-      getAnomalies().then(setAnomalies);
-    }
-
-    // Check localStorage first
-    if (typeof window !== "undefined") {
+    const checkDataConnection = (currentGroup?: string) => {
+      if (typeof window === "undefined") return;
+      const grp = currentGroup || localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
       const connected = localStorage.getItem("marigold_file_connected");
       const rows = localStorage.getItem("marigold_file_rows");
-      const fname = localStorage.getItem("marigold_file_name");
-      if (connected === "true") {
-        setIsDataConnected(true);
-        if (rows) setLoadedRowCount(parseInt(rows, 10));
-        if (fname) setLoadedFileName(fname);
+      const fname = localStorage.getItem("marigold_file_name") || "";
+
+      const grpLower = grp.toLowerCase();
+      const isDemoMode = grp === "State of Roosevelt (Demo)" ||
+                         grp === "ACME Civic Data Sandbox (Demo Environment)" ||
+                         grpLower.includes("demo") ||
+                         grpLower.includes("roosevelt") ||
+                         grpLower.includes("acme") ||
+                         grpLower.includes("sandbox") ||
+                         grpLower.includes("synthetic");
+      const isDemoIsolated = isDemoMode && !fname.toUpperCase().includes("DEMO");
+
+      if (isDemoIsolated) {
+        setIsDataConnected(false);
+        setLoadedRowCount(0);
+        setLoadedFileName("Synthetic DEMO_ dataset required");
+        return;
       }
 
-      // Auto-detect existing local database shard on shared household devices
-      try {
-        const request = indexedDB.open("VoterDataDB", 1);
-        request.onsuccess = (e) => {
-          const db = (e.target as IDBOpenDBRequest).result;
-          if (db && db.objectStoreNames.contains("rows")) {
-            const tx = db.transaction(["rows"], "readonly");
-            const store = tx.objectStore("rows");
-            const countReq = store.count();
-            countReq.onsuccess = () => {
-              if (countReq.result > 0) {
-                localStorage.setItem("marigold_file_connected", "true");
-                localStorage.setItem("marigold_file_rows", String(countReq.result));
-                setIsDataConnected(true);
-                setLoadedRowCount(countReq.result);
-              }
-            };
-          }
-        };
-      } catch (err) {}
-    }
+      if (connected === "true" && fname && !isDemoIsolated) {
+        setIsDataConnected(true);
+        if (rows) setLoadedRowCount(parseInt(rows, 10));
+        setLoadedFileName(fname);
+      } else if (!isDemoMode) {
+        try {
+          const request = indexedDB.open("VoterDataDB", 1);
+          request.onsuccess = (e) => {
+            const db = (e.target as IDBOpenDBRequest).result;
+            if (db && db.objectStoreNames.contains("rows")) {
+              const tx = db.transaction(["rows"], "readonly");
+              const store = tx.objectStore("rows");
+              const countReq = store.count();
+              countReq.onsuccess = () => {
+                if (countReq.result > 0) {
+                  localStorage.setItem("marigold_file_connected", "true");
+                  localStorage.setItem("marigold_file_rows", String(countReq.result));
+                  setIsDataConnected(true);
+                  setLoadedRowCount(countReq.result);
+                }
+              };
+            }
+          };
+        } catch (err) {}
+      } else {
+        setIsDataConnected(false);
+        setLoadedRowCount(0);
+        setLoadedFileName("");
+      }
+    };
+
+    const handleGroupChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ group?: string }>;
+      const newGroup = customEvent?.detail?.group || localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
+      setGroupName(newGroup);
+      checkDataConnection(newGroup);
+    };
+    window.addEventListener('marigold-group-change', handleGroupChange);
+
+    getAnomalies().then(setAnomalies);
+    checkDataConnection(activeGroup);
+
+    return () => window.removeEventListener('marigold-group-change', handleGroupChange);
   }, []);
 
   // Sync user email into team members once loaded
@@ -104,28 +124,14 @@ export default function DashboardPage() {
 
   const handleSaveGroup = (newName: string) => {
     setGroupName(newName);
-    localStorage.setItem("marigold_active_group", newName);
-    if (newName === "ACME Civic Data Sandbox (Demo Environment)") {
-      localStorage.setItem("marigold_file_connected", "true");
-      localStorage.setItem("marigold_file_name", "ACME_Synthetic_Roll_2026.csv");
-      localStorage.setItem("marigold_file_rows", "100000");
-      setIsDataConnected(true);
-      setLoadedRowCount(100000);
-      setLoadedFileName("ACME_Synthetic_Roll_2026.csv");
-      setAnomalies([
-        { id: "s1", voterName: "Simulated Student Dormitory Cluster", address: "123 UNIVERSITY WAY (Dorm)", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
-        { id: "s2", voterName: "Simulated UPS Store Disguise", address: "456 MAIN STREET, SUITE 400", flags: ["po_box"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
-        { id: "s3", voterName: "Simulated Mobile Park Review", address: "789 MAPLE AVENUE, LOT 12", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" },
-        { id: "s4", voterName: "Simulated Clerical Anomaly", address: "202 ELM STREET, UNIT 100", flags: ["high_density"], status: "pending", foundBy: "System", dateFound: "2026-07-06" }
-      ]);
-    } else {
-      localStorage.removeItem("marigold_file_connected");
-      localStorage.removeItem("marigold_file_name");
-      localStorage.removeItem("marigold_file_rows");
-      setIsDataConnected(false);
-      setLoadedRowCount(null);
-      setLoadedFileName("");
-      getAnomalies().then(setAnomalies);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("marigold_active_group", newName);
+      if (newName === "State of Roosevelt (Demo)") {
+        localStorage.setItem("marigold_user_role", "Verified Tester");
+      } else if (newName === "Mississippi Fair Elections") {
+        localStorage.setItem("marigold_user_role", "Group Admin");
+      }
+      window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: newName } }));
     }
     setIsEditingGroup(false);
   };
@@ -278,7 +284,7 @@ export default function DashboardPage() {
                   className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Review Voter Records ({(loadedRowCount || 2002923).toLocaleString()}) →</span>
+                  <span>Review Voter Records ({(loadedRowCount && loadedRowCount > 0) ? loadedRowCount.toLocaleString() : (groupName && (groupName.toLowerCase().includes("demo") || groupName.toLowerCase().includes("acme") || groupName.toLowerCase().includes("roosevelt") || groupName.toLowerCase().includes("sandbox")) ? '0 rows — Link DEMO File' : 'No File Linked')}) →</span>
                 </Link>
                 <Link
                   href="/data-prep"
@@ -320,7 +326,7 @@ export default function DashboardPage() {
             <label className="text-xs font-black text-[#D96B27] uppercase tracking-wider block">Select Preset Jurisdiction or Enter Custom Group Name:</label>
             <div className="flex flex-wrap gap-2 text-xs">
               {[
-                "ACME Civic Data Sandbox (Demo Environment)",
+                "State of Roosevelt (Demo)",
                 ...(isAdmin || isSuperUser || groupName === "Mississippi Fair Elections" ? ["Mississippi Fair Elections"] : [])
               ].map((preset) => (
                 <button
@@ -350,6 +356,43 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* State of Roosevelt (Demo) / ACME Synthetic Data Banner */}
+        {((groupName.toLowerCase().includes("demo") || groupName.toLowerCase().includes("acme") || groupName.toLowerCase().includes("roosevelt") || groupName.toLowerCase().includes("sandbox")) || !isDataConnected) && (
+          <div className="bg-gradient-to-r from-amber-900/90 via-amber-800 to-amber-950 text-amber-50 p-6 rounded-2xl border border-amber-600/40 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-in fade-in duration-300">
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+                  🌲 Synthetic Demo Environment
+                </span>
+                <span className="text-xs text-amber-200 font-medium">Safe for Video Recording & Public Demos</span>
+              </div>
+              <h3 className="text-xl font-black text-white tracking-tight">{groupName} — Download Roosevelt Synthetic Voter Roll</h3>
+              <p className="text-xs text-amber-100 leading-relaxed">
+                We have pre-engineered an ~1,800 row synthetic Roosevelt dataset containing realistic single-character clerical errors, unsegmented college dorms (<strong className="text-white">100 CAMPUS DR</strong>), UPS store commercial mail drops, and single-day registration surges. Download this file below and link it in <Link href="/data-prep" className="underline font-bold hover:text-white">/data-prep</Link> to experience 100% full-fidelity client-side chunking and statistical audit playbooks!
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+              <a
+                href="/api/demo-dataset"
+                download="DEMO_roosevelt_statewide_voter_roll.csv"
+                className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-5 py-3 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 transform active:scale-[0.98]"
+              >
+                <Download className="w-4 h-4 text-slate-900" />
+                <span>📥 Download DEMO_...csv</span>
+              </a>
+              {!isDataConnected && (
+                <Link
+                  href="/data-prep"
+                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-3 rounded-xl border border-white/20 transition-colors text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Folder className="w-4 h-4 text-amber-300" />
+                  <span>Link File in /data-prep →</span>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Executive 360° Comprehensive Audit Command Banner */}
         <div className="bg-gradient-to-r from-[#2D3142] to-[#1E212D] text-white p-6 rounded-2xl border border-slate-700 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
@@ -363,7 +406,7 @@ export default function DashboardPage() {
               <span>Run 360° Comprehensive Jurisdiction Audit</span>
             </h3>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Execute all 9 verified Fellegi-Sunter and anomaly cartridges simultaneously across your entire {(loadedRowCount || 2002923).toLocaleString()}-row voter roll in <GlossaryTooltip term="RAM" />. Instantly generate a publication-ready Executive Briefing PDF and a Zero-<GlossaryTooltip term="PII" /> JSON summary cartridge!
+              Execute all 9 verified Fellegi-Sunter and anomaly cartridges simultaneously across your entire {(loadedRowCount && loadedRowCount > 0) ? `${loadedRowCount.toLocaleString()}-row` : 'DEMO'} voter roll in <GlossaryTooltip term="RAM" />. Instantly generate a publication-ready Executive Briefing PDF and a Zero-<GlossaryTooltip term="PII" /> JSON summary cartridge!
             </p>
           </div>
           <Link
@@ -380,7 +423,7 @@ export default function DashboardPage() {
           <div className="bg-white p-4 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-1">
             <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Active Memory Shard</span>
             <div className="text-lg md:text-xl font-black text-[#2D3142]">
-              {(loadedRowCount || 2002923).toLocaleString()} <span className="text-xs font-normal text-[#646A7A]">rows</span>
+              {(loadedRowCount && loadedRowCount > 0) ? loadedRowCount.toLocaleString() : '0'} <span className="text-xs font-normal text-[#646A7A]">rows</span>
             </div>
             <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Local RAM Locked
@@ -572,17 +615,14 @@ export default function DashboardPage() {
                 <Folder className="w-4 h-4" />
                 <span>Connect / Re-Link Local Voter File (/data-prep) →</span>
               </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  localStorage.setItem("marigold_file_connected", "true");
-                  localStorage.setItem("marigold_file_rows", "2002923");
-                  window.location.href = "/analysis";
-                }}
+              <a
+                href="/api/demo-dataset"
+                download="DEMO_roosevelt_statewide_voter_roll.csv"
                 className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
               >
-                <span>⚡ Load Synthetic Demo Shard (Instant RAM)</span>
-              </button>
+                <Download className="w-4 h-4" />
+                <span>📥 Download DEMO_roosevelt_statewide_voter_roll.csv</span>
+              </a>
               <Link href="/playbooks" className="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-5 py-2.5 rounded-xl border border-slate-300 transition-all flex items-center gap-1.5">
                 <span>Run Mission Playbooks</span>
               </Link>

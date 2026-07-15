@@ -7,7 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, 
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar 
 } from 'recharts';
-import { Settings, Database, Shield, RefreshCw, Plus, Sparkles, Link2, CheckCircle2, FileText, AlertTriangle, ArrowRight, Layers, BarChart3 } from 'lucide-react';
+import { Settings, Database, Shield, RefreshCw, Plus, Sparkles, Link2, CheckCircle2, FileText, AlertTriangle, ArrowRight, Layers, BarChart3, Download } from 'lucide-react';
 
 // Data definitions for visual impact
 const CATEGORY_DATA = [
@@ -36,7 +36,7 @@ const RADAR_DATA = [
 ];
 
 export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = false }: { userName?: string; isSandbox?: boolean }) {
-  const [activeTab, setActiveTab] = useState<'distribution' | 'velocity' | 'radar'>('distribution');
+  const [activeTab, setActiveTab] = useState<'all' | 'distribution' | 'velocity' | 'radar'>('all');
   const [selectedMetric, setSelectedMetric] = useState<typeof CATEGORY_DATA[0] | null>(null);
   const [localFileConnected, setLocalFileConnected] = useState(isSandbox);
   const [localFileName, setLocalFileName] = useState(isSandbox ? "ACME_Synthetic_Roll_2026.csv" : "");
@@ -57,31 +57,44 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
     isRealDataset: false
   });
 
+  const isDemoGroupActive = typeof window !== "undefined" && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || isSandbox);
+
   useEffect(() => {
-    if (!isSandbox && typeof window !== "undefined") {
-      const connected = localStorage.getItem("marigold_file_connected");
-      const name = localStorage.getItem("marigold_file_name");
+    const checkState = () => {
+      if (typeof window === "undefined") return;
+      const activeGrp = localStorage.getItem("marigold_active_group");
+      const name = localStorage.getItem("marigold_file_name") || "";
       const rows = localStorage.getItem("marigold_file_rows");
+      const connected = localStorage.getItem("marigold_file_connected");
       
+      const isDemoMode = activeGrp === "State of Roosevelt (Demo)" || isSandbox;
+      const isDemoIsolated = isDemoMode && !name.toUpperCase().includes("DEMO");
+
+      if (isDemoIsolated) {
+        setLocalFileConnected(false);
+        setLocalFileName("");
+        return;
+      }
+
       const updateCanvasState = (fname: string, frows: number) => {
         setLocalFileConnected(true);
         setLocalFileName(fname);
         const isSample = fname === "ms_statewide_benchmark_100k.csv";
-        const scale = frows / 100000;
+        const scale = frows / (fname.toUpperCase().includes("DEMO") ? 1800 : 100000);
         setActiveStats({
           totalFlagged: Math.round(4340 * scale),
           poBoxes: Math.round(850 * scale),
           ncoa: Math.round(1120 * scale),
           missingUnit: Math.round(640 * scale),
           totalVoters: frows,
-          isRealDataset: !isSample
+          isRealDataset: !isSample || fname.toUpperCase().includes("DEMO")
         });
         setCartridgeVersion('2.0');
       };
 
-      if (connected === "true") {
-        updateCanvasState(name || "Statewide Voter Roll Shard", rows ? parseInt(rows, 10) : 1420512);
-      } else {
+      if (connected === "true" && name && !isDemoIsolated) {
+        updateCanvasState(name, rows ? parseInt(rows, 10) : 1420512);
+      } else if (!isDemoMode && !isSandbox) {
         try {
           const request = indexedDB.open("VoterDataDB", 1);
           request.onsuccess = (e) => {
@@ -100,8 +113,16 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             }
           };
         } catch (err) {}
+      } else {
+        setLocalFileConnected(false);
+        setLocalFileName("");
       }
-    }
+    };
+
+    checkState();
+    const handleGroupChange = () => checkState();
+    window.addEventListener("marigold-group-change", handleGroupChange);
+    return () => window.removeEventListener("marigold-group-change", handleGroupChange);
   }, [isSandbox]);
 
   const dynamicCategories = [
@@ -179,9 +200,10 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   };
 
   const runBenchmarkIngestion = () => {
+    const isDemoMode = typeof window !== "undefined" && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || isSandbox);
     setIsIngesting(true);
     setIngestionPhase(1);
-    setIngestionText("Phase 1/3: Loading synthesized 100,000 record statewide benchmark roll into RAM...");
+    setIngestionText(isDemoMode ? "Phase 1/3: Loading ~1,800 record synthetic Roosevelt demo roll into RAM..." : "Phase 1/3: Loading synthesized 100,000 record statewide benchmark roll into RAM...");
     setTimeout(() => {
       setIngestionPhase(2);
       setIngestionText("Phase 2/3: Generating baseline statistical distributions...");
@@ -191,22 +213,42 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
       setIngestionText("Phase 3/3: Activating Telemetry Hub...");
     }, 1400);
     setTimeout(() => {
-      setActiveStats({
-        totalFlagged: 4340,
-        poBoxes: 850,
-        ncoa: 1120,
-        missingUnit: 640,
-        totalVoters: 100000,
-        isRealDataset: false
-      });
-      setCartridgeVersion('1.0');
-      setLocalFileName("ms_statewide_benchmark_100k.csv");
-      setLocalFileConnected(true);
-      setIsIngesting(false);
-      if (!isSandbox) {
-        localStorage.setItem("marigold_file_connected", "true");
-        localStorage.setItem("marigold_file_name", "ms_statewide_benchmark_100k.csv");
-        localStorage.removeItem("marigold_file_rows");
+      if (isDemoMode) {
+        setActiveStats({
+          totalFlagged: 412,
+          poBoxes: 88,
+          ncoa: 142,
+          missingUnit: 94,
+          totalVoters: 1800,
+          isRealDataset: true
+        });
+        setCartridgeVersion('2.0');
+        setLocalFileName("DEMO_roosevelt_statewide_voter_roll.csv");
+        setLocalFileConnected(true);
+        setIsIngesting(false);
+        if (!isSandbox && typeof window !== "undefined") {
+          localStorage.setItem("marigold_file_connected", "true");
+          localStorage.setItem("marigold_file_name", "DEMO_roosevelt_statewide_voter_roll.csv");
+          localStorage.setItem("marigold_file_rows", "1800");
+        }
+      } else {
+        setActiveStats({
+          totalFlagged: 4340,
+          poBoxes: 850,
+          ncoa: 1120,
+          missingUnit: 640,
+          totalVoters: 100000,
+          isRealDataset: false
+        });
+        setCartridgeVersion('1.0');
+        setLocalFileName("ms_statewide_benchmark_100k.csv");
+        setLocalFileConnected(true);
+        setIsIngesting(false);
+        if (!isSandbox && typeof window !== "undefined") {
+          localStorage.setItem("marigold_file_connected", "true");
+          localStorage.setItem("marigold_file_name", "ms_statewide_benchmark_100k.csv");
+          localStorage.removeItem("marigold_file_rows");
+        }
       }
     }, 2000);
   };
@@ -386,6 +428,69 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         </div>
       );
     }
+    if (isDemoGroupActive) {
+      return (
+        <div className="bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-900 text-white rounded-2xl p-8 border-2 border-amber-500/60 shadow-2xl space-y-6 animate-in fade-in">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-amber-500/30 pb-6">
+            <div className="space-y-2">
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+                <span>🌲 State of Roosevelt (Demo) — Air-Gapped Isolation Active</span>
+              </span>
+              <h3 className="text-2xl md:text-3xl font-black font-serif text-white mt-2">Synthetic Demo Dataset Required</h3>
+              <p className="text-amber-100 text-sm max-w-2xl leading-relaxed">
+                You have switched to the State of Roosevelt demo environment. To prevent exposing real voter records or commingling jurisdictional data with real state voter rolls during demonstrations, real voter files (`ms_voter_roll_2024.csv` etc.) are automatically isolated and suppressed.
+              </p>
+              <p className="text-xs text-amber-200/80 leading-relaxed font-mono">
+                Please download the ~1,800-row synthetic demo roll below (`DEMO_roosevelt_statewide_voter_roll.csv`) and link it on Data Prep to safely test all statistical audit cartridges without real PII.
+              </p>
+            </div>
+            <div className="bg-amber-950/80 p-3.5 rounded-xl border border-amber-500/40 text-xs font-mono text-amber-200 shrink-0 space-y-1 shadow-inner">
+              <div>Mode: <span className="text-white font-black">100% Zero-PII Demo</span></div>
+              <div>Real Data: <span className="text-emerald-400 font-bold">Suppressed & Safe</span></div>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+            <a
+              href="/api/demo-dataset"
+              download="DEMO_roosevelt_statewide_voter_roll.csv"
+              className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98]"
+            >
+              <span>📥 Download Synthetic Demo Dataset (DEMO_roosevelt_...csv)</span>
+            </a>
+            <Link
+              href="/data-prep"
+              className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-4 rounded-xl border border-slate-600 transition-colors text-sm flex items-center justify-center gap-2"
+            >
+              <span>Link Demo File in /data-prep →</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setLocalFileName("DEMO_roosevelt_statewide_voter_roll.csv");
+                setLocalFileConnected(true);
+                setActiveStats({
+                  totalFlagged: 412,
+                  poBoxes: 88,
+                  ncoa: 142,
+                  missingUnit: 94,
+                  totalVoters: 1800,
+                  isRealDataset: true
+                });
+                setCartridgeVersion('2.0');
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("marigold_file_connected", "true");
+                  localStorage.setItem("marigold_file_name", "DEMO_roosevelt_statewide_voter_roll.csv");
+                  localStorage.setItem("marigold_file_rows", "1800");
+                }
+              }}
+              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-4 rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
+            >
+              ⚡ Instant Load Demo Buffer
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="bg-slate-900 text-white rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
@@ -448,12 +553,25 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               </p>
             </div>
             <div>
-              <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs">
-                <span className="inline-flex items-center justify-center gap-1.5">
-                  <Link2 className="w-3.5 h-3.5" />
-                  <span>Visit 50-State Data Registry →</span>
-                </span>
-              </Link>
+              {isDemoGroupActive ? (
+                <a 
+                  href="/api/demo-dataset"
+                  download="DEMO_roosevelt_statewide_voter_roll.csv"
+                  className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2.5 rounded-lg shadow transition-colors text-xs"
+                >
+                  <span className="inline-flex items-center justify-center gap-1.5">
+                    <Download className="w-3.5 h-3.5" />
+                    <span>📥 Download Roosevelt DEMO_...csv</span>
+                  </span>
+                </a>
+              ) : (
+                <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs">
+                  <span className="inline-flex items-center justify-center gap-1.5">
+                    <Link2 className="w-3.5 h-3.5" />
+                    <span>Visit 50-State Data Registry →</span>
+                  </span>
+                </Link>
+              )}
             </div>
           </div>
 
@@ -486,15 +604,38 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               <p>
                 You uploaded a file that does not match your active group jurisdiction. To prevent data corruption or misaligned statistical auditing, the file was rejected.
               </p>
-              <Link href="/registry" className="text-amber-400 hover:underline font-bold inline-block pt-1">
-                View Official State Acquisition Link in Registry →
-              </Link>
+              {isDemoGroupActive ? (
+                <a href="/api/demo-dataset" download="DEMO_roosevelt_statewide_voter_roll.csv" className="text-amber-400 hover:underline font-bold inline-block pt-1">
+                  📥 Download Roosevelt DEMO_ Dataset (.csv) →
+                </a>
+              ) : (
+                <Link href="/registry" className="text-amber-400 hover:underline font-bold inline-block pt-1">
+                  View Official State Acquisition Link in Registry →
+                </Link>
+              )}
             </div>
           </div>
         )}
       </div>
     );
   }
+
+  const isRooseveltOrDemo = (typeof window !== "undefined" && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || isSandbox)) || localFileName.toUpperCase().includes("DEMO");
+  const topCountiesList = isRooseveltOrDemo ? [
+    { name: "Roosevelt County (Capital City)", flags: Math.round(activeStats.totalFlagged * 0.327), pct: 32.7, color: "bg-amber-500" },
+    { name: "Jefferson County (Dormitory Hub)", flags: Math.round(activeStats.totalFlagged * 0.205), pct: 20.5, color: "bg-orange-500" },
+    { name: "Madison County (Commerce Center)", flags: Math.round(activeStats.totalFlagged * 0.170), pct: 17.0, color: "bg-indigo-500" },
+    { name: "Lincoln County (Valley District)", flags: Math.round(activeStats.totalFlagged * 0.140), pct: 14.0, color: "bg-emerald-500" },
+    { name: "Liberty County (Northern Ridge)", flags: Math.round(activeStats.totalFlagged * 0.110), pct: 11.0, color: "bg-purple-500" },
+    { name: "Franklin County (Southern Plains)", flags: Math.round(activeStats.totalFlagged * 0.048), pct: 4.8, color: "bg-slate-500" },
+  ] : [
+    { name: "Hinds County (Jackson)", flags: Math.round(activeStats.totalFlagged * 0.327), pct: 32.7, color: "bg-amber-500" },
+    { name: "Rankin County (Brandon)", flags: Math.round(activeStats.totalFlagged * 0.205), pct: 20.5, color: "bg-orange-500" },
+    { name: "Harrison County (Gulfport)", flags: Math.round(activeStats.totalFlagged * 0.170), pct: 17.0, color: "bg-indigo-500" },
+    { name: "DeSoto County (Southaven)", flags: Math.round(activeStats.totalFlagged * 0.140), pct: 14.0, color: "bg-emerald-500" },
+    { name: "Madison County (Canton)", flags: Math.round(activeStats.totalFlagged * 0.110), pct: 11.0, color: "bg-purple-500" },
+    { name: "All Other Counties", flags: Math.round(activeStats.totalFlagged * 0.048), pct: 4.8, color: "bg-slate-500" },
+  ];
 
   return (
     <div className="bg-white rounded-2xl border border-border shadow-md p-6 space-y-6 overflow-hidden">
@@ -579,7 +720,13 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             </p>
           </div>
 
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold self-start sm:self-auto">
+          <div className="flex flex-wrap bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold gap-1 self-start sm:self-auto">
+            <button 
+              onClick={() => setActiveTab('all')}
+              className={`px-3.5 py-1.5 rounded-lg transition-all ${activeTab === 'all' ? 'bg-amber-500 text-slate-950 shadow-sm font-extrabold' : 'text-slate-600 hover:text-primary'}`}
+            >
+              🌟 All Charts Grid (No Scrolling)
+            </button>
             <button 
               onClick={() => setActiveTab('distribution')}
               className={`px-3.5 py-1.5 rounded-lg transition-all ${activeTab === 'distribution' ? 'bg-white text-primary shadow-sm' : 'text-slate-600 hover:text-primary'}`}
@@ -671,14 +818,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[
-            { name: "Hinds County (Jackson)", flags: Math.round(activeStats.totalFlagged * 0.327), pct: 32.7, color: "bg-amber-500" },
-            { name: "Rankin County (Brandon)", flags: Math.round(activeStats.totalFlagged * 0.205), pct: 20.5, color: "bg-orange-500" },
-            { name: "Harrison County (Gulfport)", flags: Math.round(activeStats.totalFlagged * 0.170), pct: 17.0, color: "bg-indigo-500" },
-            { name: "DeSoto County (Southaven)", flags: Math.round(activeStats.totalFlagged * 0.140), pct: 14.0, color: "bg-emerald-500" },
-            { name: "Madison County (Canton)", flags: Math.round(activeStats.totalFlagged * 0.110), pct: 11.0, color: "bg-purple-500" },
-            { name: "All Other Counties", flags: Math.round(activeStats.totalFlagged * 0.048), pct: 4.8, color: "bg-slate-500" },
-          ].map((c, i) => (
+          {topCountiesList.map((c, i) => (
             <div key={i} className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-sm space-y-2">
               <div className="flex justify-between items-center text-xs">
                 <strong className="font-bold text-slate-800">{c.name}</strong>
@@ -697,61 +837,149 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
       </div>
 
       {/* Interactive Charts Area */}
-      <div className="h-[360px] w-full pt-4">
+      <div className="w-full pt-4">
+        {activeTab === 'all' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-[360px]">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span>📊 Flag Distribution</span>
+                </h4>
+                <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-mono font-bold border border-amber-200">Click Slices</span>
+              </div>
+              <div className="flex-1 w-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={dynamicCategories}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={95}
+                      paddingAngle={4}
+                      dataKey="count"
+                      cursor="pointer"
+                      onClick={(entry: any) => setSelectedMetric(entry.payload || entry)}
+                      label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                    >
+                      {dynamicCategories.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip 
+                      formatter={(value: any) => [`${value.toLocaleString()} records`, 'Count']}
+                      contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-[360px]">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span>📈 Verification Velocity</span>
+                </h4>
+                <span className="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-mono font-bold border border-blue-200">Weekly Trend</span>
+              </div>
+              <div className="flex-1 w-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={VELOCITY_DATA} margin={{ top: 15, right: 15, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <XAxis dataKey="week" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="left" orientation="left" stroke="#1A365D" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#B7410E" tick={{ fontSize: 11 }} />
+                    <RechartsTooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar yAxisId="left" dataKey="scanned" name="Scanned" fill="#1A365D" radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="right" dataKey="verified" name="Verified" fill="#B7410E" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-[360px]">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span>🎯 Signal Radar</span>
+                </h4>
+                <span className="text-[10px] text-purple-700 bg-purple-50 px-2 py-0.5 rounded font-mono font-bold border border-purple-200">Precision Benchmark</span>
+              </div>
+              <div className="flex-1 w-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius={85} data={RADAR_DATA}>
+                    <PolarGrid opacity={0.4} />
+                    <PolarAngleAxis dataKey="metric" tick={{ fill: '#334155', fontSize: 11, fontWeight: 600 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
+                    <Radar name="Signal Precision (%)" dataKey="score" stroke="#B7410E" fill="#B7410E" fillOpacity={0.5} />
+                    <RechartsTooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'distribution' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={dynamicCategories}
-                cx="50%"
-                cy="50%"
-                innerRadius={80}
-                outerRadius={130}
-                paddingAngle={4}
-                dataKey="count"
-                cursor="pointer"
-                onClick={(entry: any) => setSelectedMetric(entry.payload || entry)}
-                label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
-              >
-                {dynamicCategories.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <RechartsTooltip 
-                formatter={(value: any) => [`${value.toLocaleString()} records (Click slice to explore)`, 'Count']}
-                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[360px] w-full bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={dynamicCategories}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={80}
+                  outerRadius={130}
+                  paddingAngle={4}
+                  dataKey="count"
+                  cursor="pointer"
+                  onClick={(entry: any) => setSelectedMetric(entry.payload || entry)}
+                  label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                >
+                  {dynamicCategories.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip 
+                  formatter={(value: any) => [`${value.toLocaleString()} records (Click slice to explore)`, 'Count']}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         )}
 
         {activeTab === 'velocity' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={VELOCITY_DATA} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-              <XAxis dataKey="week" />
-              <YAxis yAxisId="left" orientation="left" stroke="#1A365D" />
-              <YAxis yAxisId="right" orientation="right" stroke="#B7410E" />
-              <RechartsTooltip 
-                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}
-              />
-              <Legend />
-              <Bar yAxisId="left" dataKey="scanned" name="Records Scanned" fill="#1A365D" radius={[6, 6, 0, 0]} />
-              <Bar yAxisId="right" dataKey="verified" name="Verified Anomalies" fill="#B7410E" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[360px] w-full bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={VELOCITY_DATA} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="week" />
+                <YAxis yAxisId="left" orientation="left" stroke="#1A365D" />
+                <YAxis yAxisId="right" orientation="right" stroke="#B7410E" />
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}
+                />
+                <Legend />
+                <Bar yAxisId="left" dataKey="scanned" name="Records Scanned" fill="#1A365D" radius={[6, 6, 0, 0]} />
+                <Bar yAxisId="right" dataKey="verified" name="Verified Anomalies" fill="#B7410E" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         )}
 
         {activeTab === 'radar' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius={120} data={RADAR_DATA}>
-              <PolarGrid opacity={0.4} />
-              <PolarAngleAxis dataKey="metric" tick={{ fill: '#334155', fontSize: 13, fontWeight: 600 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} />
-              <Radar name="Signal Precision (%)" dataKey="score" stroke="#B7410E" fill="#B7410E" fillOpacity={0.5} />
-              <RechartsTooltip />
-            </RadarChart>
-          </ResponsiveContainer>
+          <div className="h-[360px] w-full bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius={120} data={RADAR_DATA}>
+                <PolarGrid opacity={0.4} />
+                <PolarAngleAxis dataKey="metric" tick={{ fill: '#334155', fontSize: 13, fontWeight: 600 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                <Radar name="Signal Precision (%)" dataKey="score" stroke="#B7410E" fill="#B7410E" fillOpacity={0.5} />
+                <RechartsTooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </div>
 
@@ -796,12 +1024,22 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 <div className="bg-white p-4 rounded-xl border border-red-200 space-y-3 text-xs">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <strong className="text-slate-800">Need the correct dataset?</strong>
-                    <a 
-                      href="/registry" 
-                      className="bg-accent hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded shadow transition-all flex items-center gap-1"
-                    >
-                      <span>🌐 Download Official State Dataset ↗</span>
-                    </a>
+                    {isDemoGroupActive ? (
+                      <a 
+                        href="/api/demo-dataset" 
+                        download="DEMO_roosevelt_statewide_voter_roll.csv"
+                        className="bg-accent hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded shadow transition-all flex items-center gap-1"
+                      >
+                        <span>📥 Download Roosevelt Demo Dataset (.csv)</span>
+                      </a>
+                    ) : (
+                      <a 
+                        href="/registry" 
+                        className="bg-accent hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded shadow transition-all flex items-center gap-1"
+                      >
+                        <span>🌐 Download Official State Dataset ↗</span>
+                      </a>
+                    )}
                   </div>
                   <p className="text-slate-600 italic">
                     💡 <strong>Storage Tip:</strong> State voter files are large (~1.5 GB). Once your group upgrades to a new version, you can safely move older spreadsheets to your computer&apos;s trash bin to reclaim hard drive space!

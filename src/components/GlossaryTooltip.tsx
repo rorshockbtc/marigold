@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { ReactNode, useState } from "react";
 import { Info, HelpCircle } from "lucide-react";
 
@@ -158,14 +159,14 @@ export function GlossaryTooltip({
               </p>
             </div>
             <div className="pt-2.5 border-t border-slate-700/80 mt-2.5 flex justify-end">
-              <a
+              <Link
                 href={`/learning-center#${info.slug || "pii"}`}
                 onClick={(e) => e.stopPropagation()}
                 className="text-amber-300 hover:text-amber-200 font-extrabold text-[11px] flex items-center gap-1.5 transition-colors underline decoration-dotted"
               >
                 <span>📖 Read More &amp; Formal Citations</span>
                 <span>→</span>
-              </a>
+              </Link>
             </div>
           </div>
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#2D3142] border-r border-b border-slate-600 transform rotate-45 pointer-events-none"></div>

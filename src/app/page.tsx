@@ -379,6 +379,38 @@ export default function MarketingHomePage() {
           </div>
         </div>
 
+        {/* Meet the Developer & Zero-Cloud Architecture Video Showcase */}
+        <section className="bg-gradient-to-br from-[#2D3142] to-slate-900 text-white rounded-3xl p-8 sm:p-12 border border-slate-700 shadow-2xl max-w-6xl mx-auto flex flex-col lg:flex-row gap-10 items-center justify-between">
+          <div className="space-y-4 max-w-xl">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
+              <span>🎥 Watch Video Introduction</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
+              Meet the Developer &amp; Architecture Overview
+            </h2>
+            <p className="text-slate-300 text-base leading-relaxed">
+              Why did we build Marigold with a strict zero-cloud air-gapped architecture? Watch this direct overview to see how client-side memory auditing protects citizen privacy, empowers county election officials, and eliminates multi-million-dollar cloud risks.
+            </p>
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-bold text-amber-300/90">
+              <span className="flex items-center gap-1">✅ No PII Uploads</span>
+              <span>•</span>
+              <span className="flex items-center gap-1">⚡ 100ms In-Memory Linkage</span>
+              <span>•</span>
+              <span className="flex items-center gap-1">🛡️ Open Standards</span>
+            </div>
+          </div>
+          <div className="w-full lg:w-1/2 max-w-xl aspect-video rounded-2xl overflow-hidden border-4 border-slate-800 shadow-2xl shrink-0 bg-black">
+            <iframe 
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/AfCvrfkcx5M" 
+              title="Meet the Developer - Marigold Insights Overview" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowFullScreen
+            ></iframe>
+          </div>
+        </section>
+
         {/* The Three Major Stakeholder Groups */}
         <section id="stakeholders" className="space-y-10 max-w-6xl mx-auto px-2 scroll-mt-24">
           <div className="text-center space-y-3">

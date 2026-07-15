@@ -16,7 +16,7 @@ interface StateGroup {
 
 const PUBLIC_GROUPS: StateGroup[] = [
   { id: 'msfe', name: 'Mississippi Fair Elections', state: 'Mississippi', website: 'https://msfe.org', desc: 'Non-partisan volunteer network verifying voter rolls across all 82 MS counties.', memberCount: 1 },
-  { id: 'acme_sandbox', name: 'ACME Civic Data Sandbox (Demo Environment)', state: 'Other / Multi-State', desc: 'Synthetically generated sample roll environment for training and testing.', memberCount: 1 }
+  { id: 'roosevelt_demo', name: 'State of Roosevelt (Demo)', state: 'Other / Multi-State', desc: 'Synthetically generated sample state environment for public demos, training, and video recording.', memberCount: 1 }
 ];
 
 export default function OnboardingPage() {
@@ -414,7 +414,7 @@ export default function OnboardingPage() {
                     Your request has been forwarded to the <strong>{targetGroup?.name}</strong> administration queue. While awaiting approval, you have full access to run local zero-PII audits in your personal workspace.
                   </p>
                   <button
-                    onClick={() => handleCompleteOnboarding(targetGroup?.name || "Civic Sandbox", "Pending Member")}
+                    onClick={() => handleCompleteOnboarding(targetGroup?.name || "State of Roosevelt (Demo)", "Pending Member")}
                     className="bg-primary hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
                   >
                     Enter Workspace Now →
@@ -499,10 +499,10 @@ export default function OnboardingPage() {
                     In the meantime, you have full access to explore the sandbox workspace with simulated voter files.
                   </p>
                   <button
-                    onClick={() => handleCompleteOnboarding("ACME Civic Data Sandbox (Demo Environment)", "Verified Tester")}
+                    onClick={() => handleCompleteOnboarding("State of Roosevelt (Demo)", "Verified Tester")}
                     className="bg-primary hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
                   >
-                    Enter Sandbox Workspace Now →
+                    Enter Demo Workspace Now →
                   </button>
                 </div>
               )}

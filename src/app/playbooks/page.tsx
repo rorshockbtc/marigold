@@ -134,10 +134,11 @@ export default function MissionControl() {
               </p>
             </div>
             <a
-              href="/registry"
+              href={typeof window !== 'undefined' && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox"))) ? "/api/demo-dataset" : "/registry"}
+              download={typeof window !== 'undefined' && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox"))) ? "DEMO_roosevelt_statewide_voter_roll.csv" : undefined}
               className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
             >
-              <span>🌐 Download Official State Dataset ↗</span>
+              <span>{typeof window !== 'undefined' && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox"))) ? "📥 Download Roosevelt Demo Dataset (.csv)" : "🌐 Download Official State Dataset ↗"}</span>
             </a>
           </div>
 

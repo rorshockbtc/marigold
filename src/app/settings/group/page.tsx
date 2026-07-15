@@ -29,6 +29,8 @@ export default function GroupAdminSettingsPage() {
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("👤 Group Member");
 
+  const isDemoMode = typeof window !== 'undefined' && (localStorage.getItem("marigold_active_group") === "State of Roosevelt (Demo)");
+
   useEffect(() => {
     const savedGroup = localStorage.getItem("marigold_active_group");
     if (savedGroup) setGroupName(savedGroup);
@@ -36,15 +38,50 @@ export default function GroupAdminSettingsPage() {
     if (savedWebsite) setWebsite(savedWebsite);
     const savedJurisdiction = localStorage.getItem("marigold_active_jurisdiction");
     if (savedJurisdiction) setJurisdiction(savedJurisdiction);
-    const savedApps = localStorage.getItem("marigold_group_applications");
+
+    const appsKey = (savedGroup === "State of Roosevelt (Demo)") ? "marigold_demo_applications" : "marigold_group_applications";
+    const savedApps = localStorage.getItem(appsKey);
     if (savedApps) {
       try {
         setApplications(JSON.parse(savedApps));
       } catch (e) {}
+    } else if (savedGroup === "State of Roosevelt (Demo)") {
+      const demoApps: Application[] = [{
+        id: `APP-DEMO-1`,
+        name: "Elena Rostova (Franklin County Auditor)",
+        email: "elena.rostova@roosevelt.gov",
+        phone: "(991) 555-0199",
+        note: "Ready to assist with Franklin and Roosevelt County registration audits.",
+        date: "Jul 15, 2026",
+        status: 'pending'
+      }];
+      setApplications(demoApps);
+      localStorage.setItem(appsKey, JSON.stringify(demoApps));
     }
   }, []);
 
   useEffect(() => {
+    const savedGroup = localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
+    const rosterKey = (savedGroup === "State of Roosevelt (Demo)") ? "marigold_demo_roster" : "marigold_group_roster";
+    const savedRoster = localStorage.getItem(rosterKey);
+    if (savedRoster) {
+      try {
+        setRoster(JSON.parse(savedRoster));
+        return;
+      } catch (e) {}
+    }
+
+    if (savedGroup === "State of Roosevelt (Demo)") {
+      const demoRoster = [
+        { name: "Sarah Jenkins (Roosevelt Admin)", email: "s.jenkins@roosevelt.gov", role: "👑 Group Admin", joined: "Active Member" },
+        { name: "Marcus Vance (Data Lead)", email: "m.vance@roosevelt.gov", role: "👤 Group Member", joined: "Verified Auditor" },
+        { name: "David Chen (Audit Volunteer)", email: "david.chen@roosevelt.org", role: "👤 Group Member", joined: "Active Member" }
+      ];
+      setRoster(demoRoster);
+      localStorage.setItem(rosterKey, JSON.stringify(demoRoster));
+      return;
+    }
+
     const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "";
     const userName = user?.fullName || localStorage.getItem("marigold_user_name") || userEmail.split('@')[0] || "Volunteer Auditor";
     const userRole = localStorage.getItem("marigold_user_role") || (userEmail.includes("kyle") || userEmail.includes("rorshock") ? "👑 Group Admin" : "🛡️ Verified Auditor");
@@ -54,20 +91,22 @@ export default function GroupAdminSettingsPage() {
     if (user?.fullName) {
       localStorage.setItem("marigold_user_name", user.fullName);
     }
-    const savedRoster = localStorage.getItem("marigold_group_roster");
-    if (savedRoster) {
-      try {
-        setRoster(JSON.parse(savedRoster));
-        return;
-      } catch (e) {}
-    }
     const initialRoster = [{ name: userName, email: userEmail, role: userRole, joined: "Active Member" }];
     setRoster(initialRoster);
-    localStorage.setItem("marigold_group_roster", JSON.stringify(initialRoster));
+    localStorage.setItem(rosterKey, JSON.stringify(initialRoster));
   }, [user]);
 
   const handleSimulateApplicant = () => {
-    const mockApp: Application = {
+    const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
+    const mockApp: Application = isDemoMode ? {
+      id: `APP-DEMO-${Date.now()}`,
+      name: "Marcus Vance (Franklin County Volunteer)",
+      email: "marcus.vance@roosevelt.org",
+      phone: "(991) 555-0144",
+      note: "Requesting access to verify commercial P.O. Box matches across Roosevelt City.",
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: 'pending'
+    } : {
       id: `APP-${Date.now()}`,
       name: "Richard Rorshock (Volunteer Auditor)",
       email: "richard.rorshock@example.org",
@@ -78,25 +117,29 @@ export default function GroupAdminSettingsPage() {
     };
     const updated = [...applications, mockApp];
     setApplications(updated);
-    localStorage.setItem("marigold_group_applications", JSON.stringify(updated));
+    localStorage.setItem(appsKey, JSON.stringify(updated));
   };
 
   const handleApprove = (app: Application) => {
+    const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
+    const rosterKey = isDemoMode ? "marigold_demo_roster" : "marigold_group_roster";
     const updatedApps = applications.map(a => a.id === app.id ? { ...a, status: 'approved' as const } : a);
     setApplications(updatedApps);
-    localStorage.setItem("marigold_group_applications", JSON.stringify(updatedApps));
+    localStorage.setItem(appsKey, JSON.stringify(updatedApps));
     const updatedRoster = [...roster, { name: app.name, email: app.email, role: '👤 Group Member', joined: 'Just Approved' }];
     setRoster(updatedRoster);
-    localStorage.setItem("marigold_group_roster", JSON.stringify(updatedRoster));
+    localStorage.setItem(rosterKey, JSON.stringify(updatedRoster));
   };
 
   const handleReject = (app: Application) => {
+    const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
     const updated = applications.map(a => a.id === app.id ? { ...a, status: 'rejected' as const } : a);
     setApplications(updated);
-    localStorage.setItem("marigold_group_applications", JSON.stringify(updated));
+    localStorage.setItem(appsKey, JSON.stringify(updated));
   };
 
   const handleToggleRole = (email: string) => {
+    const rosterKey = isDemoMode ? "marigold_demo_roster" : "marigold_group_roster";
     const updated = roster.map(m => {
       if (m.email === email) {
         const newRole = m.role === '👑 Group Admin' ? '👤 Group Member' : '👑 Group Admin';
@@ -105,15 +148,16 @@ export default function GroupAdminSettingsPage() {
       return m;
     });
     setRoster(updated);
-    localStorage.setItem("marigold_group_roster", JSON.stringify(updated));
+    localStorage.setItem(rosterKey, JSON.stringify(updated));
   };
 
   const handleAddManualMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMemberName || !newMemberEmail) return;
+    const rosterKey = isDemoMode ? "marigold_demo_roster" : "marigold_group_roster";
     const updated = [...roster, { name: newMemberName, email: newMemberEmail, role: newMemberRole, joined: "Manually Enrolled" }];
     setRoster(updated);
-    localStorage.setItem("marigold_group_roster", JSON.stringify(updated));
+    localStorage.setItem(rosterKey, JSON.stringify(updated));
     setNewMemberName("");
     setNewMemberEmail("");
     setShowAddModal(false);
