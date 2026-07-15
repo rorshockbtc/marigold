@@ -5,6 +5,7 @@ const STORE_NAME = 'rows';
 interface ExportConfig {
   rowsPerFile: number;
   columns: string[];
+  filePrefix?: string;
 }
 
 interface ExportProgress {
@@ -54,7 +55,8 @@ function escapeCSVValue(value: any): string {
 }
 
 async function exportData(config: ExportConfig) {
-  const { rowsPerFile, columns } = config;
+  const { rowsPerFile, columns, filePrefix = 'dataset' } = config;
+  const prefix = filePrefix.endsWith('-') ? filePrefix.slice(0, -1) : filePrefix;
 
   try {
     const db = await openDatabase();
@@ -96,7 +98,7 @@ async function exportData(config: ExportConfig) {
         if (currentFileRowCount >= rowsPerFile) {
           filesEmitted++;
           const blob = new Blob(currentFileRows, { type: 'text/csv;charset=utf-8' });
-          const filename = `dataset-part-${String(filesEmitted).padStart(2, '0')}.csv`;
+          const filename = `${prefix}-part-${String(filesEmitted).padStart(2, '0')}.csv`;
           self.postMessage({ type: 'file_ready', fileNumber: filesEmitted, blob, filename, rowCount: currentFileRowCount } as ExportFileReady);
           currentFileRows = [headerRow];
           currentFileRowCount = 0;
@@ -117,7 +119,7 @@ async function exportData(config: ExportConfig) {
         if (currentFileRowCount > 0) {
           filesEmitted++;
           const blob = new Blob(currentFileRows, { type: 'text/csv;charset=utf-8' });
-          const filename = `dataset-part-${String(filesEmitted).padStart(2, '0')}.csv`;
+          const filename = `${prefix}-part-${String(filesEmitted).padStart(2, '0')}.csv`;
           self.postMessage({ type: 'file_ready', fileNumber: filesEmitted, blob, filename, rowCount: currentFileRowCount } as ExportFileReady);
         }
         self.postMessage({ type: 'complete', totalFiles: filesEmitted, totalRows: totalProcessed } as ExportComplete);

@@ -87,7 +87,10 @@ export default function DataPrepPage() {
 
   const handleExport = () => {
     if (parseState.columns.length > 0) {
-      startExport(parseState.columns, rowsPerFile);
+      const activeGroup = (typeof window !== "undefined" && localStorage.getItem("marigold_active_group") || "").toLowerCase();
+      const fileName = (typeof window !== "undefined" && localStorage.getItem("marigold_file_name") || "").toUpperCase();
+      const isDemo = fileName.includes("DEMO") || activeGroup.includes("demo") || activeGroup.includes("roosevelt") || activeGroup.includes("acme") || activeGroup.includes("sandbox");
+      startExport(parseState.columns, rowsPerFile, isDemo ? "DEMO-dataset" : "dataset");
     }
   };
 

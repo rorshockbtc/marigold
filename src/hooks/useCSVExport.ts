@@ -27,7 +27,7 @@ export function useCSVExport() {
   const workerRef = useRef<Worker | null>(null);
   const blobUrlsRef = useRef<string[]>([]);
 
-  const startExport = useCallback((columns: string[], rowsPerFile: number) => {
+  const startExport = useCallback((columns: string[], rowsPerFile: number, customPrefix?: string) => {
     blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
     blobUrlsRef.current = [];
 
@@ -79,7 +79,18 @@ export function useCSVExport() {
       }
     };
 
-    worker.postMessage({ action: 'start', config: { rowsPerFile, columns } });
+    let prefix = customPrefix;
+    if (!prefix && typeof window !== "undefined") {
+      const activeGroup = (localStorage.getItem("marigold_active_group") || "").toLowerCase();
+      const fileName = (localStorage.getItem("marigold_file_name") || "").toUpperCase();
+      if (fileName.includes("DEMO") || activeGroup.includes("demo") || activeGroup.includes("roosevelt") || activeGroup.includes("acme") || activeGroup.includes("sandbox")) {
+        prefix = "DEMO-dataset";
+      } else {
+        prefix = "dataset";
+      }
+    }
+
+    worker.postMessage({ action: 'start', config: { rowsPerFile, columns, filePrefix: prefix || "dataset" } });
   }, []);
 
   const cancelExport = useCallback(() => {
