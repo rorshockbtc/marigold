@@ -105,40 +105,42 @@ export default function DataPrepPage() {
         </p>
       </header>
 
-      {/* Prominent State of Roosevelt (Demo) Download Banner */}
-      <div className="bg-gradient-to-r from-amber-900/90 via-amber-800 to-amber-950 text-amber-50 p-6 sm:p-8 rounded-2xl border border-amber-600/40 shadow-xl space-y-4 animate-in fade-in duration-300">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-700/50 pb-4">
-          <div className="flex items-center gap-2">
-            <span className="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Synthetic Training & Demo Dataset</span>
+      {/* Prominent State of Roosevelt (Demo) Download Banner (Hide once file is linked or linking) */}
+      {!parseState.isProcessing && parseState.totalRows === 0 && (!existingShardCount || existingShardCount === 0) && (
+        <div className="bg-gradient-to-r from-amber-900/90 via-amber-800 to-amber-950 text-amber-50 p-6 sm:p-8 rounded-2xl border border-amber-600/40 shadow-xl space-y-4 animate-in fade-in duration-300">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-700/50 pb-4">
+            <div className="flex items-center gap-2">
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Step 1: Download Synthetic Training Dataset</span>
+              </span>
+              <span className="text-xs font-mono text-amber-200">Pre-engineered for State of Roosevelt (Demo)</span>
+            </div>
+            <span className="text-xs bg-amber-950/80 text-amber-200 px-3 py-1 rounded-lg border border-amber-500/30 font-mono font-bold">
+              ~1,800 Engineered Rows • 100% Zero-PII
             </span>
-            <span className="text-xs font-mono text-amber-200">Pre-engineered for State of Roosevelt (Demo)</span>
           </div>
-          <span className="text-xs bg-amber-950/80 text-amber-200 px-3 py-1 rounded-lg border border-amber-500/30 font-mono font-bold">
-            ~1,800 Engineered Rows • 100% Zero-PII
-          </span>
-        </div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <FileSpreadsheet className="w-6 h-6 text-amber-400 shrink-0" />
-              <span>Download & Link Synthetic Demo Roll (`DEMO_roosevelt_statewide_voter_roll.csv`)</span>
-            </h3>
-            <p className="text-xs sm:text-sm text-amber-100 leading-relaxed">
-              Want to test the software right away or record a video demo without exposing real citizen data? Download our pre-engineered synthetic CSV containing realistic single-character clerical typos, college dorm clusters (`100 CAMPUS DR`), UPS store commercial mail disguises (`STE 200`), and single-day registration surges.
-            </p>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <FileSpreadsheet className="w-6 h-6 text-amber-400 shrink-0" />
+                <span>Download Synthetic Demo Roll (`DEMO_roosevelt_statewide_voter_roll.csv`)</span>
+              </h3>
+              <p className="text-xs sm:text-sm text-amber-100 leading-relaxed">
+                If you haven&apos;t downloaded the demo file yet, click below to save `DEMO_roosevelt_statewide_voter_roll.csv` to your computer&apos;s Downloads folder. Once downloaded, use <strong>Step 2</strong> directly below to select and link it!
+              </p>
+            </div>
+            <a
+              href="/api/demo-dataset"
+              download="DEMO_roosevelt_statewide_voter_roll.csv"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 shrink-0 transform active:scale-[0.98] w-full md:w-auto"
+            >
+              <Download className="w-5 h-5 text-slate-900" />
+              <span>📥 Step 1: Download CSV</span>
+            </a>
           </div>
-          <a
-            href="/api/demo-dataset"
-            download="DEMO_roosevelt_statewide_voter_roll.csv"
-            className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 shrink-0 transform active:scale-[0.98] w-full md:w-auto"
-          >
-            <Download className="w-5 h-5 text-slate-900" />
-            <span>📥 Download Synthetic CSV</span>
-          </a>
         </div>
-      </div>
+      )}
 
       {/* Shared Household Device Auto-Resume Banner */}
       {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (typeof window === "undefined" || !((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || (localStorage.getItem("marigold_file_name") || "").toUpperCase().includes("DEMO")) && (
@@ -177,13 +179,15 @@ export default function DataPrepPage() {
       {/* Upload Zone */}
       {!parseState.isProcessing && parseState.totalRows === 0 && (!existingShardCount || existingShardCount === 0) && (
         <div 
-          className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-muted/10 hover:bg-muted/30 transition-colors"
+          className="border-2 border-dashed border-primary/60 rounded-2xl p-10 sm:p-14 text-center bg-primary/5 hover:bg-primary/10 transition-all shadow-sm"
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleFileDrop}
         >
-          <div className="text-4xl mb-4">📁</div>
-          <h3 className="text-xl font-bold mb-2">Link &amp; Stream Local Voter Roll File</h3>
-          <p className="text-muted-foreground mb-6">Select your raw CSV/TXT file. Our browser Web Worker will stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes of citizen <GlossaryTooltip term="PII" /> ever leave your machine.</p>
+          <div className="text-5xl mb-4">📂</div>
+          <h3 className="text-2xl font-black text-foreground mb-2">Step 2: Select Your Downloaded `DEMO_roosevelt...csv` File</h3>
+          <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-8">
+            Click the button below and pick the <strong className="text-foreground font-mono">DEMO_roosevelt_statewide_voter_roll.csv</strong> file you just saved to your computer&apos;s Downloads folder. Our browser Web Worker will instantly stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!
+          </p>
           <input 
             type="file" 
             accept=".csv,.txt,.tsv" 
@@ -191,8 +195,8 @@ export default function DataPrepPage() {
             id="csv-upload" 
             onChange={handleFileSelect} 
           />
-          <label htmlFor="csv-upload" className="btn-primary cursor-pointer inline-block px-8 py-3 text-base shadow">
-            📂 Select File to Stream &amp; Chunk
+          <label htmlFor="csv-upload" className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black cursor-pointer inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-base shadow-xl transform active:scale-[0.98] transition-all">
+            <span>📂 Select `DEMO_roosevelt...csv` from Downloads</span>
           </label>
         </div>
       )}
@@ -248,14 +252,29 @@ export default function DataPrepPage() {
       {/* Export Controls */}
       {!parseState.isProcessing && parseState.totalRows > 0 && (
         <div className="space-y-6">
-          <div className="bg-green-50 border border-green-200 p-6 rounded-xl text-green-900 flex justify-between items-center">
-            <div>
-              <h3 className="text-xl font-bold mb-1 flex items-center gap-2">✅ Ingestion Complete</h3>
-              <p>Successfully parsed <strong>{parseState.totalRows.toLocaleString()}</strong> rows locally.</p>
+          <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 p-6 sm:p-8 rounded-2xl text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-in fade-in">
+            <div className="space-y-1">
+              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-1">
+                ⚡ RAM Shard Active
+              </span>
+              <h3 className="text-2xl font-serif font-black flex items-center gap-2 text-white">
+                ✅ Ingestion &amp; Linking Complete!
+              </h3>
+              <p className="text-sm text-emerald-100">
+                Successfully parsed &amp; linked <strong className="text-white font-mono">{parseState.totalRows.toLocaleString()}</strong> records into browser memory. You are ready to explore and audit!
+              </p>
             </div>
-            <button onClick={handleReset} className="px-4 py-2 bg-white border border-green-300 rounded-lg text-sm font-bold hover:bg-green-100 transition-colors">
-              Clear & Start Over
-            </button>
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <Link
+                href="/analysis"
+                className="bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98] w-full sm:w-auto"
+              >
+                <span>🚀 Continue to Explore &amp; Review (/analysis) →</span>
+              </Link>
+              <button onClick={handleReset} className="px-4 py-4 bg-slate-800 border border-slate-600 rounded-xl text-xs font-bold hover:bg-slate-700 transition-colors text-slate-300 hover:text-white w-full sm:w-auto">
+                Clear &amp; Start Over
+              </button>
+            </div>
           </div>
 
           {parseState.columnMapping && (
