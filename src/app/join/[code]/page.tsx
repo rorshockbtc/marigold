@@ -18,7 +18,7 @@ export default function GroupInviteGatewayPage() {
 
   // Determine target organization from invite code
   const getGroupInfo = (code: string) => {
-    if (code.includes("msfe") || code.includes("miss") || code.includes("abc") || code.includes("pilot")) {
+    if (code.includes("msfe") || code.includes("miss") || code.includes("abc")) {
       return {
         name: "Mississippi Fair Elections",
         jurisdiction: "Mississippi (All 82 Counties)",
@@ -27,10 +27,29 @@ export default function GroupInviteGatewayPage() {
         description: "Non-partisan citizen audit network evaluating county voter registration rolls for accuracy and statutory compliance."
       };
     }
+    if (code.includes("roosevelt") || code.includes("demo")) {
+      return {
+        name: "State of Roosevelt (Demo)",
+        jurisdiction: "State of Roosevelt (6 Counties)",
+        admin: "Demo Mission Lead",
+        website: "https://marigoldinsights.org",
+        description: "Synthetic evaluation network using official ~1,800-row Roosevelt demo dataset for zero-PII audit testing."
+      };
+    }
+    if (code.includes("acme") || code.includes("sandbox")) {
+      return {
+        name: "ACME Civic Data Sandbox",
+        jurisdiction: "Multi-State Verification Area",
+        admin: "ACME Group Lead",
+        website: "https://marigoldinsights.org",
+        description: "Sandbox collaboration group testing statistical verification playbooks and local memory processing."
+      };
+    }
+    const customName = code.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     return {
-      name: "National Civic Data Sandbox",
-      jurisdiction: "Multi-State Civic Verification Area",
-      admin: "Founding Group Lead",
+      name: customName || "Independent Audit Workspace",
+      jurisdiction: "Neutral Jurisdiction",
+      admin: "Workspace Lead",
       website: "https://marigoldinsights.org",
       description: "Collaborative civic workspace evaluating data anomalies and shared verification playbooks."
     };

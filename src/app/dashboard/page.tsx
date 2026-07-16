@@ -230,7 +230,13 @@ export default function DashboardPage() {
           <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row justify-center items-center gap-3 text-xs text-slate-400">
             <span>Have an official organization invite code?</span>
             <Link
-              href="/join/msfe"
+              href={
+                (groupName || "").toLowerCase().includes("demo") || (groupName || "").toLowerCase().includes("roosevelt")
+                  ? "/join/roosevelt-demo"
+                  : (groupName || "").toLowerCase().includes("acme") || (groupName || "").toLowerCase().includes("sandbox")
+                  ? "/join/acme-sandbox"
+                  : "/join/msfe"
+              }
               className="text-amber-400 hover:text-amber-300 font-bold bg-amber-500/10 hover:bg-amber-500/20 px-3.5 py-2 rounded-lg border border-amber-500/30 transition-all inline-flex items-center gap-1.5"
             >
               <Key className="w-3.5 h-3.5" />
@@ -515,7 +521,17 @@ export default function DashboardPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText("https://marigoldinsights.org/join/msfe-pilot-2026");
+                      const grp = (groupName || "").toLowerCase();
+                      let inviteUrl = "https://marigoldinsights.org/join/msfe-pilot-2026";
+                      if (grp.includes("demo") || grp.includes("roosevelt")) {
+                        inviteUrl = "https://marigoldinsights.org/join/roosevelt-demo";
+                      } else if (grp.includes("acme") || grp.includes("sandbox")) {
+                        inviteUrl = "https://marigoldinsights.org/join/acme-sandbox";
+                      } else if (grp && !grp.includes("mississippi") && !grp.includes("msfe") && !grp.includes("fair elections")) {
+                        const cleanCode = grp.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        inviteUrl = `https://marigoldinsights.org/join/${cleanCode || 'workspace'}`;
+                      }
+                      navigator.clipboard.writeText(inviteUrl);
                       setCopiedInvite(true);
                       setTimeout(() => setCopiedInvite(false), 3000);
                     }}
