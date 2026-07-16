@@ -7,6 +7,7 @@ import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import Link from "next/link";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 import { Download, Sparkles, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -14,17 +15,28 @@ export default function DataPrepPage() {
   
   const [rowsPerFile, setRowsPerFile] = useState(250000);
   const [existingShardCount, setExistingShardCount] = useState<number | null>(null);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
+  const [demoStatusMsg, setDemoStatusMsg] = useState("");
+
+  const handle1ClickLoadDemo = async () => {
+    setIsLoadingDemo(true);
+    try {
+      await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
+      window.location.href = "/analysis";
+    } catch (err) {
+      setIsLoadingDemo(false);
+      alert("Failed to auto-load demo dataset: " + err);
+    }
+  };
 
   // Auto-detect existing local database shard on shared household devices
   useEffect(() => {
     if (typeof window === "undefined") return;
     const activeGroup = localStorage.getItem("marigold_active_group");
-    const fname = localStorage.getItem("marigold_file_name") || "";
-    if (activeGroup === "State of Roosevelt (Demo)" && !fname.toUpperCase().includes("DEMO")) {
-      return;
-    }
+    const dbName = getActiveDatabaseName(activeGroup);
+    const isDemo = isDemoGroupActive(activeGroup);
     try {
-      const request = indexedDB.open("VoterDataDB", 1);
+      const request = indexedDB.open(dbName, 1);
       request.onsuccess = (e) => {
         const db = (e.target as IDBOpenDBRequest).result;
         if (db && db.objectStoreNames.contains("rows")) {
@@ -36,6 +48,9 @@ export default function DataPrepPage() {
               setExistingShardCount(countReq.result);
               localStorage.setItem("marigold_file_connected", "true");
               localStorage.setItem("marigold_file_rows", String(countReq.result));
+              if (isDemo) localStorage.setItem("marigold_file_name", "DEMO_roosevelt_statewide_voter_roll.csv");
+            } else {
+              setExistingShardCount(null);
             }
           };
         }
@@ -133,20 +148,20 @@ export default function DataPrepPage() {
                 If you haven&apos;t downloaded the demo file yet, click below to save `DEMO_roosevelt_statewide_voter_roll.csv` to your computer&apos;s Downloads folder. Once downloaded, use <strong>Step 2</strong> directly below to select and link it!
               </p>
             </div>
-            <a
-              href="/api/demo-dataset"
-              download="DEMO_roosevelt_statewide_voter_roll.csv"
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 shrink-0 transform active:scale-[0.98] w-full md:w-auto"
+            <button
+              onClick={handle1ClickLoadDemo}
+              disabled={isLoadingDemo}
+              className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 shrink-0 transform active:scale-[0.98] w-full md:w-auto"
             >
-              <Download className="w-5 h-5 text-slate-900" />
-              <span>📥 Step 1: Download CSV</span>
-            </a>
+              <Sparkles className="w-5 h-5 text-slate-900 animate-pulse" />
+              <span>{isLoadingDemo ? (demoStatusMsg || "⏳ Auto-Loading ~1,800 Demo Records...") : "⚡ 1-Click Auto-Load (~1,800 Records) →"}</span>
+            </button>
           </div>
         </div>
       )}
 
       {/* Shared Household Device Auto-Resume Banner */}
-      {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (typeof window === "undefined" || !((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || (localStorage.getItem("marigold_file_name") || "").toUpperCase().includes("DEMO")) && (
+      {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (
         <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 rounded-2xl p-8 text-white shadow-xl space-y-6 animate-in fade-in">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">

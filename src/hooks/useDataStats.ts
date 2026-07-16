@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { openActiveDatabase, isDemoGroupActive } from '@/lib/db/dbName';
 
 export interface ColumnStats {
   name: string;
@@ -15,36 +16,14 @@ export interface DataStats {
   sampleData: Array<Record<string, any>>;
 }
 
-function isDemoDataMissingOrSuppressed(): boolean {
-  if (typeof window === 'undefined') return false;
-  const activeGroup = (localStorage.getItem("marigold_active_group") || "").trim();
-  const grpLower = activeGroup.toLowerCase();
-  const isDemoGroup = activeGroup === "State of Roosevelt (Demo)" ||
-                      activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ||
-                      grpLower.includes("demo") ||
-                      grpLower.includes("roosevelt") ||
-                      grpLower.includes("acme") ||
-                      grpLower.includes("sandbox") ||
-                      grpLower.includes("synthetic");
-  if (!isDemoGroup) return false;
-  const fileName = localStorage.getItem("marigold_file_name") || "";
-  return !fileName.toUpperCase().includes("DEMO");
-}
-
 export function useDataStats() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [stats, setStats] = useState<DataStats | null>(null);
 
   const analyze = useCallback(async (): Promise<DataStats> => {
     setIsAnalyzing(true);
-    if (isDemoDataMissingOrSuppressed()) {
-      const emptyResult: DataStats = { totalRows: 0, columns: [], sampleData: [] };
-      setStats(emptyResult);
-      setIsAnalyzing(false);
-      return emptyResult;
-    }
     try {
-      const db = await openDatabase();
+      const db = await openActiveDatabase();
       const transaction = db.transaction(['rows'], 'readonly');
       const store = transaction.objectStore('rows');
       const columnValueCounts: Record<string, Record<string, number>> = {};
@@ -126,12 +105,4 @@ export function useDataStats() {
   }, []);
 
   return { analyze, stats, isAnalyzing };
-}
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('VoterDataDB', 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
 }

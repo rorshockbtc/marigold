@@ -7,6 +7,7 @@ import { getAnomalies, AnomalyRecord, updateAnomalyStatus } from '@/lib/firebase
 import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 import { GlossaryTooltip } from '@/components/GlossaryTooltip';
 import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight, Download } from 'lucide-react';
+import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from '@/lib/db/dbName';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -24,6 +25,19 @@ export default function DashboardPage() {
   const [loadedFileName, setLoadedFileName] = useState<string>("");
   const [previewAsVolunteer, setPreviewAsVolunteer] = useState(false);
   const [isSuperUser, setIsSuperUser] = useState(false);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
+  const [demoStatusMsg, setDemoStatusMsg] = useState("");
+
+  const handle1ClickLoadDemo = async () => {
+    setIsLoadingDemo(true);
+    try {
+      await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
+      window.location.href = "/analysis";
+    } catch (err) {
+      setIsLoadingDemo(false);
+      alert("Failed to auto-load demo dataset: " + err);
+    }
+  };
 
   useEffect(() => {
     let activeGroup = localStorage.getItem("marigold_active_group");
@@ -37,56 +51,57 @@ export default function DashboardPage() {
     const checkDataConnection = (currentGroup?: string) => {
       if (typeof window === "undefined") return;
       const grp = currentGroup || localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
-      const connected = localStorage.getItem("marigold_file_connected");
-      const rows = localStorage.getItem("marigold_file_rows");
-      const fname = localStorage.getItem("marigold_file_name") || "";
+      const isDemoMode = isDemoGroupActive(grp);
+      const dbName = getActiveDatabaseName(grp);
 
-      const grpLower = grp.toLowerCase();
-      const isDemoMode = grp === "State of Roosevelt (Demo)" ||
-                         grp === "ACME Civic Data Sandbox (Demo Environment)" ||
-                         grpLower.includes("demo") ||
-                         grpLower.includes("roosevelt") ||
-                         grpLower.includes("acme") ||
-                         grpLower.includes("sandbox") ||
-                         grpLower.includes("synthetic");
-      const isDemoIsolated = isDemoMode && !fname.toUpperCase().includes("DEMO");
-
-      if (isDemoIsolated) {
-        setIsDataConnected(false);
-        setLoadedRowCount(0);
-        setLoadedFileName("Synthetic DEMO_ dataset required");
-        return;
-      }
-
-      if (connected === "true" && fname && !isDemoIsolated) {
-        setIsDataConnected(true);
-        if (rows) setLoadedRowCount(parseInt(rows, 10));
-        setLoadedFileName(fname);
-      } else if (!isDemoMode) {
-        try {
-          const request = indexedDB.open("VoterDataDB", 1);
-          request.onsuccess = (e) => {
-            const db = (e.target as IDBOpenDBRequest).result;
-            if (db && db.objectStoreNames.contains("rows")) {
-              const tx = db.transaction(["rows"], "readonly");
-              const store = tx.objectStore("rows");
-              const countReq = store.count();
-              countReq.onsuccess = () => {
-                if (countReq.result > 0) {
-                  localStorage.setItem("marigold_file_connected", "true");
-                  localStorage.setItem("marigold_file_rows", String(countReq.result));
+      try {
+        const request = indexedDB.open(dbName, 1);
+        request.onsuccess = (e) => {
+          const db = (e.target as IDBOpenDBRequest).result;
+          if (db && db.objectStoreNames.contains("rows")) {
+            const tx = db.transaction(["rows"], "readonly");
+            const store = tx.objectStore("rows");
+            const countReq = store.count();
+            countReq.onsuccess = () => {
+              const count = countReq.result || 0;
+              if (isDemoMode) {
+                if (count > 0) {
                   setIsDataConnected(true);
-                  setLoadedRowCount(countReq.result);
+                  setLoadedRowCount(count);
+                  setLoadedFileName("DEMO_roosevelt_statewide_voter_roll.csv");
+                } else {
+                  setIsDataConnected(false);
+                  setLoadedRowCount(0);
+                  setLoadedFileName("Synthetic DEMO_ dataset required");
                 }
-              };
+              } else {
+                if (count > 0) {
+                  localStorage.setItem("marigold_file_connected", "true");
+                  localStorage.setItem("marigold_file_rows", String(count));
+                  setIsDataConnected(true);
+                  setLoadedRowCount(count);
+                  const fname = localStorage.getItem("marigold_file_name") || "";
+                  if (fname) setLoadedFileName(fname);
+                } else {
+                  setIsDataConnected(false);
+                  setLoadedRowCount(0);
+                  setLoadedFileName("");
+                }
+              }
+            };
+          } else {
+            if (isDemoMode) {
+              setIsDataConnected(false);
+              setLoadedRowCount(0);
+              setLoadedFileName("Synthetic DEMO_ dataset required");
+            } else {
+              setIsDataConnected(false);
+              setLoadedRowCount(0);
+              setLoadedFileName("");
             }
-          };
-        } catch (err) {}
-      } else {
-        setIsDataConnected(false);
-        setLoadedRowCount(0);
-        setLoadedFileName("");
-      }
+          }
+        };
+      } catch (err) {}
     };
 
     const handleGroupChange = (e: Event) => {
@@ -372,23 +387,14 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-              <a
-                href="/api/demo-dataset"
-                download="DEMO_roosevelt_statewide_voter_roll.csv"
-                className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-5 py-3 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 transform active:scale-[0.98]"
+              <button
+                onClick={handle1ClickLoadDemo}
+                disabled={isLoadingDemo}
+                className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-slate-950 font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-xs flex items-center justify-center gap-2 transform active:scale-[0.98]"
               >
-                <Download className="w-4 h-4 text-slate-900" />
-                <span>📥 Download DEMO_...csv</span>
-              </a>
-              {!isDataConnected && (
-                <Link
-                  href="/data-prep"
-                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-3 rounded-xl border border-white/20 transition-colors text-xs flex items-center justify-center gap-1.5"
-                >
-                  <Folder className="w-4 h-4 text-amber-300" />
-                  <span>Link File in /data-prep →</span>
-                </Link>
-              )}
+                <Sparkles className="w-4 h-4 text-slate-900 animate-pulse" />
+                <span>{isLoadingDemo ? (demoStatusMsg || "⏳ Auto-Loading ~1,800 Demo Records...") : "⚡ 1-Click Auto-Load (~1,800 Records) →"}</span>
+              </button>
             </div>
           </div>
         )}

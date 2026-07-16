@@ -8,6 +8,7 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar 
 } from 'recharts';
 import { Settings, Database, Shield, RefreshCw, Plus, Sparkles, Link2, CheckCircle2, FileText, AlertTriangle, ArrowRight, Layers, BarChart3, Download } from 'lucide-react';
+import { getActiveDatabaseName, isDemoGroupActive as checkIsDemoGroupActive } from '@/lib/db/dbName';
 
 // Data definitions for visual impact
 const CATEGORY_DATA = [
@@ -57,7 +58,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
     isRealDataset: false
   });
 
-  const isDemoGroupActive = typeof window !== "undefined" && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox")) || isSandbox);
+  const isDemoGroupActive = typeof window !== "undefined" && (checkIsDemoGroupActive(localStorage.getItem("marigold_active_group")) || isSandbox);
 
   useEffect(() => {
     const checkState = () => {
@@ -67,14 +68,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
       const rows = localStorage.getItem("marigold_file_rows");
       const connected = localStorage.getItem("marigold_file_connected");
       
-      const isDemoMode = activeGrp === "State of Roosevelt (Demo)" || isSandbox;
-      const isDemoIsolated = isDemoMode && !name.toUpperCase().includes("DEMO");
-
-      if (isDemoIsolated) {
-        setLocalFileConnected(false);
-        setLocalFileName("");
-        return;
-      }
+      const isDemoMode = checkIsDemoGroupActive(activeGrp) || isSandbox;
+      const dbName = getActiveDatabaseName(activeGrp);
 
       const updateCanvasState = (fname: string, frows: number) => {
         setLocalFileConnected(true);
@@ -92,28 +87,34 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
         setCartridgeVersion('2.0');
       };
 
-      if (connected === "true" && name && !isDemoIsolated) {
-        updateCanvasState(name, rows ? parseInt(rows, 10) : 1420512);
-      } else if (!isDemoMode && !isSandbox) {
-        try {
-          const request = indexedDB.open("VoterDataDB", 1);
-          request.onsuccess = (e) => {
-            const db = (e.target as IDBOpenDBRequest).result;
-            if (db && db.objectStoreNames.contains("rows")) {
-              const tx = db.transaction(["rows"], "readonly");
-              const store = tx.objectStore("rows");
-              const countReq = store.count();
-              countReq.onsuccess = () => {
-                if (countReq.result > 0) {
+      try {
+        const request = indexedDB.open(dbName, 1);
+        request.onsuccess = (e) => {
+          const db = (e.target as IDBOpenDBRequest).result;
+          if (db && db.objectStoreNames.contains("rows")) {
+            const tx = db.transaction(["rows"], "readonly");
+            const store = tx.objectStore("rows");
+            const countReq = store.count();
+            countReq.onsuccess = () => {
+              if (countReq.result > 0) {
+                if (isDemoMode) {
+                  updateCanvasState("DEMO_roosevelt_statewide_voter_roll.csv", countReq.result);
+                } else {
                   localStorage.setItem("marigold_file_connected", "true");
                   localStorage.setItem("marigold_file_rows", String(countReq.result));
-                  updateCanvasState("Statewide Memory Shard", countReq.result);
+                  updateCanvasState(name || "Statewide Memory Shard", countReq.result);
                 }
-              };
-            }
-          };
-        } catch (err) {}
-      } else {
+              } else {
+                setLocalFileConnected(false);
+                setLocalFileName("");
+              }
+            };
+          } else {
+            setLocalFileConnected(false);
+            setLocalFileName("");
+          }
+        };
+      } catch (err) {
         setLocalFileConnected(false);
         setLocalFileName("");
       }

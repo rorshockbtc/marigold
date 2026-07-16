@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ExportWorkerMessage } from '../workers/csv-export.worker';
+import { getActiveDatabaseName } from '@/lib/db/dbName';
 
 export interface ExportState {
   isExporting: boolean;
@@ -90,7 +91,7 @@ export function useCSVExport() {
       }
     }
 
-    worker.postMessage({ action: 'start', config: { rowsPerFile, columns, filePrefix: prefix || "dataset" } });
+    worker.postMessage({ action: 'start', config: { rowsPerFile, columns, filePrefix: prefix || "dataset", dbName: getActiveDatabaseName() } });
   }, []);
 
   const cancelExport = useCallback(() => {

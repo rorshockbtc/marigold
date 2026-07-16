@@ -8,6 +8,7 @@ import { CryptographicNoteModal } from "@/components/CryptographicNoteModal";
 import { useDataQuery } from "@/hooks/useDataQuery";
 import { useDataStats } from "@/hooks/useDataStats";
 import { BarChart3, Link2, FileText, MessageSquare, Settings, RotateCcw, Plus, X, CheckCircle2, Sparkles, Search, Shield, ArrowRight, Database, AlertTriangle, Download, RefreshCw, Layers } from 'lucide-react';
+import { autoLoadSyntheticDemoDataset } from '@/lib/db/dbName';
 
 // Simple mapping for known institutional addresses to prevent false positives
 const categorizeAddress = (address: string) => {
@@ -83,39 +84,48 @@ export default function AnalysisDashboard() {
   const [auditTabCategory, setAuditTabCategory] = useState<'all' | 'phase2' | 'phase3' | 'phase4'>('all');
   const [resultsViewMode, setResultsViewMode] = useState<'table' | 'heatmap' | 'ai'>('table');
   const [aiBriefingGenerated, setAiBriefingGenerated] = useState(false);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
+  const [demoStatusMsg, setDemoStatusMsg] = useState("");
+
+  const handle1ClickLoadDemo = async () => {
+    setIsLoadingDemo(true);
+    try {
+      await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
+      window.location.reload();
+    } catch (err) {
+      setIsLoadingDemo(false);
+      alert("Failed to auto-load demo dataset: " + err);
+    }
+  };
 
   const { runLocalAudit, queryProgress } = useDataQuery();
   const { analyze: analyzeLocalStats } = useDataStats();
 
   const fetchStats = async () => {
     const isDemoActive = typeof window !== 'undefined' && checkIsDemoGroup(localStorage.getItem("marigold_active_group"));
-    const fileName = typeof window !== 'undefined' ? localStorage.getItem("marigold_file_name") || "" : "";
-    const isDemoIsolated = isDemoActive && !fileName.toUpperCase().includes("DEMO");
-
-    if (isDemoIsolated) {
-      setStats({
-        total_voters: 0,
-        precinct_count: 0,
-        county_count: 6,
-        last_updated: "Synthetic Demo Required (`DEMO_roosevelt_statewide_voter_roll.csv`)"
-      });
-      setError(null);
-      return;
-    }
-
-    if (isDemoActive) {
-      setStats({
-        total_voters: 1800,
-        precinct_count: 42,
-        county_count: 6,
-        last_updated: "Verified Client RAM (" + fileName + ")"
-      });
-      setError(null);
-      return;
-    }
 
     try {
       const localStats = await analyzeLocalStats();
+      if (isDemoActive) {
+        if (localStats && localStats.totalRows > 0) {
+          setStats({
+            total_voters: localStats.totalRows,
+            precinct_count: 42,
+            county_count: 6,
+            last_updated: "Verified Client RAM (DEMO_roosevelt_statewide_voter_roll.csv)"
+          });
+          setError(null);
+        } else {
+          setStats({
+            total_voters: 0,
+            precinct_count: 0,
+            county_count: 6,
+            last_updated: "Synthetic Demo Required (`DEMO_roosevelt_statewide_voter_roll.csv`)"
+          });
+          setError(null);
+        }
+        return;
+      }
       if (localStats && localStats.totalRows > 0) {
         setStats({
           total_voters: localStats.totalRows,
@@ -213,7 +223,8 @@ export default function AnalysisDashboard() {
       setCountyFilter('');
     }
     
-    const cacheKey = `marigold_cached_results_${action}_${finalCounty || 'all'}_${finalThreshold}`;
+    const isDemoActive = typeof window !== 'undefined' && checkIsDemoGroup(localStorage.getItem("marigold_active_group"));
+    const cacheKey = `marigold_cached_results_${isDemoActive ? 'DEMO_' : 'REAL_'}_${action}_${finalCounty || 'all'}_${finalThreshold}`;
     
     try {
       localStorage.setItem('marigold_last_audit', action);
@@ -239,7 +250,7 @@ export default function AnalysisDashboard() {
     const activeGroup = typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") : null;
 
     try {
-      // Step 1: Query local client-side VoterDataDB IndexedDB first
+      // Step 1: Query local client-side IndexedDB first
       try {
         const localResults = await runLocalAudit(action, finalCounty, finalThreshold);
         if (localResults && localResults.length > 0) {
@@ -252,7 +263,14 @@ export default function AnalysisDashboard() {
         }
       } catch (e) {}
 
-      // Step 2: Fallback to server endpoint if local IDB is empty
+      // If in Demo Mode and local IndexedDB (DemoVoterDataDB) returned 0 rows, DO NOT fall back to server SQLite (which holds real Mississippi data)
+      if (isDemoActive) {
+        setResults([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 2: Fallback to server endpoint ONLY if in Real mode and local IDB is empty
       const res = await fetch(`/api/analysis?action=${action}&threshold=${finalThreshold}&county=${encodeURIComponent(finalCounty)}`);
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
@@ -542,6 +560,7 @@ export default function AnalysisDashboard() {
         const customEvent = e as CustomEvent<{ group?: string }>;
         const currentGroup = customEvent?.detail?.group || localStorage.getItem("marigold_active_group");
         setIsDemoMode(checkIsDemoGroup(currentGroup || null));
+        setResults([]);
         fetchStats();
       };
       window.addEventListener('marigold-group-change', handleGroupChange);
@@ -549,7 +568,7 @@ export default function AnalysisDashboard() {
     }
   }, []);
 
-  const isDemoDataMissing = isDemoMode && (typeof window !== 'undefined' ? !(localStorage.getItem("marigold_file_name") || "").toUpperCase().includes("DEMO") : false);
+  const isDemoDataMissing = isDemoMode && (!stats || stats.total_voters === 0);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4">
@@ -575,22 +594,20 @@ export default function AnalysisDashboard() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
-            <a
-              href="/api/demo-dataset"
-              download="DEMO_roosevelt_statewide_voter_roll.csv"
-              className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98]"
+            <button
+              onClick={handle1ClickLoadDemo}
+              disabled={isLoadingDemo}
+              className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-slate-950 font-black px-8 py-4 rounded-xl shadow-xl transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98]"
             >
-              <span>📥 Download Synthetic Demo Roll (`DEMO_roosevelt_...csv`)</span>
-            </a>
-            <Link
-              href="/data-prep"
-              className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-4 rounded-xl border border-slate-600 transition-colors text-sm flex items-center justify-center gap-2"
-            >
-              <span>Link Demo File in /data-prep →</span>
-            </Link>
+              <Sparkles className="w-5 h-5 text-slate-900 animate-pulse" />
+              <span>{isLoadingDemo ? (demoStatusMsg || "⏳ Auto-Loading ~1,800 Demo Records...") : "⚡ 1-Click Auto-Load (~1,800 Records) →"}</span>
+            </button>
           </div>
         </div>
       )}
+
+      {isDemoMode && isDemoDataMissing ? null : (
+      <>
 
       {isDemoMode && !isDemoDataMissing && (
         <div className="bg-amber-900 text-amber-50 p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-amber-600/50 animate-in slide-in-from-top-4 duration-300">
@@ -1555,6 +1572,8 @@ export default function AnalysisDashboard() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
 
       <CryptographicNoteModal 

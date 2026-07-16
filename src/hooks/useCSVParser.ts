@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { ParseProgress, ParseComplete, ParseError, WorkerMessage } from '../workers/csv-parser.worker';
+import { getActiveDatabaseName, openActiveDatabase } from '@/lib/db/dbName';
 
 export interface ParserState {
   isProcessing: boolean;
@@ -112,11 +113,12 @@ export function useCSVParser() {
       worker.terminate();
     };
 
-    worker.postMessage({ file });
+    worker.postMessage({ file, dbName: getActiveDatabaseName() });
   }, []);
 
   const clearData = useCallback(async () => {
-    const db = await openDatabase();
+    const dbName = getActiveDatabaseName();
+    const db = await openActiveDatabase(dbName);
     const transaction = db.transaction(['rows'], 'readwrite');
     transaction.objectStore('rows').clear();
     setState({
@@ -132,12 +134,4 @@ export function useCSVParser() {
   }, []);
 
   return { state, parseFile, clearData };
-}
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('VoterDataDB', 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
 }

@@ -24,7 +24,7 @@ export interface ParseError {
 export type WorkerMessage = ParseProgress | ParseComplete | ParseError;
 
 self.onmessage = async (e: MessageEvent) => {
-  const { file, chunkSize = 1024 * 1024 * 5 } = e.data; // 5MB chunks
+  const { file, chunkSize = 1024 * 1024 * 5, dbName = 'VoterDataDB' } = e.data; // 5MB chunks
 
   if (!file) {
     self.postMessage({ type: 'error', message: 'No file provided' } as ParseError);
@@ -46,7 +46,7 @@ self.onmessage = async (e: MessageEvent) => {
       percentComplete: 0,
     } as ParseProgress);
 
-    db = await openDatabase();
+    db = await openDatabase(dbName);
     await clearDatabase(db);
 
     Papa.parse(file, {
@@ -120,9 +120,9 @@ self.onmessage = async (e: MessageEvent) => {
   }
 };
 
-function openDatabase(): Promise<IDBDatabase> {
+function openDatabase(dbName = 'VoterDataDB'): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('VoterDataDB', 1);
+    const request = indexedDB.open(dbName, 1);
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
     request.onupgradeneeded = (event) => {

@@ -6,6 +6,7 @@ interface ExportConfig {
   rowsPerFile: number;
   columns: string[];
   filePrefix?: string;
+  dbName?: string;
 }
 
 interface ExportProgress {
@@ -37,9 +38,9 @@ interface ExportError {
 
 export type ExportWorkerMessage = ExportProgress | ExportFileReady | ExportComplete | ExportError;
 
-function openDatabase(): Promise<IDBDatabase> {
+function openDatabase(dbName = DB_NAME): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(dbName, DB_VERSION);
     request.onerror = () => reject(new Error('Failed to open database'));
     request.onsuccess = () => resolve(request.result);
   });
@@ -59,7 +60,7 @@ async function exportData(config: ExportConfig) {
   const prefix = filePrefix.endsWith('-') ? filePrefix.slice(0, -1) : filePrefix;
 
   try {
-    const db = await openDatabase();
+    const db = await openDatabase(config.dbName);
     const totalRows = await countRows(db);
 
     if (totalRows === 0) {
