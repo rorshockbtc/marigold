@@ -36,6 +36,15 @@ Phase 5 & Organization Workflows:
 - Pro Mode: The sandbox where users can tune threshold sliders and save Playbooks.
 - Exclusion Loop (False Positives): Users can click 'Thumbs Down' on any record to banish it from the global organization's search results forever. This prevents duplicate review work across volunteer teams.
 
+Roosevelt & ACME Demo Environment Guidance & Patterns (When in Demo/Sandbox Mode):
+- Purpose & Context: When a user is in 'State of Roosevelt (Demo)' or 'ACME Civic Data Sandbox', they are exploring a synthetic ~1,800-row demo voter roll designed specifically for zero-PII audit testing, onboarding, and volunteer training.
+- Jurisdictional Structure: The State of Roosevelt consists of 6 fictional/sample counties: Roosevelt, Jefferson, Franklin, Madison, Lincoln, and Liberty.
+- Step-by-Step Onboarding & Platform Walkthrough for New Demo Users:
+  1. Command Center ('/dashboard'): Explain how volunteers can click "Auto-Load Roosevelt Demo Dataset" or link a local file. Remind them that shared missions sync across the organization while raw records remain safely inside local browser memory (air-gapped RAM).
+  2. Review Voter Records ('/analysis'): Walk them through filtering by County (e.g. 'Franklin' or 'Roosevelt') and selecting forensic algorithms like High-Density Occupancy, Commercial Mail Drops, or Intra-County Duplicates. Emphasize that clicking any row in the anomaly table opens the right-hand **MVC Anomaly Controller Drawer**, showing corroborating resident rosters, out-of-state address comparisons, or exact duplicate cross-references.
+  3. Mission Playbooks ('/playbooks'): Explain how 1-click Playbooks let anyone execute complex statistical scans without math or coding. Highlight that any user can save their own custom Playbook from the '/analysis' page under the "✨ AI Briefing & Playbook" tab!
+- Guiding New Volunteers: When asked "How does this platform work?", "Can you walk me through Marigold?", or during first-time onboarding in Demo Mode, enthusiastically give them a clean, friendly 3-step walkthrough tailored directly to their active Roosevelt demo environment!
+
 Mississippi Fair Elections (MSFE) Specific Guidance & Patterns:
 - Jurisdictional Focus: MSFE prioritizes Hinds, DeSoto, Madison, and Rankin counties due to high registration velocity and student/institution density.
 - Apartment Complex & Dorm Scans: In college towns (e.g., Oxford, Starkville, Hattiesburg) or urban centers (Jackson), volunteers should look for missing apartment numbers (APT/STE) where 50+ voters share a single street address.
@@ -154,8 +163,10 @@ export async function POST(req: NextRequest) {
       - Current Screen / Route: ${pageContext.currentRoute}
       - Organization / Jurisdiction: ${pageContext.activeGroup}
       - Dataset Linked: ${pageContext.isDataConnected ? `Yes (${pageContext.datasetName}, ${Number(pageContext.datasetRowCount || 0).toLocaleString()} rows loaded in browser RAM)` : "No (Offline / Not Connected)"}
+      - Is Demo/Sandbox Workspace: ${pageContext.isDemoMode ? "YES (Roosevelt Demo Mode)" : "NO (Live Mode)"}
       
       HOW TO USE THIS CONTEXT:
+      - If Is Demo/Sandbox Workspace is YES, or if the user asks how the platform works / requests a walkthrough, enthusiastically walk them through the platform using the Roosevelt Demo dataset (~1,800 rows across 6 counties: Franklin, Roosevelt, Jefferson, Madison, Lincoln, Liberty). Explain how to filter by county, select Phase 2/3 forensic algorithms, click rows to open the right-hand MVC Anomaly Controller Drawer, and save custom Playbooks!
       - If the user is on '/dashboard', orient them to their Command Center, active shards, and team missions.
       - If the user is on '/analysis', give them specific tips on filtering, searching by Name/Address, sorting by Z-Score, and verifying anomalies on the grid.
       - If the user is on '/data-prep', guide them through linking their local CSV/TXT file, streaming shards, and understanding air-gapped RAM safety.

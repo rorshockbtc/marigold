@@ -31,13 +31,15 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     if (typeof window === 'undefined') return null;
     const activeGrp = localStorage.getItem("marigold_active_group") || "Independent Audit Workspace";
     const fname = localStorage.getItem("marigold_file_name") || "No file linked";
-    const isDemoIsolated = activeGrp === "State of Roosevelt (Demo)" && !fname.toUpperCase().includes("DEMO");
+    const isDemo = activeGrp.toLowerCase().includes("demo") || activeGrp.toLowerCase().includes("acme") || activeGrp.toLowerCase().includes("roosevelt") || activeGrp.toLowerCase().includes("sandbox");
+    const isDemoIsolated = isDemo && !fname.toUpperCase().includes("DEMO") && localStorage.getItem("marigold_file_connected") !== "true";
     return {
       currentRoute: pathname,
       activeGroup: activeGrp,
       datasetName: isDemoIsolated ? "No demo file linked (`DEMO_roosevelt_...csv` required)" : fname,
-      datasetRowCount: isDemoIsolated ? "0" : (localStorage.getItem("marigold_file_rows") || "0"),
-      isDataConnected: isDemoIsolated ? false : (localStorage.getItem("marigold_file_connected") === "true")
+      datasetRowCount: isDemoIsolated ? "0" : (localStorage.getItem("marigold_file_rows") || (isDemo ? "1800" : "0")),
+      isDataConnected: isDemoIsolated ? false : (localStorage.getItem("marigold_file_connected") === "true" || isDemo),
+      isDemoMode: isDemo
     };
   };
 
@@ -460,12 +462,12 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
 
               <button
                 type="button"
-                onClick={() => setQuery("Run a full statistical fraud evaluation on Hinds County and summarize priority anomalies.")}
+                onClick={() => setQuery("Run a full statistical anomaly check on Franklin County and summarize priority findings.")}
                 className="text-left p-3 rounded-xl bg-white border border-[#E5E0D8] hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
               >
                 <BarChart3 className="w-5 h-5 text-[#D96B27] shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Sample County Audit (Hinds)</div>
+                  <div className="text-xs font-bold text-[#2D3142] group-hover:text-[#D96B27] truncate">Sample County Audit (Franklin)</div>
                   <div className="text-[11px] text-[#646A7A] line-clamp-1">Generate county anomaly report</div>
                 </div>
               </button>

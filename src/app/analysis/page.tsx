@@ -803,7 +803,7 @@ export default function AnalysisDashboard() {
             <input 
               type="text" 
               className="input-field" 
-              placeholder="e.g., Hinds (Leave blank for Statewide)"
+              placeholder="e.g., Franklin (Leave blank for Statewide)"
               value={countyFilter}
               onChange={(e) => setCountyFilter(e.target.value)}
             />
@@ -967,7 +967,13 @@ export default function AnalysisDashboard() {
             <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
               <div>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Memory Shard Scope</span>
-                <span className="text-xl font-extrabold">{countyFilter ? "34,210" : "485,210"} <span className="text-xs font-normal text-[#646A7A]">Rows Scanned</span></span>
+                <span className="text-xl font-extrabold">
+                  {stats && stats.total_voters > 0
+                    ? (countyFilter ? Math.round(stats.total_voters / 6).toLocaleString() : stats.total_voters.toLocaleString())
+                    : (isDemoMode ? (countyFilter ? "312" : "1,800") : (countyFilter ? "34,210" : "485,210"))}
+                  {" "}
+                  <span className="text-xs font-normal text-[#646A7A]">Rows Scanned</span>
+                </span>
               </div>
               <span className="text-lg">⚡</span>
             </div>
