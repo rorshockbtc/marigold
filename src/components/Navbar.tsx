@@ -89,6 +89,10 @@ export function Navbar() {
                       <span>Bring to Your State</span>
                     </Link>
                     <div className="border-t border-slate-800 my-1"></div>
+                    <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-300 font-extrabold hover:bg-slate-800 transition-colors flex items-center gap-2 bg-amber-500/10">
+                      <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <span>White House Intel Hub</span>
+                    </Link>
                     <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-400 font-bold hover:bg-slate-800 transition-colors flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
                       <span>250th Celebration</span>
@@ -162,6 +166,10 @@ export function Navbar() {
               <Shield className="w-4 h-4 text-purple-400" />
               <span>Bring to Your State</span>
             </Link>
+            <Link href="/election-integrity-presidential-address" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500/15 text-amber-300 font-extrabold flex items-center gap-2 border border-amber-500/30">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>White House Intel Hub</span>
+            </Link>
             <Link href="/anniversary" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 text-amber-400 font-bold flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>250th Celebration</span>
@@ -169,6 +177,17 @@ export function Navbar() {
           </nav>
         )}
       </header>
+
+      {/* Breaking Presidential Address Announcement Banner */}
+      <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-slate-950 px-4 py-2 text-xs font-black flex items-center justify-center gap-2 shadow-md">
+        <span>🏛️ [July 16 Presidential Address] Explore 50+ Declassified Election Integrity Files &amp; Multi-Perspective AI Analysis &rarr;</span>
+        <Link 
+          href="/election-integrity-presidential-address" 
+          className="bg-slate-950 text-amber-300 hover:bg-slate-900 px-3 py-1 rounded-full text-[11px] uppercase tracking-wider shadow transition-transform hover:scale-105"
+        >
+          Explore Hub
+        </Link>
+      </div>
 
       {/* Persistent Disclaimer Banner */}
       <div className="bg-slate-100 border-b border-border text-slate-700 px-6 py-2.5 text-xs md:text-sm font-medium flex items-center justify-between shadow-inner">
