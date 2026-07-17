@@ -23,7 +23,11 @@ import {
   Bookmark,
   Zap,
   Building2,
-  Lock
+  Lock,
+  BookOpen,
+  X,
+  Copy,
+  Check
 } from "lucide-react";
 import { Tooltip } from "@/components/Tooltip";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
@@ -38,6 +42,10 @@ export default function ElectionIntegrityHub() {
   const [isQuerying, setIsQuerying] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("ballots");
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>("ballots");
+  
+  // Full PDF Transcript Reader Modal State
+  const [readingDocument, setReadingDocument] = useState<DeclassifiedDocumentExcerpt | null>(null);
+  const [copiedText, setCopiedText] = useState<boolean>(false);
 
   const pillars = [
     {
@@ -97,7 +105,7 @@ export default function ElectionIntegrityHub() {
     }
   ];
 
-  // High-interest conservative & analytical topic pills for instant crawling
+  // High-interest conservative & analytical topic pills for instant crawling across FULL PDF text
   const crawlerTopicPills = [
     { label: "ballots", query: "ballots", icon: "🗳️" },
     { label: "ballot paper", query: "ballot paper", icon: "📄" },
@@ -110,12 +118,13 @@ export default function ElectionIntegrityHub() {
     { label: "canvasser confession", query: "canvasser confession", icon: "⚖️" }
   ];
 
-  // Instant Document Crawler Search Filter
+  // Instant Document Crawler Search Filter (Crawls Full PDF Transcripts + Excerpts + Notes)
   const filteredExcerpts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return DECLASSIFIED_DOCUMENT_INDEX;
     return DECLASSIFIED_DOCUMENT_INDEX.filter(item => 
       item.excerptText.toLowerCase().includes(q) ||
+      item.fullTranscript.toLowerCase().includes(q) ||
       item.title.toLowerCase().includes(q) ||
       item.tags.some(t => t.toLowerCase().includes(q)) ||
       item.analyticalNote.toLowerCase().includes(q)
@@ -174,6 +183,12 @@ export default function ElectionIntegrityHub() {
     triggerMariAnalysis(prompt, activeLens);
     const chatEl = document.getElementById("mari-chat-section");
     if (chatEl) chatEl.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2000);
   };
 
   const triggerMariAnalysis = async (queryText: string, lens: string) => {
@@ -276,32 +291,33 @@ export default function ElectionIntegrityHub() {
           <h1 className="text-3xl sm:text-5xl font-black font-serif tracking-tight text-slate-950 leading-tight">
             Presidential Address on Election Integrity: <br />
             <span className="text-amber-800 underline decoration-amber-400 decoration-4 underline-offset-4">
-              Declassified Intelligence Explorer
+              Declassified Intelligence &amp; PDF Text Explorer
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-700 max-w-4xl font-medium leading-relaxed">
-            Following President Trump’s primetime address on July 16, 2026, the White House released dozens of previously classified U.S. Intelligence Community Assessments, FBI case timelines, and DHS security reviews. Explore the original primary documents below, crawl text excerpts by topic with sunlight transparency, select your preferred analytical perspective, and query Mari AI to understand exactly how these findings impact civic data security across America.
+            Following President Trump’s primetime address on July 16, 2026, the White House released dozens of previously classified U.S. Intelligence Community Assessments, FBI case timelines, and DHS security reviews. To make the scanned PDFs legible and analytically useful without redaction clutter, we have extracted and normalized the full PDF text below. Search across the unabridged transcripts, download the master `.TXT` corpus, select your analytical perspective, and query Mari AI.
           </p>
 
           {/* Quick External Action Bar */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
+            <a
+              href="/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+              download="Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm shadow-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5 border border-amber-600/40"
+            >
+              <Download className="w-4 h-4 text-slate-950" />
+              <span>Download Unabridged Master PDF Text Corpus (.TXT)</span>
+            </a>
             <a
               href="https://www.whitehouse.gov/election-integrity/"
               target="_blank"
               rel="noopener noreferrer"
               className="px-5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-white font-black text-sm shadow-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
             >
-              <span>🏛️ Official White House Release Portal</span>
+              <span>🏛️ White House Original PDF Archives</span>
               <ExternalLink className="w-4 h-4 text-amber-400" />
             </a>
-            <Link
-              href="/analysis"
-              className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-extrabold text-sm border-2 border-slate-300 shadow-sm transition-colors flex items-center gap-2"
-            >
-              <span>🔍 Test Local-RAM Forensic Engines</span>
-              <ChevronRight className="w-4 h-4 text-slate-600" />
-            </Link>
           </div>
         </div>
       </header>
@@ -382,19 +398,43 @@ export default function ElectionIntegrityHub() {
           </div>
         </div>
 
-        {/* Step 2: Instant Declassified Document Crawler & Topic Indexer */}
+        {/* Step 2: Instant Declassified Document & PDF Text Crawler */}
         <div className="bg-white border-2 border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
-              <span className="text-xs font-black text-amber-800 uppercase tracking-widest block mb-1">Step 2: Full-Text Document Crawler</span>
+              <span className="text-xs font-black text-amber-800 uppercase tracking-widest block mb-1">Step 2: Full-Text Document &amp; PDF Transcript Crawler</span>
               <h2 className="text-xl sm:text-2xl font-black text-slate-950 flex items-center gap-2.5">
                 <Search className="w-6 h-6 text-amber-600" />
-                <span>Search &amp; Highlight Across Primary Declassified Files</span>
+                <span>Search Directly Inside the Full Declassified PDF Transcripts</span>
               </h2>
             </div>
-            <span className="text-xs bg-amber-100 text-amber-950 border border-amber-300 px-3 py-1.5 rounded-lg font-extrabold shadow-2xs">
-              ⚡ Instant Sunlight Index ({filteredExcerpts.length} Excerpts Found)
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-emerald-100 text-emerald-950 border border-emerald-300 px-3 py-1.5 rounded-lg font-extrabold shadow-2xs">
+                📖 Deep PDF OCR Transcripts Active
+              </span>
+              <span className="text-xs bg-amber-100 text-amber-950 border border-amber-300 px-3 py-1.5 rounded-lg font-extrabold shadow-2xs">
+                ⚡ {filteredExcerpts.length} Documents Found
+              </span>
+            </div>
+          </div>
+
+          {/* Master Corpus Download Strip */}
+          <div className="bg-slate-100 border border-slate-300 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <FileText className="w-5 h-5 text-amber-700 flex-shrink-0" />
+              <div>
+                <strong className="text-slate-950 font-black text-sm block">Complete Unabridged PDF Master Corpus (.TXT)</strong>
+                <span className="text-slate-600 font-medium">All 4 Pillars compiled into a single clean text file with redaction placeholders normalized for easy reading.</span>
+              </div>
+            </div>
+            <a
+              href="/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+              download="Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+              className="bg-slate-950 hover:bg-slate-900 text-white font-black px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-400" />
+              <span>Download Master .TXT Corpus (148 KB)</span>
+            </a>
           </div>
 
           {/* Search Input Bar */}
@@ -407,7 +447,7 @@ export default function ElectionIntegrityHub() {
                 setSearchQuery(e.target.value);
                 setActiveTagFilter(null);
               }}
-              placeholder="Type any topic (e.g. ballots, ballot paper, voting machines, China, Venezuela, More votes than residents)..."
+              placeholder="Search across full PDF transcripts (e.g. ballots, ballot paper, voting machines, China, Venezuela, More votes than residents)..."
               className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-900 focus:border-amber-600 focus:bg-white focus:outline-none placeholder:text-slate-400 shadow-inner transition-colors"
             />
             {searchQuery && (
@@ -423,7 +463,7 @@ export default function ElectionIntegrityHub() {
           {/* High-Interest Topic Pills */}
           <div className="space-y-2">
             <span className="text-xs font-black text-slate-600 uppercase tracking-wider block">
-              🔥 High-Interest Topics &amp; Conservative Auditor Priorities (Click to Crawl):
+              🔥 High-Interest Topics &amp; Conservative Auditor Priorities (Click to Crawl PDF Text):
             </span>
             <div className="flex flex-wrap gap-2">
               {crawlerTopicPills.map((pill, idx) => (
@@ -451,7 +491,7 @@ export default function ElectionIntegrityHub() {
             {filteredExcerpts.length === 0 ? (
               <div className="p-8 text-center bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                 <span className="text-2xl block">🔍</span>
-                <p className="text-sm font-bold text-slate-800">No matching text excerpts found for &ldquo;{searchQuery}&rdquo;</p>
+                <p className="text-sm font-bold text-slate-800">No matching text found across the PDF transcripts for &ldquo;{searchQuery}&rdquo;</p>
                 <p className="text-xs text-slate-500">Try clicking one of the suggested topic pills above or search for broader terms like &ldquo;ballots&rdquo; or &ldquo;Muskegon&rdquo;.</p>
               </div>
             ) : (
@@ -473,16 +513,33 @@ export default function ElectionIntegrityHub() {
                           <span>{item.title}</span>
                         </h4>
                       </div>
-                      <span className="text-xs font-mono bg-slate-100 text-slate-800 px-3 py-1 rounded-lg border border-slate-300 whitespace-nowrap font-bold">
-                        Location: {item.pageRef}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono bg-slate-100 text-slate-800 px-3 py-1 rounded-lg border border-slate-300 whitespace-nowrap font-bold">
+                          {item.pageRef}
+                        </span>
+                        <button
+                          onClick={() => setReadingDocument(item)}
+                          className="bg-slate-950 hover:bg-slate-800 text-white font-black px-3 py-1 rounded-lg text-xs shadow transition-colors flex items-center gap-1.5"
+                        >
+                          <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Read Full PDF Text</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Highlighted Excerpt Box */}
                     <div className="bg-amber-50/50 p-4 rounded-xl border-l-4 border-amber-500 text-sm leading-relaxed text-slate-900 font-medium shadow-2xs">
-                      <div className="text-[11px] font-black text-amber-900 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <Bookmark className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Verbatim Declassified Excerpt ({item.pageRef}):</span>
+                      <div className="text-[11px] font-black text-amber-900 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Bookmark className="w-3.5 h-3.5 text-amber-700" />
+                          <span>Key Primary Excerpt from PDF Transcript:</span>
+                        </div>
+                        <button
+                          onClick={() => setReadingDocument(item)}
+                          className="text-amber-800 hover:text-amber-950 underline font-bold lowercase text-xs"
+                        >
+                          view entire document ({item.fullTranscript.split("\n").length} lines) &rarr;
+                        </button>
                       </div>
                       <p className="italic font-serif text-slate-900 leading-relaxed">
                         &ldquo;{highlightText(item.excerptText, searchQuery)}&rdquo;
@@ -499,22 +556,20 @@ export default function ElectionIntegrityHub() {
                         <p className="text-slate-700 leading-normal font-medium">{item.analyticalNote}</p>
                       </div>
 
-                      <div className="flex items-center gap-2.5 self-stretch sm:self-center justify-end">
-                        <a
-                          href={item.downloadUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-slate-100 hover:bg-slate-200 text-slate-900 font-extrabold px-3.5 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-slate-300 shadow-2xs"
+                      <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-center justify-end">
+                        <button
+                          onClick={() => setReadingDocument(item)}
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold px-3.5 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-slate-300 shadow-2xs"
                         >
-                          <Download className="w-3.5 h-3.5 text-slate-700" />
-                          <span>Download ZIP</span>
-                        </a>
+                          <BookOpen className="w-3.5 h-3.5 text-slate-700" />
+                          <span>View Unabridged Transcript</span>
+                        </button>
                         <button
                           onClick={() => handleExcerptAskMari(item)}
                           className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-lg text-xs shadow-md transition-transform hover:scale-105 flex items-center gap-1.5 whitespace-nowrap"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
-                          <span>Ask Mari About This Excerpt</span>
+                          <span>Ask Mari About This Document</span>
                         </button>
                       </div>
                     </div>
@@ -524,6 +579,75 @@ export default function ElectionIntegrityHub() {
             )}
           </div>
         </div>
+
+        {/* FULL PDF TRANSCRIPT READER MODAL */}
+        {readingDocument && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-white border-2 border-slate-300 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden text-slate-900">
+              {/* Modal Header */}
+              <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <div className="space-y-1 pr-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-slate-950">
+                    {readingDocument.docCode} • Unabridged PDF Transcript
+                  </span>
+                  <h3 className="text-lg font-bold leading-tight">{readingDocument.title}</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => copyToClipboard(readingDocument.fullTranscript)}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors border border-slate-700"
+                  >
+                    {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+                    <span>{copiedText ? "Copied!" : "Copy Text"}</span>
+                  </button>
+                  <button
+                    onClick={() => setReadingDocument(null)}
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Transcript Content */}
+              <div className="p-6 sm:p-8 overflow-y-auto space-y-6 font-mono text-sm leading-relaxed bg-slate-50 selection:bg-amber-300">
+                <div className="bg-amber-100/60 border border-amber-300 p-3 rounded-lg text-xs font-sans font-bold text-amber-950 flex items-center justify-between">
+                  <span>💡 Active Search Highlight Term: &ldquo;{searchQuery || "None"}&rdquo;</span>
+                  <span>Extracted verbatim from July 16, 2026 White House Declassification</span>
+                </div>
+                
+                <div className="whitespace-pre-wrap font-serif text-slate-900 text-base leading-relaxed space-y-4">
+                  {highlightText(readingDocument.fullTranscript, searchQuery)}
+                </div>
+              </div>
+
+              {/* Modal Footer Bar */}
+              <div className="bg-white border-t border-slate-200 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-sans">
+                <span className="text-slate-600 font-medium">
+                  <strong>Analytical Note:</strong> {readingDocument.analyticalNote}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const item = readingDocument;
+                      setReadingDocument(null);
+                      handleExcerptAskMari(item);
+                    }}
+                    className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-lg shadow-sm transition-colors"
+                  >
+                    💬 Synthesize with Mari AI
+                  </button>
+                  <button
+                    onClick={() => setReadingDocument(null)}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Close Viewer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Step 3: Interactive Mari AI Exploration Box - Institutional White/Navy Contrast */}
         <div id="mari-chat-section" className="bg-white border-2 border-slate-200 rounded-2xl p-6 shadow-xl space-y-5">
