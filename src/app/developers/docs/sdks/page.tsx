@@ -79,7 +79,38 @@ async function runAudit() {
 <code>{`dotnet add package Marigold.Net`}</code>
         </pre>
 
-        <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4">
+        <h2>Python SDK (Data Science & Pandas)</h2>
+        <p>
+          Data Scientists and Data Engineers frequently use Python to parse raw civic CSVs using Pandas or Apache Spark. Our official Python SDK natively hooks into the <code>cryptography</code> library for C-optimized AES-GCM encryption, ensuring massive datasets are encrypted efficiently before leaving your Jupyter notebook or ETL pipeline.
+        </p>
+
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+<code>{`pip install marigold-sdk`}</code>
+        </pre>
+
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
+<code>{`import marigold
+import pandas as pd
+
+# Marigold abstracts the complex AES-GCM cryptography
+client = marigold.Client(api_key="...", master_key="...")
+
+# Easily pipe your Pandas dataframes into the detection engine
+df = pd.read_csv("state_voter_roll.csv")
+results = client.detect_anomalies(df, module="HIGH_DENSITY")
+`}</code>
+        </pre>
+
+        <h2>Go (Golang) SDK</h2>
+        <p>
+          For modern, high-throughput civic microservices requiring massive concurrency, we provide a Go package leveraging the standard library's <code>crypto/aes</code> and <code>crypto/cipher</code> packages.
+        </p>
+
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+<code>{`go get github.com/marigold/marigold-go`}</code>
+        </pre>
+
+        <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
           <div>
             <h4 className="font-bold text-emerald-900 mb-1">SOC 2 Liability Shield</h4>
