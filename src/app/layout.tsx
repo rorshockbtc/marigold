@@ -57,6 +57,8 @@ export const metadata: Metadata = {
   },
 };
 
+import MobileWarning from "@/components/MobileWarning";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -71,6 +73,7 @@ export default function RootLayout({
               {children}
             </AppNavigationWrapper>
           </AuthProvider>
+          <MobileWarning />
           <Analytics />
           <SpeedInsights />
         </body>
