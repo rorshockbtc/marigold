@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Terminal, BookOpen, Key, Shield, Calculator, FileJson, 
-  Search, ChevronRight, Layers, LayoutTemplate, Activity, AlertTriangle, Blocks
+  Search, ChevronRight, Layers, LayoutTemplate, Activity, AlertTriangle, Blocks, Building2
 } from "lucide-react";
 
 export default function DevelopersLayout({ children }: { children: React.ReactNode }) {
@@ -26,6 +26,7 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
         { name: "Authentication & Tokens", href: "/developers/docs/authentication", icon: Key },
         { name: "Webhooks & Callbacks", href: "/developers/docs/webhooks", icon: Activity },
         { name: "Zero-PII Cryptography", href: "/developers/docs/cryptography", icon: Shield },
+        { name: "Partner Integrations", href: "/developers/docs/partner-integrations", icon: Building2 },
       ]
     },
     {
