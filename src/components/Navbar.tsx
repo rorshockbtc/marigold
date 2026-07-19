@@ -38,7 +38,7 @@ export function Navbar() {
               <span className="text-lg sm:text-xl font-serif font-bold tracking-tight text-slate-900 leading-none">
                 Marigold Insights
               </span>
-              <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider mt-0.5">
+              <span className="text-[10px] text-[#D96B27] font-bold uppercase tracking-wider mt-0.5">
                 Local-Compute Civic Analytics
               </span>
             </div>
@@ -46,11 +46,11 @@ export function Navbar() {
 
           {/* Desktop Primary Navigation */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-700">
-            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Public Sandbox ↗</a>
-            <Link href="/store" className="hover:text-amber-400 transition-colors">Audit Checklists</Link>
-            <Link href="/registry" className="hover:text-amber-400 transition-colors">State Registry</Link>
-            <Link href="/compliance" className="hover:text-amber-400 transition-colors">FEMA Compliance</Link>
-            <Link href="/partners" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1.5 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30 shadow-sm">
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-[#D96B27] transition-colors">Public Sandbox ↗</a>
+            <Link href="/store" className="hover:text-[#D96B27] transition-colors">Audit Checklists</Link>
+            <Link href="/registry" className="hover:text-[#D96B27] transition-colors">State Registry</Link>
+            <Link href="/compliance" className="hover:text-[#D96B27] transition-colors">FEMA Compliance</Link>
+            <Link href="/partners" className="text-[#D96B27] font-bold hover:text-[#C85A1B] transition-colors flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 shadow-sm">
               <span>🤝 Partnerships</span>
             </Link>
             
@@ -93,12 +93,12 @@ export function Navbar() {
                       <span>Dev SDK</span>
                     </Link>
                     <div className="border-t border-slate-200 my-1"></div>
-                    <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-300 font-extrabold hover:bg-slate-800 transition-colors flex items-center gap-2 bg-amber-500/10">
-                      <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-[#D96B27] font-extrabold hover:bg-slate-100 transition-colors flex items-center gap-2 bg-amber-50">
+                      <Sparkles className="w-4 h-4 text-[#D96B27] flex-shrink-0" />
                       <span>White House Intel Hub</span>
                     </Link>
-                    <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-400 font-bold hover:bg-slate-800 transition-colors flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-[#D96B27] font-bold hover:bg-slate-100 transition-colors flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#D96B27] flex-shrink-0" />
                       <span>250th Celebration</span>
                     </Link>
                   </div>
@@ -111,12 +111,12 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <Show when="signed-out">
               <SignInButton mode="redirect">
-                <button className="text-xs sm:text-sm font-bold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-800/60 transition-all">
+                <button className="btn-secondary px-3 py-1.5 h-auto text-xs sm:text-sm">
                   Sign In
                 </button>
               </SignInButton>
               <SignUpButton mode="redirect">
-                <button className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 sm:px-5 py-2 text-xs sm:text-sm rounded-lg shadow-md transition-all transform hover:-translate-y-0.5">
+                <button className="btn-primary px-4 sm:px-5 py-1.5 h-auto text-xs sm:text-sm">
                   Get Started
                 </button>
               </SignUpButton>
@@ -125,7 +125,7 @@ export function Navbar() {
             <Show when="signed-in">
               <Link 
                 href="/dashboard"
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 text-xs sm:text-sm rounded-lg shadow transition-all flex items-center gap-1.5"
+                className="btn-primary px-4 py-1.5 h-auto text-xs sm:text-sm flex items-center gap-1.5"
               >
                 <span>Workspace</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -147,39 +147,39 @@ export function Navbar() {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <nav className="lg:hidden mt-4 pt-4 border-t border-slate-200 flex flex-col gap-2 text-sm font-medium text-slate-700 px-2 pb-2">
-            <a href="/sandbox" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400">Public Sandbox ↗</a>
-            <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400">Audit Checklists</Link>
-            <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400">State Registry</Link>
-            <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400">FEMA Compliance</Link>
-            <Link href="/partners" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500/10 text-amber-400 font-bold flex items-center gap-2 border border-amber-500/30">
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">Public Sandbox ↗</a>
+            <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">Audit Checklists</Link>
+            <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">State Registry</Link>
+            <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">FEMA Compliance</Link>
+            <Link href="/partners" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-50 text-[#D96B27] font-bold flex items-center gap-2 border border-amber-200">
               <span>🤝 Beta Partnerships &amp; Grants</span>
             </Link>
-            <Link href="/learning-center" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-amber-500" />
+            <Link href="/learning-center" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#D96B27]" />
               <span>Learning Center</span>
             </Link>
-            <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400 flex items-center gap-2">
+            <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-400" />
               <span>Worldviews &amp; FAQ</span>
             </Link>
-            <Link href="/roadmap" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400 flex items-center gap-2">
+            <Link href="/roadmap" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
               <Map className="w-4 h-4 text-emerald-700" />
               <span>Technical Roadmap</span>
             </Link>
-            <Link href="/deploy" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400 flex items-center gap-2">
+            <Link href="/deploy" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
               <Shield className="w-4 h-4 text-purple-400" />
               <span>Bring to Your State</span>
             </Link>
-            <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-amber-400 flex items-center gap-2 font-bold tracking-tight">
+            <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2 font-bold tracking-tight">
               <Terminal className="w-4 h-4 text-pink-500" />
               <span>Dev SDK</span>
             </Link>
-            <Link href="/election-integrity-presidential-address" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500/15 text-amber-300 font-extrabold flex items-center gap-2 border border-amber-500/30">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+            <Link href="/election-integrity-presidential-address" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-50 text-[#D96B27] font-extrabold flex items-center gap-2 border border-amber-200">
+              <Sparkles className="w-4 h-4 text-[#D96B27]" />
               <span>White House Intel Hub</span>
             </Link>
-            <Link href="/anniversary" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 text-amber-400 font-bold flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+            <Link href="/anniversary" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 text-[#D96B27] font-bold flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#D96B27]" />
               <span>250th Celebration</span>
             </Link>
           </nav>
@@ -191,7 +191,7 @@ export function Navbar() {
         <span>🏛️ [July 16 Presidential Address] Explore 50+ Declassified Election Integrity Files &amp; Multi-Perspective AI Analysis &rarr;</span>
         <Link 
           href="/election-integrity-presidential-address" 
-          className="bg-slate-100 text-amber-300 hover:bg-slate-50 border border-slate-200 px-3 py-1 rounded-full text-[11px] uppercase tracking-wider shadow transition-transform hover:scale-105"
+          className="bg-white text-[#D96B27] hover:bg-slate-50 border border-slate-200 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow transition-transform hover:scale-105"
         >
           Explore Hub
         </Link>

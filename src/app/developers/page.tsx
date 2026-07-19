@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ExternalLink, Zap, ShieldCheck, Code2, Key, Calculator, AlertTriangle } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 
 export default function DevelopersPage() {
   return (
@@ -28,18 +29,29 @@ export default function DevelopersPage() {
           We operate on a <strong>Zero-Trust, Zero-PII</strong> architecture. Your monolithic infrastructure is the system of record. Marigold is the extremely optimized search and routing layer. At no point should raw Personally Identifiable Information (PII) such as unencrypted Social Security Numbers, exact dates of birth, or full names touch our cloud ingress points. 
         </p>
 
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 my-8">
-          <h4 className="text-emerald-900 font-bold mb-3 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
-            The Cryptographic Handshake
-          </h4>
-          <p className="text-sm text-emerald-800 leading-relaxed mb-4">
-            Instead of sending us raw citizen data, your server must implement AES-GCM (Galois/Counter Mode) authenticated encryption locally. You hash the dataset, encrypt the anomalous record IDs, and send us the resulting <strong>Ciphertext</strong> along with the <strong>Authentication Tag</strong> and <strong>Initialization Vector (Nonce)</strong>.
-          </p>
-          <p className="text-sm text-emerald-800 leading-relaxed">
-            When we receive this payload, we validate the cryptographic proof without ever reading the underlying identity string. We map the anomaly to a specific standard deviation cluster (Z-Score) and route the encrypted flag back to your system. You decrypt it locally. Our servers remain utterly blind to the identities involved.
-          </p>
-        </div>
+        <NonTechnicalTranslator 
+          title="The Cryptographic Handshake"
+          mariContextPrompt="I just read the non-technical translation for The Cryptographic Handshake. Can you explain what a mathematical blindfold means?"
+          technicalContent={
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 my-8">
+              <h4 className="text-emerald-900 font-bold mb-3 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                The Cryptographic Handshake
+              </h4>
+              <p className="text-sm text-emerald-800 leading-relaxed mb-4">
+                Instead of sending us raw citizen data, your server must implement AES-GCM (Galois/Counter Mode) authenticated encryption locally. You hash the dataset, encrypt the anomalous record IDs, and send us the resulting <strong>Ciphertext</strong> along with the <strong>Authentication Tag</strong> and <strong>Initialization Vector (Nonce)</strong>.
+              </p>
+              <p className="text-sm text-emerald-800 leading-relaxed">
+                When we receive this payload, we validate the cryptographic proof without ever reading the underlying identity string. We map the anomaly to a specific standard deviation cluster (Z-Score) and route the encrypted flag back to your system. You decrypt it locally. Our servers remain utterly blind to the identities involved.
+              </p>
+            </div>
+          }
+          eli5Content={
+            <p>
+              Imagine sending a sealed, unbreakable lockbox through the mail instead of a postcard. Instead of sending us a postcard with a voter's real name and address (which a hacker could read), your computer locks that name inside a mathematical lockbox. You send us the lockbox. We run our statistical checks on the outside of the box without ever having the key to open it. We attach our results to the box, send it back, and only <strong>you</strong> can unlock it. This means Marigold's servers remain completely blind to who the voter actually is.
+            </p>
+          }
+        />
 
         <h3 className="text-xl font-bold text-slate-900 mt-10 mb-4">Why Not Standard REST?</h3>
         <p className="text-slate-700 leading-relaxed mb-6">
@@ -90,7 +102,7 @@ export default function DevelopersPage() {
       <div className="pt-8 border-t border-slate-200 flex justify-end">
         <Link 
           href="/developers/docs/getting-started"
-          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Quickstart Guide
           <ChevronRight className="w-4 h-4" />
