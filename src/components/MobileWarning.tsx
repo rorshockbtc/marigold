@@ -26,7 +26,7 @@ export default function MobileWarning() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">
-      <div className="bg-[#232733] border border-slate-700 text-white p-4 rounded-xl shadow-2xl flex flex-col gap-3">
+      <div className="bg-primary border border-slate-700 text-white p-4 rounded-xl shadow-2xl flex flex-col gap-3">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2 text-amber-400">
             <MonitorSmartphone className="w-5 h-5 shrink-0" />

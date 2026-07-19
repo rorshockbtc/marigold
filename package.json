@@ -19,6 +19,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "better-sqlite3": "^12.11.1",
     "clsx": "^2.1.1",
+    "comlink": "^4.4.2",
     "csv-parser": "^3.2.1",
     "firebase": "^12.15.0",
     "firebase-admin": "^14.0.0",

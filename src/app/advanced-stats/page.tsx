@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Tooltip } from '@/components/Tooltip';
+import { Button } from "@/components/ui/Button";
 
 export default function AdvancedStatsDashboard() {
   const [benfordsData, setBenfordsData] = useState<any>(null);
@@ -89,9 +90,9 @@ export default function AdvancedStatsDashboard() {
               onChange={(e) => setCounty(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && fetchBenfordsLaw()}
             />
-            <button onClick={fetchBenfordsLaw} disabled={isLoading} className="btn-primary">
+            <Button onClick={fetchBenfordsLaw} disabled={isLoading} variant="primary">
               {isLoading ? "Running Math..." : "Analyze"}
-            </button>
+            </Button>
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import type { ParseProgress, ParseComplete, ParseError, WorkerMessage } from '../workers/csv-parser.worker';
+import * as Comlink from 'comlink';
+import type { DataProcessorWorker } from '../workers/data-processor.worker';
 import { getActiveDatabaseName, openActiveDatabase } from '@/lib/db/dbName';
 
 export interface ParserState {
@@ -26,7 +27,7 @@ export function useCSVParser() {
     totalRows: 0,
   });
 
-  const parseFile = useCallback((file: File) => {
+  const parseFile = useCallback(async (file: File) => {
     setState({
       isProcessing: true,
       progress: 0,
@@ -38,82 +39,70 @@ export function useCSVParser() {
       totalRows: 0,
     });
 
-    const worker = new Worker(
-      new URL('../workers/csv-parser.worker.ts', import.meta.url),
-      { type: 'module' }
-    );
+    try {
+      const workerInstance = new Worker(
+        new URL('../workers/data-processor.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+      
+      const api = Comlink.wrap<DataProcessorWorker>(workerInstance);
+      
+      const onProgress = Comlink.proxy((progress: number, rowsParsed: number, message: string) => {
+        setState(prev => ({
+          ...prev,
+          progress,
+          rowsParsed,
+        }));
+      });
 
-    worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
-      const message = e.data;
-      switch (message.type) {
-        case 'progress':
-          setState(prev => ({
-            ...prev,
-            rowsParsed: message.rowsParsed,
-            bytesProcessed: message.bytesProcessed,
-            totalBytes: message.totalBytes,
-            progress: message.percentComplete,
-          }));
-          break;
-        case 'complete':
-          let finalMapping = message.columnMapping;
-          if (typeof window !== "undefined") {
-            localStorage.setItem("marigold_file_connected", "true");
-            localStorage.setItem("marigold_file_rows", String(message.totalRows));
-            localStorage.setItem("marigold_file_name", file.name);
-            
-            // Smart Mapping Reuse: check if old map in localStorage is compatible with new columns
-            try {
-              const oldMapStr = localStorage.getItem("marigold_file_mapping");
-              if (oldMapStr && message.columns && message.columns.length > 0) {
-                const oldMap = JSON.parse(oldMapStr);
-                const mappedValues = Object.values(oldMap).filter(Boolean) as string[];
-                if (mappedValues.length > 0) {
-                  const matchingCount = mappedValues.filter(val => message.columns.includes(val)).length;
-                  const similarity = matchingCount / mappedValues.length;
-                  if (similarity >= 0.85) {
-                    finalMapping = oldMap;
-                  }
-                }
+      const dbName = getActiveDatabaseName();
+      
+      const rawResult = await api.ingestCSVFile(file, dbName, onProgress);
+      const result = rawResult as { totalRows: number; columns: string[]; columnMapping: Record<string, string> };
+      
+      if (typeof window !== "undefined") {
+        localStorage.setItem("marigold_file_connected", "true");
+        localStorage.setItem("marigold_file_rows", String(result.totalRows));
+        localStorage.setItem("marigold_file_name", file.name);
+        
+        let finalMapping = result.columnMapping as Record<string, string>;
+        try {
+          const oldMapStr = localStorage.getItem("marigold_file_mapping");
+          if (oldMapStr && result.columns && result.columns.length > 0) {
+            const oldMap = JSON.parse(oldMapStr);
+            const mappedValues = Object.values(oldMap).filter(Boolean) as string[];
+            if (mappedValues.length > 0) {
+              const matchingCount = mappedValues.filter(val => result.columns.includes(val)).length;
+              const similarity = matchingCount / mappedValues.length;
+              if (similarity >= 0.85) {
+                finalMapping = oldMap;
               }
-            } catch (e) {}
-
-            if (finalMapping) {
-              localStorage.setItem("marigold_file_mapping", JSON.stringify(finalMapping));
             }
           }
-          setState(prev => ({
-            ...prev,
-            isProcessing: false,
-            columns: message.columns,
-            columnMapping: finalMapping,
-            totalRows: message.totalRows,
-            progress: 100,
-          }));
-          worker.terminate();
-          break;
-        case 'error':
-          setState(prev => ({ ...prev, isProcessing: false, error: message.message }));
-          worker.terminate();
-          break;
-      }
-    };
+        } catch (e) {}
 
-    worker.onerror = (error) => {
+        if (finalMapping) {
+          localStorage.setItem("marigold_file_mapping", JSON.stringify(finalMapping));
+        }
+      }
+      
       setState(prev => ({
         ...prev,
         isProcessing: false,
-        error: error.message || 'Worker initialization failed',
+        columns: result.columns,
+        columnMapping: result.columnMapping as Record<string, string>,
+        totalRows: result.totalRows,
+        progress: 100,
       }));
-      worker.terminate();
-    };
-
-    worker.onmessageerror = () => {
-      setState(prev => ({ ...prev, isProcessing: false, error: 'Failed to communicate with worker' }));
-      worker.terminate();
-    };
-
-    worker.postMessage({ file, dbName: getActiveDatabaseName() });
+      
+      workerInstance.terminate();
+    } catch (err: any) {
+      setState(prev => ({
+        ...prev,
+        isProcessing: false,
+        error: err.message || 'Worker execution failed',
+      }));
+    }
   }, []);
 
   const clearData = useCallback(async () => {

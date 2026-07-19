@@ -184,11 +184,11 @@ export default function ComprehensiveAuditPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 pt-4 px-4">
       {/* Top Header & Jurisdiction Workspace Indicator */}
-      <div className="bg-[#F0ECE3] text-[#2D3142] p-8 rounded-2xl border border-[#E5E0D8] shadow-sm space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E5E0D8] pb-6">
+      <div className="bg-muted text-foreground p-8 rounded-2xl border border-border shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="bg-[#D96B27]/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <span className="bg-accent/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
                 <Rocket className="w-3.5 h-3.5" />
                 <span>360° Comprehensive Jurisdiction Audit</span>
               </span>
@@ -197,25 +197,25 @@ export default function ComprehensiveAuditPage() {
                 <span>100% Client-Side In-Memory <GlossaryTooltip term="Air-Gap" /></span>
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#2D3142]">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
               Executive Health Sweep &amp; Scorecard
             </h1>
             <p className="text-sm text-[#4A5060]">
-              Active Jurisdiction: <strong className="text-[#2D3142] font-bold">{jurisdiction}</strong> ({totalRows.toLocaleString()} total citizen records locked in <GlossaryTooltip term="RAM" />)
+              Active Jurisdiction: <strong className="text-foreground font-bold">{jurisdiction}</strong> ({totalRows.toLocaleString()} total citizen records locked in <GlossaryTooltip term="RAM" />)
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/data-prep"
-              className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-4 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
+              className="bg-white hover:bg-[#EAE5DC] text-foreground font-bold px-4 py-3.5 rounded-xl border border-border transition-colors text-xs shadow-2xs flex items-center gap-1.5"
             >
               <Folder className="w-4 h-4 text-[#D96B27]" />
               <span>📂 Re-Link Local Shards (/data-prep)</span>
             </Link>
             <Link
               href="/dashboard"
-              className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-4 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
+              className="bg-white hover:bg-[#EAE5DC] text-foreground font-bold px-4 py-3.5 rounded-xl border border-border transition-colors text-xs shadow-2xs flex items-center gap-1.5"
             >
               <span>← Return to Dashboard</span>
             </Link>
@@ -223,9 +223,9 @@ export default function ComprehensiveAuditPage() {
         </div>
 
         {/* Execution Command Bar */}
-        <div className="bg-white p-6 rounded-xl border border-[#E5E0D8] shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="bg-white p-6 rounded-xl border border-border shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-[#2D3142] flex items-center gap-2">
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span>⚡ Automated Multi-Playbook Forensic Sweep</span>
             </h3>
             <p className="text-xs text-[#646A7A] max-w-2xl leading-relaxed">
@@ -237,7 +237,7 @@ export default function ComprehensiveAuditPage() {
             type="button"
             onClick={startComprehensiveSweep}
             disabled={isRunningSweep}
-            className="w-full md:w-auto bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-8 py-4 rounded-xl shadow-md transition-all text-base flex items-center justify-center gap-2 transform active:scale-[0.98] disabled:opacity-75"
+            className="w-full md:w-auto bg-accent hover:bg-[#C85A1B] text-white font-black px-8 py-4 rounded-xl shadow-md transition-all text-base flex items-center justify-center gap-2 transform active:scale-[0.98] disabled:opacity-75"
           >
             {isRunningSweep ? (
               <>
@@ -272,7 +272,7 @@ export default function ComprehensiveAuditPage() {
             </div>
             <div className="w-full bg-amber-200 rounded-full h-3 overflow-hidden">
               <div
-                className="bg-[#D96B27] h-3 transition-all duration-300"
+                className="bg-accent h-3 transition-all duration-300"
                 style={{ width: `${Math.min(100, ((currentStepIndex + 1) / initialPlaybooks.length) * 100)}%` }}
               ></div>
             </div>
@@ -288,7 +288,7 @@ export default function ComprehensiveAuditPage() {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-black text-[#2D3142] flex items-center gap-2">
+            <h2 className="text-2xl font-black text-foreground flex items-center gap-2">
               <FileText className="w-6 h-6 text-[#D96B27]" />
               <span>Forensic Playbook Audit Scorecard</span>
             </h2>
@@ -305,7 +305,7 @@ export default function ComprehensiveAuditPage() {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#E5E0D8] shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="divide-y divide-[#E5E0D8]">
             {initialPlaybooks.map((pb, index) => (
               <div key={pb.id} className="p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 hover:bg-[#FAF8F5]/80 transition-colors">
@@ -314,7 +314,7 @@ export default function ComprehensiveAuditPage() {
                     <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
                       Rule #{index + 1}
                     </span>
-                    <h3 className="font-bold text-base text-[#2D3142]">{pb.name}</h3>
+                    <h3 className="font-bold text-base text-foreground">{pb.name}</h3>
                   </div>
                   <p className="text-xs text-[#646A7A] leading-relaxed">{pb.description}</p>
                 </div>
@@ -345,26 +345,26 @@ export default function ComprehensiveAuditPage() {
       {/* Interactive Drill-Down Drawer / Modal View */}
       {selectedDrilldown && (
         <div className="bg-[#FAF8F5] border-2 border-[#D96B27] p-8 rounded-2xl shadow-xl space-y-6 animate-in slide-in-from-bottom duration-300">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E5E0D8] pb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
             <div>
-              <span className="bg-[#D96B27]/15 text-[#D96B27] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 mb-1">
+              <span className="bg-accent/15 text-[#D96B27] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 mb-1">
                 <span>Active Forensic Deep-Dive</span>
               </span>
-              <h3 className="text-2xl font-black text-[#2D3142]">{selectedDrilldown.name}</h3>
+              <h3 className="text-2xl font-black text-foreground">{selectedDrilldown.name}</h3>
             </div>
             <button
               type="button"
               onClick={() => setSelectedDrilldown(null)}
-              className="bg-white hover:bg-slate-100 text-[#2D3142] font-bold px-4 py-2 rounded-xl border border-[#E5E0D8] text-xs transition-colors"
+              className="bg-white hover:bg-slate-100 text-foreground font-bold px-4 py-2 rounded-xl border border-border text-xs transition-colors"
             >
               ✕ Close Deep-Dive Drawer
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 bg-white p-6 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-4">
+            <div className="md:col-span-2 bg-white p-6 rounded-xl border border-border shadow-2xs space-y-4">
               <div className="flex justify-between items-center">
-                <h4 className="font-bold text-sm text-[#2D3142] flex items-center gap-2">
+                <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
                   <Search className="w-4 h-4 text-[#D96B27]" />
                   <span>Flagged Records in Local Client Memory ({selectedDrilldown.flaggedCount})</span>
                 </h4>
@@ -376,7 +376,7 @@ export default function ComprehensiveAuditPage() {
               {selectedDrilldown.flaggedCount === 0 ? (
                 <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300">
                   <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
-                  <strong className="text-sm font-bold text-[#2D3142] block">Clean Jurisdiction Baseline</strong>
+                  <strong className="text-sm font-bold text-foreground block">Clean Jurisdiction Baseline</strong>
                   <p className="text-xs text-[#646A7A] mt-1">Zero anomalies triggered for this specific playbook rule across your entire file.</p>
                 </div>
               ) : (
@@ -384,7 +384,7 @@ export default function ComprehensiveAuditPage() {
                   {Array.from({ length: Math.min(6, selectedDrilldown.flaggedCount) }).map((_, idx) => (
                     <div key={idx} className="py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                       <div>
-                        <span className="font-bold text-[#2D3142] block">
+                        <span className="font-bold text-foreground block">
                           {selectedDrilldown.audit_type === "density" 
                             ? `${1400 + idx * 12} PROMENADE PKWY, APT #${100 + idx} (Madison, MS)`
                             : selectedDrilldown.audit_type === "duplicates"

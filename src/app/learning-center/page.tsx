@@ -315,11 +315,11 @@ export default function LearningCenterPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-24 pt-6 px-4">
       {/* Top Header */}
-      <div className="bg-[#F0ECE3] text-[#2D3142] p-8 md:p-10 rounded-3xl border border-[#E5E0D8] shadow-sm space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E5E0D8] pb-6">
+      <div className="bg-muted text-foreground p-8 md:p-10 rounded-3xl border border-border shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="bg-[#D96B27]/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <span className="bg-accent/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>Marigold Knowledge Base</span>
               </span>
@@ -328,7 +328,7 @@ export default function LearningCenterPage() {
                 <span>Zero-Cloud Privacy &amp; Methodology Standards</span>
               </span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[#2D3142]">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
               Citizen &amp; Agency Learning Center
             </h1>
             <p className="text-sm md:text-base text-[#4A5060] max-w-3xl leading-relaxed">
@@ -339,7 +339,7 @@ export default function LearningCenterPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/dashboard"
-              className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-5 py-3 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
+              className="bg-white hover:bg-[#EAE5DC] text-foreground font-bold px-5 py-3 rounded-xl border border-border transition-colors text-xs shadow-2xs flex items-center gap-1.5"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>← Return to Dashboard</span>
@@ -356,21 +356,21 @@ export default function LearningCenterPage() {
               placeholder="Search concepts, acronyms, or formulas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-[#E5E0D8] rounded-xl pl-10 pr-4 py-2.5 text-xs font-medium text-[#2D3142] focus:border-[#D96B27] outline-none shadow-2xs"
+              className="w-full bg-white border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs font-medium text-foreground focus:border-[#D96B27] outline-none shadow-2xs"
             />
           </div>
         </div>
       </div>
 
       {/* Quick Jump Anchor Grid */}
-      <div className="bg-white p-6 rounded-2xl border border-[#E5E0D8] shadow-2xs space-y-3">
+      <div className="bg-white p-6 rounded-2xl border border-border shadow-2xs space-y-3">
         <span className="text-xs font-black text-[#646A7A] uppercase tracking-wider block">⚡ Quick Jump Index:</span>
         <div className="flex flex-wrap gap-2 text-xs">
           {LEARNING_SECTIONS.map((s) => (
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="bg-[#FAF8F5] hover:bg-[#D96B27] text-[#2D3142] hover:text-white font-bold px-3 py-1.5 rounded-lg border border-[#E5E0D8] transition-colors"
+              className="bg-[#FAF8F5] hover:bg-accent text-foreground hover:text-white font-bold px-3 py-1.5 rounded-lg border border-border transition-colors"
             >
               {s.term}
             </a>
@@ -381,13 +381,13 @@ export default function LearningCenterPage() {
       {/* Main Term & Methodology Sections */}
       <div className="space-y-8">
         {filteredSections.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-[#E5E0D8] p-8 space-y-3">
+          <div className="text-center py-16 bg-white rounded-3xl border border-border p-8 space-y-3">
             <HelpCircle className="w-12 h-12 text-[#D96B27] mx-auto opacity-50" />
-            <h3 className="text-xl font-bold text-[#2D3142]">No matching topics found</h3>
+            <h3 className="text-xl font-bold text-foreground">No matching topics found</h3>
             <p className="text-xs text-[#646A7A]">Try broadening your search query.</p>
             <button
               onClick={() => setSearchQuery("")}
-              className="mt-2 bg-[#D96B27] text-white font-bold px-4 py-2 rounded-xl text-xs"
+              className="mt-2 bg-accent text-white font-bold px-4 py-2 rounded-xl text-xs"
             >
               Reset Search
             </button>
@@ -397,7 +397,7 @@ export default function LearningCenterPage() {
             <section
               key={s.id}
               id={s.id}
-              className="bg-white rounded-3xl border border-[#E5E0D8] shadow-sm p-8 md:p-10 space-y-6 scroll-mt-24 transition-all hover:border-amber-400/60"
+              className="bg-white rounded-3xl border border-border shadow-sm p-8 md:p-10 space-y-6 scroll-mt-24 transition-all hover:border-amber-400/60"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-5">
                 <div>
@@ -406,7 +406,7 @@ export default function LearningCenterPage() {
                       Section #{idx + 1} • {s.id.toUpperCase()}
                     </span>
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-black text-[#2D3142]">
+                  <h2 className="text-2xl md:text-3xl font-black text-foreground">
                     {s.term} <span className="font-normal text-lg md:text-xl text-[#646A7A]">({s.fullName})</span>
                   </h2>
                 </div>
@@ -422,19 +422,19 @@ export default function LearningCenterPage() {
               {/* 3-Column Executive / Deep-Dive / Methodology Layout */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                 {/* Column 1: Executive Summary */}
-                <div className="bg-[#FAF8F5] p-6 rounded-2xl border border-[#E5E0D8] space-y-2">
+                <div className="bg-[#FAF8F5] p-6 rounded-2xl border border-border space-y-2">
                   <h3 className="font-black text-xs uppercase tracking-wider text-[#D96B27] flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Plain-English Summary</span>
                   </h3>
-                  <p className="text-xs md:text-sm text-[#2D3142] leading-relaxed font-medium">
+                  <p className="text-xs md:text-sm text-foreground leading-relaxed font-medium">
                     {s.summary}
                   </p>
                 </div>
 
                 {/* Column 2: Deep-Dive & Context */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-2">
-                  <h3 className="font-black text-xs uppercase tracking-wider text-[#2D3142] flex items-center gap-1.5">
+                  <h3 className="font-black text-xs uppercase tracking-wider text-foreground flex items-center gap-1.5">
                     <Layers className="w-4 h-4 text-amber-600" />
                     <span>Why It Matters &amp; Deep-Dive</span>
                   </h3>

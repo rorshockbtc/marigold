@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/Button";
 
 export default function SettingsPanel() {
   const [msfeEmail, setMsfeEmail] = useState("");
@@ -97,9 +98,9 @@ export default function SettingsPanel() {
         </div>
 
         <div className="flex justify-end">
-          <button type="submit" className="btn-primary">
+          <Button type="submit" variant="primary">
             Save Settings
-          </button>
+          </Button>
         </div>
       </form>
     </div>

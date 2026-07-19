@@ -62,8 +62,8 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
           <div className="p-6 md:p-10 max-w-7xl mx-auto w-full flex-1">
             {children}
           </div>
-          <footer className="border-t border-[#E5E0D8] bg-white py-4 px-6 md:px-10 text-xs text-[#646A7A] flex flex-col sm:flex-row justify-between items-center gap-3 mt-auto">
-            <div className="flex flex-wrap items-center gap-4 font-bold text-[#2D3142]">
+          <footer className="border-t border-border bg-white py-4 px-6 md:px-10 text-xs text-[#646A7A] flex flex-col sm:flex-row justify-between items-center gap-3 mt-auto">
+            <div className="flex flex-wrap items-center gap-4 font-bold text-foreground">
               <a href="/terms" className="hover:text-[#D96B27] transition-colors">Terms of Service &amp; Statutory Liability</a>
               <span>•</span>
               <a href="/privacy" className="hover:text-[#D96B27] transition-colors">Zero-Knowledge Privacy Policy</a>

@@ -82,16 +82,16 @@ export default function AppSidebar() {
   };
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#F0ECE3] text-[#2D3142] flex flex-col h-screen fixed left-0 top-0 border-r border-[#E5E0D8] z-50 shadow-lg font-sans select-none transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-muted text-foreground flex flex-col h-screen fixed left-0 top-0 border-r border-border z-50 shadow-lg font-sans select-none transition-all duration-300`}>
       {/* Brand Header */}
-      <div className={`p-4 border-b border-[#E5E0D8] flex items-center justify-between bg-[#EAE5DC]/60 ${isCollapsed ? 'flex-col gap-3' : ''}`}>
+      <div className={`p-4 border-b border-border flex items-center justify-between bg-[#EAE5DC]/60 ${isCollapsed ? 'flex-col gap-3' : ''}`}>
         <div className="flex items-center gap-2.5 overflow-hidden">
           <MarigoldIcon className="w-6 h-6 flex-shrink-0 drop-shadow-sm" />
-          {!isCollapsed && <span className="font-serif font-bold text-lg tracking-tight text-[#2D3142] whitespace-nowrap">Marigold Insights</span>}
+          {!isCollapsed && <span className="font-serif font-bold text-lg tracking-tight text-foreground whitespace-nowrap">Marigold Insights</span>}
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1.5 hover:bg-[#E5E0D8] rounded-lg text-[#646A7A] hover:text-[#2D3142] transition-colors"
+          className="p-1.5 hover:bg-[#E5E0D8] rounded-lg text-[#646A7A] hover:text-foreground transition-colors"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isCollapsed ? <Menu className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -99,12 +99,12 @@ export default function AppSidebar() {
       </div>
 
       {/* Universal Active Jurisdiction & Demo Mode Switcher */}
-      <div className="p-3 border-b border-[#E5E0D8] bg-[#FAF8F5]/90 relative">
+      <div className="p-3 border-b border-border bg-[#FAF8F5]/90 relative">
         <button
           type="button"
           onClick={() => !isCollapsed && setIsSwitcherOpen(!isSwitcherOpen)}
           title={isCollapsed ? `Active: ${activeGroup}` : "Switch Active Group / Demo Mode"}
-          className={`w-full flex items-center justify-between gap-2 p-2 rounded-xl border border-[#E5E0D8] bg-white hover:border-[#D96B27]/60 shadow-2xs transition-all text-left ${isCollapsed ? 'justify-center p-1.5' : ''}`}
+          className={`w-full flex items-center justify-between gap-2 p-2 rounded-xl border border-border bg-white hover:border-[#D96B27]/60 shadow-2xs transition-all text-left ${isCollapsed ? 'justify-center p-1.5' : ''}`}
         >
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="text-sm shrink-0">{activeGroup === "State of Roosevelt (Demo)" ? "🌲" : "👑"}</span>
@@ -113,7 +113,7 @@ export default function AppSidebar() {
                 <div className="text-[10px] font-mono uppercase tracking-wider text-[#D96B27] font-extrabold leading-none">
                   {activeGroup === "State of Roosevelt (Demo)" ? "Demo Workspace" : "Jurisdiction Group"}
                 </div>
-                <div className="text-xs font-bold text-[#2D3142] truncate pt-0.5">
+                <div className="text-xs font-bold text-foreground truncate pt-0.5">
                   {activeGroup || "State of Roosevelt (Demo)"}
                 </div>
               </div>
@@ -131,7 +131,7 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => handleSwitchGroup("State of Roosevelt (Demo)")}
-              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "State of Roosevelt (Demo)" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "State of Roosevelt (Demo)" ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
             >
               <span>🌲 State of Roosevelt (Demo)</span>
               {activeGroup === "State of Roosevelt (Demo)" && <span>✓</span>}
@@ -139,7 +139,7 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => handleSwitchGroup("ACME Civic Data Sandbox (Demo Environment)")}
-              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
             >
               <span>🧪 ACME Civic Data Sandbox</span>
               {activeGroup === "ACME Civic Data Sandbox (Demo Environment)" && <span>✓</span>}
@@ -147,7 +147,7 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => handleSwitchGroup("Mississippi Fair Elections")}
-              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Mississippi Fair Elections" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Mississippi Fair Elections" ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
             >
               <span>👑 Mississippi Fair Elections</span>
               {activeGroup === "Mississippi Fair Elections" && <span>✓</span>}
@@ -155,12 +155,12 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => handleSwitchGroup("Independent Audit Workspace")}
-              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Independent Audit Workspace" ? "bg-[#D96B27] text-white" : "hover:bg-[#FAF8F5] text-[#2D3142]"}`}
+              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Independent Audit Workspace" ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
             >
               <span>🛡️ Independent Workspace</span>
               {activeGroup === "Independent Audit Workspace" && <span>✓</span>}
             </button>
-            <div className="border-t border-[#E5E0D8] pt-1 mt-1">
+            <div className="border-t border-border pt-1 mt-1">
               <button
                 type="button"
                 onClick={() => {
@@ -192,8 +192,8 @@ export default function AppSidebar() {
               title={isCollapsed ? `${item.label} - ${item.desc}` : undefined}
               className={`block px-3.5 py-3 rounded-xl transition-all duration-150 group ${
                 isActive
-                  ? 'bg-white text-[#2D3142] font-extrabold border border-[#E5E0D8] shadow-sm'
-                  : 'text-[#4A5060] hover:text-[#2D3142] hover:bg-white/60 font-medium'
+                  ? 'bg-white text-foreground font-extrabold border border-border shadow-sm'
+                  : 'text-[#4A5060] hover:text-foreground hover:bg-white/60 font-medium'
               }`}
             >
               <div className="text-sm flex items-center justify-between">
@@ -201,7 +201,7 @@ export default function AppSidebar() {
                   <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[#D96B27]' : 'text-[#646A7A]'}`} />
                   {!isCollapsed && <span className="truncate">{item.label}</span>}
                 </div>
-                {!isCollapsed && isActive && <span className="w-2 h-2 rounded-full bg-[#D96B27]" />}
+                {!isCollapsed && isActive && <span className="w-2 h-2 rounded-full bg-accent" />}
               </div>
               {!isCollapsed && (
                 <div className={`text-[11px] leading-tight mt-1 pl-6.5 ${isActive ? 'text-[#D96B27] font-semibold' : 'text-[#7A8090] group-hover:text-[#5A6070]'}`}>
@@ -214,7 +214,7 @@ export default function AppSidebar() {
       </nav>
 
       {/* Bottom User Controls & Return Link */}
-      <div className="p-4 border-t border-[#E5E0D8] bg-[#EAE5DC]/60 space-y-4">
+      <div className="p-4 border-t border-border bg-[#EAE5DC]/60 space-y-4">
         <Link 
           href="/" 
           title={isCollapsed ? "Back to Marketing Site" : undefined}
@@ -224,7 +224,7 @@ export default function AppSidebar() {
           {!isCollapsed && <span>Back to Marketing Site</span>}
         </Link>
 
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} pt-2 border-t border-[#E5E0D8] px-2`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} pt-2 border-t border-border px-2`}>
           {!isCollapsed && (
             <div className="text-xs text-[#4A5060] font-medium truncate max-w-[140px]">
               Active Account

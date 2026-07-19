@@ -9,6 +9,7 @@ import { useDataQuery } from "@/hooks/useDataQuery";
 import { useDataStats } from "@/hooks/useDataStats";
 import { BarChart3, Link2, FileText, MessageSquare, Settings, RotateCcw, Plus, X, CheckCircle2, Sparkles, Search, Shield, ArrowRight, Database, AlertTriangle, Download, RefreshCw, Layers } from 'lucide-react';
 import { autoLoadSyntheticDemoDataset } from '@/lib/db/dbName';
+import { Button } from "@/components/ui/Button";
 
 // Simple mapping for known institutional addresses to prevent false positives
 const categorizeAddress = (address: string) => {
@@ -470,10 +471,10 @@ export default function AnalysisDashboard() {
                     </td>
                     <td className="p-4 whitespace-nowrap align-top">
                       <div className="flex flex-col gap-1.5 items-start mt-0.5">
-                        <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-[#D9534F] text-white border border-[#B52B27]' : 'bg-[#232733] text-white border border-[#1E222B]'}`}>
+                        <span className={`px-3 py-1 rounded-md text-xs font-black shadow-sm ${isCritical ? 'bg-[#D9534F] text-white border border-[#B52B27]' : 'bg-primary text-white border border-[#1E222B]'}`}>
                           {occ} Total Registered
                         </span>
-                        <span className="text-[11px] font-black tracking-wider uppercase text-[#D96B27] bg-[#D96B27]/10 border border-[#D96B27]/20 px-2 py-0.5 rounded">
+                        <span className="text-[11px] font-black tracking-wider uppercase text-[#D96B27] bg-accent/10 border border-[#D96B27]/20 px-2 py-0.5 rounded">
                           {r.risk_level || (isCritical ? 'CRITICAL SURGE FLAG' : 'HIGH DENSITY FLAG')}
                         </span>
                       </div>
@@ -488,14 +489,14 @@ export default function AnalysisDashboard() {
                             navigator.clipboard.writeText(exclusionValue);
                             alert("Address copied to clipboard! Paste into a new browser tab or mapping app to look up without sharing tracking referrers.");
                           }}
-                          className="px-2.5 py-2 rounded-lg bg-white hover:bg-[#F0ECE3] text-[#2D3142] font-extrabold transition-all text-xs border border-[#E5E0D8] flex items-center gap-1 shadow-sm"
+                          className="px-2.5 py-2 rounded-lg bg-white hover:bg-muted text-foreground font-extrabold transition-all text-xs border border-border flex items-center gap-1 shadow-sm"
                           title="Copy address to clipboard for private external lookup"
                         >
                           <span>📋 Copy</span>
                         </button>
                         <button 
                           onClick={() => setSelectedNoteRecord(r)}
-                          className="px-2.5 py-2 rounded-lg bg-[#D96B27]/15 hover:bg-[#D96B27]/25 text-[#D96B27] font-black transition-colors text-xs border border-[#D96B27]/30 shadow-sm"
+                          className="px-2.5 py-2 rounded-lg bg-accent/15 hover:bg-accent/25 text-[#D96B27] font-black transition-colors text-xs border border-[#D96B27]/30 shadow-sm"
                           title="Attach volunteer field note"
                         >
                           📝 Note
@@ -765,7 +766,7 @@ export default function AnalysisDashboard() {
               <button
                 type="button"
                 onClick={() => setFilterMode('replace')}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'replace' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600  hover:text-slate-900 :text-white'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'replace' ? 'bg-accent text-white shadow-sm' : 'text-slate-600  hover:text-slate-900 :text-white'}`}
                 title="When switching Forensic Engines, start a fresh search without inheriting previous county/density filters"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -774,7 +775,7 @@ export default function AnalysisDashboard() {
               <button
                 type="button"
                 onClick={() => setFilterMode('combine')}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'combine' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600  hover:text-slate-900 :text-white'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'combine' ? 'bg-accent text-white shadow-sm' : 'text-slate-600  hover:text-slate-900 :text-white'}`}
                 title="Keep current County & Threshold filters when switching Forensic Engines (Nested AND search)"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -964,7 +965,7 @@ export default function AnalysisDashboard() {
         <div className="space-y-4">
           {/* Compact 1-Row KPI Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
+            <div className="bg-white border border-border px-4 py-3 rounded-xl text-foreground flex items-center justify-between shadow-sm">
               <div>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Memory Shard Scope</span>
                 <span className="text-xl font-extrabold">
@@ -978,7 +979,7 @@ export default function AnalysisDashboard() {
               <span className="text-lg">⚡</span>
             </div>
 
-            <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
+            <div className="bg-white border border-border px-4 py-3 rounded-xl text-foreground flex items-center justify-between shadow-sm">
               <div>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Flagged Findings</span>
                 <span className="text-xl font-extrabold">{results.length} <span className="text-xs font-normal text-[#646A7A]">Records Identified</span></span>
@@ -986,11 +987,11 @@ export default function AnalysisDashboard() {
               <span className="text-lg">🚩</span>
             </div>
 
-            <div className="bg-white border border-[#E5E0D8] px-4 py-3 rounded-xl text-[#2D3142] flex items-center justify-between shadow-sm">
+            <div className="bg-white border border-border px-4 py-3 rounded-xl text-foreground flex items-center justify-between shadow-sm">
               <div>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D96B27] block">Risk Status</span>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="bg-[#D96B27]/15 text-[#D96B27] font-bold px-1.5 py-0.5 rounded text-[11px] border border-[#D96B27]/30">
+                  <span className="bg-accent/15 text-[#D96B27] font-bold px-1.5 py-0.5 rounded text-[11px] border border-[#D96B27]/30">
                     ⚠️ {results.filter(r => categorizeAddress(r.address || r.address1 || "") === "⚠️ Review Recommended").length}
                   </span>
                   <span className="bg-emerald-50 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[11px] border border-emerald-200">
@@ -1305,13 +1306,13 @@ export default function AnalysisDashboard() {
                       value={playbookName}
                       onChange={(e) => setPlaybookName(e.target.value)}
                     />
-                    <button 
+                    <Button 
                       onClick={savePlaybook}
                       disabled={!playbookName || isSavingPlaybook}
-                      className="btn-primary whitespace-nowrap h-9 px-4 text-xs font-bold"
+                      variant="primary"
                     >
                       {isSavingPlaybook ? "Saving..." : "Save Template"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

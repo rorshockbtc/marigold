@@ -667,7 +667,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
             <div>
-              <strong className="text-[#2D3142] font-black">Active Dataset Connected:</strong>{' '}
+              <strong className="text-foreground font-black">Active Dataset Connected:</strong>{' '}
               <span className="text-[#D96B27] font-mono font-bold">{localFileName || "ms_statewide_benchmark_100k.csv"} ({activeStats.totalVoters.toLocaleString()} records)</span>
               <span className="text-[#4A5060] font-medium ml-2">({activeStats.isRealDataset ? 'Verified Local Memory' : 'Sample Benchmark'})</span>
             </div>
@@ -676,12 +676,12 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-mari-panel'))}
-              className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-4 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
+              className="bg-accent hover:bg-[#C85A1B] text-white font-black px-4 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
             >
               💬 Ask Mari for Guidance
             </button>
             <details className="text-[11px] text-[#4A5060]">
-            <summary className="cursor-pointer hover:text-[#2D3142] font-bold underline">Advanced Data Settings</summary>
+            <summary className="cursor-pointer hover:text-foreground font-bold underline">Advanced Data Settings</summary>
             <div className="mt-2 flex flex-wrap gap-2 pt-2 border-t border-slate-700/60">
               <button
                 type="button"

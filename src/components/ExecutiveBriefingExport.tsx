@@ -111,9 +111,9 @@ export function ExecutiveBriefingExport({
   return (
     <div className="space-y-6">
       {/* Interactive Control Toolbar (Hidden during Print) */}
-      <div className="print:hidden bg-[#F0ECE3] border border-[#E5E0D8] p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="print:hidden bg-muted border border-border p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h3 className="text-lg font-black text-[#2D3142] flex items-center gap-2">
+          <h3 className="text-lg font-black text-foreground flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#D96B27]" />
             <span>Institutional Export &amp; Sharing Engine</span>
           </h3>
@@ -136,7 +136,7 @@ export function ExecutiveBriefingExport({
             type="button"
             onClick={generateZeroPiiCartridge}
             disabled={isGeneratingJson}
-            className="flex-1 sm:flex-initial bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-75"
+            className="flex-1 sm:flex-initial bg-accent hover:bg-[#C85A1B] text-white font-black px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-75"
           >
             {isGeneratingJson ? (
               <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>

@@ -1,0 +1,116 @@
+openapi: 3.1.0
+info:
+  title: Marigold Insights API - Universal Standard
+  description: >
+    The Marigold Insights API is an interoperable workflow and communications hub. 
+    We empower your existing robust data stores by providing actionable, traversable search mechanisms designed for non-technical volunteers.
+  version: "1.0.0"
+  contact:
+    name: Architecture Desk
+    email: partnerships@marigoldinsights.org
+
+servers:
+  - url: https://api.marigoldinsights.org/v1
+    description: Production API
+
+paths:
+  /modules/anomalies/detect:
+    post:
+      summary: Execute an Anomaly Detection Module
+      description: |
+        Submits an encrypted algorithmic payload to detect civic anomalies (e.g., High-Density dormitories, Commercial Shipping Centers).
+        **Note:** Marigold is a workflow tool focused on search; actual audits should be verified within your primary System of Record.
+      operationId: detectAnomalies
+      tags:
+        - Audit Modules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlgorithmicPayload'
+      responses:
+        '200':
+          description: Successful execution of the anomaly detection module.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleResult'
+        '400':
+          description: Invalid payload or authentication tag mismatch.
+
+  /modules/list:
+    get:
+      summary: List Available Workflow Modules
+      description: Retrieve the list of active algorithmic modules that your platform can consume.
+      operationId: listModules
+      tags:
+        - Audit Modules
+      responses:
+        '200':
+          description: A list of available modules.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+components:
+  schemas:
+    AlgorithmicPayload:
+      type: object
+      description: A strongly-typed payload ensuring Zero-PII transmission. 
+      required:
+        - session_fingerprint
+        - anomaly_type
+        - encrypted_vault
+      properties:
+        session_fingerprint:
+          type: string
+          description: SHA-256 hash of the dataset batch.
+          example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        anomaly_type:
+          type: string
+          enum: [HIGH_DENSITY, NCOA_MISMATCH, FUZZY_DUPLICATE]
+          description: The specific module workflow you are executing.
+        record_identifiers:
+          type: array
+          items:
+            type: string
+          description: Strict array of non-PII Row IDs.
+        encrypted_vault:
+          type: object
+          required:
+            - payload
+          properties:
+            payload:
+              type: string
+              description: Base64 encoded AES-GCM output (Nonce + CipherText + AuthTag).
+              example: "8f9a0b1c2d3e4f5a6b7c8d9eU2FsdGVkX19xUqZz1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"
+              
+    ModuleResult:
+      type: object
+      required:
+        - status
+        - anomalies_found
+        - flags
+      properties:
+        status:
+          type: string
+          example: "SUCCESS"
+        anomalies_found:
+          type: integer
+          example: 12
+        flags:
+          type: array
+          items:
+            type: object
+            properties:
+              record_id:
+                type: string
+              flag_reason:
+                type: string
+              severity:
+                type: string
+                enum: [LOW, MEDIUM, HIGH, CRITICAL]

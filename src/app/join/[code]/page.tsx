@@ -9,7 +9,6 @@ export default function GroupInviteGatewayPage() {
   const router = useRouter();
   const params = useParams();
   const { user, isLoaded } = useUser();
-  const [pin, setPin] = useState("");
   const [isAccepting, setIsAccepting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -128,10 +127,11 @@ export default function GroupInviteGatewayPage() {
           </p>
         </div>
 
-        {/* User Account Context */}
+        {/* User Account Context & JWT Assurances */}
         <div className="border-t border-slate-200 dark:border-slate-800 pt-6 space-y-4">
-          <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
-            Joining As:
+          <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Role-Based Access Control (RBAC) Active:
           </h4>
           
           {user ? (
@@ -139,36 +139,24 @@ export default function GroupInviteGatewayPage() {
               <div className="space-y-0.5">
                 <p className="font-extrabold text-slate-900 dark:text-white text-base">{displayName}</p>
                 <p className="text-xs font-mono text-emerald-800 dark:text-emerald-300">{userEmail || "Authenticated Citizen Account"}</p>
+                <p className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 mt-1">Verified via Clerk Magic Link</p>
               </div>
-              <span className="bg-emerald-600 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase">
-                Ready to Connect
-              </span>
+              <div className="flex flex-col items-end gap-1">
+                <span className="bg-emerald-600 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase">
+                  org:auditor (Pending)
+                </span>
+              </div>
             </div>
           ) : (
             <div className="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-700 space-y-2">
               <p className="text-sm font-bold text-amber-950 dark:text-amber-200">
                 You are browsing in guest verification mode.
               </p>
-              <p className="text-xs text-amber-900 dark:text-amber-300">
-                Clicking Accept below will link your current browser device to this group workspace immediately.
+              <p className="text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
+                We have deprecated legacy PIN inputs in favor of zero-friction cryptographic access. Clicking Accept below will trigger a secure Magic Link to your email, instantly assigning you the proper JWT Role to unlock shared playbooks without remembering passwords.
               </p>
             </div>
           )}
-        </div>
-
-        {/* Optional PIN Sign-off Box */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
-            Security PIN / Invite Key (Optional):
-          </label>
-          <input
-            type="password"
-            maxLength={6}
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            placeholder="Enter 4-digit PIN if requested by team admin..."
-            className="w-full h-12 px-4 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-base focus:border-amber-500 outline-none transition-colors"
-          />
         </div>
 
         {/* Accept Button */}

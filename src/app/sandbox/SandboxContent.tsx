@@ -2,8 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
-import { Sparkles, Shield, Cpu, Database, CheckCircle2, ArrowRight, RefreshCw, HelpCircle, Play, X, Mail, Building2, Users, Lock, FlaskConical, MessageSquare } from 'lucide-react';
+import { Sparkles, Shield, Cpu, Database, CheckCircle2, ArrowRight, RefreshCw, HelpCircle, Play, X, Mail, Building2, Users, Lock, FlaskConical, MessageSquare, Download } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 export function SandboxContent() {
   const [simulationState, setSimulationState] = useState<'idle' | 'running' | 'completed' | 'full_sandbox'>('idle');
@@ -14,7 +19,7 @@ export function SandboxContent() {
   const [loading, setLoading] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
 
-  // 4-Step Simulation Walkthrough Timer
+  // 4-Step Simulation Walkthrough Timer (Deprecated in favor of Instant Boot)
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (simulationState === 'running') {
@@ -29,9 +34,15 @@ export function SandboxContent() {
     return () => clearTimeout(timer);
   }, [simulationState, currentStep]);
 
+  const router = useRouter();
+
   const handleStartSimulation = () => {
-    setCurrentStep(1);
-    setSimulationState('running');
+    // Instant Bootloader: Bypass fake screens and hydrate local state immediately
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("marigold_active_group", "State of Roosevelt (Demo)");
+      localStorage.setItem("marigold_onboarding_done", "true");
+      router.push('/analysis');
+    }
   };
 
   const handleEnterFullSandbox = () => {
@@ -132,16 +143,19 @@ export function SandboxContent() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 shrink-0 relative z-10">
-          <button 
+          <Button 
             onClick={() => setShowGuideModal(true)}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-3 rounded-xl border border-slate-600 transition-all flex items-center justify-center gap-2"
+            variant="secondary"
+            size="md"
+            icon={<HelpCircle className="w-4 h-4 text-sky-400" />}
           >
-            <HelpCircle className="w-4 h-4 text-sky-400" />
-            <span>How Does Privacy Work?</span>
-          </button>
-          <Link href="/sign-up" className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap">
-            <span>Create Free Account</span>
-            <ArrowRight className="w-4 h-4" />
+            How Does Privacy Work?
+          </Button>
+          <Link href="/sign-up">
+            <Button variant="primary" size="md" className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6">
+              <span>Create Free Account</span>
+              <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
           </Link>
         </div>
       </div>
@@ -161,14 +175,43 @@ export function SandboxContent() {
             </p>
             
             {simulationState === 'idle' && (
-              <div className="pt-4">
+              <div className="pt-4 space-y-6">
                 <button
                   onClick={handleStartSimulation}
                   className="bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-base sm:text-lg px-10 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 inline-flex items-center gap-3 group border border-slate-800"
                 >
                   <Play className="w-5 h-5 text-amber-400 fill-amber-400 group-hover:scale-110 transition-transform" />
-                  <span>Simulate Data Upload (One-Click Demo) →</span>
+                  <span>Enter Live Demo Environment (Instant Access) →</span>
                 </button>
+                
+                {/* Per-State Download Affordances */}
+                <div className="max-w-2xl mx-auto bg-slate-50 border border-slate-200 rounded-xl p-6 text-left">
+                  <h4 className="font-bold text-slate-800 flex items-center gap-2 mb-3">
+                    <Download className="w-4 h-4 text-emerald-600" />
+                    Ready to audit real state data?
+                  </h4>
+                  <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+                    Once you understand how the synthetic demo works, you can download public voter rolls directly from state government portals. Due to state privacy laws, Marigold does not host these files. You must download them securely to your local machine first.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a href="https://www.sos.state.tx.us/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                      <span className="text-sm font-bold text-slate-700">Texas SOS Portal</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                    </a>
+                    <a href="https://www.ohiosos.gov/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                      <span className="text-sm font-bold text-slate-700">Ohio SOS Portal</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                    </a>
+                    <a href="https://dos.myflorida.com/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                      <span className="text-sm font-bold text-slate-700">Florida DOS Portal</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                    </a>
+                    <a href="https://www.ncsbe.gov/results-data" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                      <span className="text-sm font-bold text-slate-700">North Carolina SBE</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                    </a>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -370,13 +413,13 @@ export function SandboxContent() {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>5 Records Verified in RAM</span>
                 </span>
-                <button
+                <Button
                   onClick={handleRestartTour}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-lg border border-slate-300 transition-all flex items-center gap-1.5"
+                  variant="secondary"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Restart Guide</span>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -458,24 +501,34 @@ export function SandboxContent() {
             ) : (
               <form onSubmit={handleSubmitInquiry} className="space-y-5 max-w-3xl">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Full Name / Title *</label>
-                    <input required name="name" type="text" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500 outline-none font-medium" placeholder="e.g., Dr. Jane Doe (State Director)" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Institutional Email *</label>
-                    <input required name="email" type="email" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500 outline-none font-medium" placeholder="jdoe@jurisdiction.gov" />
-                  </div>
+                  <Input
+                    required
+                    name="name"
+                    label="Full Name / Title *"
+                    className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500"
+                    placeholder="e.g., Dr. Jane Doe (State Director)"
+                  />
+                  <Input
+                    required
+                    name="email"
+                    type="email"
+                    label="Institutional Email *"
+                    className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500"
+                    placeholder="jdoe@jurisdiction.gov"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Organization / Jurisdiction *</label>
-                    <input required name="jurisdiction" type="text" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500 outline-none font-medium" placeholder="e.g., Ohio County Elections Board" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Inquiry Type *</label>
-                    <select name="inquiry_type" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                  <Input
+                    required
+                    name="jurisdiction"
+                    label="Organization / Jurisdiction *"
+                    className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500"
+                    placeholder="e.g., Ohio County Elections Board"
+                  />
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <label className="text-xs font-bold text-slate-300 tracking-wide uppercase">Inquiry Type *</label>
+                    <select name="inquiry_type" className="flex h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2.5 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
                       <option value="Statewide Pilot / Briefing">Schedule Statewide Pilot / Briefing</option>
                       <option value="Volunteer Group Deployment">Volunteer Group Deployment</option>
                       <option value="Technical Suggestion / Feedback">Technical Suggestion / Feedback</option>

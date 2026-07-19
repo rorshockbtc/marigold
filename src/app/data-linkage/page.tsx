@@ -277,7 +277,7 @@ export default function DataLinkageStrategy() {
         </div>
       </div>
 
-      <section className="bg-[#F0ECE3] text-[#2D3142] p-8 rounded-2xl border border-[#E5E0D8] shadow-sm space-y-4">
+      <section className="bg-muted text-foreground p-8 rounded-2xl border border-border shadow-sm space-y-4">
         <h2 className="text-2xl font-bold flex items-center gap-2 text-[#D96B27]">
           🎯 Why Single Sources are Inherently Broken
         </h2>

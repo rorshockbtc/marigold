@@ -7,6 +7,8 @@ import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import Link from "next/link";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 import { Download, Sparkles, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
 
 export default function DataPrepPage() {
@@ -148,14 +150,16 @@ export default function DataPrepPage() {
                 If you haven&apos;t downloaded the demo file yet, click below to save `DEMO_roosevelt_statewide_voter_roll.csv` to your computer&apos;s Downloads folder. Once downloaded, use <strong>Step 2</strong> directly below to select and link it!
               </p>
             </div>
-            <button
+            <Button
               onClick={handle1ClickLoadDemo}
               disabled={isLoadingDemo}
-              className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 shrink-0 transform active:scale-[0.98] w-full md:w-auto"
+              variant="primary"
+              size="lg"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center justify-center gap-2 shrink-0 w-full md:w-auto"
             >
               <Sparkles className="w-5 h-5 text-slate-900 animate-pulse" />
               <span>{isLoadingDemo ? (demoStatusMsg || "⏳ Auto-Loading ~1,800 Demo Records...") : "⚡ 1-Click Auto-Load (~1,800 Records) →"}</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -184,12 +188,13 @@ export default function DataPrepPage() {
             >
               <span>🚀 Resume Session with Existing Shard →</span>
             </Link>
-            <button
+            <Button
               onClick={() => setExistingShardCount(null)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold px-5 py-3.5 rounded-xl border border-slate-600 text-xs transition-colors"
+              variant="outline"
+              className="border-slate-600 text-slate-300 hover:text-white"
             >
               🔄 Replace &amp; Stream New File Instead
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -221,12 +226,12 @@ export default function DataPrepPage() {
 
       {/* Parse Progress & Live Mission Security Log */}
       {parseState.isProcessing && (
-        <div className="card space-y-6 border-primary/30 shadow-lg">
+        <Card className="space-y-6 border-primary/30 shadow-lg">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-xl font-bold text-primary flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
                 <span>🔐</span> Ingesting & Segmenting Data Locally...
-              </h3>
+              </CardTitle>
               <p className="text-xs text-muted-foreground mt-1">
                 Do not close this window. Your computer is streaming rows directly into browser RAM.
               </p>
@@ -248,8 +253,8 @@ export default function DataPrepPage() {
           </div>
 
           {/* Live Mission Security Log */}
-          <div className="bg-[#F0ECE3] text-[#2D3142] p-5 rounded-xl space-y-3 font-mono text-xs border border-[#E5E0D8] shadow-inner">
-            <div className="flex items-center gap-2 text-[#D96B27] font-bold border-b border-[#E5E0D8] pb-2">
+          <div className="bg-muted text-foreground p-5 rounded-xl space-y-3 font-mono text-xs border border-border shadow-inner">
+            <div className="flex items-center gap-2 text-[#D96B27] font-bold border-b border-border pb-2">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               LIVE MISSION SECURITY LOG
             </div>
@@ -259,12 +264,12 @@ export default function DataPrepPage() {
               <p>✔ [IndexedDB] Writing row batch #{Math.floor(parseState.rowsParsed / 5000) + 1} into private local VoterDataDB.</p>
               <p className="text-[#D96B27] font-bold">🔒 [Network Audit] 0 bytes transmitted outbound. 100% air-gapped processing.</p>
             </div>
-            <div className="bg-white/80 p-3 rounded-lg border border-[#E5E0D8] font-sans text-[#4A5060] text-xs mt-3 leading-relaxed">
-              <strong className="text-[#2D3142] block mb-1">🏛️ Why does this process take a few minutes?</strong>
+            <div className="bg-white/80 p-3 rounded-lg border border-border font-sans text-[#4A5060] text-xs mt-3 leading-relaxed">
+              <strong className="text-foreground block mb-1">🏛️ Why does this process take a few minutes?</strong>
               Traditional cloud software uploads sensitive citizen files to remote servers in seconds—putting public privacy at risk. Marigold processes 100% of this dataset right here inside your computer&apos;s memory. Not a single name or address ever leaves your machine. Protecting fellow citizens&apos; privacy takes a little extra time, and your security is worth it!
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Export Controls */}
@@ -289,14 +294,14 @@ export default function DataPrepPage() {
               >
                 <span>🚀 Continue to Explore &amp; Review (/analysis) →</span>
               </Link>
-              <button onClick={handleReset} className="px-4 py-4 bg-slate-800 border border-slate-600 rounded-xl text-xs font-bold hover:bg-slate-700 transition-colors text-slate-300 hover:text-white w-full sm:w-auto">
+              <Button onClick={handleReset} variant="outline" className="w-full sm:w-auto">
                 Clear &amp; Start Over
-              </button>
+              </Button>
             </div>
           </div>
 
           {parseState.columnMapping && (
-            <div className="bg-[#F0ECE3] text-[#2D3142] border border-[#E5E0D8] p-6 rounded-xl shadow-sm space-y-4">
+            <div className="bg-muted text-foreground border border-border p-6 rounded-xl shadow-sm space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <h3 className="text-lg font-black flex items-center gap-2 text-[#D96B27]">
@@ -322,16 +327,16 @@ export default function DataPrepPage() {
           )}
 
           {!exportState.isExporting && !exportState.isComplete && (
-            <div className="card space-y-6">
-              <div>
-                <h3 className="text-xl font-bold">Split & Export</h3>
+            <Card className="space-y-6">
+              <CardHeader>
+                <CardTitle>Split & Export</CardTitle>
                 <p className="text-muted-foreground text-sm mt-1">Break this massive file into smaller, actionable chunks for your volunteers or to import into Marigold Insights.</p>
-              </div>
+              </CardHeader>
 
-              <div>
+              <CardContent>
                 <label className="block text-sm font-semibold mb-2">Rows per file chunk</label>
                 <select 
-                  className="input-field max-w-xs"
+                  className="flex h-11 w-full max-w-xs rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm shadow-sm"
                   value={rowsPerFile}
                   onChange={(e) => setRowsPerFile(Number(e.target.value))}
                 >
@@ -340,15 +345,17 @@ export default function DataPrepPage() {
                   <option value={500000}>500,000 rows (Large)</option>
                   <option value={1000000}>1,000,000 rows (Massive)</option>
                 </select>
-              </div>
+              </CardContent>
 
-              <button 
+              <Button 
                 onClick={handleExport}
-                className="btn-primary w-full justify-center py-3 text-lg"
+                variant="primary"
+                size="lg"
+                className="w-full"
               >
                 Start Chunking Process
-              </button>
-            </div>
+              </Button>
+            </Card>
           )}
 
           {/* Export Progress */}
@@ -379,12 +386,13 @@ export default function DataPrepPage() {
               </div>
 
               <div className="flex justify-center mb-6">
-                <button 
+                <Button 
                   onClick={downloadAll}
-                  className="btn-primary px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all"
+                  variant="primary"
+                  size="lg"
                 >
                   Download All {exportState.filesGenerated.length} Files
-                </button>
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -8,6 +8,7 @@ import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 import { GlossaryTooltip } from '@/components/GlossaryTooltip';
 import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight, Download } from 'lucide-react';
 import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from '@/lib/db/dbName';
+import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -20,9 +21,6 @@ export default function DashboardPage() {
   const [teamMembers, setTeamMembers] = useState<{ email: string; role: string; status: string }[]>([]);
   const [copiedInvite, setCopiedInvite] = useState(false);
 
-  const [isDataConnected, setIsDataConnected] = useState(false);
-  const [loadedRowCount, setLoadedRowCount] = useState<number | null>(null);
-  const [loadedFileName, setLoadedFileName] = useState<string>("");
   const [previewAsVolunteer, setPreviewAsVolunteer] = useState(false);
   const [isSuperUser, setIsSuperUser] = useState(false);
   const [isLoadingDemo, setIsLoadingDemo] = useState(false);
@@ -48,75 +46,21 @@ export default function DashboardPage() {
     }
     setGroupName(activeGroup);
 
-    const checkDataConnection = (currentGroup?: string) => {
-      if (typeof window === "undefined") return;
-      const grp = currentGroup || localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
-      const isDemoMode = isDemoGroupActive(grp);
-      const dbName = getActiveDatabaseName(grp);
-
-      try {
-        const request = indexedDB.open(dbName, 1);
-        request.onsuccess = (e) => {
-          const db = (e.target as IDBOpenDBRequest).result;
-          if (db && db.objectStoreNames.contains("rows")) {
-            const tx = db.transaction(["rows"], "readonly");
-            const store = tx.objectStore("rows");
-            const countReq = store.count();
-            countReq.onsuccess = () => {
-              const count = countReq.result || 0;
-              if (isDemoMode) {
-                if (count > 0) {
-                  setIsDataConnected(true);
-                  setLoadedRowCount(count);
-                  setLoadedFileName("DEMO_roosevelt_statewide_voter_roll.csv");
-                } else {
-                  setIsDataConnected(false);
-                  setLoadedRowCount(0);
-                  setLoadedFileName("Synthetic DEMO_ dataset required");
-                }
-              } else {
-                if (count > 0) {
-                  localStorage.setItem("marigold_file_connected", "true");
-                  localStorage.setItem("marigold_file_rows", String(count));
-                  setIsDataConnected(true);
-                  setLoadedRowCount(count);
-                  const fname = localStorage.getItem("marigold_file_name") || "";
-                  if (fname) setLoadedFileName(fname);
-                } else {
-                  setIsDataConnected(false);
-                  setLoadedRowCount(0);
-                  setLoadedFileName("");
-                }
-              }
-            };
-          } else {
-            if (isDemoMode) {
-              setIsDataConnected(false);
-              setLoadedRowCount(0);
-              setLoadedFileName("Synthetic DEMO_ dataset required");
-            } else {
-              setIsDataConnected(false);
-              setLoadedRowCount(0);
-              setLoadedFileName("");
-            }
-          }
-        };
-      } catch (err) {}
-    };
-
     const handleGroupChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ group?: string }>;
       const newGroup = customEvent?.detail?.group || localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
       setGroupName(newGroup);
-      checkDataConnection(newGroup);
     };
     window.addEventListener('marigold-group-change', handleGroupChange);
 
     getAnomalies().then(setAnomalies);
-    checkDataConnection(activeGroup);
 
     return () => window.removeEventListener('marigold-group-change', handleGroupChange);
   }, []);
+
+  const { isDataConnected, loadedRowCount, loadedFileName } = useVoterRollConnection(groupName);
+
+
 
   // Sync user email into team members once loaded
   useEffect(() => {
@@ -264,12 +208,12 @@ export default function DashboardPage() {
       )}
 
       {/* Executive Civic Command Center Header */}
-      <div className="bg-[#F0ECE3] text-[#2D3142] p-8 rounded-2xl border border-[#E5E0D8] shadow-sm space-y-6">
+      <div className="bg-muted text-foreground p-8 rounded-2xl border border-border shadow-sm space-y-6">
         {/* Top Header Row */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E5E0D8] pb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="bg-[#D96B27]/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <span className="bg-accent/15 text-[#D96B27] border border-[#D96B27]/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
                 <Crown className="w-3.5 h-3.5" />
                 <span>Active Jurisdiction Workspace</span>
               </span>
@@ -279,20 +223,20 @@ export default function DashboardPage() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#2D3142]">{groupName}</h1>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">{groupName}</h1>
               <button 
                 onClick={() => {
                   setCustomGroupInput(groupName);
                   setIsEditingGroup(!isEditingGroup);
                 }}
-                className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#E5E0D8] transition-colors flex items-center gap-1.5 shadow-2xs"
+                className="bg-white hover:bg-[#EAE5DC] text-foreground text-xs font-bold px-3 py-1.5 rounded-lg border border-border transition-colors flex items-center gap-1.5 shadow-2xs"
               >
                 <Settings className="w-3.5 h-3.5" />
                 <span>Switch Jurisdiction / Group</span>
               </button>
             </div>
             <p className="text-sm text-[#4A5060]">
-              Signed in as <strong className="text-[#2D3142] font-bold">{displayName}</strong> ({isAdmin && !previewAsVolunteer ? "Group Administrator" : "Verified Volunteer"})
+              Signed in as <strong className="text-foreground font-bold">{displayName}</strong> ({isAdmin && !previewAsVolunteer ? "Group Administrator" : "Verified Volunteer"})
             </p>
           </div>
 
@@ -302,14 +246,14 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href="/analysis"
-                  className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
+                  className="bg-accent hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
                 >
                   <Search className="w-4 h-4" />
                   <span>Review Voter Records ({(loadedRowCount && loadedRowCount > 0) ? loadedRowCount.toLocaleString() : (groupName && (groupName.toLowerCase().includes("demo") || groupName.toLowerCase().includes("acme") || groupName.toLowerCase().includes("roosevelt") || groupName.toLowerCase().includes("sandbox")) ? '0 rows — Link DEMO File' : 'No File Linked')}) →</span>
                 </Link>
                 <Link
                   href="/data-prep"
-                  className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-4 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
+                  className="bg-white hover:bg-[#EAE5DC] text-foreground font-bold px-4 py-3.5 rounded-xl border border-border transition-colors text-xs shadow-2xs flex items-center gap-1.5"
                 >
                   <Folder className="w-4 h-4 text-[#D96B27]" />
                   <span>📂 Re-Link Local File (/data-prep)</span>
@@ -318,7 +262,7 @@ export default function DashboardPage() {
             ) : (
               <Link
                 href="/data-prep"
-                className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2"
+                className="bg-accent hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2"
               >
                 <Folder className="w-4 h-4" />
                 <span>Connect Local Voter Roll File (/data-prep) →</span>
@@ -326,7 +270,7 @@ export default function DashboardPage() {
             )}
             <Link
               href="/playbooks"
-              className="bg-white hover:bg-[#EAE5DC] text-[#2D3142] font-bold px-4 py-3.5 rounded-xl border border-[#E5E0D8] transition-colors text-xs shadow-2xs flex items-center gap-1.5"
+              className="bg-white hover:bg-[#EAE5DC] text-foreground font-bold px-4 py-3.5 rounded-xl border border-border transition-colors text-xs shadow-2xs flex items-center gap-1.5"
             >
               <BookOpen className="w-4 h-4" />
               <span>Step-by-Step Guides</span>
@@ -353,7 +297,7 @@ export default function DashboardPage() {
                 <button
                   key={preset}
                   onClick={() => handleSaveGroup(preset)}
-                  className="bg-[#F0ECE3] hover:bg-[#D96B27] text-[#2D3142] hover:text-white px-3 py-1.5 rounded-lg border border-[#E5E0D8] font-bold transition-colors"
+                  className="bg-muted hover:bg-accent text-foreground hover:text-white px-3 py-1.5 rounded-lg border border-border font-bold transition-colors"
                 >
                   {preset}
                 </button>
@@ -365,11 +309,11 @@ export default function DashboardPage() {
                 value={customGroupInput}
                 onChange={(e) => setCustomGroupInput(e.target.value)}
                 placeholder="Enter your custom group name..."
-                className="flex-1 bg-[#FAF8F5] border border-[#E5E0D8] rounded-lg px-3 py-2 text-sm text-[#2D3142] focus:border-[#D96B27] outline-none font-medium"
+                className="flex-1 bg-[#FAF8F5] border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:border-[#D96B27] outline-none font-medium"
               />
               <button
                 onClick={() => handleSaveGroup(customGroupInput || "National Civic Data Sandbox")}
-                className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-5 py-2 rounded-lg text-sm transition-colors"
+                className="bg-accent hover:bg-[#C85A1B] text-white font-black px-5 py-2 rounded-lg text-sm transition-colors"
               >
                 Save
               </button>
@@ -409,7 +353,7 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-[#2D3142] to-[#1E212D] text-white p-6 rounded-2xl border border-slate-700 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="bg-[#D96B27] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-accent text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 ⚡ Executive Sales &amp; Audit Tool
               </span>
               <span className="text-xs text-amber-300 font-mono">Zero-Cloud <GlossaryTooltip term="PII" /> <GlossaryTooltip term="Air-Gap" /></span>
@@ -423,7 +367,7 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/comprehensive-audit"
-            className="bg-[#D96B27] hover:bg-[#C85A1B] text-white font-black px-6 py-4 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 shrink-0 transform active:scale-[0.98]"
+            className="bg-accent hover:bg-[#C85A1B] text-white font-black px-6 py-4 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 shrink-0 transform active:scale-[0.98]"
           >
             <Rocket className="w-4 h-4" />
             <span>🚀 Execute 360° Comprehensive Audit →</span>
@@ -432,9 +376,9 @@ export default function DashboardPage() {
 
         {/* 4-Column Real-Time Telemetry & System Status Widgets */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
-          <div className="bg-white p-4 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-1">
+          <div className="bg-white p-4 rounded-xl border border-border shadow-2xs space-y-1">
             <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Active Memory Shard</span>
-            <div className="text-lg md:text-xl font-black text-[#2D3142]">
+            <div className="text-lg md:text-xl font-black text-foreground">
               {(loadedRowCount && loadedRowCount > 0) ? loadedRowCount.toLocaleString() : '0'} <span className="text-xs font-normal text-[#646A7A]">rows</span>
             </div>
             <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
@@ -442,15 +386,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-1">
+          <div className="bg-white p-4 rounded-xl border border-border shadow-2xs space-y-1">
             <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Forensic Playbook</span>
             <div className="text-lg md:text-xl font-black text-[#D96B27]">Playbook 2.0</div>
             <div className="text-[11px] text-[#646A7A] font-medium">HSGP & FEMA Validated</div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-1">
+          <div className="bg-white p-4 rounded-xl border border-border shadow-2xs space-y-1">
             <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Operator Clearance</span>
-            <div className="text-lg md:text-xl font-black text-[#2D3142]">
+            <div className="text-lg md:text-xl font-black text-foreground">
               {isAdmin && !previewAsVolunteer ? "Group Admin" : "Auditor"}
             </div>
             {isSuperUser && (
@@ -464,7 +408,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-[#E5E0D8] shadow-2xs space-y-1">
+          <div className="bg-white p-4 rounded-xl border border-border shadow-2xs space-y-1">
             <span className="text-[11px] font-bold text-[#646A7A] uppercase tracking-wider">Network Air-Gap</span>
             <div className="text-lg md:text-xl font-black text-emerald-700">100% Isolated</div>
             <div className="text-[11px] text-[#646A7A] font-mono">0 bytes exfiltrated</div>
