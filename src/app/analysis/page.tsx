@@ -422,17 +422,17 @@ export default function AnalysisDashboard() {
     const visibleResults = sortedResults.slice(0, displayLimit);
     return (
       <div className="space-y-4">
-        <div className="overflow-x-auto border-2 border-slate-300 dark:border-slate-700 rounded-xl shadow-sm">
+        <div className="overflow-x-auto border-2 border-slate-300  rounded-xl shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b-2 border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-900 text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+              <tr className="border-b-2 border-slate-300  bg-slate-200  text-xs font-black text-slate-900  uppercase tracking-wider">
                 <th className="p-4">1. Location / Cluster Summary</th>
                 <th className="p-4">2. Signal Classification</th>
                 <th className="p-4">3. Plain-English Synthesis</th>
                 <th className="p-4 text-right">4. Verification CTA</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+            <tbody className="divide-y divide-slate-200  bg-white ">
               {visibleResults.map((r, i) => {
                 const exclusionValue = r.address || r.address1 || r.date_registered || '';
                 const occ = Number(r.occupant_count || r.registrations || 1);
@@ -442,30 +442,30 @@ export default function AnalysisDashboard() {
                   <tr 
                     key={i} 
                     onClick={() => setSelectedInspectRecord(r)}
-                    className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 dark:hover:bg-slate-900/60'}`}
+                    className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 :bg-slate-900/60'}`}
                   >
                     <td className="p-4 space-y-1.5 max-w-sm">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-black text-slate-950 dark:text-white text-base">
+                        <span className="font-black text-slate-950  text-base">
                           {getExhaustiveFullName(r)}
                         </span>
                         {isCluster ? (
-                          <span className="text-[11px] font-mono bg-amber-100 dark:bg-amber-950/80 px-2.5 py-0.5 rounded-md font-black text-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-700">
+                          <span className="text-[11px] font-mono bg-amber-100  px-2.5 py-0.5 rounded-md font-black text-amber-950  border border-amber-400 ">
                             🏢 Multi-Voter Domicile ({occ} Occupants)
                           </span>
                         ) : (
-                          <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-extrabold text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600">
+                          <span className="text-[11px] font-mono bg-slate-100  px-2 py-0.5 rounded font-extrabold text-slate-900  border border-slate-300 ">
                             REC-ID: {r.id || 'LOCAL-1'}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-slate-950 dark:text-white font-extrabold truncate">
+                      <div className="text-sm text-slate-950  font-extrabold truncate">
                         📍 {r.address || r.address1 || 'Unknown Street Address'}
                       </div>
-                      <div className="text-xs text-slate-800 dark:text-slate-200 font-bold flex items-center gap-1.5">
+                      <div className="text-xs text-slate-800  font-bold flex items-center gap-1.5">
                         <span>{r.city || 'City'}, {r.state || 'MS'} {r.zip || ''}</span>
                         <span>•</span>
-                        <span className="font-black text-amber-800 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded">{r.county || 'Statewide'} County</span>
+                        <span className="font-black text-amber-800  bg-amber-500/10 px-1.5 py-0.5 rounded">{r.county || 'Statewide'} County</span>
                       </div>
                     </td>
                     <td className="p-4 whitespace-nowrap align-top">
@@ -478,7 +478,7 @@ export default function AnalysisDashboard() {
                         </span>
                       </div>
                     </td>
-                    <td className="p-4 max-w-md text-sm font-bold text-slate-900 dark:text-slate-100 leading-relaxed align-top">
+                    <td className="p-4 max-w-md text-sm font-bold text-slate-900  leading-relaxed align-top">
                       <p className="line-clamp-2">{r.details || 'Identified with structural/locational compliance flag.'}</p>
                     </td>
                     <td className="p-4 align-top" onClick={(e) => e.stopPropagation()}>
@@ -509,15 +509,15 @@ export default function AnalysisDashboard() {
           </table>
         </div>
         {sortedResults.length > displayLimit && (
-          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
-            <span className="text-slate-600 dark:text-slate-400 font-medium">
-              Showing the first <strong className="text-slate-900 dark:text-white font-bold">{displayLimit}</strong> of <strong className="text-slate-900 dark:text-white font-bold">{sortedResults.length}</strong> total flagged records.
+          <div className="bg-slate-50  border border-slate-300  p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+            <span className="text-slate-600  font-medium">
+              Showing the first <strong className="text-slate-900  font-bold">{displayLimit}</strong> of <strong className="text-slate-900  font-bold">{sortedResults.length}</strong> total flagged records.
             </span>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setDisplayLimit(prev => prev + 150)}
-                className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm"
+                className="bg-white  hover:bg-slate-100 :bg-slate-700 text-slate-800  font-bold px-3.5 py-2 rounded-lg border border-slate-300  transition-colors shadow-sm"
               >
                 Load 150 More
               </button>
@@ -623,18 +623,18 @@ export default function AnalysisDashboard() {
         </div>
       )}
 
-      <header className="mb-8 bg-amber-50 dark:bg-slate-900 border-2 border-amber-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
+      <header className="mb-8 bg-amber-50  border-2 border-amber-200  p-6 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3.5 mb-2">
           <span className="text-3xl">🧭</span>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Explore & Review Election Records</h1>
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1">Guided discovery of voter roll patterns, address anomalies, and community verification tasks.</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900  tracking-tight">Explore & Review Election Records</h1>
+            <p className="text-sm font-bold text-slate-700  mt-1">Guided discovery of voter roll patterns, address anomalies, and community verification tasks.</p>
           </div>
         </div>
-        <div className="mt-4 pt-3 border-t border-amber-200/80 dark:border-slate-800 flex flex-wrap items-center gap-4 text-xs font-bold text-slate-800 dark:text-slate-200">
+        <div className="mt-4 pt-3 border-t border-amber-200/80  flex flex-wrap items-center gap-4 text-xs font-bold text-slate-800 ">
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Auto-Guide Mode Active</span>
           <span className="flex items-center gap-1.5">🔒 Zero Data Exfiltration (100% Local RAM)</span>
-          <span className="text-amber-900 dark:text-amber-300 bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded-md">💡 Look for ✨ icons for simple ELI5 plain-English explanations</span>
+          <span className="text-amber-900  bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded-md">💡 Look for ✨ icons for simple ELI5 plain-English explanations</span>
         </div>
       </header>
 
@@ -761,11 +761,11 @@ export default function AnalysisDashboard() {
             <span>Global Search Parameters</span>
           </h2>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center bg-slate-200 dark:bg-slate-800 p-1 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold">
+            <div className="flex items-center bg-slate-200  p-1 rounded-xl border border-slate-300  text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setFilterMode('replace')}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'replace' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'replace' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600  hover:text-slate-900 :text-white'}`}
                 title="When switching Forensic Engines, start a fresh search without inheriting previous county/density filters"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -774,7 +774,7 @@ export default function AnalysisDashboard() {
               <button
                 type="button"
                 onClick={() => setFilterMode('combine')}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'combine' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${filterMode === 'combine' ? 'bg-[#D96B27] text-white shadow-sm' : 'text-slate-600  hover:text-slate-900 :text-white'}`}
                 title="Keep current County & Threshold filters when switching Forensic Engines (Nested AND search)"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -911,7 +911,7 @@ export default function AnalysisDashboard() {
 
       {/* Live Progress Banner when Analyzing */}
       {isLoading && (
-        <div className="bg-primary/5 dark:bg-primary/10 border-2 border-primary/30 p-6 rounded-2xl space-y-3 shadow-sm animate-in fade-in slide-in-from-top-2 my-6">
+        <div className="bg-primary/5  border-2 border-primary/30 p-6 rounded-2xl space-y-3 shadow-sm animate-in fade-in slide-in-from-top-2 my-6">
           <div className="flex items-center justify-between text-sm font-bold text-foreground">
             <div className="flex items-center gap-2.5">
               <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full inline-block" />
@@ -921,7 +921,7 @@ export default function AnalysisDashboard() {
               {loadingProgress}% Loaded
             </span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden shadow-inner">
+          <div className="w-full bg-slate-200  h-2.5 rounded-full overflow-hidden shadow-inner">
             <div 
               className="bg-amber-500 h-full rounded-full transition-all duration-300 ease-out"
               style={{ width: `${loadingProgress}%` }}
@@ -1029,7 +1029,7 @@ export default function AnalysisDashboard() {
                     });
                     if (topCounty) setCountyFilter(topCounty);
                   }}
-                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 rounded-lg text-xs border border-amber-500/30 transition-all flex items-center gap-1 shadow-sm"
+                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-600  font-bold px-2.5 py-1 rounded-lg text-xs border border-amber-500/30 transition-all flex items-center gap-1 shadow-sm"
                 >
                   <span>🏆 Top County</span>
                 </button>
@@ -1037,7 +1037,7 @@ export default function AnalysisDashboard() {
                   onClick={() => runAlgorithm(currentAudit || 'density', countyFilter, thresholdFilter, true)}
                   disabled={isLoading}
                   title="Force re-scan of local database chunks instead of using instant cache"
-                  className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold px-2.5 py-1 rounded-lg text-xs border border-purple-500/30 transition-all flex items-center gap-1 shadow-sm disabled:opacity-50"
+                  className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-600  font-bold px-2.5 py-1 rounded-lg text-xs border border-purple-500/30 transition-all flex items-center gap-1 shadow-sm disabled:opacity-50"
                 >
                   <span>🔄 Re-scan Data Map</span>
                 </button>
@@ -1344,19 +1344,19 @@ export default function AnalysisDashboard() {
 
       {/* Persistent MVC Side Sheet Controller */}
       {selectedInspectRecord && (
-        <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white dark:bg-slate-900 border-l-2 border-slate-300 dark:border-slate-700 shadow-2xl z-[9999] flex flex-col overflow-hidden animate-slideLeft">
+        <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white  border-l-2 border-slate-300  shadow-2xl z-[9999] flex flex-col overflow-hidden animate-slideLeft">
           {/* Side Sheet Header */}
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex items-center justify-between">
+          <div className="p-4 border-b border-slate-200  bg-slate-100  flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <Search className="w-6 h-6 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+              <Search className="w-6 h-6 text-slate-500  flex-shrink-0" />
               <div>
-                <h3 className="font-black text-base text-slate-900 dark:text-white uppercase tracking-wider">MVC Anomaly Controller</h3>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Persistent Forensic Inspection Drawer</p>
+                <h3 className="font-black text-base text-slate-900  uppercase tracking-wider">MVC Anomaly Controller</h3>
+                <p className="text-xs font-semibold text-slate-600 ">Persistent Forensic Inspection Drawer</p>
               </div>
             </div>
             <button 
               onClick={() => setSelectedInspectRecord(null)}
-              className="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors font-black text-base"
+              className="p-2 rounded-lg bg-slate-200  hover:bg-slate-300 :bg-slate-700 text-slate-800  transition-colors font-black text-base"
               title="Close Controller Drawer"
             >
               ✕
@@ -1364,18 +1364,18 @@ export default function AnalysisDashboard() {
           </div>
 
           {/* Scrollable Content Wrapper */}
-          <div className="flex-1 overflow-y-auto select-text divide-y divide-slate-200 dark:divide-slate-800">
+          <div className="flex-1 overflow-y-auto select-text divide-y divide-slate-200 ">
             {/* Anomaly Diagnosis Section (Top Priority) */}
             <div className="p-5 bg-amber-500/15 border-b-2 border-amber-500/30 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-black uppercase text-amber-900 dark:text-amber-300 tracking-wide flex items-center gap-1.5">
+                <span className="text-sm font-black uppercase text-amber-900  tracking-wide flex items-center gap-1.5">
                   <span>🚨 Primary Anomaly Diagnosis</span>
                 </span>
-                <span className="px-3 py-1 rounded-md text-xs font-black bg-amber-500/30 text-amber-950 dark:text-amber-200 border border-amber-500/40">
+                <span className="px-3 py-1 rounded-md text-xs font-black bg-amber-500/30 text-amber-950  border border-amber-500/40">
                   {selectedInspectRecord.risk_level || 'HIGH DENSITY'}
                 </span>
               </div>
-              <p className="text-sm text-slate-900 dark:text-slate-100 font-bold leading-relaxed bg-white/60 dark:bg-slate-900/60 p-3 rounded-lg border border-amber-500/30">
+              <p className="text-sm text-slate-900  font-bold leading-relaxed bg-white/60  p-3 rounded-lg border border-amber-500/30">
                 {selectedInspectRecord.details || categorizeAddress(selectedInspectRecord.address || selectedInspectRecord.address1 || "")}
               </p>
               <div className="pt-1 flex flex-wrap items-center gap-2.5">
@@ -1390,7 +1390,7 @@ export default function AnalysisDashboard() {
                     excludeRecord(selectedInspectRecord.address || selectedInspectRecord.address1 || "");
                     setSelectedInspectRecord(null);
                   }}
-                  className="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 font-extrabold rounded-lg text-xs transition-colors shadow-sm"
+                  className="px-3.5 py-2 bg-white  hover:bg-red-50 :bg-red-950/50 text-red-700  border border-red-300  font-extrabold rounded-lg text-xs transition-colors shadow-sm"
                 >
                   <span>👎 Mark False Positive</span>
                 </button>
@@ -1398,41 +1398,41 @@ export default function AnalysisDashboard() {
             </div>
 
             {/* Citizen & Location Blueprint */}
-            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-2">
+            <div className="p-5 border-b border-slate-200  bg-slate-50  space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Citizen & Domicile Summary</h4>
+                <h4 className="text-xs font-extrabold text-slate-500  uppercase tracking-wider">Citizen & Domicile Summary</h4>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(String(selectedInspectRecord.address || selectedInspectRecord.address1 || ""));
                     alert("Address copied! Paste securely into a new tab or mapping app.");
                   }}
-                  className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold rounded text-xs transition-all flex items-center gap-1"
+                  className="px-2.5 py-1 bg-slate-200  hover:bg-slate-300 text-slate-800  font-bold rounded text-xs transition-all flex items-center gap-1"
                 >
                   <span>📋 Copy Address</span>
                 </button>
               </div>
-              <div className="text-base font-black text-slate-900 dark:text-white">{getExhaustiveFullName(selectedInspectRecord)}</div>
-              <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Voter ID: {selectedInspectRecord.id || 'N/A'}</div>
-              <div className="text-sm text-slate-900 dark:text-slate-100 font-extrabold pt-1">
+              <div className="text-base font-black text-slate-900 ">{getExhaustiveFullName(selectedInspectRecord)}</div>
+              <div className="text-xs font-mono font-bold text-slate-700 ">Voter ID: {selectedInspectRecord.id || 'N/A'}</div>
+              <div className="text-sm text-slate-900  font-extrabold pt-1">
                 📍 {selectedInspectRecord.address || selectedInspectRecord.address1 || 'Unknown Address'}
               </div>
-              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <div className="text-xs font-semibold text-slate-700 ">
                 {selectedInspectRecord.city || 'City'}, {selectedInspectRecord.state || 'MS'} {selectedInspectRecord.zip || ''} ({selectedInspectRecord.county || 'Statewide'} County)
               </div>
             </div>
 
             {/* Matching / Related Duplicate Registrations (For County Clerk / Commissioner Verification) */}
             {(selectedInspectRecord.duplicateAddresses || (currentAudit === 'duplicates' && results.length > 0)) && (
-              <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-amber-500/10 dark:bg-amber-500/5 space-y-3">
+              <div className="p-5 border-b border-slate-200  bg-amber-500/10  space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-900  flex items-center gap-1.5">
                     <span>👯 Matching Duplicate Registrations</span>
                   </span>
-                  <span className="text-[10px] font-mono bg-amber-500/20 text-amber-950 dark:text-amber-200 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[10px] font-mono bg-amber-500/20 text-amber-950  px-2 py-0.5 rounded font-bold">
                     Cross-Reference Check
                   </span>
                 </div>
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-700  leading-relaxed">
                   For official County Clerk or Election Commissioner verification, below are all addresses registered under this identical Name &amp; Zip code:
                 </p>
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -1444,10 +1444,10 @@ export default function AnalysisDashboard() {
                   ).map((addr: string, idx: number) => (
                     <div 
                       key={idx} 
-                      className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 font-mono font-bold ${addr === selectedInspectRecord.address ? 'bg-amber-500/20 border-amber-500/40 text-amber-950 dark:text-amber-200' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'}`}
+                      className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 font-mono font-bold ${addr === selectedInspectRecord.address ? 'bg-amber-500/20 border-amber-500/40 text-amber-950 ' : 'bg-white  border-slate-200  text-slate-800 '}`}
                     >
                       <div className="flex items-center gap-2 truncate">
-                        <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 flex items-center justify-center text-[10px] shrink-0 font-black">
+                        <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-900  flex items-center justify-center text-[10px] shrink-0 font-black">
                           #{idx + 1}
                         </span>
                         <span className="truncate">{addr || 'Unknown Address'}</span>
@@ -1460,7 +1460,7 @@ export default function AnalysisDashboard() {
                             navigator.clipboard.writeText(String(addr));
                             alert("Address copied: " + addr);
                           }}
-                          className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white px-1.5 py-0.5 rounded shrink-0 underline"
+                          className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 :text-white px-1.5 py-0.5 rounded shrink-0 underline"
                         >
                           Copy
                         </button>
@@ -1473,16 +1473,16 @@ export default function AnalysisDashboard() {
 
             {/* Resident Cluster Roster (All Occupants at Domicile / Date) */}
             {selectedInspectRecord.residentCluster && selectedInspectRecord.residentCluster.length > 0 && (
-              <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-blue-500/10 dark:bg-blue-500/5 space-y-3">
+              <div className="p-5 border-b border-slate-200  bg-blue-500/10  space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-blue-900  flex items-center gap-1.5">
                     <span>👥 Resident Cluster Roster</span>
                   </span>
-                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-950 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-950  px-2 py-0.5 rounded font-bold">
                     {selectedInspectRecord.residentCluster.length} Total Occupants
                   </span>
                 </div>
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-700  leading-relaxed">
                   {currentAudit === 'spikes'
                     ? "Below is the sample cohort of individuals registered on this surge date across the jurisdiction:"
                     : "For official verification, below is the roster of registered voters domiciled at this exact street address:"}
@@ -1491,14 +1491,14 @@ export default function AnalysisDashboard() {
                   {selectedInspectRecord.residentCluster.map((res: any, idx: number) => (
                     <div 
                       key={idx} 
-                      className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between gap-2 font-mono font-bold text-slate-800 dark:text-slate-200 shadow-2xs"
+                      className="p-2.5 rounded-lg bg-white  border border-slate-200  text-xs flex items-center justify-between gap-2 font-mono font-bold text-slate-800  shadow-2xs"
                     >
                       <div className="flex items-center gap-2 truncate">
-                        <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-900 dark:text-blue-300 flex items-center justify-center text-[10px] shrink-0 font-black">
+                        <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-900  flex items-center justify-center text-[10px] shrink-0 font-black">
                           #{idx + 1}
                         </span>
                         <div className="truncate">
-                          <div className="font-extrabold text-slate-900 dark:text-white truncate">{res.name || 'Resident Name'}</div>
+                          <div className="font-extrabold text-slate-900  truncate">{res.name || 'Resident Name'}</div>
                           <div className="text-[10px] text-slate-500 font-normal">ID: {res.id || 'N/A'} {res.date ? `• Reg: ${res.date}` : res.city ? `• City: ${res.city}` : ''}</div>
                         </div>
                       </div>
@@ -1518,26 +1518,26 @@ export default function AnalysisDashboard() {
 
             {/* Domicile vs Mailing Address comparison (Out-of-State / NCOA Check) */}
             {(selectedInspectRecord.mailingAddress || currentAudit === 'out-of-state-mailing') && (
-              <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-red-500/10 dark:bg-red-500/5 space-y-3">
+              <div className="p-5 border-b border-slate-200  bg-red-500/10  space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-red-900 dark:text-red-300 flex items-center gap-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-red-900  flex items-center gap-1.5">
                     <span>📫 Domicile vs Mailing Comparison</span>
                   </span>
-                  <span className="text-[10px] font-mono bg-red-500/20 text-red-950 dark:text-red-200 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[10px] font-mono bg-red-500/20 text-red-950  px-2 py-0.5 rounded font-bold">
                     Mail Divergence
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-3.5 pt-1">
-                  <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                  <div className="p-3 bg-white  rounded-xl border border-slate-200  space-y-1">
                     <span className="text-[10px] uppercase font-sans font-extrabold text-slate-500 block">Residential Domicile</span>
-                    <strong className="text-xs font-mono font-bold text-slate-900 dark:text-white block leading-relaxed">
+                    <strong className="text-xs font-mono font-bold text-slate-900  block leading-relaxed">
                       {selectedInspectRecord.address || 'Unknown Address'}<br />
                       {selectedInspectRecord.city || 'City'}, MS {selectedInspectRecord.zip || ''}
                     </strong>
                   </div>
-                  <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                  <div className="p-3 bg-white  rounded-xl border border-slate-200  space-y-1">
                     <span className="text-[10px] uppercase font-sans font-extrabold text-slate-500 block">Out-of-State Mailing</span>
-                    <strong className="text-xs font-mono font-bold text-red-700 dark:text-red-300 block leading-relaxed">
+                    <strong className="text-xs font-mono font-bold text-red-700  block leading-relaxed">
                       {selectedInspectRecord.mailingAddress || selectedInspectRecord.raw?.mail_address || selectedInspectRecord.raw?.mailing_address || selectedInspectRecord.raw?.MAIL_ADDR || 'Out-of-State Address Filed'}
                     </strong>
                   </div>
@@ -1547,7 +1547,7 @@ export default function AnalysisDashboard() {
 
             {/* Extracted CSV Attributes & Raw Object Values */}
             <div className="p-5 space-y-3">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-900  flex items-center gap-1.5">
                 <span>📋 All Extracted Attributes &amp; Raw Data</span>
               </span>
               {selectedInspectRecord.raw && Object.keys(selectedInspectRecord.raw).length > 0 ? (
@@ -1555,14 +1555,14 @@ export default function AnalysisDashboard() {
                   {Object.entries(selectedInspectRecord.raw)
                     .filter(([_, val]) => val !== null && val !== undefined && String(val).trim() !== '')
                     .map(([key, value]) => (
-                      <div key={key} className="bg-slate-100 dark:bg-slate-800/40 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-0.5">
+                      <div key={key} className="bg-slate-100  p-2 rounded-lg border border-slate-200  flex flex-col gap-0.5">
                         <span className="text-[10px] font-extrabold text-slate-500 uppercase truncate">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 break-all">{String(value)}</span>
+                        <span className="text-xs font-semibold text-slate-900  break-all">{String(value)}</span>
                       </div>
                     ))}
                 </div>
               ) : (
-                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium bg-slate-100 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
+                <div className="text-sm text-slate-700  font-medium bg-slate-100  p-4 rounded-xl border border-slate-200  text-center space-y-2">
                   <p>Detailed raw columns are indexed during your live database crawl.</p>
                   <button
                     onClick={() => {
