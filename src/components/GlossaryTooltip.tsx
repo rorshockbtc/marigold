@@ -139,7 +139,7 @@ export function GlossaryTooltip({
 
       {/* Popover Card */}
       {isOpen && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-50 w-72 md:w-80 p-4 bg-[#2D3142] text-white rounded-xl shadow-2xl border border-slate-600 text-xs leading-relaxed animate-in fade-in zoom-in-95 duration-150 pointer-events-auto">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-50 w-72 md:w-80 p-4 bg-[#2D3142] text-slate-900 rounded-xl shadow-2xl border border-slate-600 text-xs leading-relaxed animate-in fade-in zoom-in-95 duration-150 pointer-events-auto">
           <div className="space-y-2 text-left">
             <div className="flex items-center justify-between border-b border-slate-700 pb-1.5">
               <span className="font-black text-amber-400 text-sm tracking-tight">{info.title}</span>
@@ -150,11 +150,11 @@ export function GlossaryTooltip({
             <p className="text-slate-200 text-xs leading-normal font-medium">
               {info.definition}
             </p>
-            <div className="bg-black/30 p-2.5 rounded-lg border border-slate-700/60 space-y-1 mt-2">
+            <div className="bg-slate-200/30 p-2.5 rounded-lg border border-slate-700/60 space-y-1 mt-2">
               <span className="text-[10px] font-black text-amber-400/90 uppercase tracking-wider block">
                 Why It Matters &amp; How It Works in Marigold:
               </span>
-              <p className="text-[11px] text-slate-300 leading-relaxed">
+              <p className="text-[11px] text-slate-700 leading-relaxed">
                 {info.whyAndHow}
               </p>
             </div>

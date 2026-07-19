@@ -24,7 +24,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
-      <div className="bg-slate-950 text-white py-20 px-8">
+      <div className="bg-slate-100 text-slate-900 py-20 px-8">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <Badge variant="default" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
             Institutional Support
@@ -32,7 +32,7 @@ export default function ContactPage() {
           <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight">
             How can we assist your audit?
           </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Whether you need a custom SDK paradigm, help with on-premise air-gap deployments, or are looking to partner, our technical desk is standing by.
           </p>
         </div>

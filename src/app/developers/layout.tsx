@@ -17,12 +17,14 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
       items: [
         { name: "Introduction", href: "/developers", icon: BookOpen },
         { name: "Quickstart Guide", href: "/developers/docs/getting-started", icon: Terminal },
+        { name: "Official SDKs", href: "/developers/docs/sdks", icon: Blocks },
       ]
     },
     {
       group: "Core Infrastructure",
       items: [
         { name: "Authentication & Tokens", href: "/developers/docs/authentication", icon: Key },
+        { name: "Webhooks & Callbacks", href: "/developers/docs/webhooks", icon: Activity },
         { name: "Zero-PII Cryptography", href: "/developers/docs/cryptography", icon: Shield },
       ]
     },
@@ -55,7 +57,7 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
           </Link>
           
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-600" />
             <input 
               type="text" 
               placeholder="Search documentation (Cmd+K)" 

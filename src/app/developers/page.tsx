@@ -90,7 +90,7 @@ export default function DevelopersPage() {
       <div className="pt-8 border-t border-slate-200 flex justify-end">
         <Link 
           href="/developers/docs/getting-started"
-          className="bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Quickstart Guide
           <ChevronRight className="w-4 h-4" />

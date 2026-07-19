@@ -11,7 +11,7 @@ export default function ErrorCodesPage() {
       <div className="space-y-4 border-b border-slate-200 pb-8">
         <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 mb-2">
           <span>API Reference</span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-600" />
           <span className="text-slate-900">Error Codes Dictionary</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight text-slate-900 leading-tight">

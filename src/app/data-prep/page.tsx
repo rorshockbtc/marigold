@@ -142,7 +142,7 @@ export default function DataPrepPage() {
           </div>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <FileSpreadsheet className="w-6 h-6 text-amber-400 shrink-0" />
                 <span>Download Synthetic Demo Roll (`DEMO_roosevelt_statewide_voter_roll.csv`)</span>
               </h3>
@@ -166,7 +166,7 @@ export default function DataPrepPage() {
 
       {/* Shared Household Device Auto-Resume Banner */}
       {!parseState.isProcessing && existingShardCount !== null && existingShardCount > 0 && parseState.totalRows === 0 && (
-        <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 rounded-2xl p-8 text-white shadow-xl space-y-6 animate-in fade-in">
+        <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 rounded-2xl p-8 text-slate-900 shadow-xl space-y-6 animate-in fade-in">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5">
               <span>⚡ Active Shared Device Shard Detected</span>
@@ -176,7 +176,7 @@ export default function DataPrepPage() {
             </span>
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-serif font-black text-white">Resume Audit Session Without Re-Uploading</h2>
+            <h2 className="text-2xl font-serif font-black text-slate-900">Resume Audit Session Without Re-Uploading</h2>
             <p className="text-sm text-slate-200 leading-relaxed max-w-2xl">
               We detected that this device already processed and chunked a statewide voter dataset into local browser memory. You do not need to re-upload or re-chunk your files.
             </p>
@@ -191,7 +191,7 @@ export default function DataPrepPage() {
             <Button
               onClick={() => setExistingShardCount(null)}
               variant="outline"
-              className="border-slate-600 text-slate-300 hover:text-white"
+              className="border-slate-600 text-slate-700 hover:text-slate-900"
             >
               🔄 Replace &amp; Stream New File Instead
             </Button>
@@ -275,16 +275,16 @@ export default function DataPrepPage() {
       {/* Export Controls */}
       {!parseState.isProcessing && parseState.totalRows > 0 && (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 p-6 sm:p-8 rounded-2xl text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-in fade-in">
+          <div className="bg-gradient-to-r from-emerald-900 to-slate-900 border-2 border-emerald-500 p-6 sm:p-8 rounded-2xl text-slate-900 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-in fade-in">
             <div className="space-y-1">
               <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-1">
                 ⚡ RAM Shard Active
               </span>
-              <h3 className="text-2xl font-serif font-black flex items-center gap-2 text-white">
+              <h3 className="text-2xl font-serif font-black flex items-center gap-2 text-slate-900">
                 ✅ Ingestion &amp; Linking Complete!
               </h3>
               <p className="text-sm text-emerald-100">
-                Successfully parsed &amp; linked <strong className="text-white font-mono">{parseState.totalRows.toLocaleString()}</strong> records into browser memory. You are ready to explore and audit!
+                Successfully parsed &amp; linked <strong className="text-slate-900 font-mono">{parseState.totalRows.toLocaleString()}</strong> records into browser memory. You are ready to explore and audit!
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">

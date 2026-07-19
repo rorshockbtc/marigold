@@ -34,7 +34,7 @@ export function PartnersContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans">
       {/* Hero Header */}
-      <section className="bg-slate-950 text-white py-16 md:py-24 px-4 sm:px-8 relative overflow-hidden border-b border-slate-800">
+      <section className="bg-slate-100 text-slate-900 py-16 md:py-24 px-4 sm:px-8 relative overflow-hidden border-b border-slate-200">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/20 via-slate-950 to-slate-950 pointer-events-none"></div>
         <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10 animate-in fade-in duration-500">
           <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-extrabold text-xs px-4 py-1.5 rounded-full uppercase tracking-widest">
@@ -42,12 +42,12 @@ export function PartnersContent() {
             <span>Institutional Beta Partnership Program</span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-extrabold tracking-tight text-white leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-extrabold tracking-tight text-slate-900 leading-tight">
             Unbiased Statistical Mapping. <br className="hidden sm:inline" />
             <span className="text-amber-400">Zero Political Narrative.</span>
           </h1>
           
-          <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
+          <p className="text-lg sm:text-xl text-slate-700 max-w-3xl mx-auto leading-relaxed font-normal">
             Marigold Insights is currently selecting state-level civic organizations, election researchers, and data teams for our **Beta Partnership Program**. Join an enterprise-grade network dedicated to mathematical truth and voter roll integrity.
           </p>
 
@@ -61,7 +61,7 @@ export function PartnersContent() {
             </a>
             <a 
               href="#data-honesty" 
-              className="bg-slate-900/80 hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-xl border border-slate-700 shadow transition-all text-sm sm:text-base"
+              className="bg-slate-50 border border-slate-200/80 hover:bg-slate-800 text-slate-900 font-bold px-8 py-4 rounded-xl border border-slate-700 shadow transition-all text-sm sm:text-base"
             >
               Read Our Data Honesty Pledge ↓
             </a>
@@ -154,7 +154,7 @@ export function PartnersContent() {
               </ul>
             </div>
             <div className="pt-6">
-              <a href="#partnership-form" className="w-full inline-block text-center bg-primary hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition-all shadow">
+              <a href="#partnership-form" className="w-full inline-block text-center bg-primary hover:bg-slate-800 text-slate-900 font-bold py-3 rounded-xl text-xs transition-all shadow">
                 Select Civic Testing Track →
               </a>
             </div>
@@ -163,7 +163,7 @@ export function PartnersContent() {
           {/* Track 2: Strategic Investment & Grants */}
           <div 
             onClick={() => setSelectedTrack('investor')}
-            className={`bg-slate-950 text-white rounded-3xl p-8 border-2 transition-all cursor-pointer flex flex-col justify-between shadow-xl relative overflow-hidden ${selectedTrack === 'investor' ? 'border-amber-400 ring-4 ring-amber-400/20' : 'border-slate-800 hover:border-slate-700'}`}
+            className={`bg-slate-100 text-white rounded-3xl p-8 border-2 transition-all cursor-pointer flex flex-col justify-between shadow-xl relative overflow-hidden ${selectedTrack === 'investor' ? 'border-amber-400 ring-4 ring-amber-400/20' : 'border-slate-200 hover:border-slate-700'}`}
           >
             {selectedTrack === 'investor' && (
               <span className="absolute top-4 right-4 bg-amber-400 text-slate-950 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase">
@@ -174,11 +174,11 @@ export function PartnersContent() {
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold border border-amber-500/30">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-serif font-bold text-white">Strategic Investment &amp; Angel Funding</h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-xl font-serif font-bold text-slate-900">Strategic Investment &amp; Angel Funding</h3>
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                 <strong>For Angels &amp; Grant Officers:</strong> Marigold is built by institutional software architects at Colon Hyphen Bracket LLC. We welcome strategic inquiries from high-net-worth investors, foundation directors, and grant officers.
               </p>
-              <ul className="space-y-2 text-xs text-slate-300 font-medium pt-2">
+              <ul className="space-y-2 text-xs text-slate-700 font-medium pt-2">
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" /> Scalable B2B SaaS &amp; Government GovTech model</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" /> Defensible local-compute IP &amp; zero-liability architecture</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" /> Direct equity, seed rounds, or strategic grant structuring</li>
@@ -216,7 +216,7 @@ export function PartnersContent() {
               </ul>
             </div>
             <div className="pt-6">
-              <a href="#partnership-form" className="w-full inline-block text-center bg-primary hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition-all shadow">
+              <a href="#partnership-form" className="w-full inline-block text-center bg-primary hover:bg-slate-800 text-slate-900 font-bold py-3 rounded-xl text-xs transition-all shadow">
                 Select State Agency Track →
               </a>
             </div>
@@ -240,13 +240,13 @@ export function PartnersContent() {
           </div>
 
           {/* Direct Email Banner for Investors */}
-          <div className="bg-slate-900 text-slate-200 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div className="bg-slate-50 border border-slate-200 text-slate-200 p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
                 <Mail className="w-5 h-5" />
               </div>
               <div>
-                <strong className="text-white block font-sans text-sm">For grant inquiries, angel funding, or strategic investment:</strong>
+                <strong className="text-slate-900 block font-sans text-sm">For grant inquiries, angel funding, or strategic investment:</strong>
                 <span>You may also email our executive desk directly for confidential deck &amp; term sheet discussions.</span>
               </div>
             </div>
@@ -278,7 +278,7 @@ export function PartnersContent() {
                   href="/sandbox"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs bg-primary hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl shadow transition-all"
+                  className="text-xs bg-primary hover:bg-slate-800 text-slate-900 font-bold px-6 py-2.5 rounded-xl shadow transition-all"
                 >
                   Explore Public Sandbox ↗
                 </a>
@@ -353,7 +353,7 @@ export function PartnersContent() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-primary hover:bg-slate-800 disabled:opacity-50 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg transition-all text-base flex items-center justify-center gap-2"
+                className="w-full bg-primary hover:bg-slate-800 disabled:opacity-50 text-slate-900 font-extrabold py-4 px-6 rounded-xl shadow-lg transition-all text-base flex items-center justify-center gap-2"
               >
                 {loading ? "Transmitting Institutional Inquiry..." : "Submit Partnership Proposal →"}
               </button>

@@ -109,7 +109,7 @@ export function SandboxContent() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-32 font-sans px-4 sm:px-6">
       {/* Hot-Pink Alpha Release Warning Banner */}
-      <div className="bg-pink-600 text-white p-4 sm:p-5 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center gap-3 shadow-lg border border-pink-500 animate-pulse">
+      <div className="bg-pink-600 text-slate-900 p-4 sm:p-5 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center gap-3 shadow-lg border border-pink-500 animate-pulse">
         <span className="text-xl shrink-0">⚠️</span>
         <span className="leading-relaxed">
           THIS IS ONLY A DEMONSTRATION. MARIGOLD IS CURRENTLY AN ALPHA RELEASE. Real voter verification pipelines are fully calibrated only for Mississippi.
@@ -117,7 +117,7 @@ export function SandboxContent() {
       </div>
 
       {/* Prominent Synthetic Warning Banner */}
-      <div className="bg-orange-600 text-white p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-orange-500">
+      <div className="bg-orange-600 text-slate-900 p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-orange-500">
         <div className="flex items-center gap-3">
           <span className="text-2xl shrink-0">🧪</span>
           <span className="leading-relaxed">
@@ -130,15 +130,15 @@ export function SandboxContent() {
       </div>
 
       {/* Header Banner */}
-      <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-slate-50 border border-slate-200 border border-slate-200 p-8 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 text-slate-900 shadow-xl relative overflow-hidden">
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="space-y-2 max-w-2xl relative z-10">
           <div className="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <FlaskConical className="w-3.5 h-3.5" />
             <span>Interactive B2B Sales &amp; Verification Tool</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold pt-1 text-white">Public Demonstration Sandbox</h1>
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold pt-1 text-slate-900">Public Demonstration Sandbox</h1>
+          <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
             Experience our air-gapped local memory engine without uploading real files. Explore how state election officials, procurement directors, and citizen volunteers verify public data in plain, everyday language.
           </p>
         </div>
@@ -178,7 +178,7 @@ export function SandboxContent() {
               <div className="pt-4 space-y-6">
                 <button
                   onClick={handleStartSimulation}
-                  className="bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-base sm:text-lg px-10 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 inline-flex items-center gap-3 group border border-slate-800"
+                  className="bg-slate-100 hover:bg-slate-800 text-slate-900 font-extrabold text-base sm:text-lg px-10 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 inline-flex items-center gap-3 group border border-slate-200"
                 >
                   <Play className="w-5 h-5 text-amber-400 fill-amber-400 group-hover:scale-110 transition-transform" />
                   <span>Enter Live Demo Environment (Instant Access) →</span>
@@ -196,19 +196,19 @@ export function SandboxContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <a href="https://www.sos.state.tx.us/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">Texas SOS Portal</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
                     </a>
                     <a href="https://www.ohiosos.gov/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">Ohio SOS Portal</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
                     </a>
                     <a href="https://dos.myflorida.com/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">Florida DOS Portal</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
                     </a>
                     <a href="https://www.ncsbe.gov/results-data" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">North Carolina SBE</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+                      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
                     </a>
                   </div>
                 </div>
@@ -218,13 +218,13 @@ export function SandboxContent() {
 
           {/* 4-Step Walkthrough Sequence Box */}
           {(simulationState === 'running' || simulationState === 'completed') && (
-            <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-10 border border-slate-800 shadow-2xl max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-2xl max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
                 <div className="flex items-center gap-2.5 font-mono text-xs font-bold uppercase tracking-wider text-amber-400">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
                   <span>Air-Gapped Ingestion Walkthrough</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-slate-400">
+                <span className="text-xs font-mono font-bold text-slate-600">
                   {simulationState === 'completed' ? "4 / 4 Steps Verified" : `Step ${currentStep} / 4`}
                 </span>
               </div>
@@ -236,11 +236,11 @@ export function SandboxContent() {
                     {currentStep > 1 ? '✓' : '1'}
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-base text-white flex items-center gap-2">
+                    <h4 className="font-bold text-base text-slate-900 flex items-center gap-2">
                       <span>Download Official Source</span>
                       {currentStep === 1 && <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-mono">Simulating...</span>}
                     </h4>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
                       You navigate to your state or municipal official election portal to download your raw voter export file (.csv or pipe-delimited).
                     </p>
                   </div>
@@ -252,11 +252,11 @@ export function SandboxContent() {
                     {currentStep > 2 ? '✓' : '2'}
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-base text-white flex items-center gap-2">
+                    <h4 className="font-bold text-base text-slate-900 flex items-center gap-2">
                       <span>Secure Local Connection</span>
                       {currentStep === 2 && <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-mono">Verifying...</span>}
                     </h4>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
                       You log into Marigold Insights. Our air-gapped browser engine verifies your local machine memory is isolated and secure before processing begins.
                     </p>
                   </div>
@@ -268,11 +268,11 @@ export function SandboxContent() {
                     {currentStep > 3 ? '✓' : '3'}
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-base text-white flex items-center gap-2">
+                    <h4 className="font-bold text-base text-slate-900 flex items-center gap-2">
                       <span>Zero-PII Ingestion &amp; Shape Analysis</span>
                       {currentStep === 3 && <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-mono">Analyzing...</span>}
                     </h4>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
                       Uploading the file secures your local data and gives Marigold the statistical &ldquo;shape&rdquo; of your roll without compromising voter integrity or transmitting PII over a server.
                     </p>
                   </div>
@@ -284,10 +284,10 @@ export function SandboxContent() {
                     {currentStep >= 4 ? '✓' : '4'}
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-base text-white">
+                    <h4 className="font-bold text-base text-slate-900">
                       <span>Local In-Memory Database Ready</span>
                     </h4>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
                       Then you download the new file and Marigold runs an optimized local database directly off your file in RAM, allowing for fast/easy exploration! It is as secure as modern cryptography allows—and if you have suggestions to improve it? <a href="#pilot-inquiry" className="text-amber-400 underline font-bold hover:text-amber-300">CONTACT US</a>.
                     </p>
                   </div>
@@ -295,7 +295,7 @@ export function SandboxContent() {
               </div>
 
               {/* Progress Bar & Enter CTA */}
-              <div className="pt-4 border-t border-slate-800 space-y-4">
+              <div className="pt-4 border-t border-slate-200 space-y-4">
                 <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-500 ease-out"
@@ -312,7 +312,7 @@ export function SandboxContent() {
                       <span>Enter Full Sandbox Mode</span>
                       <ArrowRight className="w-5 h-5" />
                     </button>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-600">
                       ✨ You are about to enter our interactive simulated admin experience.
                     </p>
                   </div>
@@ -329,22 +329,22 @@ export function SandboxContent() {
           
           {/* Mari Walkthrough Guided Overlay / Banner */}
           {mariTourState === 'active' && (
-            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl border-2 border-amber-500/50 shadow-2xl space-y-6 relative overflow-hidden animate-in slide-in-from-top-4 duration-300">
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-slate-900 p-6 sm:p-8 rounded-3xl border-2 border-amber-500/50 shadow-2xl space-y-6 relative overflow-hidden animate-in slide-in-from-top-4 duration-300">
               <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
               
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4 relative z-10">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-4 relative z-10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-amber-505 text-slate-950 font-black flex items-center justify-center text-lg shadow shrink-0" style={{ backgroundColor: '#f59e0b' }}>
                     M
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-serif font-bold text-lg text-white">Mari Assistant Walkthrough</h3>
+                      <h3 className="font-serif font-bold text-lg text-slate-900">Mari Assistant Walkthrough</h3>
                       <span className="text-[10px] bg-amber-400/20 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-400/30">
                         {TOUR_STEPS[tourStep].badge}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400">Guided exploration of Marigold&apos;s mathematical verification engine.</p>
+                    <p className="text-xs text-slate-600">Guided exploration of Marigold&apos;s mathematical verification engine.</p>
                   </div>
                 </div>
 
@@ -352,7 +352,7 @@ export function SandboxContent() {
                   <span className="text-xs font-mono font-bold text-amber-400">Step {tourStep + 1} of {TOUR_STEPS.length}</span>
                   <button 
                     onClick={() => setMariTourState('dismissed')}
-                    className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+                    className="text-slate-600 hover:text-slate-900 p-1 rounded-lg transition-colors"
                     title="Dismiss tour"
                   >
                     <X className="w-5 h-5" />
@@ -367,7 +367,7 @@ export function SandboxContent() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-between items-center gap-4 pt-2 border-t border-slate-800/80 relative z-10">
+              <div className="flex flex-wrap justify-between items-center gap-4 pt-2 border-t border-slate-200/80 relative z-10">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => {
@@ -383,13 +383,13 @@ export function SandboxContent() {
                   </button>
                   <button
                     onClick={() => setMariTourState('dismissed')}
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-2.5 rounded-xl border border-slate-600 transition-all text-xs sm:text-sm"
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-700 font-semibold px-5 py-2.5 rounded-xl border border-slate-600 transition-all text-xs sm:text-sm"
                   >
                     Explore on My Own
                   </button>
                 </div>
                 
-                <span className="text-[11px] text-slate-400 font-mono">
+                <span className="text-[11px] text-slate-600 font-mono">
                   💡 You can re-open Mari or start over anytime below.
                 </span>
               </div>
@@ -460,33 +460,33 @@ export function SandboxContent() {
           </div>
 
           {/* Institutional Pilot & Briefing Web3Forms Card */}
-          <div id="pilot-inquiry" className="bg-slate-950 text-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-slate-800 space-y-8">
+          <div id="pilot-inquiry" className="bg-slate-100 text-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl border border-slate-200 space-y-8">
             <div className="max-w-3xl space-y-3">
               <div className="inline-flex items-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Institutional Pilot &amp; Executive Briefing</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-slate-900">
                 Ready to Run These Checks Against Your Real Voter Roll?
               </h3>
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+              <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
                 Signups are fully open—you can create a free account immediately to begin exploring with your local group. To schedule a statewide deployment briefing or share suggestions directly with our executive architecture desk, submit an inquiry below.
               </p>
             </div>
 
             {submitted ? (
-              <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 text-center space-y-4 animate-in fade-in">
+              <div className="bg-slate-50 border border-slate-200 p-8 rounded-2xl border border-slate-200 text-center space-y-4 animate-in fade-in">
                 <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto font-bold text-2xl">
                   ✓
                 </div>
-                <h4 className="text-xl font-serif font-bold text-white">Inquiry Transmitted to Executive Desk</h4>
-                <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+                <h4 className="text-xl font-serif font-bold text-slate-900">Inquiry Transmitted to Executive Desk</h4>
+                <p className="text-xs sm:text-sm text-slate-700 max-w-md mx-auto leading-relaxed">
                   Thank you! Our architecture desk has received your note and will reach out within 24 business hours to arrange your briefing.
                 </p>
                 <div className="pt-2 flex justify-center gap-4">
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl border border-slate-700 transition-all"
+                    className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-700 font-bold px-4 py-2 rounded-xl border border-slate-700 transition-all"
                   >
                     Submit another note
                   </button>
@@ -505,7 +505,7 @@ export function SandboxContent() {
                     required
                     name="name"
                     label="Full Name / Title *"
-                    className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500"
+                    className="bg-slate-50 border border-slate-200 border-slate-200 text-slate-900 placeholder-slate-500 focus:border-amber-500"
                     placeholder="e.g., Dr. Jane Doe (State Director)"
                   />
                   <Input
@@ -513,7 +513,7 @@ export function SandboxContent() {
                     name="email"
                     type="email"
                     label="Institutional Email *"
-                    className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500"
+                    className="bg-slate-50 border border-slate-200 border-slate-200 text-slate-900 placeholder-slate-500 focus:border-amber-500"
                     placeholder="jdoe@jurisdiction.gov"
                   />
                 </div>
@@ -523,12 +523,12 @@ export function SandboxContent() {
                     required
                     name="jurisdiction"
                     label="Organization / Jurisdiction *"
-                    className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500"
+                    className="bg-slate-50 border border-slate-200 border-slate-200 text-slate-900 placeholder-slate-500 focus:border-amber-500"
                     placeholder="e.g., Ohio County Elections Board"
                   />
                   <div className="flex flex-col gap-1.5 w-full">
-                    <label className="text-xs font-bold text-slate-300 tracking-wide uppercase">Inquiry Type *</label>
-                    <select name="inquiry_type" className="flex h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2.5 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+                    <label className="text-xs font-bold text-slate-700 tracking-wide uppercase">Inquiry Type *</label>
+                    <select name="inquiry_type" className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
                       <option value="Statewide Pilot / Briefing">Schedule Statewide Pilot / Briefing</option>
                       <option value="Volunteer Group Deployment">Volunteer Group Deployment</option>
                       <option value="Technical Suggestion / Feedback">Technical Suggestion / Feedback</option>
@@ -538,8 +538,8 @@ export function SandboxContent() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Message / Suggestions *</label>
-                  <textarea required rows={3} name="message" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500 outline-none font-medium" placeholder="Tell us about your voter roll volume, timeline, or any suggestions to improve our local-compute engine..." />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Message / Suggestions *</label>
+                  <textarea required rows={3} name="message" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-amber-500 outline-none font-medium" placeholder="Tell us about your voter roll volume, timeline, or any suggestions to improve our local-compute engine..." />
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
@@ -550,7 +550,7 @@ export function SandboxContent() {
                   >
                     {loading ? "Transmitting Note..." : "Submit Pilot Inquiry & Briefing Request →"}
                   </button>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-600">
                     🔒 Direct confidential routing to Colon Hyphen Bracket LLC.
                   </span>
                 </div>
@@ -563,7 +563,7 @@ export function SandboxContent() {
             <div className="fixed bottom-6 right-6 z-50 animate-in fade-in zoom-in-95">
               <button
                 onClick={handleRestartTour}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm px-5 py-3.5 rounded-2xl shadow-2xl border-2 border-amber-500 flex items-center gap-2.5 transition-all transform hover:scale-105"
+                className="bg-slate-50 border border-slate-200 hover:bg-slate-800 text-slate-900 font-extrabold text-xs sm:text-sm px-5 py-3.5 rounded-2xl shadow-2xl border-2 border-amber-500 flex items-center gap-2.5 transition-all transform hover:scale-105"
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
                 <span>💬 Continue Mari Guided Tour</span>
@@ -575,13 +575,13 @@ export function SandboxContent() {
 
       {/* Guide Modal for Older Users */}
       {showGuideModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-200/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl p-8 sm:p-10 max-w-2xl w-full shadow-2xl border border-slate-200 space-y-6 text-foreground animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
               <h3 className="text-2xl font-serif font-bold text-primary">How Local-Compute Protects Your Privacy</h3>
               <button 
                 onClick={() => setShowGuideModal(false)}
-                className="text-slate-400 hover:text-slate-700 font-bold text-lg px-2"
+                className="text-slate-600 hover:text-slate-700 font-bold text-lg px-2"
               >
                 ✕
               </button>
@@ -617,7 +617,7 @@ export function SandboxContent() {
             <div className="pt-2">
               <button 
                 onClick={() => setShowGuideModal(false)}
-                className="w-full bg-primary hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow"
+                className="w-full bg-primary hover:bg-slate-800 text-slate-900 font-bold py-3.5 rounded-xl text-sm transition-all shadow"
               >
                 Got It, Return to Sandbox
               </button>

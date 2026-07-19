@@ -12,7 +12,7 @@ export default function OrganizationsPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-foreground pb-20">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-primary to-slate-900 text-white py-16 px-6 border-b border-accent shadow-lg">
+      <section className="bg-gradient-to-b from-primary to-slate-900 text-slate-900 py-16 px-6 border-b border-accent shadow-lg">
         <div className="max-w-4xl mx-auto space-y-6 text-center">
           <div className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold text-amber-400">
             <span>🌐 For Good-Governance Organizations & Coalitions</span>
@@ -20,7 +20,7 @@ export default function OrganizationsPage() {
           <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight leading-tight">
             Strategic Alignment Without Compromising Group Privacy
           </h1>
-          <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+          <p className="text-base md:text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed font-normal">
             Coordinate multi-county verification teams effortlessly. Share successful search terms, custom audit playbooks, and standardized review checklists exclusively with your trusted network.
           </p>
           <div className="pt-4 flex flex-wrap justify-center gap-4">
@@ -76,14 +76,14 @@ export default function OrganizationsPage() {
         </section>
 
         {/* Administration & Role Transfer */}
-        <section className="bg-slate-900 text-white p-8 md:p-10 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <section className="bg-slate-50 border border-slate-200 text-slate-900 p-8 md:p-10 rounded-2xl border border-slate-200 shadow-xl space-y-4">
           <div className="w-12 h-12 rounded-xl bg-amber-900/50 border border-amber-500/50 flex items-center justify-center text-2xl mb-2">
             👑
           </div>
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-amber-400">
             Seamless Leadership & Admin Transfer
           </h2>
-          <p className="text-slate-300 leading-relaxed text-sm md:text-base">
+          <p className="text-slate-700 leading-relaxed text-sm md:text-base">
             Organizations grow and leadership changes over time. Marigold includes intuitive administrative controls that allow chapter chairs to transfer admin rights, invite new members, or rename workspaces with a single click—ensuring institutional continuity without IT headaches.
           </p>
           <div className="pt-4">

@@ -336,7 +336,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 </>
               ) : (
                 <>
-                  <Microscope className="w-3.5 h-3.5 text-slate-300" />
+                  <Microscope className="w-3.5 h-3.5 text-slate-700" />
                   <span>Analyst Pro Mode</span>
                 </>
               )}
@@ -352,7 +352,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
         <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-background">
           {!activeSession && (
              <div className="h-full flex items-center justify-center text-muted-foreground flex-col text-center px-8">
-               <BookOpen className="w-12 h-12 text-slate-400 mb-4" />
+               <BookOpen className="w-12 h-12 text-slate-600 mb-4" />
                <p className="text-lg font-medium text-foreground">Welcome to the Marigold Guide</p>
                <p className="mt-2">I am here to help you learn how to navigate Marigold Insights and find the records you need.</p>
              </div>
@@ -514,7 +514,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
             </div>
             <button 
               type="submit" 
-              className="bg-accent hover:bg-[#C85A1B] disabled:opacity-50 text-white font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0 flex items-center gap-2" 
+              className="bg-accent hover:bg-[#C85A1B] disabled:opacity-50 text-slate-900 font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0 flex items-center gap-2" 
               disabled={isLoading || isListening || !query.trim()}
             >
               <span>Send</span>
@@ -530,7 +530,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
 
         {/* Save Template Modal */}
         {isTemplateModalOpen && (
-          <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-white shadow-inner z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
               <h3 className="text-xl font-bold mb-4">Save Search as Template</h3>
               <p className="text-sm text-muted-foreground mb-6">Distill this investigation into a reusable template for future searches.</p>

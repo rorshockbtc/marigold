@@ -39,7 +39,7 @@ export function StoreContent() {
       {/* Header */}
       <div className="border-b border-border pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="inline-block bg-primary text-white font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider mb-2.5 shadow-sm">
+          <div className="inline-block bg-primary text-slate-900 font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider mb-2.5 shadow-sm">
             Standardized Civic Library
           </div>
           <h1 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight text-primary">National Audit Checklist Store</h1>
@@ -143,7 +143,7 @@ export function StoreContent() {
                       e.stopPropagation();
                       handleDownload(c);
                     }}
-                    className="bg-primary group-hover:bg-accent text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2"
+                    className="bg-primary group-hover:bg-accent text-slate-900 text-xs font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2"
                   >
                     <span>Download Checklist</span>
                     <span>↓</span>
@@ -156,9 +156,9 @@ export function StoreContent() {
       )}
 
       {/* CTA Footer */}
-      <div className="bg-slate-900 text-white rounded-3xl p-10 text-center space-y-4">
+      <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-3xl p-10 text-center space-y-4">
         <h3 className="text-2xl font-serif font-bold">Have a Custom Verification Filter?</h3>
-        <p className="text-slate-300 text-sm max-w-xl mx-auto leading-relaxed font-normal">
+        <p className="text-slate-700 text-sm max-w-xl mx-auto leading-relaxed font-normal">
           Export your sorting parameters or statistical thresholds from Pro Mode and share them with the civic community to assist volunteers across America.
         </p>
         <Link href="/analysis" className="inline-block bg-accent hover:bg-amber-600 text-white font-bold text-sm px-6 py-3 rounded-lg shadow transition-all">

@@ -30,7 +30,7 @@ export default function DetectEndpointPage() {
       <div className="space-y-4 border-b border-slate-200 pb-8">
         <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 mb-2">
           <span>API Reference</span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-600" />
           <span className="text-slate-900">Anomaly Detection</span>
         </div>
         <div className="flex items-center gap-4">
@@ -135,9 +135,9 @@ export default function DetectEndpointPage() {
 
         {/* Right Column: Interactive Sandbox */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl sticky top-6">
-            <div className="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl border border-slate-200 overflow-hidden shadow-2xl sticky top-6">
+            <div className="bg-slate-100 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
                 <Terminal className="w-4 h-4" />
                 <span>Interactive Sandbox</span>
               </div>
@@ -154,7 +154,7 @@ export default function DetectEndpointPage() {
             <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Payload Request</span>
-                <pre className="bg-black/50 p-4 rounded-xl border border-slate-800/60 text-xs font-mono text-emerald-300 overflow-x-auto">
+                <pre className="bg-white shadow-inner p-4 rounded-xl border border-slate-300 text-xs font-mono text-emerald-800 overflow-x-auto">
 {`{
   "session_fingerprint": "e3b0c4429...",
   "anomaly_type": "HIGH_DENSITY",
@@ -167,7 +167,7 @@ export default function DetectEndpointPage() {
 
               <div className="space-y-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Response</span>
-                <div className="bg-black/50 h-56 rounded-xl border border-slate-800/60 overflow-y-auto p-4 relative">
+                <div className="bg-white shadow-inner h-56 rounded-xl border border-slate-300 overflow-y-auto p-4 relative">
                   {!simResponse && !isSimulating && (
                     <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-600 font-mono">
                       Click "SEND REQUEST" to test endpoint
@@ -180,7 +180,7 @@ export default function DetectEndpointPage() {
                     </div>
                   )}
                   {simResponse && (
-                    <pre className="text-xs font-mono text-slate-300">
+                    <pre className="text-xs font-mono text-slate-700">
                       {simResponse}
                     </pre>
                   )}
@@ -210,7 +210,7 @@ export default function DetectEndpointPage() {
         </Link>
         <Link 
           href="/developers/docs/errors"
-          className="bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Error Codes Dictionary
           <ChevronRight className="w-4 h-4" />

@@ -9,6 +9,7 @@ import { GlossaryTooltip } from '@/components/GlossaryTooltip';
 import { Crown, Shield, Rocket, Users, Folder, Key, Settings, Search, BookOpen, Eye, CheckCircle2, AlertTriangle, Link2, Sparkles, Building2, Package, BarChart3, HelpCircle, ArrowRight, Download } from 'lucide-react';
 import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from '@/lib/db/dbName';
 import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
+import { VolunteerTaskBoard } from '@/components/VolunteerTaskBoard';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -108,7 +109,7 @@ export default function DashboardPage() {
   if (!groupName) {
     return (
       <div className="max-w-6xl mx-auto space-y-8 pb-16 pt-6 px-4 animate-in fade-in">
-        <div className="bg-slate-900 text-white rounded-3xl p-8 md:p-12 border border-amber-500/30 shadow-2xl text-center space-y-8">
+        <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-3xl p-8 md:p-12 border border-amber-500/30 shadow-2xl text-center space-y-8">
           <div className="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner border border-amber-500/30">
             <Crown className="w-10 h-10 text-amber-400" />
           </div>
@@ -117,8 +118,8 @@ export default function DashboardPage() {
               <Rocket className="w-3.5 h-3.5 text-amber-400" />
               <span>Marigold Insights Pro Gateway</span>
             </span>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white pt-2">No Active Group Workspace Associated</h2>
-            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 pt-2">No Active Group Workspace Associated</h2>
+            <p className="text-slate-700 text-sm md:text-base leading-relaxed">
               Welcome, <strong className="text-amber-400">{displayName}</strong>. You do not currently belong to an active state organization or pilot team. To begin verifying voter rolls, join a team or launch an independent analysis session.
             </p>
           </div>
@@ -130,14 +131,14 @@ export default function DashboardPage() {
                 <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
                   <Users className="w-6 h-6 text-amber-400" />
                 </div>
-                <h3 className="font-bold text-white text-xl">Join or Create a Group</h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <h3 className="font-bold text-slate-900 text-xl">Join or Create a Group</h3>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                   Join an existing organization using a private invitation UUID code, or establish a new volunteer network workspace for your jurisdiction.
                 </p>
               </div>
               <Link
                 href="/onboarding"
-                className="w-full text-center inline-block bg-primary hover:bg-slate-800 text-white font-bold px-5 py-3.5 rounded-xl shadow transition-colors text-sm"
+                className="w-full text-center inline-block bg-primary hover:bg-slate-800 text-slate-900 font-bold px-5 py-3.5 rounded-xl shadow transition-colors text-sm"
               >
                 Launch Group Setup Gateway →
               </Link>
@@ -147,10 +148,10 @@ export default function DashboardPage() {
             <div className="bg-slate-800/80 p-6 sm:p-8 rounded-2xl border border-slate-700 hover:border-emerald-500/60 transition-all flex flex-col justify-between space-y-6 shadow-lg">
               <div className="space-y-3">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Folder className="w-6 h-6 text-emerald-400" />
+                  <Folder className="w-6 h-6 text-emerald-700" />
                 </div>
-                <h3 className="font-bold text-white text-xl">Link Local Voter Roll Shard</h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <h3 className="font-bold text-slate-900 text-xl">Link Local Voter Roll Shard</h3>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                   Have an official state dataset (CSV/TXT) or want to evaluate our benchmark sample? Initialize an independent session to inspect rows inside local browser RAM.
                 </p>
               </div>
@@ -171,7 +172,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Invite Code / Link Gateway Prompt */}
-          <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row justify-center items-center gap-3 text-xs text-slate-400">
+          <div className="pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row justify-center items-center gap-3 text-xs text-slate-600">
             <span>Have an official organization invite code?</span>
             <Link
               href={
@@ -189,6 +190,20 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Branching Logic for Role-Based UI
+  if (!isAdmin || previewAsVolunteer) {
+    return (
+      <>
+        {isSuperUser && previewAsVolunteer && (
+          <div className="bg-amber-100 text-amber-900 px-4 py-2 text-center text-xs font-bold w-full border-b border-amber-200">
+            Previewing as Volunteer. <button onClick={() => setPreviewAsVolunteer(false)} className="underline ml-2">Exit Preview</button>
+          </div>
+        )}
+        <VolunteerTaskBoard groupName={groupName} anomalies={anomalies} onVerify={handleStatusChange} />
+      </>
     );
   }
 
@@ -246,7 +261,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href="/analysis"
-                  className="bg-accent hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
+                  className="bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2 transform active:scale-[0.98]"
                 >
                   <Search className="w-4 h-4" />
                   <span>Review Voter Records ({(loadedRowCount && loadedRowCount > 0) ? loadedRowCount.toLocaleString() : (groupName && (groupName.toLowerCase().includes("demo") || groupName.toLowerCase().includes("acme") || groupName.toLowerCase().includes("roosevelt") || groupName.toLowerCase().includes("sandbox")) ? '0 rows — Link DEMO File' : 'No File Linked')}) →</span>
@@ -262,7 +277,7 @@ export default function DashboardPage() {
             ) : (
               <Link
                 href="/data-prep"
-                className="bg-accent hover:bg-[#C85A1B] text-white font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2"
+                className="bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-6 py-3.5 rounded-xl shadow-sm transition-all text-sm flex items-center gap-2"
               >
                 <Folder className="w-4 h-4" />
                 <span>Connect Local Voter Roll File (/data-prep) →</span>
@@ -297,7 +312,7 @@ export default function DashboardPage() {
                 <button
                   key={preset}
                   onClick={() => handleSaveGroup(preset)}
-                  className="bg-muted hover:bg-accent text-foreground hover:text-white px-3 py-1.5 rounded-lg border border-border font-bold transition-colors"
+                  className="bg-muted hover:bg-accent text-foreground hover:text-slate-900 px-3 py-1.5 rounded-lg border border-border font-bold transition-colors"
                 >
                   {preset}
                 </button>
@@ -313,7 +328,7 @@ export default function DashboardPage() {
               />
               <button
                 onClick={() => handleSaveGroup(customGroupInput || "National Civic Data Sandbox")}
-                className="bg-accent hover:bg-[#C85A1B] text-white font-black px-5 py-2 rounded-lg text-sm transition-colors"
+                className="bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-5 py-2 rounded-lg text-sm transition-colors"
               >
                 Save
               </button>
@@ -331,9 +346,9 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-xs text-amber-200 font-medium">Safe for Video Recording & Public Demos</span>
               </div>
-              <h3 className="text-xl font-black text-white tracking-tight">{groupName} — Download Roosevelt Synthetic Voter Roll</h3>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">{groupName} — Download Roosevelt Synthetic Voter Roll</h3>
               <p className="text-xs text-amber-100 leading-relaxed">
-                We have pre-engineered an ~1,800 row synthetic Roosevelt dataset containing realistic single-character clerical errors, unsegmented college dorms (<strong className="text-white">100 CAMPUS DR</strong>), UPS store commercial mail drops, and single-day registration surges. Download this file below and link it in <Link href="/data-prep" className="underline font-bold hover:text-white">/data-prep</Link> to experience 100% full-fidelity client-side chunking and statistical audit playbooks!
+                We have pre-engineered an ~1,800 row synthetic Roosevelt dataset containing realistic single-character clerical errors, unsegmented college dorms (<strong className="text-slate-900">100 CAMPUS DR</strong>), UPS store commercial mail drops, and single-day registration surges. Download this file below and link it in <Link href="/data-prep" className="underline font-bold hover:text-slate-900">/data-prep</Link> to experience 100% full-fidelity client-side chunking and statistical audit playbooks!
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
@@ -350,24 +365,24 @@ export default function DashboardPage() {
         )}
 
         {/* Executive 360° Comprehensive Audit Command Banner */}
-        <div className="bg-gradient-to-r from-[#2D3142] to-[#1E212D] text-white p-6 rounded-2xl border border-slate-700 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="bg-gradient-to-r from-[#2D3142] to-[#1E212D] text-slate-900 p-6 rounded-2xl border border-slate-700 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="bg-accent text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-accent text-slate-900 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 ⚡ Executive Sales &amp; Audit Tool
               </span>
               <span className="text-xs text-amber-300 font-mono">Zero-Cloud <GlossaryTooltip term="PII" /> <GlossaryTooltip term="Air-Gap" /></span>
             </div>
-            <h3 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+            <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
               <span>Run 360° Comprehensive Jurisdiction Audit</span>
             </h3>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-700 max-w-2xl leading-relaxed">
               Execute all 9 verified Fellegi-Sunter and anomaly cartridges simultaneously across your entire {(loadedRowCount && loadedRowCount > 0) ? `${loadedRowCount.toLocaleString()}-row` : 'DEMO'} voter roll in <GlossaryTooltip term="RAM" />. Instantly generate a publication-ready Executive Briefing PDF and a Zero-<GlossaryTooltip term="PII" /> JSON summary cartridge!
             </p>
           </div>
           <Link
             href="/comprehensive-audit"
-            className="bg-accent hover:bg-[#C85A1B] text-white font-black px-6 py-4 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 shrink-0 transform active:scale-[0.98]"
+            className="bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-6 py-4 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 shrink-0 transform active:scale-[0.98]"
           >
             <Rocket className="w-4 h-4" />
             <span>🚀 Execute 360° Comprehensive Audit →</span>
@@ -479,7 +494,7 @@ export default function DashboardPage() {
                       setCopiedInvite(true);
                       setTimeout(() => setCopiedInvite(false), 3000);
                     }}
-                    className="w-full bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-slate-700"
+                    className="w-full bg-slate-50 border border-slate-200 hover:bg-slate-800 text-amber-300 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-slate-700"
                   >
                     <Link2 className="w-3.5 h-3.5" />
                     <span>{copiedInvite ? "✓ Invitation Link Copied!" : "Copy Direct Group Invite URL"}</span>
@@ -523,7 +538,7 @@ export default function DashboardPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
-            <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white font-extrabold flex items-center justify-center text-sm shadow">1</span>
+            <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-slate-900 font-extrabold flex items-center justify-center text-sm shadow">1</span>
             <h3 className="font-bold text-lg text-primary pt-1">Load Statewide Shards</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Select your official statewide or weekly voter file shards. Marigold distills county-level anomaly distributions automatically in client memory.
@@ -532,7 +547,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative">
-            <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white font-extrabold flex items-center justify-center text-sm shadow">2</span>
+            <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-slate-900 font-extrabold flex items-center justify-center text-sm shadow">2</span>
             <h3 className="font-bold text-lg text-primary pt-1">Execute Playbook</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Run pre-configured statistical algorithms (High-Density Occupancy, NCOA Interstate Relocation) to instantly isolate anomalies.
@@ -541,7 +556,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-border shadow-sm space-y-3 relative cursor-pointer hover:border-amber-400 transition-colors" onClick={() => document.getElementById('checklist')?.scrollIntoView({ behavior: 'smooth' })}>
-            <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white font-extrabold flex items-center justify-center text-sm shadow">3</span>
+            <span className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-slate-900 font-extrabold flex items-center justify-center text-sm shadow">3</span>
             <h3 className="font-bold text-lg text-primary pt-1">Verify Findings</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Review flagged voter records on your investigation checklist below. Mark verified anomalies or log false positives to train the system.
@@ -568,7 +583,7 @@ export default function DashboardPage() {
 
         {anomalies.length === 0 ? (
           <div className="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 space-y-4">
-            <Folder className="w-12 h-12 text-slate-400 mx-auto" />
+            <Folder className="w-12 h-12 text-slate-600 mx-auto" />
             <h4 className="text-lg font-bold text-primary">No Audit Records Loaded in Client Memory</h4>
             <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
               To populate your investigation checklist with verified discrepancies across counties, connect your statewide voter file above or run an active Mission Playbook.
@@ -576,7 +591,7 @@ export default function DashboardPage() {
             <div className="flex justify-center gap-3 pt-2 flex-wrap">
               <Link
                 href="/data-prep"
-                className="bg-primary hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
+                className="bg-primary hover:bg-slate-800 text-slate-900 font-bold text-xs px-5 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
               >
                 <Folder className="w-4 h-4" />
                 <span>Connect / Re-Link Local Voter File (/data-prep) →</span>

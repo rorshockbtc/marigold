@@ -331,7 +331,7 @@ export default function GroupAdminSettingsPage() {
                 <form onSubmit={handleAddManualMember} className="bg-slate-50 p-5 rounded-xl border border-slate-300 space-y-4 mb-4">
                   <div className="font-bold text-slate-800 text-sm flex items-center justify-between">
                     <span>➕ Manually Add Volunteer / Auditor to Roster</span>
-                    <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-normal">✕ Close</button>
+                    <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-600 hover:text-slate-600 font-normal">✕ Close</button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input

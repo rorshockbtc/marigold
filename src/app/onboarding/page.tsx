@@ -147,7 +147,7 @@ export default function OnboardingPage() {
           <div className="flex flex-wrap gap-3 pt-1">
             <button
               onClick={() => router.push('/dashboard')}
-              className="bg-primary hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow transition-all"
+              className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-6 py-2.5 rounded-xl text-xs shadow transition-all"
             >
               Enter Dashboard →
             </button>
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* Statutory Liability & Terms Acceptance Checkbox */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-xs text-slate-300 space-y-3 shadow-inner">
+          <div className="bg-slate-50 border border-slate-200 border border-slate-200 rounded-xl p-5 text-xs text-slate-700 space-y-3 shadow-inner">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -244,7 +244,7 @@ export default function OnboardingPage() {
             <button
               onClick={() => setStep(2)}
               disabled={!legalAccepted}
-              className="bg-primary hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-3.5 rounded-xl shadow transition-all text-sm flex items-center gap-2"
+              className="bg-primary hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 font-bold px-8 py-3.5 rounded-xl shadow transition-all text-sm flex items-center gap-2"
             >
               <span>Continue to Organization Setup</span>
               <span>→</span>
@@ -286,14 +286,14 @@ export default function OnboardingPage() {
           {actionType === 'join' && (
             <div className="space-y-6 pt-2">
               {/* Anti-Scraping UUID Lookup */}
-              <div className="bg-slate-900 text-white p-5 rounded-2xl space-y-3 border border-slate-800 shadow-lg">
+              <div className="bg-slate-50 border border-slate-200 text-slate-900 p-5 rounded-2xl space-y-3 border border-slate-200 shadow-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                     <span>🔒 Anti-Scraping Protected UUID Lookup</span>
                   </span>
-                  <span className="text-[10px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded font-mono border border-slate-700">Private Join Mode</span>
+                  <span className="text-[10px] bg-slate-800 text-slate-700 px-2.5 py-1 rounded font-mono border border-slate-700">Private Join Mode</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-700 leading-relaxed">
                   To protect citizen volunteer lists and client identities from automated scraping, many organizations hide from public directories. Enter your group invitation UUID or code below:
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2.5">
@@ -302,7 +302,7 @@ export default function OnboardingPage() {
                     value={inviteCodeInput}
                     onChange={(e) => setInviteCodeInput(e.target.value)}
                     placeholder="Enter Invite UUID or Code (e.g. MSFE-PILOT-8821)"
-                    className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 font-mono"
+                    className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 font-mono"
                   />
                   <button
                     type="button"
@@ -415,7 +415,7 @@ export default function OnboardingPage() {
                   </p>
                   <button
                     onClick={() => handleCompleteOnboarding(targetGroup?.name || "State of Roosevelt (Demo)", "Pending Member")}
-                    className="bg-primary hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
+                    className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
                   >
                     Enter Workspace Now →
                   </button>
@@ -429,14 +429,14 @@ export default function OnboardingPage() {
             <div className="space-y-6 pt-2">
               {!onboardingSubmitted ? (
                 <div className="space-y-5">
-                  <div className="bg-slate-900 text-slate-100 p-5 rounded-2xl border border-slate-800 space-y-3 shadow-lg">
+                  <div className="bg-slate-50 border border-slate-200 text-slate-100 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-lg">
                     <span className="text-xs font-bold uppercase tracking-wider text-amber-400 block">
                       💡 Recommended: Request Developer Calibration &amp; Setup
                     </span>
-                    <p className="text-xs text-slate-300 leading-relaxed">
+                    <p className="text-xs text-slate-700 leading-relaxed">
                       State voter registries utilize highly variable CSV and database layouts. Running voter rolls without official calibration will likely yield inaccurate statistics or database ingestion errors.
                     </p>
-                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    <p className="text-xs text-slate-700 leading-relaxed font-medium">
                       Submit a setup request to have Kyle (system developer) map your state&apos;s schema columns, verify index headers, and calibrate Benford&apos;s Law algorithms.
                     </p>
                   </div>
@@ -471,7 +471,7 @@ export default function OnboardingPage() {
                     <button
                       type="submit"
                       disabled={onboardingLoading}
-                      className="w-full bg-primary hover:bg-slate-800 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
+                      className="w-full bg-primary hover:bg-slate-800 disabled:opacity-50 text-slate-900 font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
                     >
                       {onboardingLoading ? "Transmitting Calibration Request..." : "Request Developer Calibration & Setup Briefing →"}
                     </button>
@@ -500,7 +500,7 @@ export default function OnboardingPage() {
                   </p>
                   <button
                     onClick={() => handleCompleteOnboarding("State of Roosevelt (Demo)", "Verified Tester")}
-                    className="bg-primary hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
+                    className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
                   >
                     Enter Demo Workspace Now →
                   </button>
@@ -537,7 +537,7 @@ export default function OnboardingPage() {
                     <button
                       onClick={() => handleCompleteOnboarding(newGroupName || `${selectedState} Audit Group`, "👑 Group Admin")}
                       disabled={!newGroupName}
-                      className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
+                      className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-slate-900 font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
                     >
                       <span>Create Uncalibrated Group &amp; Enter Dashboard</span>
                       <span>→</span>
@@ -552,13 +552,13 @@ export default function OnboardingPage() {
 
       {/* Danger Zone Modal */}
       {showDangerZoneModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-200/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-8 sm:p-10 max-w-md w-full shadow-2xl border border-slate-200 space-y-6 text-slate-800 animate-in fade-in zoom-in-95 duration-150 text-left">
             <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
               <h3 className="text-xl font-serif font-bold text-pink-600 flex items-center gap-2">
                 <span>⚠️ Danger Zone Override</span>
               </h3>
-              <button onClick={() => setShowDangerZoneModal(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+              <button onClick={() => setShowDangerZoneModal(false)} className="text-slate-600 hover:text-slate-700 font-bold">✕</button>
             </div>
 
             <div className="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
@@ -579,7 +579,7 @@ export default function OnboardingPage() {
                   setDangerZoneUnlocked(true);
                   setShowDangerZoneModal(false);
                 }}
-                className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl text-sm transition-all shadow"
+                className="w-full bg-pink-600 hover:bg-pink-700 text-slate-900 font-bold py-3 rounded-xl text-sm transition-all shadow"
               >
                 Yes, Proceed &amp; Assume All Liability
               </button>

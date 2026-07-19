@@ -12,7 +12,7 @@ export default function RoadmapPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-12 pb-24 font-sans">
       <div className="border-b border-border pb-6 text-center space-y-3">
-        <div className="inline-block bg-primary text-white font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider shadow-sm">
+        <div className="inline-block bg-primary text-slate-900 font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider shadow-sm">
           Technical Evolution
         </div>
         <h1 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight text-primary">Strategic Product Roadmap</h1>
@@ -43,7 +43,7 @@ export default function RoadmapPage() {
 
         {/* Next Priority Focus */}
         <div className="bg-white rounded-2xl border border-border p-8 shadow-sm relative overflow-hidden hover:border-slate-400 transition-all">
-          <div className="absolute top-0 right-0 bg-accent text-white font-bold text-xs px-4 py-1.5 rounded-bl-xl uppercase tracking-wider">
+          <div className="absolute top-0 right-0 bg-accent text-slate-900 font-bold text-xs px-4 py-1.5 rounded-bl-xl uppercase tracking-wider">
             Next Release Priority
           </div>
           <div className="space-y-3 max-w-3xl">
@@ -62,7 +62,7 @@ export default function RoadmapPage() {
 
         {/* Future Vision */}
         <div className="bg-white rounded-2xl border border-border p-8 shadow-sm relative overflow-hidden hover:border-slate-400 transition-all">
-          <div className="absolute top-0 right-0 bg-slate-800 text-white font-bold text-xs px-4 py-1.5 rounded-bl-xl uppercase tracking-wider">
+          <div className="absolute top-0 right-0 bg-slate-800 text-slate-900 font-bold text-xs px-4 py-1.5 rounded-bl-xl uppercase tracking-wider">
             Long-Term Vision
           </div>
           <div className="space-y-3 max-w-3xl">
@@ -81,11 +81,11 @@ export default function RoadmapPage() {
       </div>
 
       {/* Feature Request CTA Box linking to Contact/Deploy Form */}
-      <div className="bg-slate-900 text-white rounded-3xl p-10 flex flex-col md:flex-row justify-between items-center gap-8 shadow-xl">
+      <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-3xl p-10 flex flex-col md:flex-row justify-between items-center gap-8 shadow-xl">
         <div className="space-y-2 max-w-xl text-center md:text-left">
           <span className="text-xs font-mono text-amber-400 uppercase tracking-wider font-bold">Community Driven Development</span>
           <h3 className="text-2xl font-serif font-bold">Need a Specific Data Integration?</h3>
-          <p className="text-slate-300 text-sm leading-relaxed font-normal">
+          <p className="text-slate-700 text-sm leading-relaxed font-normal">
             If your state agency or volunteer network requires integration with a particular municipal dataset or public verification tool, submit a direct feature request to our engineering team.
           </p>
         </div>

@@ -31,7 +31,7 @@ export function DeployContent() {
   return (
     <div className="max-w-5xl mx-auto py-10 space-y-12 pb-24 font-sans">
       <div className="text-center space-y-3">
-        <div className="inline-block bg-primary text-white font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider shadow-sm">
+        <div className="inline-block bg-primary text-slate-900 font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider shadow-sm">
           Jurisdictional Onboarding
         </div>
         <h1 className="text-3xl sm:text-4xl font-serif font-bold text-primary tracking-tight">Bring Marigold Insights to Your Jurisdiction</h1>
@@ -41,19 +41,19 @@ export function DeployContent() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        <div className="bg-slate-900 text-white p-8 rounded-2xl space-y-6 md:col-span-1 shadow-md border border-slate-800">
-          <h3 className="text-xl font-serif font-bold border-b border-slate-800 pb-3 text-amber-400">Flexible Contracting</h3>
-          <div className="space-y-5 text-sm text-slate-300 leading-relaxed font-normal">
+        <div className="bg-slate-50 border border-slate-200 text-slate-900 p-8 rounded-2xl space-y-6 md:col-span-1 shadow-md border border-slate-200">
+          <h3 className="text-xl font-serif font-bold border-b border-slate-200 pb-3 text-amber-400">Flexible Contracting</h3>
+          <div className="space-y-5 text-sm text-slate-700 leading-relaxed font-normal">
             <div>
-              <strong className="text-white block font-bold mb-1">Statewide FEMA Initiatives</strong>
+              <strong className="text-slate-900 block font-bold mb-1">Statewide FEMA Initiatives</strong>
               Structured directly under FY26 HSGP 3% Election Security allocations to enable comprehensive statewide pilot deployments.
             </div>
             <div>
-              <strong className="text-white block font-bold mb-1">County Micro-Purchases</strong>
+              <strong className="text-slate-900 block font-bold mb-1">County Micro-Purchases</strong>
               Right-sized invoicing ($1,500/year) tailored for individual County Election Commissions beneath statutory Sole Source thresholds.
             </div>
             <div>
-              <strong className="text-white block font-bold mb-1">Custom Data Integrations</strong>
+              <strong className="text-slate-900 block font-bold mb-1">Custom Data Integrations</strong>
               Need support for local municipal GIS layers or USPS change of address feeds? We build dedicated browser mapping adapters.
             </div>
           </div>

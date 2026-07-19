@@ -11,7 +11,7 @@ export default function ZScorePage() {
       <div className="space-y-4 border-b border-slate-200 pb-8">
         <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 mb-2">
           <span>Algorithmic Proofs</span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-600" />
           <span className="text-slate-900">Standard Deviation (Z-Score)</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight text-slate-900 leading-tight">
@@ -65,7 +65,7 @@ export default function ZScorePage() {
         </Link>
         <Link 
           href="/developers/docs/api-reference/detect"
-          className="bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: API Reference: Detect
           <ChevronRight className="w-4 h-4" />

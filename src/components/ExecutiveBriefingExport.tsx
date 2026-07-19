@@ -126,7 +126,7 @@ export function ExecutiveBriefingExport({
           <button
             type="button"
             onClick={handlePrintPdf}
-            className="flex-1 sm:flex-initial bg-[#2D3142] hover:bg-[#1E212D] text-white font-bold px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 border border-slate-700"
+            className="flex-1 sm:flex-initial bg-[#2D3142] hover:bg-[#1E212D] text-slate-900 font-bold px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 border border-slate-700"
           >
             <Printer className="w-4 h-4 text-amber-400" />
             <span>Print / Save Executive PDF Brief</span>
@@ -136,12 +136,12 @@ export function ExecutiveBriefingExport({
             type="button"
             onClick={generateZeroPiiCartridge}
             disabled={isGeneratingJson}
-            className="flex-1 sm:flex-initial bg-accent hover:bg-[#C85A1B] text-white font-black px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-75"
+            className="flex-1 sm:flex-initial bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-75"
           >
             {isGeneratingJson ? (
               <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>
             ) : jsonDownloaded ? (
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-slate-900" />
             ) : (
               <Download className="w-4 h-4" />
             )}

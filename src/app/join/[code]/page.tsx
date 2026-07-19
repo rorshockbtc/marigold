@@ -97,19 +97,19 @@ export default function GroupInviteGatewayPage() {
         <span className="bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm">
           <span>👑 Official Organization Invitation</span>
         </span>
-        <h1 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 dark:text-white pt-1">
+        <h1 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 dark:text-slate-900 pt-1">
           You Are Invited to Join {targetGroup.name}
         </h1>
-        <p className="text-slate-700 dark:text-slate-300 text-sm max-w-xl mx-auto font-medium leading-relaxed">
+        <p className="text-slate-700 dark:text-slate-700 text-sm max-w-xl mx-auto font-medium leading-relaxed">
           Welcome! You have been invited by <strong>{targetGroup.admin}</strong> to join this secure civic verification workspace.
         </p>
       </div>
 
       {/* Main Invitation Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-300 dark:border-slate-700 p-8 shadow-xl space-y-8">
-        <div className="bg-slate-100 dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="bg-white dark:bg-slate-50 border border-slate-200 rounded-3xl border-2 border-slate-300 dark:border-slate-700 p-8 shadow-xl space-y-8">
+        <div className="bg-slate-100 dark:bg-slate-100 p-6 rounded-2xl border border-slate-200 dark:border-slate-200 space-y-4">
           <div className="flex flex-wrap justify-between items-center gap-2">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-600">
               Workspace Profile
             </span>
             <span className="text-xs font-mono bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-1 rounded-md font-bold border border-slate-300 dark:border-slate-700">
@@ -118,17 +118,17 @@ export default function GroupInviteGatewayPage() {
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white">{targetGroup.name}</h3>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-slate-900">{targetGroup.name}</h3>
             <p className="text-sm font-bold text-amber-700 dark:text-amber-400">📍 {targetGroup.jurisdiction}</p>
           </div>
 
-          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+          <p className="text-sm text-slate-700 dark:text-slate-700 leading-relaxed font-medium">
             {targetGroup.description}
           </p>
         </div>
 
         {/* User Account Context & JWT Assurances */}
-        <div className="border-t border-slate-200 dark:border-slate-800 pt-6 space-y-4">
+        <div className="border-t border-slate-200 dark:border-slate-200 pt-6 space-y-4">
           <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Role-Based Access Control (RBAC) Active:
@@ -137,9 +137,9 @@ export default function GroupInviteGatewayPage() {
           {user ? (
             <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-300 dark:border-emerald-700">
               <div className="space-y-0.5">
-                <p className="font-extrabold text-slate-900 dark:text-white text-base">{displayName}</p>
-                <p className="text-xs font-mono text-emerald-800 dark:text-emerald-300">{userEmail || "Authenticated Citizen Account"}</p>
-                <p className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 mt-1">Verified via Clerk Magic Link</p>
+                <p className="font-extrabold text-slate-900 dark:text-slate-900 text-base">{displayName}</p>
+                <p className="text-xs font-mono text-emerald-800 dark:text-emerald-800">{userEmail || "Authenticated Citizen Account"}</p>
+                <p className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-700 mt-1">Verified via Clerk Magic Link</p>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span className="bg-emerald-600 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase">
@@ -177,7 +177,7 @@ export default function GroupInviteGatewayPage() {
       </div>
 
       {/* Respectful Privacy Assurance */}
-      <div className="text-center text-xs text-slate-600 dark:text-slate-400 max-w-lg mx-auto leading-relaxed">
+      <div className="text-center text-xs text-slate-600 dark:text-slate-600 max-w-lg mx-auto leading-relaxed">
         🔒 <strong>Zero-Data Exfiltration Guarantee:</strong> Joining a group workspace connects your team missions and shared audit playbooks. Your raw voter roll spreadsheet rows remain strictly in your local device RAM and never upload to external servers.
       </div>
     </div>

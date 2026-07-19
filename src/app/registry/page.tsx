@@ -92,7 +92,7 @@ export default function StateRegistryPage() {
     <div className="max-w-6xl mx-auto space-y-10 pb-24 font-sans">
       <div className="border-b border-border pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="inline-block bg-primary text-white font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider mb-2 shadow-sm">
+          <div className="inline-block bg-primary text-slate-900 font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider mb-2 shadow-sm">
             50-State Nationwide Readiness
           </div>
           <h1 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight text-primary">National State Data Registry</h1>
@@ -170,11 +170,11 @@ export default function StateRegistryPage() {
         </div>
       </div>
 
-      <div className="bg-slate-900 text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-md">
+      <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-md">
         <div className="space-y-2 max-w-2xl">
           <h3 className="font-serif font-bold text-2xl flex items-center gap-2">Universal Schema Mapping</h3>
-          <p className="text-sm text-slate-300 leading-relaxed font-normal">
-            Because Marigold Insights operates strictly in client-side memory, supporting any state across the political spectrum requires zero backend restructuring or database ingestion. Simply download your jurisdiction&apos;s official spreadsheet and use our <strong className="text-white font-bold underline">Data Prep</strong> mapping tool to generate your county&apos;s custom header schema in minutes.
+          <p className="text-sm text-slate-700 leading-relaxed font-normal">
+            Because Marigold Insights operates strictly in client-side memory, supporting any state across the political spectrum requires zero backend restructuring or database ingestion. Simply download your jurisdiction&apos;s official spreadsheet and use our <strong className="text-slate-900 font-bold underline">Data Prep</strong> mapping tool to generate your county&apos;s custom header schema in minutes.
           </p>
         </div>
         <Link href="/data-prep" className="bg-accent hover:bg-amber-600 text-white font-bold text-sm px-6 py-3.5 rounded-lg shadow whitespace-nowrap transition-all">

@@ -11,7 +11,7 @@ export default function GettingStartedPage() {
       <div className="space-y-4 border-b border-slate-200 pb-8">
         <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 mb-2">
           <span>Getting Started</span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-600" />
           <span className="text-slate-900">Quickstart Guide</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight text-slate-900 leading-tight">
@@ -52,7 +52,7 @@ export default function GettingStartedPage() {
           First, store your active token securely. In a production environment, this should be fetched from a secure vault (e.g., HashiCorp Vault, AWS Secrets Manager) and never hardcoded.
         </p>
 
-        <pre className="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md">
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md">
 <code>{`# Export your institutional token
 export MARIGOLD_BEARER="mg_live_x89aZ120BklqP94MnvX5..."
 
@@ -69,7 +69,7 @@ export MARIGOLD_API_HOST="https://api.marigoldinsights.org/v1"`}</code>
           The <code>encrypted_vault</code> contains the actual data. For this test, you do not need to implement AES-GCM; you can use our sandbox-whitelisted synthetic ciphertext <code>SYNTHETIC_TEST_VECTOR_01</code>.
         </p>
 
-        <pre className="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md">
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md">
 <code>{`cat << EOF > test-payload.json
 {
   "session_fingerprint": "a3b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0",
@@ -90,7 +90,7 @@ EOF`}</code>
           Now, transmit the synthetic payload to the cloud ingress point. Our ingress load balancers will verify your IP, authenticate your Bearer token, validate the JSON schema against our strict OpenAPI 3.1 definitions, and route the request to the algorithmic workers.
         </p>
 
-        <pre className="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md">
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md">
 <code>{`curl -X POST $MARIGOLD_API_HOST/modules/anomalies/detect \\
   -H "Authorization: Bearer $MARIGOLD_BEARER" \\
   -H "Content-Type: application/json" \\
@@ -102,7 +102,7 @@ EOF`}</code>
           If your IP is whitelisted and your token is valid, you will receive a <code>200 OK</code> response. The <code>status</code> field will indicate SUCCESS, and you will receive a synthetic array of flagged anomalies. Note that because you used a synthetic vector, the response is deterministic and hardcoded for validation purposes.
         </p>
 
-        <pre className="bg-slate-900 text-emerald-400 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
+        <pre className="bg-slate-50 border border-slate-200 text-emerald-700 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
 <code>{`{
   "status": "SUCCESS",
   "anomalies_found": 2,
@@ -159,7 +159,7 @@ EOF`}</code>
         </Link>
         <Link 
           href="/developers/docs/authentication"
-          className="bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Authentication & Tokens
           <ChevronRight className="w-4 h-4" />

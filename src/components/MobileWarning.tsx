@@ -26,7 +26,7 @@ export default function MobileWarning() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">
-      <div className="bg-primary border border-slate-700 text-white p-4 rounded-xl shadow-2xl flex flex-col gap-3">
+      <div className="bg-primary border border-slate-700 text-slate-900 p-4 rounded-xl shadow-2xl flex flex-col gap-3">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2 text-amber-400">
             <MonitorSmartphone className="w-5 h-5 shrink-0" />
@@ -34,18 +34,18 @@ export default function MobileWarning() {
           </div>
           <button 
             onClick={() => setHasDismissed(true)}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <p className="text-sm text-slate-300 leading-relaxed font-medium">
-          You are accessing Marigold from a mobile device. To ensure the highest level of security, Marigold operates exclusively in a <strong className="text-white">Zero-Cloud</strong> environment, processing all data locally on your device rather than sending it to a server.
+        <p className="text-sm text-slate-700 leading-relaxed font-medium">
+          You are accessing Marigold from a mobile device. To ensure the highest level of security, Marigold operates exclusively in a <strong className="text-slate-900">Zero-Cloud</strong> environment, processing all data locally on your device rather than sending it to a server.
         </p>
         
         <div className="bg-white/10 rounded-lg p-3 text-xs leading-relaxed border border-white/5 flex gap-2">
-          <Zap className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <Zap className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
           <p className="text-slate-200">
             Analyzing multi-million row datasets requires significant hardware memory (RAM). While you can view dashboards here, we highly recommend switching to a <strong>desktop computer</strong> for full data processing capabilities.
           </p>

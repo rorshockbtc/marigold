@@ -9,7 +9,7 @@ export function ComplianceContent() {
   return (
     <div className="max-w-5xl mx-auto space-y-10 pb-24 font-sans">
       <div className="border-b border-border pb-6">
-        <div className="inline-block bg-primary text-white font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider mb-2.5 shadow-sm">
+        <div className="inline-block bg-primary text-slate-900 font-bold text-xs px-3.5 py-1 rounded uppercase tracking-wider mb-2.5 shadow-sm">
           Government Compliance &amp; Security
         </div>
         <h1 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight text-primary">FEMA HSGP &amp; Zero-PII Compliance Center</h1>
@@ -95,10 +95,10 @@ export function ComplianceContent() {
                   Our web server acts strictly as a public library of audit checklists. It stores mathematical formulas and verification rules (e.g., <span className="font-mono bg-slate-100 px-1 py-0.5 rounded">&quot;Check if occupants &gt; 12&quot;</span>). It contains zero citizen data.
                 </p>
               </div>
-              <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 text-white space-y-2 shadow-sm">
+              <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl border border-slate-200 text-slate-900 space-y-2 shadow-sm">
                 <span className="font-mono font-bold text-xs bg-amber-400 text-slate-950 px-2.5 py-1 rounded">YOUR LOCAL COMPUTER</span>
-                <h4 className="font-serif font-bold text-white text-lg">Does All the Work</h4>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <h4 className="font-serif font-bold text-slate-900 text-lg">Does All the Work</h4>
+                <p className="text-xs text-slate-700 leading-relaxed">
                   When you visit our website and select a file, your internet browser downloads our checklist instructions to your desk. Your personal computer inspects your spreadsheet directly in your computer&apos;s memory. Your sensitive files remain 100% private.
                 </p>
               </div>
@@ -117,7 +117,7 @@ export function ComplianceContent() {
               <div className="border border-slate-200 p-6 rounded-xl bg-slate-50/50 space-y-2">
                 <div className="flex flex-wrap justify-between items-center gap-2">
                   <h4 className="font-serif font-bold text-primary text-lg">1. Statewide FEMA / SAA Grant Initiatives</h4>
-                  <span className="bg-primary text-white font-bold text-xs px-3 py-1 rounded">Comprehensive Tier</span>
+                  <span className="bg-primary text-slate-900 font-bold text-xs px-3 py-1 rounded">Comprehensive Tier</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   Structured directly under federal FY26 HSGP 3% Election Security allocations. Delivers custom state header mapping, dedicated onboarding for county clerks, and centralized algorithm curation across all participating counties.
@@ -145,10 +145,10 @@ export function ComplianceContent() {
               </div>
             </div>
 
-            <div className="bg-slate-900 text-white p-6 rounded-xl mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="bg-slate-50 border border-slate-200 text-slate-900 p-6 rounded-xl mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="space-y-1">
                 <h4 className="font-serif font-bold text-lg">Need a Custom Jurisdiction Quote?</h4>
-                <p className="text-xs text-slate-300">We structure flexible contracting schedules tailored to your state&apos;s specific procurement laws.</p>
+                <p className="text-xs text-slate-700">We structure flexible contracting schedules tailored to your state&apos;s specific procurement laws.</p>
               </div>
               <Link href="/deploy" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-6 py-3 rounded-lg shadow whitespace-nowrap transition-all">
                 Request Procurement Proposal →

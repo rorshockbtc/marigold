@@ -11,7 +11,7 @@ export default function ActiveModulesPage() {
       <div className="space-y-4 border-b border-slate-200 pb-8">
         <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 mb-2">
           <span>API Reference</span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-600" />
           <span className="text-slate-900">Active Modules List</span>
         </div>
         <div className="flex items-center gap-4">
@@ -33,7 +33,7 @@ export default function ActiveModulesPage() {
           Unlike the <code>detect</code> endpoint, <code>/modules/list</code> does not require an AES-GCM encrypted payload because it does not process any citizen identities. It simply returns the string enums required to populate the <code>anomaly_type</code> field in your future POST requests.
         </p>
 
-        <pre className="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
 <code>{`curl -X GET https://api.marigoldinsights.org/v1/modules/list \\
   -H "Authorization: Bearer mg_live_..."`}</code>
         </pre>
@@ -43,7 +43,7 @@ export default function ActiveModulesPage() {
           The response is a flat JSON array of strings. You should cache this response locally (e.g. Redis) and refresh it every 24 hours, as we routinely deploy new statistical modules over the air.
         </p>
 
-        <pre className="bg-slate-900 text-emerald-400 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
+        <pre className="bg-slate-50 border border-slate-200 text-emerald-700 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
 <code>{`[
   "HIGH_DENSITY",
   "NCOA_MISMATCH",
@@ -66,7 +66,7 @@ export default function ActiveModulesPage() {
         </Link>
         <Link 
           href="/developers/docs/errors"
-          className="bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Error Codes Dictionary
           <ChevronRight className="w-4 h-4" />

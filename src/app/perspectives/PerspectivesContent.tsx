@@ -12,7 +12,7 @@ export function PerspectivesContent() {
       <div className="max-w-5xl mx-auto space-y-12">
         
         {/* Header / Banner */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-8 sm:p-12 rounded-3xl shadow-2xl border border-slate-700 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-slate-900 p-8 sm:p-12 rounded-3xl shadow-2xl border border-slate-700 relative overflow-hidden">
           <div className="absolute top-0 right-0 translate-x-12 -translate-y-12 opacity-10 pointer-events-none">
             <MarigoldIcon className="w-96 h-96 text-amber-400" />
           </div>
@@ -20,17 +20,17 @@ export function PerspectivesContent() {
             <div className="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
               <span>🌐 Public Education &amp; FAQ Guide</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-slate-900 leading-tight">
               The Observer &amp; The Data: Exploring Worldviews Through Voter Rolls
             </h1>
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
+            <p className="text-slate-700 text-base sm:text-lg leading-relaxed">
               Data is effectively dead until it is observed—and those who observe inevitably bias the output via their specific inquiries. At Marigold Insights, we treat public voter rolls not as a weapon for partisan attack, but as a mirror reflecting different values across the American political spectrum.
             </p>
             <div className="pt-4 flex flex-wrap gap-4">
               <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all">
                 Try Public Sandbox ↗
               </a>
-              <Link href="/playbooks" className="bg-slate-800/80 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-xl border border-slate-600 transition-all">
+              <Link href="/playbooks" className="bg-slate-800/80 hover:bg-slate-800 text-slate-900 font-semibold px-6 py-3 rounded-xl border border-slate-600 transition-all">
                 Explore Mission Playbooks
               </Link>
             </div>
@@ -49,7 +49,7 @@ export function PerspectivesContent() {
           <div className="flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setActiveLens('all')}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${activeLens === 'all' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${activeLens === 'all' ? 'bg-slate-50 border border-slate-200 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
             >
               🌐 All Perspectives (360° View)
             </button>
@@ -173,13 +173,13 @@ export function PerspectivesContent() {
         </div>
 
         {/* Plain English Statistical Dictionary for Non-Quants */}
-        <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-slate-800 space-y-8">
+        <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl border border-slate-200 space-y-8">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
               <span>🧮 Plain English Math Translator</span>
             </div>
-            <h2 className="text-3xl font-serif font-bold text-white">Statistical Models Explained for Everyone</h2>
-            <p className="text-slate-300 text-base">
+            <h2 className="text-3xl font-serif font-bold text-slate-900">Statistical Models Explained for Everyone</h2>
+            <p className="text-slate-700 text-base">
               You do not need a PhD in statistics to audit your local government. Here is how our automated math models work in simple, everyday language.
             </p>
           </div>
@@ -190,9 +190,9 @@ export function PerspectivesContent() {
             <div className="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-amber-400">1. The Bell Curve Alarm (Z-Scores)</h3>
-                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300 font-mono">Standard Deviation</span>
+                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-700 font-mono">Standard Deviation</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <p className="text-sm text-slate-700 leading-relaxed">
                 Imagine finding the average number of people living in a single household across your town (usually around 2 or 3). If an address has 15 voters registered to it, the **Z-Score** measures how many &quot;steps&quot; away from normal that house is. Anything over 3 steps is flagged as a statistical alarm requiring human review.
               </p>
             </div>
@@ -200,10 +200,10 @@ export function PerspectivesContent() {
             {/* IQR Quantiles */}
             <div className="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-emerald-400">2. The Tukey Fence (IQR Quantiles)</h3>
-                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300 font-mono">Robust Outliers</span>
+                <h3 className="text-lg font-bold text-emerald-700">2. The Tukey Fence (IQR Quantiles)</h3>
+                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-700 font-mono">Robust Outliers</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <p className="text-sm text-slate-700 leading-relaxed">
                 Sometimes a town has a massive college dorm or nursing home that skews the average for everyone else. **Interquartile Range (IQR)** lines up all addresses from smallest to largest, chops off the bottom 25% and top 25%, and builds a mathematical &quot;fence&quot; around typical homes. This prevents false alarms on normal apartments.
               </p>
             </div>
@@ -212,9 +212,9 @@ export function PerspectivesContent() {
             <div className="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-sky-400">3. Lightning Strike Odds (Poisson Math)</h3>
-                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300 font-mono">Rare Event Probability</span>
+                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-700 font-mono">Rare Event Probability</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <p className="text-sm text-slate-700 leading-relaxed">
                 If your rural county typically sees 3 new voter registrations on a normal Tuesday, what are the exact odds that 450 registrations arrive on a single afternoon? **Poisson Math** calculates rare event probabilities, helping auditors distinguish between legitimate registration drives and computer file upload glitches.
               </p>
             </div>
@@ -223,9 +223,9 @@ export function PerspectivesContent() {
             <div className="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-purple-400">4. The Shift Detector (CUSUM)</h3>
-                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300 font-mono">Time-Series Change</span>
+                <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-700 font-mono">Time-Series Change</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <p className="text-sm text-slate-700 leading-relaxed">
                 Instead of looking at just one day, **CUSUM** tracks cumulative trends over months. If a county election clerk suddenly stops processing address updates or alters their routine maintenance procedures, this model pinpoints the exact week the historical trend line broke.
               </p>
             </div>
@@ -240,7 +240,7 @@ export function PerspectivesContent() {
             Choose your lens, run pre-configured audits, and contribute to non-partisan election transparency today.
           </p>
           <div className="pt-2">
-            <Link href="/playbooks" className="bg-slate-950 hover:bg-slate-900 text-white font-bold px-8 py-3.5 rounded-xl inline-block shadow-lg transition-all">
+            <Link href="/playbooks" className="bg-slate-100 hover:bg-slate-50 border border-slate-200 text-slate-900 font-bold px-8 py-3.5 rounded-xl inline-block shadow-lg transition-all">
               Launch Mission Playbooks →
             </Link>
           </div>

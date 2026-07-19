@@ -274,7 +274,7 @@ export default function MarketingHomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
       {/* Full-Width Edge-to-Edge Hero Section */}
-      <section className="w-full text-center py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
+      <section className="w-full text-center py-24 sm:py-32 bg-slate-100 text-slate-900 relative overflow-hidden border-b border-slate-200 shadow-2xl px-4 sm:px-6">
         {/* Isolated Absolute Background Layers & Overlays */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
           {REGIONS.map((reg) => (
@@ -285,7 +285,7 @@ export default function MarketingHomePage() {
               isNext={nextRegion === reg.id} 
             />
           ))}
-          <div className="absolute inset-0 bg-slate-950/30 z-[2]" />
+          <div className="absolute inset-0 bg-slate-100/30 z-[2]" />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/15 to-slate-950 z-[3]" />
         </div>
 
@@ -316,7 +316,7 @@ export default function MarketingHomePage() {
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-slate-900 max-w-5xl mx-auto leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
             Non-Partisan Civic Data Exploration
           </h1>
           
@@ -326,10 +326,10 @@ export default function MarketingHomePage() {
 
           {/* Editorial Reflection & Literary Facet Display */}
           <div className="pt-4 pb-2 max-w-3xl mx-auto flex flex-col items-center gap-3">
-            <div className="inline-flex items-center gap-2 bg-slate-900/90 backdrop-blur-md border border-amber-500/40 px-5 py-2 rounded-full text-xs sm:text-sm text-amber-300 font-serif italic tracking-wide shadow-xl transition-all duration-500">
+            <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200/90 backdrop-blur-md border border-amber-500/40 px-5 py-2 rounded-full text-xs sm:text-sm text-amber-300 font-serif italic tracking-wide shadow-xl transition-all duration-500">
               <span>✨ {current.lyric}</span>
             </div>
-            <div className="bg-slate-950/80 backdrop-blur-md border border-slate-700/80 px-6 py-3 rounded-2xl text-xs sm:text-sm text-slate-300 font-normal leading-relaxed shadow-2xl max-w-2xl text-center transition-all duration-500">
+            <div className="bg-slate-100/80 backdrop-blur-md border border-slate-700/80 px-6 py-3 rounded-2xl text-xs sm:text-sm text-slate-700 font-normal leading-relaxed shadow-2xl max-w-2xl text-center transition-all duration-500">
               {current.location}
             </div>
           </div>
@@ -339,15 +339,15 @@ export default function MarketingHomePage() {
             <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5">
               Try Public Sandbox ↗
             </a>
-            <Link href="/learning-center" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-900/90 text-white border border-amber-500/40 hover:bg-slate-800 hover:border-amber-400 transition-all transform hover:-translate-y-0.5">
+            <Link href="/learning-center" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-50 border border-slate-200/90 text-slate-900 border border-amber-500/40 hover:bg-slate-800 hover:border-amber-400 transition-all transform hover:-translate-y-0.5">
               📖 Knowledge Base
             </Link>
-            <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all">
+            <a href="#stakeholders" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-slate-900 border border-slate-600 hover:bg-slate-700 transition-all">
               Find Your Role Guide ↓
             </a>
           </div>
 
-          <div className="pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800/80 max-w-2xl mx-auto mt-8">
+          <div className="pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-600 font-bold uppercase tracking-wider border-t border-slate-200/80 max-w-2xl mx-auto mt-8">
             <span>100% Client-Side Memory</span>
             <span>•</span>
             <span>No PII Uploads</span>
@@ -372,7 +372,7 @@ export default function MarketingHomePage() {
             </p>
           </div>
           <div className="relative z-10 shrink-0">
-            <Link href="/learning-center" className="bg-[#2D3142] hover:bg-black text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center gap-2">
+            <Link href="/learning-center" className="bg-[#2D3142] hover:bg-slate-200 text-slate-900 font-bold px-8 py-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center gap-2">
               <span>Read the Knowledge Base</span>
               <span>→</span>
             </Link>
@@ -380,15 +380,15 @@ export default function MarketingHomePage() {
         </div>
 
         {/* Meet the Developer & Zero-Cloud Architecture Video Showcase */}
-        <section className="bg-gradient-to-br from-[#2D3142] to-slate-900 text-white rounded-3xl p-8 sm:p-12 border border-slate-700 shadow-2xl max-w-6xl mx-auto flex flex-col lg:flex-row gap-10 items-center justify-between">
+        <section className="bg-gradient-to-br from-[#2D3142] to-slate-900 text-slate-900 rounded-3xl p-8 sm:p-12 border border-slate-700 shadow-2xl max-w-6xl mx-auto flex flex-col lg:flex-row gap-10 items-center justify-between">
           <div className="space-y-4 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
               <span>🎥 Watch Video Introduction</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">
               Meet the Developer &amp; Architecture Overview
             </h2>
-            <p className="text-slate-300 text-base leading-relaxed">
+            <p className="text-slate-700 text-base leading-relaxed">
               Why did we build Marigold with a strict zero-cloud air-gapped architecture? Watch this direct overview to see how client-side memory auditing protects citizen privacy, empowers county election officials, and eliminates multi-million-dollar cloud risks.
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-bold text-amber-300/90">
@@ -399,7 +399,7 @@ export default function MarketingHomePage() {
               <span className="flex items-center gap-1">🛡️ Open Standards</span>
             </div>
           </div>
-          <div className="w-full lg:w-1/2 max-w-xl aspect-video rounded-2xl overflow-hidden border-4 border-slate-800 shadow-2xl shrink-0 bg-black">
+          <div className="w-full lg:w-1/2 max-w-xl aspect-video rounded-2xl overflow-hidden border-4 border-slate-200 shadow-2xl shrink-0 bg-slate-200">
             <iframe 
               className="w-full h-full"
               src="https://www.youtube.com/embed/AfCvrfkcx5M" 
@@ -473,13 +473,13 @@ export default function MarketingHomePage() {
       </section>
 
       {/* How It Works (The In-Memory Engine) */}
-      <section className="bg-slate-900 text-white rounded-3xl p-8 sm:p-14 shadow-xl space-y-10 max-w-6xl mx-auto">
+      <section className="bg-slate-50 border border-slate-200 text-slate-900 rounded-3xl p-8 sm:p-14 shadow-xl space-y-10 max-w-6xl mx-auto">
         <div className="text-center space-y-3">
           <span className="bg-slate-800 text-amber-400 font-bold text-xs px-3.5 py-1.5 rounded uppercase tracking-wider border border-slate-700">
             The Technological Breakthrough
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold">Inverting Traditional Cloud Architecture</h2>
-          <p className="text-slate-300 text-base max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-700 text-base max-w-2xl mx-auto leading-relaxed">
             Traditional platforms force counties to upload sensitive citizen records to centralized cloud servers. Marigold brings the algorithms down to the local file instead.
           </p>
         </div>
@@ -487,24 +487,24 @@ export default function MarketingHomePage() {
         <div className="grid md:grid-cols-3 gap-8 pt-2">
           <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 space-y-3">
             <div className="text-sm font-bold text-amber-400 font-mono tracking-widest uppercase">Step 01</div>
-            <h4 className="font-serif font-bold text-white text-xl">Download Checklist</h4>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <h4 className="font-serif font-bold text-slate-900 text-xl">Download Checklist</h4>
+            <p className="text-sm text-slate-700 leading-relaxed">
               Browse the public library and download a standardized text file (e.g., National Change of Address verification filter) directly to your computer.
             </p>
           </div>
 
           <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 space-y-3">
             <div className="text-sm font-bold text-amber-400 font-mono tracking-widest uppercase">Step 02</div>
-            <h4 className="font-serif font-bold text-white text-xl">Select Local File</h4>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <h4 className="font-serif font-bold text-slate-900 text-xl">Select Local File</h4>
+            <p className="text-sm text-slate-700 leading-relaxed">
               Open your jurisdiction&apos;s official spreadsheet on your computer. The browser maps columns securely in local computer RAM without internet upload.
             </p>
           </div>
 
           <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 space-y-3">
             <div className="text-sm font-bold text-amber-400 font-mono tracking-widest uppercase">Step 03</div>
-            <h4 className="font-serif font-bold text-white text-xl">Instant Audit Results</h4>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <h4 className="font-serif font-bold text-slate-900 text-xl">Instant Audit Results</h4>
+            <p className="text-sm text-slate-700 leading-relaxed">
               Client-side memory processes up to 100,000 rows per second, isolating clerical formatting errors and formatting clean verification reports instantly.
             </p>
           </div>
@@ -611,13 +611,13 @@ export default function MarketingHomePage() {
       </section>
 
       {/* Universal CSV Ingestion & Zero-PII Collaboration */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl border border-slate-800 max-w-6xl mx-auto space-y-12">
+      <section className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-slate-900 rounded-3xl p-8 sm:p-14 shadow-2xl border border-slate-200 max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-3">
           <span className="bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-emerald-500/30">
             Enterprise &amp; Grassroots Superpowers
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold">Universal Ingestion &amp; Zero-PII Collaboration</h2>
-          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-700 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             We eliminated the two biggest bottlenecks in civic auditing: messy spreadsheet cleanup and the legal liabilities of sharing data across teams.
           </p>
         </div>
@@ -628,10 +628,10 @@ export default function MarketingHomePage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold bg-amber-400 text-slate-950 px-2.5 py-1 rounded">LOCAL MEMORY SPEED</span>
-                <span className="text-xs text-slate-400 font-mono">100k Rows / Sec</span>
+                <span className="text-xs text-slate-600 font-mono">100k Rows / Sec</span>
               </div>
-              <h3 className="font-serif font-bold text-white text-2xl">Universal CSV Self-Healing Mapper</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <h3 className="font-serif font-bold text-slate-900 text-2xl">Universal CSV Self-Healing Mapper</h3>
+              <p className="text-sm text-slate-700 leading-relaxed">
                 Every state and county exports voter rolls in a different layout. Our intelligent client-side engine automatically detects column headers, splits full names, and normalizes messy formatting in seconds.
               </p>
             </div>
@@ -645,11 +645,11 @@ export default function MarketingHomePage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold bg-sky-400 text-slate-950 px-2.5 py-1 rounded">LEGAL PROTECTION</span>
-                <span className="text-xs text-slate-400 font-mono">Zero Cloud PII</span>
+                <span className="text-xs text-slate-600 font-mono">Zero Cloud PII</span>
               </div>
-              <h3 className="font-serif font-bold text-white text-2xl">Zero-PII Secure Notes &amp; Playbooks</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                When your coalition explores data together, you inherit shared expertise without legal risk. Team members share plain-English investigative notes and verification checklists (<strong className="text-white">Shared Playbooks</strong>) while the platform automatically strips out regulated citizen PII.
+              <h3 className="font-serif font-bold text-slate-900 text-2xl">Zero-PII Secure Notes &amp; Playbooks</h3>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                When your coalition explores data together, you inherit shared expertise without legal risk. Team members share plain-English investigative notes and verification checklists (<strong className="text-slate-900">Shared Playbooks</strong>) while the platform automatically strips out regulated citizen PII.
               </p>
             </div>
             <div className="pt-4 border-t border-slate-700/80 text-xs text-sky-300 font-medium flex items-center gap-2">
@@ -662,7 +662,7 @@ export default function MarketingHomePage() {
       {/* Public Sandbox Interactive CTA Banner */}
       <section className="bg-amber-500 text-slate-950 rounded-3xl p-8 sm:p-12 shadow-2xl max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 border-4 border-amber-400">
         <div className="space-y-3 max-w-2xl text-center md:text-left">
-          <div className="inline-block bg-slate-950 text-amber-400 font-mono text-[11px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-sm">
+          <div className="inline-block bg-slate-100 text-amber-400 font-mono text-[11px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-sm">
             Interactive Live Simulator
           </div>
           <h2 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-tight">Want to Test the Algorithms Yourself?</h2>
@@ -678,7 +678,7 @@ export default function MarketingHomePage() {
             href="/sandbox" 
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-base sm:text-lg px-8 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 block text-center whitespace-nowrap"
+            className="bg-slate-100 hover:bg-slate-800 text-slate-900 font-extrabold text-base sm:text-lg px-8 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 block text-center whitespace-nowrap"
           >
             Launch Public Sandbox ↗
           </a>
@@ -686,17 +686,17 @@ export default function MarketingHomePage() {
       </section>
 
       {/* Institutional Beta Partnership & Strategic Funding Banner */}
-      <section className="bg-gradient-to-br from-slate-900 via-primary to-slate-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl border-2 border-amber-500/40 max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-slate-900 via-primary to-slate-950 text-slate-900 rounded-3xl p-8 sm:p-14 shadow-2xl border-2 border-amber-500/40 max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
         <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="space-y-4 max-w-2xl text-center md:text-left relative z-10">
           <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
             <span>🤝 Call for Partners &amp; Strategic Funding</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-tight text-white">
+          <h2 className="text-3xl sm:text-4xl font-serif font-extrabold tracking-tight text-slate-900">
             Unbiased Statistical Mapping. <br />
             <span className="text-amber-400">Zero Political Narrative.</span>
           </h2>
-          <p className="text-slate-300 text-base sm:text-lg font-normal leading-relaxed">
+          <p className="text-slate-700 text-base sm:text-lg font-normal leading-relaxed">
             We are selecting civic organizations, researchers, and state-level data teams for our **Beta Partnership Program**—providing turnkey tool access in exchange for localized testing and feedback.
           </p>
           <div className="text-xs font-bold text-amber-300/90 font-mono pt-1">
@@ -712,7 +712,7 @@ export default function MarketingHomePage() {
           </Link>
           <Link 
             href="/deploy" 
-            className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-base px-6 py-5 rounded-2xl border border-slate-600 transition-all text-center whitespace-nowrap"
+            className="bg-slate-800 hover:bg-slate-700 text-slate-900 font-bold text-base px-6 py-5 rounded-2xl border border-slate-600 transition-all text-center whitespace-nowrap"
           >
             Bring to Your State
           </Link>
@@ -729,7 +729,7 @@ export default function MarketingHomePage() {
               <h3 className="text-xl font-serif font-bold text-primary group-hover:text-accent transition-colors">National Audit Checklists</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">Crowdsourced verification parameters shareable across state lines.</p>
             </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
+            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-600">→</span>
           </Link>
 
           <Link href="/data-linkage" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
@@ -738,7 +738,7 @@ export default function MarketingHomePage() {
               <h3 className="text-xl font-serif font-bold text-primary group-hover:text-emerald-700 transition-colors">Smart Duplicate Finder</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">Test our probabilistic fuzzy linkage simulator directly in your browser.</p>
             </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
+            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-600">→</span>
           </Link>
 
           <Link href="/registry" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
@@ -747,7 +747,7 @@ export default function MarketingHomePage() {
               <h3 className="text-xl font-serif font-bold text-primary group-hover:text-sky-700 transition-colors">State Acquisition Registry</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">View formatting parameters and cost structures nationwide.</p>
             </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
+            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-600">→</span>
           </Link>
 
           <Link href="/roadmap" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
@@ -756,14 +756,14 @@ export default function MarketingHomePage() {
               <h3 className="text-xl font-serif font-bold text-primary group-hover:text-purple-700 transition-colors">Technical Roadmap</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">Cross-agency integrations and federal grant alignment milestones.</p>
             </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
+            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-600">→</span>
           </Link>
         </div>
       </section>
 
       {/* Global Legal & Compliance Footer */}
-      <footer className="border-t border-slate-800 bg-slate-950 py-12 px-4 text-center text-xs text-slate-400 space-y-4">
-        <div className="flex flex-wrap justify-center gap-6 font-bold text-slate-300">
+      <footer className="border-t border-slate-200 bg-slate-100 py-12 px-4 text-center text-xs text-slate-600 space-y-4">
+        <div className="flex flex-wrap justify-center gap-6 font-bold text-slate-700">
           <Link href="/terms" className="hover:text-amber-400 transition-colors">Terms of Service &amp; Statutory Liability</Link>
           <span>•</span>
           <Link href="/privacy" className="hover:text-amber-400 transition-colors">Zero-Knowledge Privacy Policy</Link>

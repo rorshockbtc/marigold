@@ -278,7 +278,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   if (!localFileConnected) {
     if (isIngesting) {
       return (
-        <div className="bg-slate-900 text-white rounded-2xl p-10 border border-amber-500/50 shadow-2xl space-y-8 animate-in fade-in max-w-4xl mx-auto text-center">
+        <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-10 border border-amber-500/50 shadow-2xl space-y-8 animate-in fade-in max-w-4xl mx-auto text-center">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/40">
             <Settings className="w-8 h-8 text-amber-400 animate-spin" />
           </div>
@@ -286,8 +286,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               Cryptographic Ingestion Engine Active
             </span>
-            <h3 className="text-2xl md:text-3xl font-serif font-bold text-white pt-2">Processing Statewide Voter Roll Shards</h3>
-            <p className="text-slate-300 text-sm max-w-xl mx-auto font-mono">
+            <h3 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 pt-2">Processing Statewide Voter Roll Shards</h3>
+            <p className="text-slate-700 text-sm max-w-xl mx-auto font-mono">
               {ingestionText || "Initializing local browser RAM parser..."}
             </p>
           </div>
@@ -299,7 +299,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 style={{ width: `${ingestionPhase * 25}%` }}
               ></div>
             </div>
-            <div className="flex justify-between text-[11px] font-mono text-slate-400 px-1">
+            <div className="flex justify-between text-[11px] font-mono text-slate-600 px-1">
               <span>Phase {ingestionPhase} / 4</span>
               <span>{ingestionPhase * 25}% Completed</span>
             </div>
@@ -330,15 +330,15 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
     if (stagedFiles.length > 0) {
       const totalMB = (stagedFiles.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)).toFixed(2);
       return (
-        <div className="bg-slate-900 text-white rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
             <div>
               <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5" />
                 <span>Multi-File Shard Staging Queue ({stagedFiles.length} file{stagedFiles.length > 1 ? 's' : ''} staged)</span>
               </span>
-              <h3 className="text-2xl font-bold font-serif text-white mt-3">Ready to Execute Cryptographic Ingestion</h3>
-              <p className="text-slate-300 text-sm max-w-2xl mt-1 leading-relaxed">
+              <h3 className="text-2xl font-bold font-serif text-slate-900 mt-3">Ready to Execute Cryptographic Ingestion</h3>
+              <p className="text-slate-700 text-sm max-w-2xl mt-1 leading-relaxed">
                 You have staged {stagedFiles.length} voter roll shard(s) totaling <strong className="text-amber-400 font-mono">{totalMB} MB</strong>. You can append more weekly parts or launch the ingestion engine now.
               </p>
             </div>
@@ -351,7 +351,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           </div>
 
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Staged Shards in Queue (Auto-Classified):</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Staged Shards in Queue (Auto-Classified):</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {stagedFiles.map((f, idx) => {
                 const isWeekly = f.name.toLowerCase().includes("week") || f.name.toLowerCase().includes("delta") || f.name.toLowerCase().includes("update") || f.name.toLowerCase().includes("part2") || (stagedFiles.length > 1 && f.size < stagedFiles[0].size * 0.3);
@@ -360,10 +360,10 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2 truncate pr-2">
                         <FileText className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                        <span className="text-white font-bold truncate">{f.name}</span>
+                        <span className="text-slate-900 font-bold truncate">{f.name}</span>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-slate-400">{(f.size / (1024 * 1024)).toFixed(2)} MB</span>
+                        <span className="text-slate-600">{(f.size / (1024 * 1024)).toFixed(2)} MB</span>
                         <button
                           onClick={() => setStagedFiles(stagedFiles.filter((_, i) => i !== idx))}
                           className="text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded hover:bg-red-950/50"
@@ -385,7 +385,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                           <span>Historical Master Baseline Roll</span>
                         </span>
                       )}
-                      <span className="text-slate-400 font-mono text-[10px]">RAM Verified</span>
+                      <span className="text-slate-600 font-mono text-[10px]">RAM Verified</span>
                     </div>
                   </div>
                 );
@@ -395,10 +395,10 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
 
           <div className="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-start gap-2.5">
-              <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <Shield className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <strong className="text-white block font-sans">Zero-Exfiltration Authorization & Legal Compliance</strong>
-                <p className="text-slate-300 font-sans text-[11px] leading-relaxed">
+                <strong className="text-slate-900 block font-sans">Zero-Exfiltration Authorization & Legal Compliance</strong>
+                <p className="text-slate-700 font-sans text-[11px] leading-relaxed">
                   By clicking Validate below, your browser grants local HTML5 sandbox read authorization strictly for these selected files. No records ever transmit across the network or leave your computer RAM, remaining 100% compliant with state data non-dissemination statutes & Marigold Terms.
                 </p>
               </div>
@@ -408,8 +408,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             </Link>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-2 border-t border-slate-800">
-            <label className="flex-1 text-center inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-3.5 rounded-xl border border-slate-600 shadow cursor-pointer transition-colors text-xs">
+          <div className="flex flex-col sm:flex-row gap-4 pt-2 border-t border-slate-200">
+            <label className="flex-1 text-center inline-block bg-slate-800 hover:bg-slate-700 text-slate-900 font-bold px-5 py-3.5 rounded-xl border border-slate-600 shadow cursor-pointer transition-colors text-xs">
               <span className="inline-flex items-center justify-center gap-1.5">
                 <Plus className="w-4 h-4" />
                 <span>Append Another Weekly Shard / Part File</span>
@@ -431,13 +431,13 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
     }
     if (isDemoGroupActive) {
       return (
-        <div className="bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-900 text-white rounded-2xl p-8 border-2 border-amber-500/60 shadow-2xl space-y-6 animate-in fade-in">
+        <div className="bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-900 text-slate-900 rounded-2xl p-8 border-2 border-amber-500/60 shadow-2xl space-y-6 animate-in fade-in">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-amber-500/30 pb-6">
             <div className="space-y-2">
               <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
                 <span>🌲 State of Roosevelt (Demo) — Air-Gapped Isolation Active</span>
               </span>
-              <h3 className="text-2xl md:text-3xl font-black font-serif text-white mt-2">Synthetic Demo Dataset Required</h3>
+              <h3 className="text-2xl md:text-3xl font-black font-serif text-slate-900 mt-2">Synthetic Demo Dataset Required</h3>
               <p className="text-amber-100 text-sm max-w-2xl leading-relaxed">
                 You have switched to the State of Roosevelt demo environment. To prevent exposing real voter records or commingling jurisdictional data with real state voter rolls during demonstrations, real voter files (`ms_voter_roll_2024.csv` etc.) are automatically isolated and suppressed.
               </p>
@@ -446,8 +446,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               </p>
             </div>
             <div className="bg-amber-950/80 p-3.5 rounded-xl border border-amber-500/40 text-xs font-mono text-amber-200 shrink-0 space-y-1 shadow-inner">
-              <div>Mode: <span className="text-white font-black">100% Zero-PII Demo</span></div>
-              <div>Real Data: <span className="text-emerald-400 font-bold">Suppressed & Safe</span></div>
+              <div>Mode: <span className="text-slate-900 font-black">100% Zero-PII Demo</span></div>
+              <div>Real Data: <span className="text-emerald-700 font-bold">Suppressed & Safe</span></div>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
@@ -460,7 +460,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             </a>
             <Link
               href="/data-prep"
-              className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-4 rounded-xl border border-slate-600 transition-colors text-sm flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-900 font-bold px-6 py-4 rounded-xl border border-slate-600 transition-colors text-sm flex items-center justify-center gap-2"
             >
               <span>Link Demo File in /data-prep →</span>
             </Link>
@@ -484,7 +484,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   localStorage.setItem("marigold_file_rows", "1800");
                 }
               }}
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-4 rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-slate-900 font-bold px-5 py-4 rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
             >
               ⚡ Instant Load Demo Buffer
             </button>
@@ -494,21 +494,21 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
     }
 
     return (
-      <div className="bg-slate-900 text-white rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-8 border border-amber-500/40 shadow-2xl space-y-6 animate-in fade-in">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
             <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Statewide Audit Telemetry Hub (Awaiting Data Ingestion)</span>
             </span>
-            <h3 className="text-2xl font-bold font-serif text-white mt-3">No Voter Roll Dataset Connected</h3>
-            <p className="text-slate-300 text-sm max-w-2xl mt-1 leading-relaxed">
+            <h3 className="text-2xl font-bold font-serif text-slate-900 mt-3">No Voter Roll Dataset Connected</h3>
+            <p className="text-slate-700 text-sm max-w-2xl mt-1 leading-relaxed">
               You are signed in as <strong className="text-amber-400">{userName}</strong>. To generate interactive flag distributions, NCOA relocation charts, and verification velocity curves for your jurisdiction, please connect a voter roll file into local client memory.
             </p>
           </div>
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs font-mono text-slate-300 shrink-0 space-y-1">
+          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs font-mono text-slate-700 shrink-0 space-y-1">
             <div>Status: <span className="text-amber-400 font-bold">Offline / Empty</span></div>
-            <div>RAM Allocation: <span className="text-slate-400">0 MB</span></div>
+            <div>RAM Allocation: <span className="text-slate-600">0 MB</span></div>
           </div>
         </div>
 
@@ -517,8 +517,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           <div className="bg-slate-800/80 p-5 rounded-xl border border-emerald-500/40 space-y-3 flex flex-col justify-between hover:border-emerald-500 transition-all shadow-lg">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm">1</div>
-              <h4 className="font-bold text-white text-base">Link &amp; Stream Local Shard</h4>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <h4 className="font-bold text-slate-900 text-base">Link &amp; Stream Local Shard</h4>
+              <p className="text-xs text-slate-700 leading-relaxed">
                 Link your raw voter file (CSV/TXT). Our browser Web Worker streams and chunks your dataset locally while you sit and watch—guaranteed 100% air-gapped data safety.
               </p>
             </div>
@@ -529,7 +529,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   <span>Launch Data Chunking Studio →</span>
                 </span>
               </Link>
-              <details className="text-[11px] text-slate-400 pt-1 border-t border-slate-700/60">
+              <details className="text-[11px] text-slate-600 pt-1 border-t border-slate-700/60">
                 <summary className="cursor-pointer hover:text-amber-300 transition-colors font-mono">Deprecated Fallback: Direct Sandbox Load</summary>
                 <div className="pt-2">
                   <label className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold px-3 py-2 rounded-lg shadow cursor-pointer transition-colors text-xs">
@@ -548,8 +548,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-slate-600 transition-all">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm">2</div>
-              <h4 className="font-bold text-white text-base">Obtain State Dataset</h4>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <h4 className="font-bold text-slate-900 text-base">Obtain State Dataset</h4>
+              <p className="text-xs text-slate-700 leading-relaxed">
                 Don&apos;t have the voter roll file? Visit the 50-State Data Acquisition Registry to view official Secretary of State request links.
               </p>
             </div>
@@ -566,7 +566,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   </span>
                 </a>
               ) : (
-                <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs">
+                <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-slate-900 font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs">
                   <span className="inline-flex items-center justify-center gap-1.5">
                     <Link2 className="w-3.5 h-3.5" />
                     <span>Visit 50-State Data Registry →</span>
@@ -580,8 +580,8 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-indigo-500/50 transition-all">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-sm">3</div>
-              <h4 className="font-bold text-white text-base">Load Sample Benchmark</h4>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <h4 className="font-bold text-slate-900 text-base">Load Sample Benchmark</h4>
+              <p className="text-xs text-slate-700 leading-relaxed">
                 Want to evaluate the workflow first? Instantly load our synthesized Mississippi 100,000 benchmark dataset into RAM.
               </p>
             </div>
@@ -589,7 +589,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
               <button
                 type="button"
                 onClick={runBenchmarkIngestion}
-                className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs"
+                className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-slate-900 font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs"
               >
                 ⚡ Load Sample Benchmark Roll
               </button>
@@ -601,7 +601,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           <div className="bg-red-950/90 border border-red-500 p-4 rounded-xl flex items-start gap-3 text-red-200 text-xs animate-in fade-in">
             <span className="text-lg">🛑</span>
             <div className="space-y-1">
-              <strong className="text-white font-bold block">Dataset Parity Error: Jurisdiction Mismatch</strong>
+              <strong className="text-slate-900 font-bold block">Dataset Parity Error: Jurisdiction Mismatch</strong>
               <p>
                 You uploaded a file that does not match your active group jurisdiction. To prevent data corruption or misaligned statistical auditing, the file was rejected.
               </p>
@@ -676,7 +676,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-mari-panel'))}
-              className="bg-accent hover:bg-[#C85A1B] text-white font-black px-4 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
+              className="bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-4 py-1.5 rounded-lg shadow transition-all flex items-center gap-1.5 text-xs"
             >
               💬 Ask Mari for Guidance
             </button>
@@ -986,7 +986,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
 
       {/* Drill-Down Exploration Modal */}
       {selectedMetric && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-100/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-border space-y-5 animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-start border-b border-border pb-4">
               <div>
@@ -1013,7 +1013,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             {fileMismatchError ? (
               <div className="bg-red-50 border-2 border-red-300 p-6 rounded-2xl space-y-4 animate-in fade-in text-red-950">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-red-600 text-white font-bold text-xl flex items-center justify-center shrink-0 shadow">⚠️</div>
+                  <div className="w-10 h-10 rounded-full bg-red-600 text-slate-900 font-bold text-xl flex items-center justify-center shrink-0 shadow">⚠️</div>
                   <div>
                     <h4 className="font-bold text-base">Dataset Mismatch Detected</h4>
                     <p className="text-xs text-red-900 leading-relaxed">
@@ -1050,7 +1050,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 <div className="flex justify-end gap-2 pt-1">
                   <button
                     onClick={() => setFileMismatchError(false)}
-                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors"
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-900 font-bold px-4 py-2 rounded-lg text-xs transition-colors"
                   >
                     ← Try Connecting File Again
                   </button>
@@ -1066,7 +1066,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center gap-3">
-                  <label className="inline-block bg-primary hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl shadow cursor-pointer transition-all text-xs">
+                  <label className="inline-block bg-primary hover:bg-slate-800 text-slate-900 font-bold px-6 py-3 rounded-xl shadow cursor-pointer transition-all text-xs">
                     <span>📂 Connect Local Voter Roll File(s) / Multi-Part</span>
                     <input type="file" multiple accept=".csv,.txt,.tsv,.dat" onChange={(e) => { handleStageFiles(e, false); setLocalFileConnected(false); }} className="hidden" />
                   </label>

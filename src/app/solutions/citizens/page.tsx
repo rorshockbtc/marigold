@@ -12,7 +12,7 @@ export default function CitizensPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-foreground pb-20">
       {/* Friendly Hero Section */}
-      <section className="bg-gradient-to-b from-primary to-slate-900 text-white py-16 px-6 border-b border-accent shadow-lg">
+      <section className="bg-gradient-to-b from-primary to-slate-900 text-slate-900 py-16 px-6 border-b border-accent shadow-lg">
         <div className="max-w-4xl mx-auto space-y-6 text-center">
           <div className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold text-amber-400">
             <span>🔍 For Community Volunteers, Retirees & Citizen Networks</span>
@@ -20,7 +20,7 @@ export default function CitizensPage() {
           <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight leading-tight">
             Verify Local Data Using Plain, Everyday Language
           </h1>
-          <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+          <p className="text-base md:text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed font-normal">
             You don&apos;t need to be a programmer or a spreadsheet expert to participate in civic transparency. Think of Marigold as a smart magnifying glass that runs right on your own computer desk.
           </p>
           <div className="pt-4 flex flex-wrap justify-center gap-4">

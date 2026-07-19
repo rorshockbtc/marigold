@@ -350,7 +350,7 @@ export default function LearningCenterPage() {
         {/* Quick Search */}
         <div className="flex flex-col justify-between items-stretch gap-4 pt-2">
           <div className="relative w-full max-w-xl">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600" />
             <input
               type="text"
               placeholder="Search concepts, acronyms, or formulas..."
@@ -370,7 +370,7 @@ export default function LearningCenterPage() {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="bg-[#FAF8F5] hover:bg-accent text-foreground hover:text-white font-bold px-3 py-1.5 rounded-lg border border-border transition-colors"
+              className="bg-[#FAF8F5] hover:bg-accent text-foreground hover:text-slate-900 font-bold px-3 py-1.5 rounded-lg border border-border transition-colors"
             >
               {s.term}
             </a>
@@ -387,7 +387,7 @@ export default function LearningCenterPage() {
             <p className="text-xs text-[#646A7A]">Try broadening your search query.</p>
             <button
               onClick={() => setSearchQuery("")}
-              className="mt-2 bg-accent text-white font-bold px-4 py-2 rounded-xl text-xs"
+              className="mt-2 bg-accent text-slate-900 font-bold px-4 py-2 rounded-xl text-xs"
             >
               Reset Search
             </button>
@@ -444,7 +444,7 @@ export default function LearningCenterPage() {
                 </div>
 
                 {/* Column 3: How Marigold Implements It */}
-                <div className="bg-[#2D3142] text-white p-6 rounded-2xl border border-slate-700 space-y-2 shadow-sm">
+                <div className="bg-[#2D3142] text-slate-900 p-6 rounded-2xl border border-slate-700 space-y-2 shadow-sm">
                   <h3 className="font-black text-xs uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4 text-amber-300" />
                     <span>How Marigold Implements It</span>
@@ -486,7 +486,7 @@ export default function LearningCenterPage() {
       </div>
 
       {/* Meet the Architect Section */}
-      <div className="bg-[#2D3142] text-white p-8 md:p-10 rounded-3xl border border-[#4A5060] shadow-md mt-12">
+      <div className="bg-[#2D3142] text-slate-900 p-8 md:p-10 rounded-3xl border border-[#4A5060] shadow-md mt-12">
         <div className="flex flex-col md:flex-row gap-8 items-center">
           <div className="flex-1 space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-amber-400 text-xs font-black uppercase tracking-wider">
@@ -494,11 +494,11 @@ export default function LearningCenterPage() {
               <span>Behind the Code</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-black">Meet the Architect</h2>
-            <p className="text-sm md:text-base text-slate-300 leading-relaxed">
+            <p className="text-sm md:text-base text-slate-700 leading-relaxed">
               Transparency isn't just about open-source code and statistical math—it's about knowing the real people behind the system. Watch this short overview to learn more about the philosophy behind Marigold, the importance of zero-cloud privacy, and why we built this tool for election officials and citizens alike.
             </p>
           </div>
-          <div className="w-full md:w-1/2 max-w-md aspect-video rounded-xl overflow-hidden border-4 border-slate-800 shadow-xl shrink-0 bg-black">
+          <div className="w-full md:w-1/2 max-w-md aspect-video rounded-xl overflow-hidden border-4 border-slate-200 shadow-xl shrink-0 bg-slate-200">
             <iframe 
               className="w-full h-full"
               src="https://www.youtube.com/embed/AfCvrfkcx5M" 

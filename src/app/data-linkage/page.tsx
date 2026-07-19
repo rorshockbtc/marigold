@@ -59,7 +59,7 @@ export default function DataLinkageStrategy() {
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-20 px-4 sm:px-6">
       <header className="border-b border-border pb-6">
-        <div className="inline-block bg-primary text-white font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+        <div className="inline-block bg-primary text-slate-900 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-2">
           🧬 Phase 2 Technology Preview & Mathematical Engine
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-primary tracking-tight">
@@ -71,36 +71,36 @@ export default function DataLinkageStrategy() {
       </header>
 
       {/* Live Benchmark Badge Banner */}
-      <div className="bg-gradient-to-r from-slate-900 to-primary text-white p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 to-primary text-slate-900 p-6 rounded-2xl shadow-md border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-widest text-emerald-300 font-bold">
+            <span className="text-xs font-mono uppercase tracking-widest text-emerald-800 font-bold">
               Canonical 1,000-Pair Ground Truth Benchmark (v2.4 Engine)
             </span>
           </div>
           <h2 className="text-xl font-extrabold tracking-tight">
             Empirically Validated Zero-Cloud Accuracy
           </h2>
-          <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+          <p className="text-xs text-slate-700 max-w-xl leading-relaxed">
             Executed in {benchmark.executionTimeMs}ms across 1,000 synthetic test pairs (typographical noise, NCOA relocations, familial collisions, and random controls).
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto text-center font-mono">
           <div className="bg-white/10 px-3 py-2 rounded-xl border border-white/15">
-            <div className="text-xs text-slate-300">Precision</div>
-            <div className="text-lg font-bold text-emerald-300">{benchmark.precision}%</div>
+            <div className="text-xs text-slate-700">Precision</div>
+            <div className="text-lg font-bold text-emerald-800">{benchmark.precision}%</div>
           </div>
           <div className="bg-white/10 px-3 py-2 rounded-xl border border-white/15">
-            <div className="text-xs text-slate-300">Recall</div>
-            <div className="text-lg font-bold text-emerald-300">{benchmark.recall}%</div>
+            <div className="text-xs text-slate-700">Recall</div>
+            <div className="text-lg font-bold text-emerald-800">{benchmark.recall}%</div>
           </div>
           <div className="bg-white/10 px-3 py-2 rounded-xl border border-white/15">
-            <div className="text-xs text-slate-300">F1-Score</div>
-            <div className="text-lg font-bold text-white">{benchmark.f1Score}%</div>
+            <div className="text-xs text-slate-700">F1-Score</div>
+            <div className="text-lg font-bold text-slate-900">{benchmark.f1Score}%</div>
           </div>
           <div className="bg-white/10 px-3 py-2 rounded-xl border border-white/15">
-            <div className="text-xs text-slate-300">False Positives</div>
+            <div className="text-xs text-slate-700">False Positives</div>
             <div className="text-lg font-bold text-amber-300">{benchmark.falsePositiveRate}%</div>
           </div>
         </div>
@@ -254,23 +254,23 @@ export default function DataLinkageStrategy() {
           <div className="font-bold text-slate-700 uppercase mb-2">Orthogonal Attribute Weight Breakdown:</div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
             <div className="bg-white p-2 rounded border">
-              <div className="text-slate-400 text-[10px]">First Name / Nickname</div>
+              <div className="text-slate-600 text-[10px]">First Name / Nickname</div>
               <div className="font-bold text-slate-800">{result.fieldScores.firstName > 0 ? `+${result.fieldScores.firstName}` : result.fieldScores.firstName}</div>
             </div>
             <div className="bg-white p-2 rounded border">
-              <div className="text-slate-400 text-[10px]">Last Name / Suffix</div>
+              <div className="text-slate-600 text-[10px]">Last Name / Suffix</div>
               <div className="font-bold text-slate-800">{result.fieldScores.lastName > 0 ? `+${result.fieldScores.lastName}` : result.fieldScores.lastName}</div>
             </div>
             <div className="bg-white p-2 rounded border">
-              <div className="text-slate-400 text-[10px]">Date of Birth</div>
+              <div className="text-slate-600 text-[10px]">Date of Birth</div>
               <div className="font-bold text-slate-800">{result.fieldScores.dob > 0 ? `+${result.fieldScores.dob}` : result.fieldScores.dob}</div>
             </div>
             <div className="bg-white p-2 rounded border">
-              <div className="text-slate-400 text-[10px]">Street Address</div>
+              <div className="text-slate-600 text-[10px]">Street Address</div>
               <div className="font-bold text-slate-800">{result.fieldScores.address > 0 ? `+${result.fieldScores.address}` : result.fieldScores.address}</div>
             </div>
             <div className="bg-white p-2 rounded border">
-              <div className="text-slate-400 text-[10px]">Zip Code</div>
+              <div className="text-slate-600 text-[10px]">Zip Code</div>
               <div className="font-bold text-slate-800">{result.fieldScores.zip > 0 ? `+${result.fieldScores.zip}` : result.fieldScores.zip}</div>
             </div>
           </div>

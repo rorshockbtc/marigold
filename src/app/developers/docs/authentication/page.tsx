@@ -11,7 +11,7 @@ export default function AuthenticationPage() {
       <div className="space-y-4 border-b border-slate-200 pb-8">
         <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 mb-2">
           <span>Core Infrastructure</span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-600" />
           <span className="text-slate-900">Authentication & Tokens</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight text-slate-900 leading-tight">
@@ -57,7 +57,7 @@ export default function AuthenticationPage() {
           Your integration must append the following HTTP header to all requests against the <code>https://api.marigoldinsights.org/v1</code> space. Do not use Basic Auth or query parameter authentication. We do not support it.
         </p>
 
-        <pre className="bg-slate-900 text-emerald-400 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
+        <pre className="bg-slate-50 border border-slate-200 text-emerald-700 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
 <code>{`Authorization: Bearer mg_live_x89aZ120BklqP94MnvX5...`}</code>
         </pre>
 
@@ -107,7 +107,7 @@ export default function AuthenticationPage() {
             <ArrowRightLeft className="w-5 h-5 text-slate-600" />
             Automated Rotation Example (Bash / Cron)
           </h4>
-          <pre className="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto text-[11px] font-mono leading-relaxed shadow-inner">
+          <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-[11px] font-mono leading-relaxed shadow-inner">
 <code>{`#!/bin/bash
 # Triggered via Jenkins or GitHub Actions every 25 days
 
@@ -148,7 +148,7 @@ echo "Rotation complete. Legacy token expires in 72 hours."`}</code>
         </Link>
         <Link 
           href="/developers/docs/cryptography"
-          className="bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Zero-PII Cryptography
           <ChevronRight className="w-4 h-4" />

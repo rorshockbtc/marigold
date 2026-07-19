@@ -443,7 +443,7 @@ export default function AnalysisDashboard() {
                   <tr 
                     key={i} 
                     onClick={() => setSelectedInspectRecord(r)}
-                    className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 :bg-slate-900/60'}`}
+                    className={`cursor-pointer transition-colors ${selectedInspectRecord && selectedInspectRecord.id === r.id ? 'bg-amber-500/15 border-l-4 border-amber-600 font-semibold' : 'hover:bg-slate-100 :bg-slate-50 border border-slate-200/60'}`}
                   >
                     <td className="p-4 space-y-1.5 max-w-sm">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -525,7 +525,7 @@ export default function AnalysisDashboard() {
               <button
                 type="button"
                 onClick={() => setDisplayLimit(sortedResults.length)}
-                className="bg-primary hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-lg transition-all shadow-sm"
+                className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-3.5 py-2 rounded-lg transition-all shadow-sm"
               >
                 Load All {sortedResults.length} Records →
               </button>
@@ -575,13 +575,13 @@ export default function AnalysisDashboard() {
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4">
       {/* Demo Warning / Isolation Banners */}
       {isDemoMode && isDemoDataMissing && (
-        <div className="bg-gradient-to-br from-amber-950 via-slate-900 to-slate-900 text-white p-6 sm:p-8 rounded-2xl border-2 border-amber-500/60 shadow-2xl space-y-5 animate-in slide-in-from-top-4 duration-300">
+        <div className="bg-gradient-to-br from-amber-950 via-slate-900 to-slate-900 text-slate-900 p-6 sm:p-8 rounded-2xl border-2 border-amber-500/60 shadow-2xl space-y-5 animate-in slide-in-from-top-4 duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-amber-500/30 pb-5">
             <div className="space-y-2">
               <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
                 <span>🌲 {typeof window !== 'undefined' ? (localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)") : "State of Roosevelt (Demo)"} — Air-Gapped Isolation Active</span>
               </span>
-              <h2 className="text-2xl font-black font-serif text-white mt-1">Synthetic Demo Dataset Required</h2>
+              <h2 className="text-2xl font-black font-serif text-slate-900 mt-1">Synthetic Demo Dataset Required</h2>
               <p className="text-amber-100 text-sm max-w-3xl leading-relaxed">
                 You are currently inside a workshop staging environment (`{typeof window !== 'undefined' ? (localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)") : "State of Roosevelt (Demo)"}`). To prevent exposing real voter records or commingling jurisdictional data during workshops and demonstrations, your real voter file is automatically isolated and hidden (`0 rows loaded`).
               </p>
@@ -591,7 +591,7 @@ export default function AnalysisDashboard() {
             </div>
             <div className="bg-amber-950/80 p-3.5 rounded-xl border border-amber-500/40 text-xs font-mono text-amber-200 shrink-0 space-y-1 shadow-inner">
               <div>Status: <span className="text-amber-400 font-bold">Awaiting DEMO_ File</span></div>
-              <div>Real Data: <span className="text-emerald-400 font-bold">Suppressed (Air-Gapped)</span></div>
+              <div>Real Data: <span className="text-emerald-700 font-bold">Suppressed (Air-Gapped)</span></div>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
@@ -1111,8 +1111,8 @@ export default function AnalysisDashboard() {
                 </div>
 
                 {/* Stylized Geographic Regional Map Grid */}
-                <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl text-white space-y-4 shadow-inner relative overflow-hidden">
-                  <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2 font-mono">
+                <div className="bg-slate-100 border border-slate-200 p-4 rounded-2xl text-slate-900 space-y-4 shadow-inner relative overflow-hidden">
+                  <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200/80 pb-2 font-mono">
                     <span>JURISDICTIONAL DENSITY HEATMAP</span>
                     <span className="flex items-center gap-3">
                       <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-500 inline-block"/> High Concentration (&gt;15)</span>
@@ -1143,8 +1143,8 @@ export default function AnalysisDashboard() {
                     return (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {regions.map((reg, regIdx) => (
-                          <div key={reg.name} className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-xl space-y-2.5">
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block border-b border-slate-800/60 pb-1">{reg.name}</span>
+                          <div key={reg.name} className="bg-slate-50 border border-slate-200/90 border border-slate-200 p-3.5 rounded-xl space-y-2.5">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 block border-b border-slate-300 pb-1">{reg.name}</span>
                             <div className="grid grid-cols-3 gap-2">
                               {reg.counties.map(c => {
                                 const cnt = counts[c] || 0;
@@ -1164,7 +1164,7 @@ export default function AnalysisDashboard() {
                                   >
                                     <span className="text-xs font-bold truncate block">{c}</span>
                                     <div className="flex items-baseline justify-between w-full">
-                                      <span className="text-[10px] text-slate-400 font-mono">Count</span>
+                                      <span className="text-[10px] text-slate-600 font-mono">Count</span>
                                       <span className="text-base font-extrabold font-mono">{cnt}</span>
                                     </div>
                                   </button>
@@ -1220,13 +1220,13 @@ export default function AnalysisDashboard() {
             {resultsViewMode === 'ai' && (
               <div className="space-y-6 animate-fadeIn">
                 {!aiBriefingGenerated ? (
-                  <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-white space-y-4 shadow-lg">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                  <div className="bg-slate-50 border border-slate-200 border border-slate-200 p-6 rounded-2xl text-slate-900 space-y-4 shadow-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
                       <div className="flex items-center gap-2.5">
                         <Sparkles className="w-6 h-6 text-amber-500" />
                         <div>
-                          <h4 className="text-base font-bold text-white">Gemini AI Executive Synthesis Hub</h4>
-                          <p className="text-xs text-slate-400">On-demand intelligence powered by local statistical vectors.</p>
+                          <h4 className="text-base font-bold text-slate-900">Gemini AI Executive Synthesis Hub</h4>
+                          <p className="text-xs text-slate-600">On-demand intelligence powered by local statistical vectors.</p>
                         </div>
                       </div>
                       <span className="text-xs font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full font-bold self-start sm:self-auto flex items-center gap-1.5">
@@ -1234,11 +1234,11 @@ export default function AnalysisDashboard() {
                       </span>
                     </div>
 
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                      To protect institutional confidentiality and comply with voter privacy regulations, <strong className="text-white">your raw voter data and street addresses never leave your machine.</strong> AI synthesis is never executed automatically in the background.
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                      To protect institutional confidentiality and comply with voter privacy regulations, <strong className="text-slate-900">your raw voter data and street addresses never leave your machine.</strong> AI synthesis is never executed automatically in the background.
                     </p>
 
-                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
+                    <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
                       <span className="font-bold text-slate-200 block">🛡️ How Local Intelligence Works:</span>
                       <p>• When triggered, the client engine aggregates anonymous frequency ratios (e.g., total records flagged, high-density cutoff exceedances).</p>
                       <p>• Personal Identifiable Information (voter names, exact street numbers) remains locked in browser RAM.</p>
@@ -1248,7 +1248,7 @@ export default function AnalysisDashboard() {
                     <div className="pt-2 flex flex-wrap items-center gap-3">
                       <button
                         onClick={() => setAiBriefingGenerated(true)}
-                        className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-xs sm:text-sm"
+                        className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-slate-900 font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-xs sm:text-sm"
                       >
                         <span>⚡ Generate Executive Briefing On-Demand</span>
                       </button>
@@ -1261,15 +1261,15 @@ export default function AnalysisDashboard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-slate-900 border border-purple-500/40 p-6 rounded-2xl text-white space-y-4 shadow-xl relative overflow-hidden">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="bg-slate-50 border border-slate-200 border border-purple-500/40 p-6 rounded-2xl text-slate-900 space-y-4 shadow-xl relative overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">✨</span>
                         <h4 className="font-bold text-base text-purple-300">Gemini AI Executive Forensic Briefing</h4>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded">Locally Synthesized</span>
-                        <button onClick={() => setAiBriefingGenerated(false)} className="text-xs text-slate-400 hover:text-white underline">
+                        <button onClick={() => setAiBriefingGenerated(false)} className="text-xs text-slate-600 hover:text-slate-900 underline">
                           Reset
                         </button>
                       </div>
@@ -1280,12 +1280,12 @@ export default function AnalysisDashboard() {
                         Analysis of active audit <strong className="text-amber-400">({currentAudit})</strong> across <strong className="text-amber-400">{results.length} flagged records</strong> reveals significant concentration in high-density multi-unit residential structures and commercial receiving facilities.
                       </p>
                       <p>
-                        Approximately <strong className="text-emerald-400">{Math.round((results.filter(r => categorizeAddress(r.address || r.address1 || "") === "⚠️ Review Recommended").length / Math.max(results.length, 1)) * 100)}%</strong> of flagged rows exhibit characteristics requiring physical site verification or cross-referencing against county assessor parcel databases.
+                        Approximately <strong className="text-emerald-700">{Math.round((results.filter(r => categorizeAddress(r.address || r.address1 || "") === "⚠️ Review Recommended").length / Math.max(results.length, 1)) * 100)}%</strong> of flagged rows exhibit characteristics requiring physical site verification or cross-referencing against county assessor parcel databases.
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-800 flex justify-between items-center">
-                      <span className="text-xs text-slate-400">Generated locally in 14ms from RAM shards.</span>
+                    <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
+                      <span className="text-xs text-slate-600">Generated locally in 14ms from RAM shards.</span>
                       <a href="/chat?context=pro_mode" className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1">
                         <span>💬 Continue Discussion in AI Chat Assistant →</span>
                       </a>
@@ -1461,7 +1461,7 @@ export default function AnalysisDashboard() {
                             navigator.clipboard.writeText(String(addr));
                             alert("Address copied: " + addr);
                           }}
-                          className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 :text-white px-1.5 py-0.5 rounded shrink-0 underline"
+                          className="text-[10px] uppercase font-sans font-bold text-slate-500 hover:text-slate-900 :text-slate-900 px-1.5 py-0.5 rounded shrink-0 underline"
                         >
                           Copy
                         </button>
@@ -1570,7 +1570,7 @@ export default function AnalysisDashboard() {
                       runAlgorithm(currentAudit || 'density', countyFilter, thresholdFilter, true);
                       setSelectedInspectRecord(null);
                     }}
-                    className="px-3 py-1.5 bg-primary text-white font-bold rounded-lg text-xs shadow hover:bg-primary/90"
+                    className="px-3 py-1.5 bg-primary text-slate-900 font-bold rounded-lg text-xs shadow hover:bg-primary/90"
                   >
                     🔄 Force Full Data Map Scan
                   </button>

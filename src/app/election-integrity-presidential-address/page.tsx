@@ -313,7 +313,7 @@ export default function ElectionIntegrityHub() {
               href="https://www.whitehouse.gov/election-integrity/"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-white font-black text-sm shadow-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
+              className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-50 border border-slate-200 text-slate-900 font-black text-sm shadow-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
             >
               <span>🏛️ White House Original PDF Archives</span>
               <ExternalLink className="w-4 h-4 text-amber-400" />
@@ -430,7 +430,7 @@ export default function ElectionIntegrityHub() {
             <a
               href="/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
               download="Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
-              className="bg-slate-950 hover:bg-slate-900 text-white font-black px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0"
+              className="bg-slate-100 hover:bg-slate-50 border border-slate-200 text-slate-900 font-black px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0"
             >
               <Download className="w-3.5 h-3.5 text-amber-400" />
               <span>Download Master .TXT Corpus (148 KB)</span>
@@ -439,7 +439,7 @@ export default function ElectionIntegrityHub() {
 
           {/* Search Input Bar */}
           <div className="relative">
-            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-3.5" />
+            <Search className="w-5 h-5 text-slate-600 absolute left-4 top-3.5" />
             <input
               type="text"
               value={searchQuery}
@@ -448,7 +448,7 @@ export default function ElectionIntegrityHub() {
                 setActiveTagFilter(null);
               }}
               placeholder="Search across full PDF transcripts (e.g. ballots, ballot paper, voting machines, China, Venezuela, More votes than residents)..."
-              className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-900 focus:border-amber-600 focus:bg-white focus:outline-none placeholder:text-slate-400 shadow-inner transition-colors"
+              className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-900 focus:border-amber-600 focus:bg-white focus:outline-none placeholder:text-slate-600 shadow-inner transition-colors"
             />
             {searchQuery && (
               <button
@@ -475,7 +475,7 @@ export default function ElectionIntegrityHub() {
                   }}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 border shadow-2xs ${
                     searchQuery.toLowerCase() === pill.query.toLowerCase() || activeTagFilter === pill.label
-                      ? "bg-slate-950 text-white border-slate-950 shadow-md scale-105"
+                      ? "bg-slate-100 text-white border-slate-950 shadow-md scale-105"
                       : "bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200 hover:text-slate-950"
                   }`}
                 >
@@ -519,7 +519,7 @@ export default function ElectionIntegrityHub() {
                         </span>
                         <button
                           onClick={() => setReadingDocument(item)}
-                          className="bg-slate-950 hover:bg-slate-800 text-white font-black px-3 py-1 rounded-lg text-xs shadow transition-colors flex items-center gap-1.5"
+                          className="bg-slate-100 hover:bg-slate-800 text-slate-900 font-black px-3 py-1 rounded-lg text-xs shadow transition-colors flex items-center gap-1.5"
                         >
                           <BookOpen className="w-3.5 h-3.5 text-amber-400" />
                           <span>Read Full PDF Text</span>
@@ -582,10 +582,10 @@ export default function ElectionIntegrityHub() {
 
         {/* FULL PDF TRANSCRIPT READER MODAL */}
         {readingDocument && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-100/80 backdrop-blur-sm animate-fadeIn">
             <div className="bg-white border-2 border-slate-300 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden text-slate-900">
               {/* Modal Header */}
-              <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+              <div className="bg-slate-50 border border-slate-200 text-slate-900 px-6 py-4 flex items-center justify-between border-b border-slate-200">
                 <div className="space-y-1 pr-4">
                   <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-slate-950">
                     {readingDocument.docCode} • Unabridged PDF Transcript
@@ -597,12 +597,12 @@ export default function ElectionIntegrityHub() {
                     onClick={() => copyToClipboard(readingDocument.fullTranscript)}
                     className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors border border-slate-700"
                   >
-                    {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+                    {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
                     <span>{copiedText ? "Copied!" : "Copy Text"}</span>
                   </button>
                   <button
                     onClick={() => setReadingDocument(null)}
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white transition-colors"
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-700 hover:text-slate-900 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -653,7 +653,7 @@ export default function ElectionIntegrityHub() {
         <div id="mari-chat-section" className="bg-white border-2 border-slate-200 rounded-2xl p-6 shadow-xl space-y-5">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-950 text-amber-400 flex items-center justify-center font-black text-xl shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-amber-400 flex items-center justify-center font-black text-xl shadow-md">
                 💬
               </div>
               <div>
@@ -671,7 +671,7 @@ export default function ElectionIntegrityHub() {
               value={mariQuery}
               onChange={(e) => setMariQuery(e.target.value)}
               placeholder="Ask Mari anything about the 4 Pillars, China's 220M data theft, Michigan investigations, or local verification..."
-              className="flex-1 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 focus:border-amber-600 focus:bg-white focus:outline-none placeholder:text-slate-400 shadow-inner transition-colors"
+              className="flex-1 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 focus:border-amber-600 focus:bg-white focus:outline-none placeholder:text-slate-600 shadow-inner transition-colors"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && mariQuery.trim()) triggerMariAnalysis(mariQuery, activeLens);
               }}
@@ -681,7 +681,7 @@ export default function ElectionIntegrityHub() {
                 if (mariQuery.trim()) triggerMariAnalysis(mariQuery, activeLens);
               }}
               disabled={isQuerying || !mariQuery.trim()}
-              className="bg-slate-950 hover:bg-slate-900 disabled:opacity-50 text-white font-black px-6 py-3 rounded-xl text-sm shadow-md transition-all flex items-center gap-2"
+              className="bg-slate-100 hover:bg-slate-50 border border-slate-200 disabled:opacity-50 text-slate-900 font-black px-6 py-3 rounded-xl text-sm shadow-md transition-all flex items-center gap-2"
             >
               {isQuerying ? (
                 <>
@@ -740,7 +740,7 @@ export default function ElectionIntegrityHub() {
                   key={p.id}
                   onClick={() => setActivePillar(p.id)}
                   className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all whitespace-nowrap ${
-                    activePillar === p.id ? "bg-slate-950 text-white shadow-md" : "text-slate-700 hover:text-slate-950 hover:bg-slate-300/50"
+                    activePillar === p.id ? "bg-slate-100 text-white shadow-md" : "text-slate-700 hover:text-slate-950 hover:bg-slate-300/50"
                   }`}
                 >
                   {p.badge}: {p.title.split(" ")[0]}...
@@ -829,17 +829,17 @@ export default function ElectionIntegrityHub() {
         </div>
 
         {/* Prominent Startup & Free Tier Notice Footer - Institutional Navy Banner to Anchor the Page */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border-2 border-slate-800 rounded-2xl p-6 sm:p-8 text-white shadow-2xl space-y-4">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border-2 border-slate-200 rounded-2xl p-6 sm:p-8 text-slate-900 shadow-2xl space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1.5 max-w-3xl">
               <span className="px-3 py-1 rounded-md bg-amber-500 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-2xs">
                 🚀 Startup Infrastructure Notice &amp; Sponsor Callout
               </span>
-              <h4 className="text-xl sm:text-2xl font-black text-white">
+              <h4 className="text-xl sm:text-2xl font-black text-slate-900">
                 Help Us Scale Marigold Insights &amp; Expand AI Bandwidth
               </h4>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
-                Mari AI is currently running on early free-tier server infrastructure. As thousands of citizens and county clerks begin exploring these declassified election integrity documents, we are actively seeking <strong className="text-white">sponsors, grantors, philanthropic partners, and technical advisors</strong> to increase our server capacity, AI quota limits, and nationwide service area.
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                Mari AI is currently running on early free-tier server infrastructure. As thousands of citizens and county clerks begin exploring these declassified election integrity documents, we are actively seeking <strong className="text-slate-900">sponsors, grantors, philanthropic partners, and technical advisors</strong> to increase our server capacity, AI quota limits, and nationwide service area.
               </p>
             </div>
 
@@ -855,14 +855,14 @@ export default function ElectionIntegrityHub() {
                 href="https://x.com/rorshockbtc"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-slate-800 hover:bg-slate-700 text-white font-extrabold px-6 py-3 rounded-xl text-xs sm:text-sm border border-slate-700 transition-colors flex items-center justify-center gap-2"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-900 font-extrabold px-6 py-3 rounded-xl text-xs sm:text-sm border border-slate-700 transition-colors flex items-center justify-center gap-2"
               >
                 <span>X @rorshockbtc ↗</span>
               </a>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 font-mono">
+          <div className="pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-600 font-mono">
             <div>
               Direct Inquiry Email: <a href="mailto:cubby@colonhyphenbracket.pink" className="text-amber-400 hover:underline font-bold">cubby@colonhyphenbracket.pink</a>
             </div>

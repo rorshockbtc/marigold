@@ -12,7 +12,7 @@ export default function StateAgenciesPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-foreground pb-20">
       {/* Reassuring Hero Section */}
-      <section className="bg-gradient-to-b from-primary to-slate-900 text-white py-16 px-6 border-b border-accent shadow-lg">
+      <section className="bg-gradient-to-b from-primary to-slate-900 text-slate-900 py-16 px-6 border-b border-accent shadow-lg">
         <div className="max-w-4xl mx-auto space-y-6 text-center">
           <div className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold text-amber-400">
             <span>🏛️ For State Administrative Agencies & County Clerks</span>
@@ -20,7 +20,7 @@ export default function StateAgenciesPage() {
           <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight leading-tight">
             Compliant, Risk-Free Data Verification That Never Compromises Citizen Privacy
           </h1>
-          <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+          <p className="text-base md:text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed font-normal">
             We make statutory list maintenance straightforward, transparent, and 100% local. No complex IT servers to maintain, no expensive multi-year contracts, and no public records ever leaving your building.
           </p>
           <div className="pt-4 flex flex-wrap justify-center gap-4">
@@ -76,17 +76,17 @@ export default function StateAgenciesPage() {
         </section>
 
         {/* Future Vision & Collaboration */}
-        <section className="bg-slate-900 text-white p-8 md:p-10 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <section className="bg-slate-50 border border-slate-200 text-slate-900 p-8 md:p-10 rounded-2xl border border-slate-200 shadow-xl space-y-4">
           <div className="w-12 h-12 rounded-xl bg-sky-900 border border-sky-600 flex items-center justify-center text-2xl mb-2">
             🌱
           </div>
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-amber-400">
             Empowering Collaboration & Building for the Future
           </h2>
-          <p className="text-slate-300 leading-relaxed text-sm md:text-base">
+          <p className="text-slate-700 leading-relaxed text-sm md:text-base">
             By eliminating technical roadblocks, Marigold allows government employees and community volunteers to speak the same language. Agency staff can easily share helpful search query terms and standardized check templates with local stakeholders, building trust through transparency.
           </p>
-          <p className="text-slate-300 leading-relaxed text-sm md:text-base">
+          <p className="text-slate-700 leading-relaxed text-sm md:text-base">
             **Our Long-Term Vision:** We are actively evolving Marigold into a universal query layer that will help citizens easily navigate complex government forms and localized public records that are traditionally hard to search. For today, our focus is dedicating this powerful technology to non-partisan election integrity and accurate list maintenance.
           </p>
           <div className="pt-4">
