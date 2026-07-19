@@ -110,6 +110,15 @@ results = client.detect_anomalies(df, module="HIGH_DENSITY")
 <code>{`go get github.com/marigold/marigold-go`}</code>
         </pre>
 
+        <h2>Rust SDK (Extreme Memory Safety)</h2>
+        <p>
+          For highly paranoid, mission-critical infrastructure where memory leaks or buffer overflows during encryption are absolutely unacceptable, we publish an official Rust crate utilizing the <a href="https://crates.io/crates/ring" className="text-emerald-600 underline">ring</a> cryptography library. This provides unparalleled C-level performance with strict memory-safety guarantees.
+        </p>
+
+        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+<code>{`cargo add marigold-rs`}</code>
+        </pre>
+
         <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
           <div>
