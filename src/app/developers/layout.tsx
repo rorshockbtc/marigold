@@ -27,6 +27,7 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
         { name: "Authentication & Tokens", href: "/developers/docs/authentication", icon: Key },
         { name: "Webhooks & Callbacks", href: "/developers/docs/webhooks", icon: Activity },
         { name: "Zero-PII Cryptography", href: "/developers/docs/cryptography", icon: Shield },
+        { name: "Data Traversal & Versioning", href: "/developers/docs/versioning", icon: Layers },
         { name: "Partner Integrations", href: "/developers/docs/partner-integrations", icon: Building2 },
       ]
     },

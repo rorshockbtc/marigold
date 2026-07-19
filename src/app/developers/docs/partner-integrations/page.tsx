@@ -1,8 +1,7 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Building2, Server, Lock, ArrowRightLeft, ShieldCheck, Database } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 
 export default function PartnerIntegrationsPage() {
   return (
@@ -24,27 +23,52 @@ export default function PartnerIntegrationsPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>The Partner Philosophy: Exploration vs. Verification</h2>
-        <p>
-          Legacy civic technology platforms operate under strict, expensive data constraints. These systems (often built on monolithic databases without public APIs) rightfully guard their PII (Personally Identifiable Information) fiercely. 
-        </p>
-        <p>
-          Marigold Insights is not a data broker; it is an exploration engine. Our architectural philosophy for partner collaboration is strict separation of concerns:
-        </p>
-        <ul>
-          <li><strong>Marigold handles the Exploration:</strong> We run the mathematically intensive Fellegi-Sunter matching and Standard Deviation anomaly modeling on encrypted representations of the data.</li>
-          <li><strong>The Partner handles the Verification:</strong> The partner retains the unencrypted master PII and manages the human workflow (verifying, challenging, or ignoring the anomaly flags).</li>
-        </ul>
-
-        <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
-          <Building2 className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
-          <div>
-            <h4 className="font-bold text-emerald-900 mb-1">The Federated Win-Win</h4>
-            <p className="text-sm text-emerald-800 leading-relaxed">
-              By federating our services, legacy providers can offer their users "next-generation AI auditing" natively inside their existing platforms without risking a PII leak, and without needing to rebuild their core architecture. We become a seamless analytical microservice attached to your monolithic fortress.
+        <NonTechnicalTranslator 
+          title="The Partner Philosophy: Exploration vs. Verification"
+          mariContextPrompt="I just read the non-technical translation for Exploration vs Verification. Why doesn't Marigold verify the data?"
+          technicalContent={
+            <>
+              <p>
+                Legacy civic technology platforms operate under strict, expensive data constraints. These systems (often built on monolithic databases without public APIs) rightfully guard their PII (Personally Identifiable Information) fiercely. 
+              </p>
+              <p>
+                Marigold Insights is not a data broker; it is an exploration engine. Our architectural philosophy for partner collaboration is strict separation of concerns:
+              </p>
+              <ul>
+                <li><strong>Marigold handles the Exploration:</strong> We run the mathematically intensive Fellegi-Sunter matching and Standard Deviation anomaly modeling on encrypted representations of the data.</li>
+                <li><strong>The Partner handles the Verification:</strong> The partner retains the unencrypted master PII and manages the human workflow (verifying, challenging, or ignoring the anomaly flags).</li>
+              </ul>
+            </>
+          }
+          eli5Content={
+            <p>
+              Imagine Marigold is a metal detector and our Partner (like a state database) is the person digging in the sand. We don't want to dig, and we don't want to keep whatever is buried. Our only job is to sweep over the sand and beep when we find something interesting (Exploration). The Partner then decides whether to dig it up and verify what it is (Verification). This keeps everyone safe and focused on what they do best.
             </p>
-          </div>
-        </div>
+          }
+        />
+
+        <NonTechnicalTranslator 
+          title="The Bi-Directional Delta (∆) API"
+          mariContextPrompt="I just read the non-technical translation for the Delta API. What does delta mean in this context?"
+          technicalContent={
+            <>
+              <p>
+                For data providers with deep historical archives (e.g., Elly), transmitting the entire multi-gigabyte historical database for anomaly detection is highly inefficient and violates our lightweight DAIO principles.
+              </p>
+              <p>
+                Instead, partners must implement the <strong>Bi-Directional Delta (∆) API</strong>. The partner calculates the structural differences (deltas) between historical files and the current file locally. The partner only transmits the encrypted Z-Score aberrations (the delta) to Marigold for Data Visualization rendering.
+              </p>
+              <p>
+                This API is intentionally bi-directional but severely restricted. Marigold holds <strong>limited write permissions</strong>—allowing us to write verification tags or Cartridge execution logs back to the partner's system without granting us root mutation access to the underlying PII.
+              </p>
+            </>
+          }
+          eli5Content={
+            <p>
+              If a book only has one new page added to it, you shouldn't mail the entire 1,000-page book to someone just to show them the update. You should only mail the single new page. We call this the "Delta" (the difference). Partners with massive historical records only send Marigold the "new pages" or "differences" that look suspicious. We then draw beautiful charts based on those differences and send a small "verified" sticker back to the partner to put in their book.
+            </p>
+          }
+        />
 
         <h2>Building Blocks for Secure Cross-Platform Communication</h2>
         
@@ -89,14 +113,6 @@ export default function PartnerIntegrationsPage() {
           By passing <code>hide_nav=true</code> and an ephemeral <code>session_token</code>, the user experiences Marigold as a native module of your platform. Marigold will display the visual anomalies (e.g., "Row 101 flags as Commercial Zoning"), and the partner platform retains the mapping of "Row 101" to the actual citizen's plaintext identity.
         </p>
 
-        <h3>3. Bidirectional Asynchronous Callbacks (Webhooks)</h3>
-        <p>
-          If your monolithic platform prefers to render the data natively rather than using an iFrame, you must implement Webhooks.
-        </p>
-        <p>
-          When Marigold finishes crunching a massive dataset, it will dispatch an HMAC-SHA256 signed payload back to your monolith's callback URL. Your system verifies the signature, decrypts the anomaly flags using your local Master Key, and updates your relational database with the newly discovered insights. 
-        </p>
-
         <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
           <Lock className="w-6 h-6 text-amber-600 shrink-0 mt-1" />
           <div>
@@ -112,11 +128,11 @@ export default function PartnerIntegrationsPage() {
       {/* Footer Nav */}
       <div className="pt-8 border-t border-slate-200 flex justify-between">
         <Link 
-          href="/developers/docs/webhooks"
+          href="/developers/docs/versioning"
           className="text-slate-600 hover:text-slate-900 px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Previous: Webhooks
+          Previous: Data Traversal & Versioning
         </Link>
         <Link 
           href="/developers/docs/algorithms/fellegi-sunter"
