@@ -16,6 +16,7 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
       group: "Getting Started",
       items: [
         { name: "Introduction", href: "/developers", icon: BookOpen },
+        { name: "Why Marigold?", href: "/developers/docs/philosophy", icon: Shield },
         { name: "Quickstart Guide", href: "/developers/docs/getting-started", icon: Terminal },
         { name: "Official SDKs", href: "/developers/docs/sdks", icon: Blocks },
       ]
