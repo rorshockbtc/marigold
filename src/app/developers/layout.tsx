@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Terminal, BookOpen, Key, Shield, Calculator, FileJson, 
-  Search, ChevronRight, Layers, LayoutTemplate, Activity, AlertTriangle, Blocks, Building2
+  Search, ChevronRight, Layers, LayoutTemplate, Activity, AlertTriangle, Blocks, Building2, ArrowDownUp
 } from "lucide-react";
 
 export default function DevelopersLayout({ children }: { children: React.ReactNode }) {
@@ -42,6 +42,7 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
       group: "API Reference",
       items: [
         { name: "Anomaly Detection", href: "/developers/docs/api-reference/detect", icon: LayoutTemplate },
+        { name: "Historical Delta", href: "/developers/docs/api-reference/historical-delta", icon: ArrowDownUp },
         { name: "Active Modules List", href: "/developers/docs/api-reference/list", icon: Blocks },
         { name: "Error Codes Dictionary", href: "/developers/docs/errors", icon: AlertTriangle },
       ]

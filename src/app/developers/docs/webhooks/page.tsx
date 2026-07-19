@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Webhook, Network, ArrowDownUp } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export default function WebhooksPage() {
   return (
@@ -24,36 +26,54 @@ export default function WebhooksPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>Asynchronous Processing Flow</h2>
-        <p>
-          Instead of holding a TCP connection open while the Fellegi-Sunter algorithms iterate across millions of vector matrices, you can pass a <code>callback_url</code> in your initial payload. The Marigold API will immediately return a <code>202 Accepted</code> containing a Job ID.
-        </p>
-        
-        <p>
-          Once the analytical cluster finishes calculating the Z-scores and encrypting the resultant anomaly flags, we will execute an HTTP POST request against your callback URL containing the final AES-GCM encrypted payload.
-        </p>
+        <NonTechnicalTranslator 
+          title="Asynchronous Processing Flow"
+          mariContextPrompt="I just read the non-technical translation for Asynchronous Processing Flow. Why do we need webhooks?"
+          technicalContent={
+            <>
+              <p>
+                Instead of holding a TCP connection open while the Fellegi-Sunter algorithms iterate across millions of vector matrices, you can pass a <code>callback_url</code> in your initial payload. The Marigold API will immediately return a <code>202 Accepted</code> containing a Job ID.
+              </p>
+              
+              <p>
+                Once the analytical cluster finishes calculating the Z-scores and encrypting the resultant anomaly flags, we will execute an HTTP POST request against your callback URL containing the final AES-GCM encrypted payload.
+              </p>
 
-        <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4">
-          <Network className="w-6 h-6 text-slate-600 shrink-0 mt-1" />
-          <div>
-            <h4 className="font-bold text-slate-900 mb-1">Webhook Idempotency</h4>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Marigold guarantees <strong>At-Least-Once</strong> delivery. Your webhook ingestion controller must be idempotent. Use the <code>session_fingerprint</code> to ensure your database does not process the same callback payload multiple times in the event of a network retry.
+              <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4">
+                <Network className="w-6 h-6 text-slate-600 shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-bold text-slate-900 mb-1">Webhook Idempotency</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Marigold guarantees <strong>At-Least-Once</strong> delivery. Your webhook ingestion controller must be idempotent. Use the <code>session_fingerprint</code> to ensure your database does not process the same callback payload multiple times in the event of a network retry.
+                  </p>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              Checking millions of voters takes a long time. If your computer asks our computer a question and just waits on the line for the answer, the connection will eventually timeout and drop. Instead, your computer drops off the data and says, "Call me at this number when you're done." That "call me back" feature is called a Webhook. When Marigold finishes doing all the hard math, we dial your computer's number and deliver the final report.
             </p>
-          </div>
-        </div>
+          }
+        />
 
-        <h2>HMAC-SHA256 Signature Verification</h2>
-        <p>
-          Because your webhook endpoint must be publicly accessible on the internet, you must cryptographically verify that incoming payloads actually originated from Marigold Insights, rather than a malicious actor attempting a spoofing attack.
-        </p>
+        <NonTechnicalTranslator 
+          title="HMAC-SHA256 Signature Verification"
+          mariContextPrompt="I just read the non-technical translation for Signature Verification. What stops a hacker from pretending to be Marigold?"
+          technicalContent={
+            <>
+              <p>
+                Because your webhook endpoint must be publicly accessible on the internet, you must cryptographically verify that incoming payloads actually originated from Marigold Insights, rather than a malicious actor attempting a spoofing attack.
+              </p>
 
-        <p>
-          Every webhook dispatched by Marigold includes a <code>X-Marigold-Signature</code> HTTP header. This signature is an HMAC-SHA256 hash of the raw request body, signed using your <strong>Webhook Secret</strong>.
-        </p>
+              <p>
+                Every webhook dispatched by Marigold includes a <code>X-Marigold-Signature</code> HTTP header. This signature is an HMAC-SHA256 hash of the raw request body, signed using your <strong>Webhook Secret</strong>.
+              </p>
 
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
-<code>{`// Express.js Webhook Verification Middleware
+              <CodeBlock
+                language="typescript"
+                title="Express.js Webhook Verification Middleware"
+                code={`// Express.js Webhook Verification Middleware
 import crypto from 'node:crypto';
 import express from 'express';
 
@@ -93,8 +113,16 @@ app.post('/webhooks/marigold', express.raw({ type: 'application/json' }), (req, 
 
   // Process the payload asynchronously...
   processEncryptedVault(payload);
-});`}</code>
-        </pre>
+});`}
+              />
+            </>
+          }
+          eli5Content={
+            <p>
+              Because your computer's "phone number" (the Webhook address) is public, anyone could call it. A bad guy might call your computer and say, "Hi, I'm Marigold, here is a fake report." To stop this, we use a secret handshake. Every time Marigold calls your computer, we stamp the report with a wax seal using a secret ring that only you and Marigold have. Your computer checks the wax seal, and if it matches perfectly, you know for sure it was really us who called.
+            </p>
+          }
+        />
 
       </div>
 

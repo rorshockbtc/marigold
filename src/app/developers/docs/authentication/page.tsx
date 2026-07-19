@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Lock, Fingerprint, Shield, Server, ArrowRightLeft } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export default function AuthenticationPage() {
   return (
@@ -24,42 +26,56 @@ export default function AuthenticationPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>The Dual-Layer Mesh</h2>
-        <p>
-          Given the sensitive nature of civic auditing workloads, relying solely on Bearer tokens is mathematically insufficient. If an administrative token is accidentally leaked in a GitHub repository or compromised via a social engineering vector, unauthorized ingress must still be mitigated.
-        </p>
-        <p>
-          Therefore, Marigold mandates a <strong>Dual-Layer Mesh</strong>:
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 not-prose">
-          <div className="p-6 border border-slate-200 rounded-xl bg-white shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-500"></div>
-            <Server className="w-8 h-8 text-blue-600 mb-4 relative z-10" />
-            <h3 className="font-bold text-slate-900 text-lg mb-2 relative z-10">Layer 1: Network ACLs</h3>
-            <p className="text-sm text-slate-600 leading-relaxed relative z-10">
-              Tokens only function when the API request originates from a pre-approved, static IP block registered to your state agency. Dynamic residential IPs and standard public cloud shared IPs are blocked at the Web Application Firewall (WAF) layer.
-            </p>
-          </div>
+        <NonTechnicalTranslator 
+          title="The Dual-Layer Mesh"
+          mariContextPrompt="I just read the non-technical translation for the Dual-Layer Mesh. Why is a WAF firewall like a bouncer at a club?"
+          technicalContent={
+            <>
+              <p>
+                Given the sensitive nature of civic auditing workloads, relying solely on Bearer tokens is mathematically insufficient. If an administrative token is accidentally leaked in a GitHub repository or compromised via a social engineering vector, unauthorized ingress must still be mitigated.
+              </p>
+              <p>
+                Therefore, Marigold mandates a <strong>Dual-Layer Mesh</strong>:
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 not-prose">
+                <div className="p-6 border border-slate-200 rounded-xl bg-white shadow-sm relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-500"></div>
+                  <Server className="w-8 h-8 text-blue-600 mb-4 relative z-10" />
+                  <h3 className="font-bold text-slate-900 text-lg mb-2 relative z-10">Layer 1: Network ACLs</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed relative z-10">
+                    Tokens only function when the API request originates from a pre-approved, static IP block registered to your state agency. Dynamic residential IPs and standard public cloud shared IPs are blocked at the Web Application Firewall (WAF) layer.
+                  </p>
+                </div>
 
-          <div className="p-6 border border-slate-200 rounded-xl bg-white shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-500"></div>
-            <Fingerprint className="w-8 h-8 text-emerald-600 mb-4 relative z-10" />
-            <h3 className="font-bold text-slate-900 text-lg mb-2 relative z-10">Layer 2: Token Entropy</h3>
-            <p className="text-sm text-slate-600 leading-relaxed relative z-10">
-              Each HTTP request must include an <code>Authorization: Bearer</code> header containing a 256-bit cryptographically secure pseudo-random string tied specifically to an isolated audit instance (Session Token).
+                <div className="p-6 border border-slate-200 rounded-xl bg-white shadow-sm relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-500"></div>
+                  <Fingerprint className="w-8 h-8 text-emerald-600 mb-4 relative z-10" />
+                  <h3 className="font-bold text-slate-900 text-lg mb-2 relative z-10">Layer 2: Token Entropy</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed relative z-10">
+                    Each HTTP request must include an <code>Authorization: Bearer</code> header containing a 256-bit cryptographically secure pseudo-random string tied specifically to an isolated audit instance (Session Token).
+                  </p>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              Imagine trying to get into an ultra-secure vault. Usually, you just need a key (a password). But what if you drop your key and a thief finds it? To prevent this, Marigold requires two things to open the vault. First, you need the extremely secure digital key. Second, you are only allowed to use that key if you are physically standing inside an approved government building. If a hacker steals the key and tries to use it from their basement in another country, our system instantly rejects them because they aren't standing in the right building. We call this a Dual-Layer Mesh.
             </p>
-          </div>
-        </div>
+          }
+        />
 
         <h2>Implementing the Authorization Header</h2>
         <p>
           Your integration must append the following HTTP header to all requests against the <code>https://api.marigoldinsights.org/v1</code> space. Do not use Basic Auth or query parameter authentication. We do not support it.
         </p>
 
-        <pre className="bg-slate-50 border border-slate-200 text-emerald-700 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
-<code>{`Authorization: Bearer mg_live_x89aZ120BklqP94MnvX5...`}</code>
-        </pre>
+        <CodeBlock 
+          language="http" 
+          title="HTTP Header"
+          code={`Authorization: Bearer mg_live_x89aZ120BklqP94MnvX5...`} 
+        />
 
         <h3>Token Prefix Definitions</h3>
         <p>
@@ -107,8 +123,10 @@ export default function AuthenticationPage() {
             <ArrowRightLeft className="w-5 h-5 text-slate-600" />
             Automated Rotation Example (Bash / Cron)
           </h4>
-          <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-[11px] font-mono leading-relaxed shadow-inner">
-<code>{`#!/bin/bash
+          <CodeBlock
+            language="bash"
+            title="Automated Rotation Script"
+            code={`#!/bin/bash
 # Triggered via Jenkins or GitHub Actions every 25 days
 
 # 1. Request new token from Marigold
@@ -122,8 +140,8 @@ aws secretsmanager put-secret-value \\
   --secret-id prod/marigold/bearer \\
   --secret-string "$NEW_TOKEN"
 
-echo "Rotation complete. Legacy token expires in 72 hours."`}</code>
-          </pre>
+echo "Rotation complete. Legacy token expires in 72 hours."`}
+          />
         </div>
 
         <h2>Handling 401 & 403 Errors</h2>

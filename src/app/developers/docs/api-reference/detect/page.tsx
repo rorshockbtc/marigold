@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Terminal, Play, Lock, AlertTriangle, Layers } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export default function DetectEndpointPage() {
   const [isSimulating, setIsSimulating] = useState(false);
@@ -67,69 +69,82 @@ export default function DetectEndpointPage() {
               </tbody>
             </table>
 
-            <h2>Request Body Schema</h2>
-            <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">session_fingerprint</span>
-                  <span className="text-[10px] text-slate-500 font-mono">string</span>
-                  <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">SHA-256 hash of the dataset batch. Used for idempotency and replay protection.</p>
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">anomaly_type</span>
-                  <span className="text-[10px] text-slate-500 font-mono">string (enum)</span>
-                  <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Available values: <code>HIGH_DENSITY</code>, <code>NCOA_MISMATCH</code>, <code>FUZZY_DUPLICATE</code></p>
-              </div>
+            <NonTechnicalTranslator 
+              title="Request and Response Schemas"
+              mariContextPrompt="I just read the non-technical translation for Request and Response Schemas. Why do we need a session fingerprint?"
+              technicalContent={
+                <>
+                  <h2>Request Body Schema</h2>
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">session_fingerprint</span>
+                        <span className="text-[10px] text-slate-500 font-mono">string</span>
+                        <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">SHA-256 hash of the dataset batch. Used for idempotency and replay protection.</p>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">anomaly_type</span>
+                        <span className="text-[10px] text-slate-500 font-mono">string (enum)</span>
+                        <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Available values: <code>HIGH_DENSITY</code>, <code>NCOA_MISMATCH</code>, <code>FUZZY_DUPLICATE</code></p>
+                    </div>
 
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">record_identifiers</span>
-                  <span className="text-[10px] text-slate-500 font-mono">array of strings</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Strict array of non-PII Row IDs you are scanning.</p>
-              </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">record_identifiers</span>
+                        <span className="text-[10px] text-slate-500 font-mono">array of strings</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Strict array of non-PII Row IDs you are scanning.</p>
+                    </div>
 
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">encrypted_vault.payload</span>
-                  <span className="text-[10px] text-slate-500 font-mono">string</span>
-                  <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Base64 encoded AES-GCM output (Nonce + CipherText + AuthTag).</p>
-              </div>
-            </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">encrypted_vault.payload</span>
+                        <span className="text-[10px] text-slate-500 font-mono">string</span>
+                        <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Base64 encoded AES-GCM output (Nonce + CipherText + AuthTag).</p>
+                    </div>
+                  </div>
 
-            <h2>Response Schema</h2>
-            <p>A successful <code>200 OK</code> returns the following structure:</p>
-            <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">status</span>
-                  <span className="text-[10px] text-slate-500 font-mono">string</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Returns <code>SUCCESS</code>.</p>
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">anomalies_found</span>
-                  <span className="text-[10px] text-slate-500 font-mono">integer</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Total count of rows that failed the algorithmic proof.</p>
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-900 font-bold">flags</span>
-                  <span className="text-[10px] text-slate-500 font-mono">array of objects</span>
-                </div>
-                <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Contains <code>record_id</code>, <code>flag_reason</code>, and <code>severity</code> (LOW/MEDIUM/HIGH/CRITICAL).</p>
-              </div>
-            </div>
+                  <h2>Response Schema</h2>
+                  <p>A successful <code>200 OK</code> returns the following structure:</p>
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">status</span>
+                        <span className="text-[10px] text-slate-500 font-mono">string</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Returns <code>SUCCESS</code>.</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">anomalies_found</span>
+                        <span className="text-[10px] text-slate-500 font-mono">integer</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Total count of rows that failed the algorithmic proof.</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">flags</span>
+                        <span className="text-[10px] text-slate-500 font-mono">array of objects</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Contains <code>record_id</code>, <code>flag_reason</code>, and <code>severity</code> (LOW/MEDIUM/HIGH/CRITICAL).</p>
+                    </div>
+                  </div>
+                </>
+              }
+              eli5Content={
+                <p>
+                  A schema is just a set of rules for how to write a message. Imagine you are ordering a pizza. The rules say you must include your address, your payment info, and your toppings. If you forget to include the toppings, the restaurant rejects your order. The <b>Request Schema</b> are the rules for what your computer must send to Marigold (like the encrypted vault). The <b>Response Schema</b> is what Marigold promises to send back to you (like how many anomalies we found, and how severe they are).
+                </p>
+              }
+            />
           </div>
         </div>
 
@@ -154,15 +169,16 @@ export default function DetectEndpointPage() {
             <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Payload Request</span>
-                <pre className="bg-white shadow-inner p-4 rounded-xl border border-slate-300 text-xs font-mono text-emerald-800 overflow-x-auto">
-{`{
+                <CodeBlock
+                  language="json"
+                  code={`{
   "session_fingerprint": "e3b0c4429...",
   "anomaly_type": "HIGH_DENSITY",
   "encrypted_vault": {
     "payload": "8f9a0b1c2d3e4f5a6b7c..."
   }
 }`}
-                </pre>
+                />
               </div>
 
               <div className="space-y-2">
@@ -180,9 +196,7 @@ export default function DetectEndpointPage() {
                     </div>
                   )}
                   {simResponse && (
-                    <pre className="text-xs font-mono text-slate-700">
-                      {simResponse}
-                    </pre>
+                    <CodeBlock language="json" code={simResponse} />
                   )}
                 </div>
               </div>

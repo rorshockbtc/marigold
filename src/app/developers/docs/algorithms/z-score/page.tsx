@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Activity, Sigma } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 
 export default function ZScorePage() {
   return (
@@ -24,25 +25,37 @@ export default function ZScorePage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>The Z-Score Threshold</h2>
-        <p>
-          Unlike duplicate detection (which is a 1:1 mathematical comparison), modules like <code>HIGH_DENSITY</code> rely on evaluating a record against the entire dataset's distribution curve.
-        </p>
+        <NonTechnicalTranslator 
+          title="The Z-Score Threshold"
+          mariContextPrompt="I just read the non-technical translation for the Z-Score Threshold. Why is it better to look at a group rather than just one person?"
+          technicalContent={
+            <>
+              <p>
+                Unlike duplicate detection (which is a 1:1 mathematical comparison), modules like <code>HIGH_DENSITY</code> rely on evaluating a record against the entire dataset's distribution curve.
+              </p>
 
-        <div className="bg-slate-50 border border-slate-200 p-8 rounded-xl my-8 not-prose flex flex-col md:flex-row gap-8 items-center">
-          <div className="w-16 h-16 shrink-0 bg-emerald-100 rounded-full flex items-center justify-center">
-            <Sigma className="w-8 h-8 text-emerald-600" />
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 mb-2 text-lg">Statistical Variance Formula</h4>
-            <p className="text-sm text-slate-600 leading-relaxed font-mono bg-white p-3 border border-slate-200 rounded-lg">
-              Z = (x - μ) / σ
+              <div className="bg-slate-50 border border-slate-200 p-8 rounded-xl my-8 not-prose flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-16 h-16 shrink-0 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <Sigma className="w-8 h-8 text-emerald-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 mb-2 text-lg">Statistical Variance Formula</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed font-mono bg-white p-3 border border-slate-200 rounded-lg">
+                    Z = (x - μ) / σ
+                  </p>
+                  <p className="text-sm text-slate-600 leading-relaxed mt-3">
+                    Where <strong>x</strong> is the local concentration (e.g., voters at a single address), <strong>μ</strong> is the mean concentration across the zip code, and <strong>σ</strong> is the standard deviation. A Z-score greater than 3.0 indicates a statistically significant anomaly.
+                  </p>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              Imagine checking if someone is tall. If you only look at one person, you don't know if they are tall for their age. But if you put them next to 1,000 other people from their town, you can instantly see if they stand out. The Z-Score is our mathematical way of doing exactly this: we don't just look at one voter, we compare them against the "normal" pattern of the entire county. If they stick out too much from the crowd, the Z-Score sets off an alarm.
             </p>
-            <p className="text-sm text-slate-600 leading-relaxed mt-3">
-              Where <strong>x</strong> is the local concentration (e.g., voters at a single address), <strong>μ</strong> is the mean concentration across the zip code, and <strong>σ</strong> is the standard deviation. A Z-score greater than 3.0 indicates a statistically significant anomaly.
-            </p>
-          </div>
-        </div>
+          }
+        />
 
         <h2>Module Integration</h2>
         <p>

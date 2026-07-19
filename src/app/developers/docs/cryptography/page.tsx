@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Shield, Lock, FileKey2, KeyRound } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export default function CryptographyPage() {
   return (
@@ -24,38 +26,50 @@ export default function CryptographyPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>The Zero-Knowledge Mandate</h2>
-        <p>
-          State election systems manage Highly Sensitive Personally Identifiable Information (HS-PII). Traditional data brokers ingest these massive datasets via SFTP, placing the liability of SOC 2 / FedRAMP compliance squarely on the cloud provider. We reject this architecture.
-        </p>
-        <p>
-          Marigold functions exclusively on <strong>Encrypted Vaults</strong>. We act as an algebraic calculator for your system. We perform standard deviation logic, Fellegi-Sunter log-odds evaluation, and NCOA clustering on pre-encrypted hashes.
-        </p>
+        <NonTechnicalTranslator 
+          title="The Zero-Knowledge Mandate"
+          mariContextPrompt="I just read the non-technical translation for the Zero-Knowledge Mandate. How does Marigold do math on data they can't even see?"
+          technicalContent={
+            <>
+              <p>
+                State election systems manage Highly Sensitive Personally Identifiable Information (HS-PII). Traditional data brokers ingest these massive datasets via SFTP, placing the liability of SOC 2 / FedRAMP compliance squarely on the cloud provider. We reject this architecture.
+              </p>
+              <p>
+                Marigold functions exclusively on <strong>Encrypted Vaults</strong>. We act as an algebraic calculator for your system. We perform standard deviation logic, Fellegi-Sunter log-odds evaluation, and NCOA clustering on pre-encrypted hashes.
+              </p>
 
-        <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl my-8 not-prose">
-          <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-200 pb-2">
-            <Lock className="w-5 h-5 text-emerald-600" />
-            AES-256-GCM Specification
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong className="block text-slate-900 mb-1">Cipher Algorithm</strong>
-              <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">aes-256-gcm</code>
-            </div>
-            <div>
-              <strong className="block text-slate-900 mb-1">Key Size</strong>
-              <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">32 bytes (256 bits)</code>
-            </div>
-            <div>
-              <strong className="block text-slate-900 mb-1">Initialization Vector (Nonce)</strong>
-              <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">12 bytes (96 bits)</code>
-            </div>
-            <div>
-              <strong className="block text-slate-900 mb-1">Authentication Tag</strong>
-              <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">16 bytes (128 bits)</code>
-            </div>
-          </div>
-        </div>
+              <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl my-8 not-prose">
+                <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-200 pb-2">
+                  <Lock className="w-5 h-5 text-emerald-600" />
+                  AES-256-GCM Specification
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong className="block text-slate-900 mb-1">Cipher Algorithm</strong>
+                    <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">aes-256-gcm</code>
+                  </div>
+                  <div>
+                    <strong className="block text-slate-900 mb-1">Key Size</strong>
+                    <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">32 bytes (256 bits)</code>
+                  </div>
+                  <div>
+                    <strong className="block text-slate-900 mb-1">Initialization Vector (Nonce)</strong>
+                    <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">12 bytes (96 bits)</code>
+                  </div>
+                  <div>
+                    <strong className="block text-slate-900 mb-1">Authentication Tag</strong>
+                    <code className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded">16 bytes (128 bits)</code>
+                  </div>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              When a state government gives voter data to a normal tech company, that company becomes legally responsible for protecting those thousands of real names and addresses from hackers. This is very dangerous. Marigold uses a "Zero-Knowledge" rule, meaning we refuse to look at the real names. Before the data leaves the government's computer, it is shoved into an unbreakable digital lockbox (an Encrypted Vault). The government keeps the only key. Marigold's supercomputers do advanced math on the outside of the lockbox and return it. Since we never see the real names, a hacker couldn't steal them from us even if they tried!
+            </p>
+          }
+        />
 
         <h2>Preparing the Encrypted Vault</h2>
         <p>
@@ -72,8 +86,10 @@ export default function CryptographyPage() {
           Below is a production-ready Node 20+ implementation utilizing the native <code>node:crypto</code> module to generate the exact <code>encrypted_vault.payload</code> string expected by the API.
         </p>
 
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-md border border-slate-700">
-<code>{`import crypto from 'node:crypto';
+        <CodeBlock
+          language="typescript"
+          title="Node.js 20+ Encryption Flow"
+          code={`import crypto from 'node:crypto';
 
 // CAUTION: This key must be securely generated (32 bytes) and stored locally.
 // Marigold NEVER receives this key. If you lose it, the anomalies we return 
@@ -104,16 +120,18 @@ function createEncryptedVault(dataArray: string[]): string {
 
   // 7. Base64 encode for API transmission
   return finalPayload.toString('base64');
-}`}</code>
-        </pre>
+}`}
+        />
 
         <h3>Reference Implementation (C# / .NET 8)</h3>
         <p>
           For state agencies relying on Microsoft infrastructure, here is the equivalent implementation utilizing the highly optimized <code>AesGcm</code> class in <code>System.Security.Cryptography</code>.
         </p>
 
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-md border border-slate-700">
-<code>{`using System;
+        <CodeBlock
+          language="csharp"
+          title="C# / .NET 8 Encryption Flow"
+          code={`using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -150,8 +168,8 @@ public class MarigoldCryptography
 
         return Convert.ToBase64String(finalPayload);
     }
-}`}</code>
-        </pre>
+}`}
+        />
 
         <h2>Decrypting the Response</h2>
         <p>

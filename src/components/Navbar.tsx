@@ -72,23 +72,23 @@ export function Navbar() {
               {moreDropdownOpen && (
                 <div className="absolute right-0 top-full pt-2 w-56 z-50">
                   <div className="bg-slate-50 border border-slate-200 border border-slate-700 rounded-xl shadow-2xl py-2 text-xs">
-                    <Link href="/learning-center" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-800 hover:text-slate-900 transition-colors flex items-center gap-2">
+                    <Link href="/learning-center" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-amber-500 flex-shrink-0" />
                       <span>Learning Center</span>
                     </Link>
-                    <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-800 hover:text-slate-900 transition-colors flex items-center gap-2">
+                    <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
                       <Globe className="w-4 h-4 text-blue-400 flex-shrink-0" />
                       <span>Worldviews &amp; FAQ</span>
                     </Link>
-                    <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-800 hover:text-slate-900 transition-colors flex items-center gap-2">
+                    <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
                       <Map className="w-4 h-4 text-emerald-700 flex-shrink-0" />
                       <span>Technical Roadmap</span>
                     </Link>
-                    <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-800 hover:text-slate-900 transition-colors flex items-center gap-2">
+                    <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
                       <Shield className="w-4 h-4 text-purple-400 flex-shrink-0" />
                       <span>Bring to Your State</span>
                     </Link>
-                    <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-800 hover:text-slate-900 transition-colors flex items-center gap-2 font-bold tracking-tight">
+                    <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2 font-bold tracking-tight">
                       <Terminal className="w-4 h-4 text-pink-500 flex-shrink-0" />
                       <span>Dev SDK</span>
                     </Link>

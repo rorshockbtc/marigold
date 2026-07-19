@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Blocks, Code2 } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export default function ActiveModulesPage() {
   return (
@@ -28,31 +30,47 @@ export default function ActiveModulesPage() {
       </div>
 
       <div className="prose prose-slate prose-emerald max-w-none">
-        <h2>Endpoint Mechanics</h2>
-        <p>
-          Unlike the <code>detect</code> endpoint, <code>/modules/list</code> does not require an AES-GCM encrypted payload because it does not process any citizen identities. It simply returns the string enums required to populate the <code>anomaly_type</code> field in your future POST requests.
-        </p>
+        <NonTechnicalTranslator 
+          title="Endpoint Mechanics"
+          mariContextPrompt="I just read the non-technical translation for Endpoint Mechanics. What is a statistical module in this context?"
+          technicalContent={
+            <>
+              <p>
+                Unlike the <code>detect</code> endpoint, <code>/modules/list</code> does not require an AES-GCM encrypted payload because it does not process any citizen identities. It simply returns the string enums required to populate the <code>anomaly_type</code> field in your future POST requests.
+              </p>
+            </>
+          }
+          eli5Content={
+            <p>
+              Before a government agency can ask Marigold to check for anomalies, they need to know what <i>types</i> of anomalies Marigold is currently looking for. This page is like a menu at a restaurant. Instead of sending us private data, you just ping this address and say, "Can I see the menu?" We reply with a list of all the different algorithms we are currently running today, like finding duplicate addresses or looking for strange spikes in birthdates.
+            </p>
+          }
+        />
 
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
-<code>{`curl -X GET https://api.marigoldinsights.org/v1/modules/list \\
-  -H "Authorization: Bearer mg_live_..."`}</code>
-        </pre>
+        <CodeBlock
+          language="bash"
+          title="List Modules Request"
+          code={`curl -X GET https://api.marigoldinsights.org/v1/modules/list \\
+  -H "Authorization: Bearer mg_live_..."`}
+        />
 
         <h2>Response Schema</h2>
         <p>
           The response is a flat JSON array of strings. You should cache this response locally (e.g. Redis) and refresh it every 24 hours, as we routinely deploy new statistical modules over the air.
         </p>
 
-        <pre className="bg-slate-50 border border-slate-200 text-emerald-700 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-md border border-slate-700">
-<code>{`[
+        <CodeBlock
+          language="json"
+          title="JSON Response"
+          code={`[
   "HIGH_DENSITY",
   "NCOA_MISMATCH",
   "FUZZY_DUPLICATE",
   "DOB_SPIKE",
   "COMMERCIAL_ZONING",
   "PO_BOX_RESIDENCE"
-]`}</code>
-        </pre>
+]`}
+        />
       </div>
 
       {/* Footer Nav */}

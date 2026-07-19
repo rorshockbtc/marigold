@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Package, Terminal, ShieldCheck } from "lucide-react";
 import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export default function SDKsPage() {
   return (
@@ -33,15 +34,12 @@ export default function SDKsPage() {
               <p>
                 The official Node.js SDK is strictly typed and built on top of the native <code>node:crypto</code> module. It requires Node v20+ for optimal AES-GCM performance.
               </p>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
-<code>{`npm install @marigold/node-sdk`}</code>
-              </pre>
+              <CodeBlock language="bash" code={`npm install @marigold/node-sdk`} />
               <h3>Basic Ingestion Example</h3>
               <p>
                 Notice how you never have to interact with Base64 payloads or Buffer concatenation. The SDK abstracts the Zero-PII liability completely.
               </p>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
-<code>{`import { MarigoldClient } from '@marigold/node-sdk';
+              <CodeBlock language="typescript" title="Node.js Integration" code={`import { MarigoldClient } from '@marigold/node-sdk';
 
 // Initialize the client. The Master Key NEVER leaves your server.
 const marigold = new MarigoldClient({
@@ -68,9 +66,7 @@ async function runAudit() {
        // The SDK handles exponential backoff automatically if configured
     }
   }
-}
-`}</code>
-              </pre>
+}`} />
             </>
           }
           eli5Content={
@@ -88,9 +84,7 @@ async function runAudit() {
               <p>
                 For state agencies relying on monolithic Microsoft infrastructure, we publish a highly-optimized NuGet package utilizing <code>System.Security.Cryptography.AesGcm</code>.
               </p>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
-<code>{`dotnet add package Marigold.Net`}</code>
-              </pre>
+              <CodeBlock language="bash" code={`dotnet add package Marigold.Net`} />
             </>
           }
           eli5Content={
@@ -108,11 +102,8 @@ async function runAudit() {
               <p>
                 Data Scientists and Data Engineers frequently use Python to parse raw civic CSVs using Pandas or Apache Spark. Our official Python SDK natively hooks into the <code>cryptography</code> library for C-optimized AES-GCM encryption, ensuring massive datasets are encrypted efficiently before leaving your Jupyter notebook or ETL pipeline.
               </p>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
-<code>{`pip install marigold-sdk`}</code>
-              </pre>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
-<code>{`import marigold
+              <CodeBlock language="bash" code={`pip install marigold-sdk`} />
+              <CodeBlock language="python" title="Python Data Pipeline" code={`import marigold
 import pandas as pd
 
 # Marigold abstracts the complex AES-GCM cryptography
@@ -120,9 +111,7 @@ client = marigold.Client(api_key="...", master_key="...")
 
 # Easily pipe your Pandas dataframes into the detection engine
 df = pd.read_csv("state_voter_roll.csv")
-results = client.detect_anomalies(df, module="HIGH_DENSITY")
-`}</code>
-              </pre>
+results = client.detect_anomalies(df, module="HIGH_DENSITY")`} />
             </>
           }
           eli5Content={
@@ -140,9 +129,7 @@ results = client.detect_anomalies(df, module="HIGH_DENSITY")
               <p>
                 For modern, high-throughput civic microservices requiring massive concurrency, we provide a Go package leveraging the standard library's <code>crypto/aes</code> and <code>crypto/cipher</code> packages.
               </p>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
-<code>{`go get github.com/marigold/marigold-go`}</code>
-              </pre>
+              <CodeBlock language="bash" code={`go get github.com/marigold/marigold-go`} />
             </>
           }
           eli5Content={
@@ -160,9 +147,7 @@ results = client.detect_anomalies(df, module="HIGH_DENSITY")
               <p>
                 For highly paranoid, mission-critical infrastructure where memory leaks or buffer overflows during encryption are absolutely unacceptable, we publish an official Rust crate utilizing the <a href="https://crates.io/crates/ring" className="text-emerald-600 underline">ring</a> cryptography library. This provides unparalleled C-level performance with strict memory-safety guarantees.
               </p>
-              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
-<code>{`cargo add marigold-rs`}</code>
-              </pre>
+              <CodeBlock language="bash" code={`cargo add marigold-rs`} />
             </>
           }
           eli5Content={

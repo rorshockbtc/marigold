@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Calculator, Variable, Binary, BarChart } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 
 export default function FellegiSunterPage() {
   return (
@@ -24,29 +25,41 @@ export default function FellegiSunterPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>The Limitations of Deterministic Matching</h2>
-        <p>
-          Legacy SQL-based deterministic matching (e.g., <code>WHERE FIRST_NAME = 'Robert' AND LAST_NAME = 'Smith'</code>) fails in the real world. Clerical typographical errors, OCR scanning artifacts, and the presence of suffixes (Jr., Sr., III) guarantee that direct SQL joins will miss up to 15% of actual duplicate voter registrations.
-        </p>
+        <NonTechnicalTranslator 
+          title="The Limitations of Deterministic Matching"
+          mariContextPrompt="I just read the non-technical translation for Deterministic Matching. Can you explain why computers are so bad at dealing with typos?"
+          technicalContent={
+            <>
+              <p>
+                Legacy SQL-based deterministic matching (e.g., <code>WHERE FIRST_NAME = 'Robert' AND LAST_NAME = 'Smith'</code>) fails in the real world. Clerical typographical errors, OCR scanning artifacts, and the presence of suffixes (Jr., Sr., III) guarantee that direct SQL joins will miss up to 15% of actual duplicate voter registrations.
+              </p>
 
-        <p>
-          In 1969, Ivan Fellegi and Alan Sunter published a mathematical framework in the <em>Journal of the American Statistical Association</em> that revolutionized entity resolution. By assigning mathematical weights (log-odds) to the probability of specific field agreements and disagreements, we can compute a total statistical similarity score between any two records.
-        </p>
+              <p>
+                In 1969, Ivan Fellegi and Alan Sunter published a mathematical framework in the <em>Journal of the American Statistical Association</em> that revolutionized entity resolution. By assigning mathematical weights (log-odds) to the probability of specific field agreements and disagreements, we can compute a total statistical similarity score between any two records.
+              </p>
 
-        <div className="bg-slate-50 border border-slate-200 p-8 rounded-xl my-8 not-prose flex flex-col md:flex-row gap-8 items-center">
-          <div className="w-16 h-16 shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
-            <Variable className="w-8 h-8 text-blue-600" />
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 mb-2 text-lg">The Core Theorem</h4>
-            <p className="text-sm text-slate-600 leading-relaxed font-mono bg-white p-3 border border-slate-200 rounded-lg">
-              Weight = log₂ ( P(Agreement | Match) / P(Agreement | Non-Match) )
+              <div className="bg-slate-50 border border-slate-200 p-8 rounded-xl my-8 not-prose flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-16 h-16 shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Variable className="w-8 h-8 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 mb-2 text-lg">The Core Theorem</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed font-mono bg-white p-3 border border-slate-200 rounded-lg">
+                    Weight = log₂ ( P(Agreement | Match) / P(Agreement | Non-Match) )
+                  </p>
+                  <p className="text-sm text-slate-600 leading-relaxed mt-3">
+                    If two records agree on a rare name (e.g., "Zebediah"), the weight is massively positive because the probability of two different people randomly sharing that name is nearly zero. If they agree on a common name (e.g., "John"), the weight is positive, but much smaller.
+                  </p>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              Old-school computer systems are very literal. If they look for "Robert Smith" but the form was accidentally typed as "Robret Smith", the old computer says "Not the same person!" and moves on. This means governments miss up to 15% of real duplicate registrations just because of typos. We fix this by using a famous math formula from 1969 that is "fuzzy". It gives points based on how rare a name is. Two people named "John" might just be a coincidence. But if two people are named "Zebediah" and live on the same street, our math says it's almost certainly the same person, even if one is misspelled.
             </p>
-            <p className="text-sm text-slate-600 leading-relaxed mt-3">
-              If two records agree on a rare name (e.g., "Zebediah"), the weight is massively positive because the probability of two different people randomly sharing that name is nearly zero. If they agree on a common name (e.g., "John"), the weight is positive, but much smaller.
-            </p>
-          </div>
-        </div>
+          }
+        />
 
         <h2>Marigold's Vector Space Mapping</h2>
         <p>

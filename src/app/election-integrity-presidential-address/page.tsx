@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { Tooltip } from "@/components/Tooltip";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
+import { MarigoldIcon } from "@/components/MarigoldIcon";
 import { DECLASSIFIED_DOCUMENT_INDEX, DeclassifiedDocumentExcerpt } from "@/lib/data/declassifiedIndex";
 
 export default function ElectionIntegrityHub() {
@@ -871,8 +872,21 @@ export default function ElectionIntegrityHub() {
             </div>
           </div>
         </div>
-
       </div>
+
+      {/* Floating Mari Chat Button */}
+      <button
+        onClick={() => {
+          const chatEl = document.getElementById("mari-chat-section");
+          if (chatEl) chatEl.scrollIntoView({ behavior: "smooth" });
+        }}
+        className="fixed bottom-6 right-6 z-40 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all transform hover:scale-105 active:scale-95 border-2 border-white"
+        title="Chat with Mari AI about these documents"
+      >
+        <MarigoldIcon className="w-5 h-5 flex-shrink-0 drop-shadow-sm" />
+        <span className="text-sm tracking-wide">Ask Mari AI</span>
+      </button>
+
     </div>
   );
 }

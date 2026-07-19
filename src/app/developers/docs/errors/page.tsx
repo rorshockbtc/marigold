@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, AlertOctagon, TerminalSquare, SearchCode } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 
 export default function ErrorCodesPage() {
   return (
@@ -24,40 +25,52 @@ export default function ErrorCodesPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>HTTP Status Protocols</h2>
-        <p>
-          Marigold adheres to strict HTTP semantic conventions. Before parsing the JSON response body for a canonical error string, your HTTP client should respect the standard transport codes.
-        </p>
+        <NonTechnicalTranslator 
+          title="HTTP Status Protocols"
+          mariContextPrompt="I just read the non-technical translation for HTTP Status Protocols. Can you explain the difference between a 400 error and a 500 error like I'm 5?"
+          technicalContent={
+            <>
+              <p>
+                Marigold adheres to strict HTTP semantic conventions. Before parsing the JSON response body for a canonical error string, your HTTP client should respect the standard transport codes.
+              </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8 not-prose">
-          <div className="bg-rose-50 border border-rose-200 p-5 rounded-xl">
-            <h4 className="font-bold text-rose-900 text-lg mb-2 flex items-center gap-2">
-              <AlertOctagon className="w-5 h-5 text-rose-600" />
-              4xx Client Errors
-            </h4>
-            <p className="text-sm text-rose-800 leading-relaxed">
-              The payload you sent is cryptographically invalid, violates JSON schema, or originates from a blocked IP. Do not retry these requests without modifying the payload or configuration.
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8 not-prose">
+                <div className="bg-rose-50 border border-rose-200 p-5 rounded-xl">
+                  <h4 className="font-bold text-rose-900 text-lg mb-2 flex items-center gap-2">
+                    <AlertOctagon className="w-5 h-5 text-rose-600" />
+                    4xx Client Errors
+                  </h4>
+                  <p className="text-sm text-rose-800 leading-relaxed">
+                    The payload you sent is cryptographically invalid, violates JSON schema, or originates from a blocked IP. Do not retry these requests without modifying the payload or configuration.
+                  </p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 p-5 rounded-xl">
+                  <h4 className="font-bold text-amber-900 text-lg mb-2 flex items-center gap-2">
+                    <TerminalSquare className="w-5 h-5 text-amber-600" />
+                    429 Rate Limits
+                  </h4>
+                  <p className="text-sm text-amber-800 leading-relaxed">
+                    Your server is dispatching requests faster than your SLA tier allows. Implement exponential backoff and retry after the specified cool-down window.
+                  </p>
+                </div>
+                <div className="bg-slate-100 border border-slate-300 p-5 rounded-xl">
+                  <h4 className="font-bold text-slate-900 text-lg mb-2 flex items-center gap-2">
+                    <SearchCode className="w-5 h-5 text-slate-600" />
+                    5xx Server Errors
+                  </h4>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    The algorithmic cluster encountered a math overflow (e.g. Z-Score matrix bounds exceeded). Highly anomalous but transient. Safe to retry with exponential backoff.
+                  </p>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              When a computer talks to another computer, sometimes things go wrong. A 400-level error means "You asked the question wrong" (like trying to unlock our vault with the wrong key). A 429 error means "You are talking too fast, please slow down so our computers don't crash." A 500-level error means "You asked a good question, but our math calculator broke while trying to figure it out." Knowing the difference helps the programmers know if they need to fix their code, or just wait a minute and try again.
             </p>
-          </div>
-          <div className="bg-amber-50 border border-amber-200 p-5 rounded-xl">
-            <h4 className="font-bold text-amber-900 text-lg mb-2 flex items-center gap-2">
-              <TerminalSquare className="w-5 h-5 text-amber-600" />
-              429 Rate Limits
-            </h4>
-            <p className="text-sm text-amber-800 leading-relaxed">
-              Your server is dispatching requests faster than your SLA tier allows. Implement exponential backoff and retry after the specified cool-down window.
-            </p>
-          </div>
-          <div className="bg-slate-100 border border-slate-300 p-5 rounded-xl">
-            <h4 className="font-bold text-slate-900 text-lg mb-2 flex items-center gap-2">
-              <SearchCode className="w-5 h-5 text-slate-600" />
-              5xx Server Errors
-            </h4>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              The algorithmic cluster encountered a math overflow (e.g. Z-Score matrix bounds exceeded). Highly anomalous but transient. Safe to retry with exponential backoff.
-            </p>
-          </div>
-        </div>
+          }
+        />
 
         <h2>Canonical Error Codes</h2>
         <p>
