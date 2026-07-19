@@ -49,6 +49,21 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
       textareaRef.current.style.height = 'auto';
     }
   }, [query]);
+
+  // Listen for external requests to fill the query box (e.g. from NonTechnicalTranslator)
+  useEffect(() => {
+    const handleSetQuery = (e: any) => {
+      if (e.detail?.query) {
+        setQuery(e.detail.query);
+        // Optionally focus the textarea
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('mari-set-query', handleSetQuery);
+    return () => window.removeEventListener('mari-set-query', handleSetQuery);
+  }, []);
   
   // Friendly Guide vs Pro Mode
   const [isFriendlyMode, setIsFriendlyMode] = useState(true);

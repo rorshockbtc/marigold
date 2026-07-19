@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ChevronLeft, Package, Terminal, ShieldCheck } from "lucide-react";
+import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 
 export default function SDKsPage() {
   return (
@@ -24,21 +25,22 @@ export default function SDKsPage() {
 
       <div className="prose prose-slate prose-emerald max-w-none">
         
-        <h2>Node.js / TypeScript SDK</h2>
-        <p>
-          The official Node.js SDK is strictly typed and built on top of the native <code>node:crypto</code> module. It requires Node v20+ for optimal AES-GCM performance.
-        </p>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+        <NonTechnicalTranslator 
+          title="Node.js / TypeScript SDK"
+          mariContextPrompt="I just read the non-technical translation for the Node.js SDK. What exactly is a 'Lego block' in software?"
+          technicalContent={
+            <>
+              <p>
+                The official Node.js SDK is strictly typed and built on top of the native <code>node:crypto</code> module. It requires Node v20+ for optimal AES-GCM performance.
+              </p>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
 <code>{`npm install @marigold/node-sdk`}</code>
-        </pre>
-
-        <h3>Basic Ingestion Example</h3>
-        <p>
-          Notice how you never have to interact with Base64 payloads or Buffer concatenation. The SDK abstracts the Zero-PII liability completely.
-        </p>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
+              </pre>
+              <h3>Basic Ingestion Example</h3>
+              <p>
+                Notice how you never have to interact with Base64 payloads or Buffer concatenation. The SDK abstracts the Zero-PII liability completely.
+              </p>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
 <code>{`import { MarigoldClient } from '@marigold/node-sdk';
 
 // Initialize the client. The Master Key NEVER leaves your server.
@@ -68,27 +70,48 @@ async function runAudit() {
   }
 }
 `}</code>
-        </pre>
+              </pre>
+            </>
+          }
+          eli5Content={
+            <p>
+              Node.js is a popular way for websites to do heavy lifting in the background. Think of our Node SDK like a pre-built Lego set. Instead of figuring out how to build a complex security lock from scratch to protect citizen data, a developer just snaps our pre-made Lego block into their website. We automatically lock up all the names and addresses for them so nobody can steal them.
+            </p>
+          }
+        />
 
-        <h2>.NET / C# SDK</h2>
-        <p>
-          For state agencies relying on monolithic Microsoft infrastructure, we publish a highly-optimized NuGet package utilizing <code>System.Security.Cryptography.AesGcm</code>.
-        </p>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+        <NonTechnicalTranslator 
+          title=".NET / C# SDK"
+          mariContextPrompt="I just read the non-technical translation for the .NET / C# SDK. How does a state government use Microsoft systems to securely talk to Marigold?"
+          technicalContent={
+            <>
+              <p>
+                For state agencies relying on monolithic Microsoft infrastructure, we publish a highly-optimized NuGet package utilizing <code>System.Security.Cryptography.AesGcm</code>.
+              </p>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
 <code>{`dotnet add package Marigold.Net`}</code>
-        </pre>
+              </pre>
+            </>
+          }
+          eli5Content={
+            <p>
+              C# is a computer language built by Microsoft, and it is mostly used by large, older state governments. Our C# tool works like a magical shredder and translator. When a state agency wants to send us a list of voters to check for problems, they run the list through our tool first. It turns the voters' private information into secret, unbreakable codes <i>before</i> the data ever leaves the government's building. 
+            </p>
+          }
+        />
 
-        <h2>Python SDK (Data Science & Pandas)</h2>
-        <p>
-          Data Scientists and Data Engineers frequently use Python to parse raw civic CSVs using Pandas or Apache Spark. Our official Python SDK natively hooks into the <code>cryptography</code> library for C-optimized AES-GCM encryption, ensuring massive datasets are encrypted efficiently before leaving your Jupyter notebook or ETL pipeline.
-        </p>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+        <NonTechnicalTranslator 
+          title="Python SDK (Data Science & Pandas)"
+          mariContextPrompt="I just read the non-technical translation for the Python SDK. How do data scientists use spreadsheets securely?"
+          technicalContent={
+            <>
+              <p>
+                Data Scientists and Data Engineers frequently use Python to parse raw civic CSVs using Pandas or Apache Spark. Our official Python SDK natively hooks into the <code>cryptography</code> library for C-optimized AES-GCM encryption, ensuring massive datasets are encrypted efficiently before leaving your Jupyter notebook or ETL pipeline.
+              </p>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
 <code>{`pip install marigold-sdk`}</code>
-        </pre>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
+              </pre>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
 <code>{`import marigold
 import pandas as pd
 
@@ -99,25 +122,55 @@ client = marigold.Client(api_key="...", master_key="...")
 df = pd.read_csv("state_voter_roll.csv")
 results = client.detect_anomalies(df, module="HIGH_DENSITY")
 `}</code>
-        </pre>
+              </pre>
+            </>
+          }
+          eli5Content={
+            <p>
+              Data scientists use Python to organize giant spreadsheets. Our Python tool acts like a secure, tamper-proof envelope. Before a researcher sends us a massive spreadsheet to analyze, they put it in our Python envelope. The envelope scrambles and seals the data so tightly that nobody on the internet (not even Marigold's own employees) can read the real names inside. We just analyze the patterns mathematically.
+            </p>
+          }
+        />
 
-        <h2>Go (Golang) SDK</h2>
-        <p>
-          For modern, high-throughput civic microservices requiring massive concurrency, we provide a Go package leveraging the standard library's <code>crypto/aes</code> and <code>crypto/cipher</code> packages.
-        </p>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+        <NonTechnicalTranslator 
+          title="Go (Golang) SDK"
+          mariContextPrompt="I just read the non-technical translation for the Go SDK. Why is it important to check millions of records at the exact same time?"
+          technicalContent={
+            <>
+              <p>
+                For modern, high-throughput civic microservices requiring massive concurrency, we provide a Go package leveraging the standard library's <code>crypto/aes</code> and <code>crypto/cipher</code> packages.
+              </p>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
 <code>{`go get github.com/marigold/marigold-go`}</code>
-        </pre>
+              </pre>
+            </>
+          }
+          eli5Content={
+            <p>
+              Go is a computer language originally built by Google. It is famous because it is incredibly good at doing millions of things at the exact same time without crashing. Our Go tool ensures that if an organization has 10 million voters to check all at once, it can scramble and lock up all 10 million records at lightning speed without getting overwhelmed or making a mistake.
+            </p>
+          }
+        />
 
-        <h2>Rust SDK (Extreme Memory Safety)</h2>
-        <p>
-          For highly paranoid, mission-critical infrastructure where memory leaks or buffer overflows during encryption are absolutely unacceptable, we publish an official Rust crate utilizing the <a href="https://crates.io/crates/ring" className="text-emerald-600 underline">ring</a> cryptography library. This provides unparalleled C-level performance with strict memory-safety guarantees.
-        </p>
-
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
+        <NonTechnicalTranslator 
+          title="Rust SDK (Extreme Memory Safety)"
+          mariContextPrompt="I just read the non-technical translation for the Rust SDK. Why does temporary memory leak private information, and how does Rust stop it?"
+          technicalContent={
+            <>
+              <p>
+                For highly paranoid, mission-critical infrastructure where memory leaks or buffer overflows during encryption are absolutely unacceptable, we publish an official Rust crate utilizing the <a href="https://crates.io/crates/ring" className="text-emerald-600 underline">ring</a> cryptography library. This provides unparalleled C-level performance with strict memory-safety guarantees.
+              </p>
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed my-6 shadow-sm">
 <code>{`cargo add marigold-rs`}</code>
-        </pre>
+              </pre>
+            </>
+          }
+          eli5Content={
+            <p>
+              Rust is a modern language designed to be practically impossible to hack or break. It is used by banks, militaries, and extremely secure environments. Our Rust tool ensures that while a computer is busy scrambling the names and addresses into secret codes, it doesn't accidentally "leak" a single letter of that private information into the computer's temporary scratchpad memory where a hacker might find it.
+            </p>
+          }
+        />
 
         <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
