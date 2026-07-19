@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lora, Roboto } from "next/font/google";
+import { Lora, Roboto, Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/lib/auth/AuthContext";
@@ -15,6 +15,16 @@ const lora = Lora({
 const roboto = Roboto({
   variable: "--font-sans",
   weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
 });
 
@@ -55,7 +65,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${roboto.variable} ${lora.variable} font-sans antialiased min-h-screen flex flex-col`}>
+        <body className={`${roboto.variable} ${lora.variable} ${inter.variable} ${fraunces.variable} font-sans antialiased min-h-screen flex flex-col`}>
           <AuthProvider>
             <AppNavigationWrapper>
               {children}

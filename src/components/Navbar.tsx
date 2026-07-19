@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown, BookOpen } from 'lucide-react';
+import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown, BookOpen, Terminal } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname() || '';
@@ -88,6 +88,10 @@ export function Navbar() {
                       <Shield className="w-4 h-4 text-purple-400 flex-shrink-0" />
                       <span>Bring to Your State</span>
                     </Link>
+                    <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2 font-bold tracking-tight">
+                      <Terminal className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                      <span>Dev SDK</span>
+                    </Link>
                     <div className="border-t border-slate-800 my-1"></div>
                     <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-amber-300 font-extrabold hover:bg-slate-800 transition-colors flex items-center gap-2 bg-amber-500/10">
                       <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
@@ -165,6 +169,10 @@ export function Navbar() {
             <Link href="/deploy" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2">
               <Shield className="w-4 h-4 text-purple-400" />
               <span>Bring to Your State</span>
+            </Link>
+            <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-900 hover:text-amber-400 flex items-center gap-2 font-bold tracking-tight">
+              <Terminal className="w-4 h-4 text-pink-500" />
+              <span>Dev SDK</span>
             </Link>
             <Link href="/election-integrity-presidential-address" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500/15 text-amber-300 font-extrabold flex items-center gap-2 border border-amber-500/30">
               <Sparkles className="w-4 h-4 text-amber-400" />
