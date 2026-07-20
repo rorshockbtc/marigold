@@ -1,71 +1,185 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Sparkles, Activity, Download } from "lucide-react";
+import { ArrowRight, Check, ChevronRight, Database, Shield, Terminal } from "lucide-react";
 
 export default function OnboardingPage() {
+  const [step, setStep] = useState(1);
+
   return (
-    <div className="min-h-screen bg-[#FAF8F5] py-20 px-4 sm:px-6 flex flex-col items-center justify-center font-sans">
-      <div className="max-w-3xl w-full space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="min-h-screen bg-[#161413] text-[#f1ebd8] font-sans selection:bg-[#D9777F] selection:text-white flex flex-col">
+      
+      {/* Minimal Header */}
+      <header className="h-[68px] border-b border-white/10 px-8 flex items-center justify-between">
+        <div className="text-[0.65rem] font-medium tracking-[2px] uppercase text-[#f1ebd8]/70">
+          System Initialization Sequence
+        </div>
+        <Link href="/" className="text-[0.65rem] font-medium tracking-[2px] uppercase text-[#f1ebd8]/50 hover:text-[#D9777F] transition-colors">
+          Abort Sequence
+        </Link>
+      </header>
+
+      {/* Main Content Grid */}
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12">
         
-        {/* Warm Welcome */}
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
-            <span className="text-3xl">👋</span>
+        {/* Left Column: Context & Progress */}
+        <div className="lg:col-span-4 border-r border-white/10 bg-[#110f0e] p-8 md:p-12 flex flex-col justify-between">
+          <div>
+            <h1 className="text-3xl font-light font-serif mb-12">Initialization</h1>
+            
+            {/* Progress Track */}
+            <div className="space-y-8">
+              
+              <div className="flex gap-4 items-start">
+                <div className="mt-1">
+                  {step > 1 ? (
+                    <div className="w-5 h-5 rounded-sm bg-[#D9777F] flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-sm border border-[#D9777F] bg-[#D9777F]/10 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-[#D9777F] rounded-full animate-pulse"></div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className={`text-[0.7rem] tracking-[1.5px] uppercase font-medium ${step >= 1 ? 'text-[#f1ebd8]' : 'text-[#f1ebd8]/40'}`}>
+                    Architecture Briefing
+                  </div>
+                  <div className="text-[0.75rem] text-[#f1ebd8]/50 mt-1 font-light">Zero-trust fundamentals.</div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="mt-1">
+                  {step > 2 ? (
+                    <div className="w-5 h-5 rounded-sm bg-[#D9777F] flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  ) : step === 2 ? (
+                    <div className="w-5 h-5 rounded-sm border border-[#D9777F] bg-[#D9777F]/10 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-[#D9777F] rounded-full animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-sm border border-white/20 bg-[#1c1917]"></div>
+                  )}
+                </div>
+                <div>
+                  <div className={`text-[0.7rem] tracking-[1.5px] uppercase font-medium ${step >= 2 ? 'text-[#f1ebd8]' : 'text-[#f1ebd8]/40'}`}>
+                    Environment Setup
+                  </div>
+                  <div className="text-[0.75rem] text-[#f1ebd8]/50 mt-1 font-light">Local processing requirements.</div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="mt-1">
+                  {step === 3 ? (
+                    <div className="w-5 h-5 rounded-sm border border-[#D9777F] bg-[#D9777F]/10 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-[#D9777F] rounded-full animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-sm border border-white/20 bg-[#1c1917]"></div>
+                  )}
+                </div>
+                <div>
+                  <div className={`text-[0.7rem] tracking-[1.5px] uppercase font-medium ${step === 3 ? 'text-[#f1ebd8]' : 'text-[#f1ebd8]/40'}`}>
+                    Execution Standard
+                  </div>
+                  <div className="text-[0.75rem] text-[#f1ebd8]/50 mt-1 font-light">Deployment verification.</div>
+                </div>
+              </div>
+
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-serif font-extrabold text-slate-900 tracking-tight">
-            Welcome to Marigold.
-          </h1>
-          <p className="text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto">
-            You cannot break anything here. We built this to be easy, safe, and entirely private. Your data never leaves your computer. 
-            <br/><br/>
-            <strong>What would you like to do today?</strong>
-          </p>
-        </div>
-
-        {/* Three Massive Choices */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          {/* Option 1: Practice */}
-          <Link href="/sandbox" className="bg-white border-2 border-slate-200 hover:border-amber-400 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Sparkles className="w-8 h-8 text-amber-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900">I want to practice</h2>
-            <p className="text-base text-slate-600">
-              Use our "Sandbox" with fake, pretend data to see how the system finds errors without any real risk.
-            </p>
-            <span className="mt-auto pt-4 font-bold text-amber-600 group-hover:underline">Launch Sandbox →</span>
-          </Link>
-
-          {/* Option 2: State Trends */}
-          <Link href="/macro" className="bg-white border-2 border-slate-200 hover:border-indigo-400 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Activity className="w-8 h-8 text-indigo-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900">See State Trends</h2>
-            <p className="text-base text-slate-600">
-              Look at safe, high-level charts showing voter shifts across Florida and other states. No personal data.
-            </p>
-            <span className="mt-auto pt-4 font-bold text-indigo-600 group-hover:underline">View Trends →</span>
-          </Link>
-
-          {/* Option 3: Analyze My Data */}
-          <Link href="/dashboard" className="bg-white border-2 border-slate-200 hover:border-emerald-400 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Download className="w-8 h-8 text-emerald-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900">I have my own file</h2>
-            <p className="text-base text-slate-600">
-              Select a spreadsheet from your computer to check for formatting errors. Remember, we don't save your file.
-            </p>
-            <span className="mt-auto pt-4 font-bold text-emerald-600 group-hover:underline">Go to Workspace →</span>
-          </Link>
-
+          <div className="text-[0.6rem] font-mono text-[#f1ebd8]/30 uppercase mt-12">
+            Marigold Systems<br/>v2.0.4 [STABLE]
+          </div>
         </div>
 
-      </div>
+        {/* Right Column: Interaction Window */}
+        <div className="lg:col-span-8 p-8 md:p-16 lg:p-24 flex items-center justify-center relative">
+          
+          {/* Subtle Grid Background */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+               style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+          </div>
+
+          <div className="max-w-2xl w-full z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            
+            {step === 1 && (
+              <div className="space-y-8">
+                <Shield className="w-8 h-8 text-[#D9777F] stroke-[1.5]" />
+                <h2 className="text-3xl font-light font-serif">The Zero-Cloud Paradigm</h2>
+                <div className="space-y-6 text-[#f1ebd8]/70 leading-relaxed font-light text-sm md:text-base border-l border-white/10 pl-6">
+                  <p>
+                    Traditional analytics require the transmission of sensitive voter data to external servers. This introduces unacceptable security liabilities and compliance friction.
+                  </p>
+                  <p>
+                    Marigold operates differently. We deploy the algorithmic logic to your local machine. Your data remains perfectly isolated on your hard drive, processed by your local CPU.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setStep(2)}
+                  className="mt-8 flex items-center justify-between w-full p-4 bg-[#1c1917] border border-white/10 hover:border-[#D9777F] hover:bg-[#211e1c] transition-colors group"
+                >
+                  <span className="text-[0.75rem] font-medium tracking-[1.5px] uppercase">Acknowledge & Proceed</span>
+                  <ArrowRight className="w-4 h-4 text-[#D9777F] group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-8">
+                <Terminal className="w-8 h-8 text-[#D9777F] stroke-[1.5]" />
+                <h2 className="text-3xl font-light font-serif">Local Environment</h2>
+                <div className="space-y-6 text-[#f1ebd8]/70 leading-relaxed font-light text-sm md:text-base border-l border-white/10 pl-6">
+                  <p>
+                    Because execution occurs entirely on your hardware, you are required to allocate computational resources. The engine requires a minimum of 4GB RAM to parse standard state-level density matrices.
+                  </p>
+                  <div className="bg-[#110f0e] p-4 border border-white/10 font-mono text-xs text-[#D9777F]">
+                    {'>'} NODE_ENV=production <br/>
+                    {'>'} ALLOCATING HEAP MEMORY... <br/>
+                    {'>'} VERIFIED LOCAL CONTEXT
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setStep(3)}
+                  className="mt-8 flex items-center justify-between w-full p-4 bg-[#1c1917] border border-white/10 hover:border-[#D9777F] hover:bg-[#211e1c] transition-colors group"
+                >
+                  <span className="text-[0.75rem] font-medium tracking-[1.5px] uppercase">Confirm Hardware Specs</span>
+                  <ArrowRight className="w-4 h-4 text-[#D9777F] group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-8">
+                <Database className="w-8 h-8 text-[#D9777F] stroke-[1.5]" />
+                <h2 className="text-3xl font-light font-serif">Data Ingestion Readiness</h2>
+                <div className="space-y-6 text-[#f1ebd8]/70 leading-relaxed font-light text-sm md:text-base border-l border-white/10 pl-6">
+                  <p>
+                    You are now prepared to load CSV exports directly into the browser sandbox. The parsing engine is strictly typed to handle standardized SOS exports.
+                  </p>
+                  <p>
+                    Execution of the Fellegi-Sunter heuristic will begin immediately upon file drop.
+                  </p>
+                </div>
+                <Link 
+                  href="/dashboard"
+                  className="mt-8 flex items-center justify-center w-full p-4 bg-[#D9777F] border border-[#D9777F] hover:bg-[#e3868e] text-white transition-all shadow-[0_4px_14px_rgba(217,119,127,0.3)] hover:shadow-[0_6px_18px_rgba(217,119,127,0.45)] hover:-translate-y-[1px]"
+                >
+                  <span className="text-[0.75rem] font-medium tracking-[1.5px] uppercase">Launch Workspace</span>
+                </Link>
+              </div>
+            )}
+
+          </div>
+        </div>
+      </main>
+
     </div>
   );
 }

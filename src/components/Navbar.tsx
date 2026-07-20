@@ -4,123 +4,54 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
-import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown, BookOpen, Terminal, Activity } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname() || '';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
-  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseEnter = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    setMoreDropdownOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setMoreDropdownOpen(false);
-    }, 250);
-  };
 
   return (
     <>
-      <header className="bg-slate-100 text-slate-900 py-3.5 px-4 sm:px-8 border-b border-slate-200 shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <MarigoldIcon className="w-7 h-7 flex-shrink-0 text-amber-400 group-hover:scale-105 transition-transform drop-shadow" />
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl font-serif font-bold tracking-tight text-slate-900 leading-none">
-                Marigold Insights
-              </span>
-              <span className="text-[10px] text-[#D96B27] font-bold uppercase tracking-wider mt-0.5">
-                Local-Compute Civic Analytics
-              </span>
-            </div>
+      <header className="h-[68px] min-h-[68px] bg-[#110f0e] border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50 transition-all">
+        
+        {/* Brand Architecture */}
+        <Link href="/" className="flex flex-col gap-0.5 group">
+          <div className="font-sans text-[0.85rem] font-medium tracking-[2.5px] uppercase text-[#f1ebd8] group-hover:text-[#D9777F] transition-colors">
+            Marigold Insights
+          </div>
+          <div className="font-sans text-[0.65rem] font-light tracking-[0.5px] text-[#f1ebd8]/60 uppercase">
+            Local-Compute Civic Analytics
+          </div>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-2">
+          <Link href="/sandbox" className="inline-flex items-center px-4 py-2 text-[0.72rem] font-medium tracking-[1px] uppercase text-[#f1ebd8] hover:text-white bg-white/5 border border-white/10 hover:border-[#D9777F] hover:bg-white/10 transition-all rounded-[4px] mx-1">
+            Sandbox
           </Link>
+          <Link href="/macro" className="inline-flex items-center px-4 py-2 text-[0.72rem] font-medium tracking-[1px] uppercase text-[#f1ebd8] hover:text-white bg-white/5 border border-white/10 hover:border-[#D9777F] hover:bg-white/10 transition-all rounded-[4px] mx-1">
+            State Trends
+          </Link>
+          <Link href="/learning-center" className="inline-flex items-center px-4 py-2 text-[0.72rem] font-medium tracking-[1px] uppercase text-[#f1ebd8] hover:text-white bg-white/5 border border-white/10 hover:border-[#D9777F] hover:bg-white/10 transition-all rounded-[4px] mx-1">
+            Knowledge Base
+          </Link>
+          <Link href="/developers" className="inline-flex items-center px-4 py-2 text-[0.72rem] font-medium tracking-[1px] uppercase text-[#f1ebd8] hover:text-white bg-white/5 border border-white/10 hover:border-[#D9777F] hover:bg-white/10 transition-all rounded-[4px] mx-1">
+            Architecture
+          </Link>
+          
+          <div className="w-[1px] h-[18px] bg-white/20 mx-2"></div>
 
-          {/* Desktop Primary Navigation */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-700">
-            <Link href="/onboarding" className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-2 rounded-full shadow-lg transition-transform transform hover:scale-105 flex items-center gap-2 text-base">
-              <span>Start Here</span>
-            </Link>
-            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-[#D96B27] transition-colors font-medium">Practice Sandbox ↗</a>
-            <Link href="/macro" className="hover:text-[#D96B27] transition-colors font-bold text-indigo-600 flex items-center gap-1.5"><Activity className="w-4 h-4"/>State Trends</Link>
-            <Link href="/learning-center" className="hover:text-[#D96B27] transition-colors flex items-center gap-1.5 font-medium">
-              <BookOpen className="w-4 h-4 text-amber-500" />
-              <span>Help & Docs</span>
-            </Link>
-            <a href="mailto:sales@colonhyphenbracket.pink" className="text-white font-bold hover:text-white transition-colors flex items-center gap-1.5 bg-[#D96B27] px-3.5 py-1.5 rounded-full shadow-sm hover:bg-[#C85A1B]">
-              <span>Contact Sales</span>
-            </a>
-            <div 
-              className="relative" 
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button 
-                onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                className="flex items-center gap-1 hover:text-slate-900 py-2 transition-colors focus:outline-none"
-                aria-expanded={moreDropdownOpen}
-              >
-                <span>More</span>
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-              
-              {moreDropdownOpen && (
-                <div className="absolute right-0 top-full pt-2 w-56 z-50">
-                  <div className="bg-slate-50 border border-slate-200 border border-slate-700 rounded-xl shadow-2xl py-2 text-xs">
-                    <Link href="/learning-center" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                      <span>Learning Center</span>
-                    </Link>
-                    <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                      <span>Worldviews &amp; FAQ</span>
-                    </Link>
-                    <Link href="/roadmap" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
-                      <Map className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-                      <span>Technical Roadmap</span>
-                    </Link>
-                    <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                      <span>Bring to Your State</span>
-                    </Link>
-                    <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2 font-bold tracking-tight">
-                      <Terminal className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                      <span>How the Tech Works</span>
-                    </Link>
-                    <div className="border-t border-slate-200 my-1"></div>
-                    <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-[#D96B27] font-extrabold hover:bg-slate-100 transition-colors flex items-center gap-2 bg-amber-50">
-                      <Sparkles className="w-4 h-4 text-[#D96B27] flex-shrink-0" />
-                      <span>White House Intel Hub</span>
-                    </Link>
-                    <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-[#D96B27] font-bold hover:bg-slate-100 transition-colors flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#D96B27] flex-shrink-0" />
-                      <span>250th Celebration</span>
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-          </nav>
-
-          {/* Right Action Anchored Auth Buttons */}
-          <div className="flex items-center gap-3">
+          {/* Action Area */}
+          <div className="flex items-center gap-3 ml-2">
             <Show when="signed-out">
               <SignInButton mode="redirect">
-                <button className="btn-secondary px-3 py-1.5 h-auto text-xs sm:text-sm">
-                  Sign In
+                <button className="text-[0.72rem] font-medium tracking-[1px] uppercase text-[#f1ebd8]/70 hover:text-white px-2 transition-colors focus:outline-none">
+                  Log In
                 </button>
               </SignInButton>
               <SignUpButton mode="redirect">
-                <button className="btn-primary px-4 sm:px-5 py-1.5 h-auto text-xs sm:text-sm">
-                  Get Started
+                <button className="inline-flex items-center justify-center px-5 py-2 text-[0.75rem] font-medium tracking-[1.5px] uppercase text-white bg-[#D9777F] border border-[#D9777F] shadow-[0_4px_14px_rgba(217,119,127,0.3)] hover:bg-[#e3868e] hover:border-[#e3868e] hover:shadow-[0_6px_18px_rgba(217,119,127,0.45)] hover:-translate-y-[1px] transition-all rounded-full focus:outline-none">
+                  Initialize
                 </button>
               </SignUpButton>
             </Show>
@@ -128,88 +59,44 @@ export function Navbar() {
             <Show when="signed-in">
               <Link 
                 href="/dashboard"
-                className="btn-primary px-4 py-1.5 h-auto text-xs sm:text-sm flex items-center gap-1.5"
+                className="inline-flex items-center justify-center px-5 py-2 text-[0.75rem] font-medium tracking-[1.5px] uppercase text-white bg-[#D9777F] border border-[#D9777F] shadow-[0_4px_14px_rgba(217,119,127,0.3)] hover:bg-[#e3868e] hover:border-[#e3868e] hover:shadow-[0_6px_18px_rgba(217,119,127,0.45)] hover:-translate-y-[1px] transition-all rounded-full focus:outline-none"
               >
-                <span>Workspace</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                Enter Workspace
               </Link>
-              <UserButton />
+              <div className="ml-2">
+                <UserButton />
+              </div>
             </Show>
-
-            {/* Mobile Hamburger Toggle */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-800 focus:outline-none"
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
           </div>
-        </div>
+        </nav>
 
-        {/* Mobile Navigation Drawer */}
-        {mobileMenuOpen && (
-          <nav className="lg:hidden mt-4 pt-4 border-t border-slate-200 flex flex-col gap-2 text-sm font-medium text-slate-700 px-2 pb-2">
-            <a href="/sandbox" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">Public Sandbox ↗</a>
-            <Link href="/investors" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500 text-black font-bold border border-amber-600 hover:bg-amber-400">Investors & Vision</Link>
-            <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">Audit Checklists</Link>
-            <Link href="/macro" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 text-indigo-600 font-bold flex items-center gap-2"><Activity className="w-4 h-4"/>Macro Trends</Link>
-            <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">State Registry</Link>
-            <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">FEMA Compliance</Link>
-            <Link href="/partners" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-50 text-[#D96B27] font-bold flex items-center gap-2 border border-amber-200">
-              <span>🤝 Beta Partnerships &amp; Grants</span>
-            </Link>
-            <Link href="/learning-center" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-[#D96B27]" />
-              <span>Learning Center</span>
-            </Link>
-            <Link href="/perspectives" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
-              <Globe className="w-4 h-4 text-blue-400" />
-              <span>Worldviews &amp; FAQ</span>
-            </Link>
-            <Link href="/roadmap" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
-              <Map className="w-4 h-4 text-emerald-700" />
-              <span>Technical Roadmap</span>
-            </Link>
-            <Link href="/deploy" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2">
-              <Shield className="w-4 h-4 text-purple-400" />
-              <span>Bring to Your State</span>
-            </Link>
-            <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27] flex items-center gap-2 font-bold tracking-tight">
-              <Terminal className="w-4 h-4 text-pink-500" />
-              <span>Dev SDK</span>
-            </Link>
-            <Link href="/election-integrity-presidential-address" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-50 text-[#D96B27] font-extrabold flex items-center gap-2 border border-amber-200">
-              <Sparkles className="w-4 h-4 text-[#D96B27]" />
-              <span>White House Intel Hub</span>
-            </Link>
-            <Link href="/anniversary" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 text-[#D96B27] font-bold flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#D96B27]" />
-              <span>250th Celebration</span>
-            </Link>
-          </nav>
-        )}
+        {/* Mobile Toggle */}
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="lg:hidden text-[#f1ebd8]/70 hover:text-white p-2 focus:outline-none transition-colors"
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </header>
 
-      {/* Breaking Presidential Address Announcement Banner */}
-      <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-slate-950 px-4 py-2 text-xs font-black flex items-center justify-center gap-2 shadow-md">
-        <span>🏛️ [July 16 Presidential Address] Explore 50+ Declassified Election Integrity Files &amp; Multi-Perspective AI Analysis &rarr;</span>
-        <Link 
-          href="/election-integrity-presidential-address" 
-          className="bg-white text-[#D96B27] hover:bg-slate-50 border border-slate-200 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow transition-transform hover:scale-105"
-        >
-          Explore Hub
-        </Link>
-      </div>
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <nav className="lg:hidden bg-[#1c1917] border-b border-white/10 px-4 py-4 flex flex-col gap-2">
+          <Link href="/sandbox" className="px-4 py-3 border border-white/10 rounded bg-white/5 text-[0.75rem] font-medium tracking-[1px] uppercase text-[#f1ebd8]">Sandbox</Link>
+          <Link href="/macro" className="px-4 py-3 border border-white/10 rounded bg-white/5 text-[0.75rem] font-medium tracking-[1px] uppercase text-[#f1ebd8]">State Trends</Link>
+          <Link href="/learning-center" className="px-4 py-3 border border-white/10 rounded bg-white/5 text-[0.75rem] font-medium tracking-[1px] uppercase text-[#f1ebd8]">Knowledge Base</Link>
+          <Link href="/developers" className="px-4 py-3 border border-white/10 rounded bg-white/5 text-[0.75rem] font-medium tracking-[1px] uppercase text-[#f1ebd8]">Architecture</Link>
+        </nav>
+      )}
 
-      {/* Persistent Disclaimer Banner */}
-      <div className="bg-slate-100 border-b border-border text-slate-700 px-6 py-2.5 text-xs md:text-sm font-medium flex items-center justify-between shadow-inner">
-        <div className="flex items-center gap-2 max-w-6xl mx-auto">
-          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-          <span>
-            <strong className="font-bold text-slate-900">Privacy Guarantee:</strong> Your data never leaves your computer. No citizen files are ever uploaded or transmitted.
-          </span>
-        </div>
+      {/* Guided Context Bar (Optional Subnav styling based on the user's design doc) */}
+      <div className="h-[46px] min-h-[46px] bg-[#1c1917] border-b border-white/10 px-4 sm:px-8 flex items-center overflow-x-auto z-[9] gap-3">
+        <span className="font-sans text-[0.7rem] font-normal tracking-[1.5px] uppercase text-[#f1ebd8]/50 whitespace-nowrap">
+          Current Context:
+        </span>
+        <span className="inline-flex items-center px-3 py-1 bg-white/5 border border-[#D9777F] text-white font-sans text-[0.72rem] font-normal tracking-[1px] rounded-[4px] whitespace-nowrap shadow-[0_0_12px_rgba(217,119,127,0.25)]">
+          System Overview
+        </span>
       </div>
     </>
   );

@@ -1,187 +1,154 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import { Play, Sparkles, BookOpen, ShieldCheck, FileSpreadsheet, HeartHandshake } from "lucide-react";
+import { ArrowRight, Box, Cpu, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 
-export default function GrandmaFriendlyHomePage() {
-  const schemaMarkup = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Marigold Insights",
-    "operatingSystem": "All",
-    "applicationCategory": "Government & Business Application",
-    "description": "Civic data auditing platform that runs completely on your local computer.",
-    "offers": {
-      "@type": "Offer",
-      "price": "1500.00",
-      "priceCurrency": "USD"
-    }
-  };
-
+export default function LandingPage() {
   return (
-    <div className="pb-24 font-sans bg-[#FAF8F5]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
-      />
+    <main className="min-h-screen bg-[#161413] text-[#f1ebd8] font-sans selection:bg-[#D9777F] selection:text-white">
       
-      {/* Friendly Hero Section */}
-      <section className="w-full text-center py-20 sm:py-28 bg-white border-b border-slate-200 shadow-sm px-4 sm:px-6 relative overflow-hidden">
-        {/* Soft Background Accent */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-amber-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
+      {/* 
+        HERO SECTION 
+        Vignelli Grid: Strict alignments, massive typographic hierarchy.
+      */}
+      <section className="relative w-full min-h-[85vh] flex flex-col justify-center px-4 sm:px-8 md:px-16 pt-20 pb-24 overflow-hidden border-b border-white/10">
         
-        <div className="relative z-10 space-y-8 max-w-4xl mx-auto">
-          {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            <span className="bg-emerald-50 text-emerald-800 font-bold text-sm px-4 py-2 rounded-full border border-emerald-200 shadow-sm flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" />
-              Your Data Stays on Your Computer. Always.
-            </span>
-            <span className="bg-blue-50 text-blue-800 font-bold text-sm px-4 py-2 rounded-full border border-blue-200 shadow-sm flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-blue-600" />
-              Approved by Government Standards
-            </span>
+        {/* Architectural Background Grid */}
+        <div className="absolute inset-0 pointer-events-none opacity-20"
+             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+        ></div>
+
+        <div className="relative max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+          
+          {/* Typographic Core (Left) */}
+          <div className="lg:col-span-8 flex flex-col items-start z-10">
+            <div className="inline-flex items-center gap-3 px-3 py-1 mb-8 bg-[#110f0e] border border-white/10 rounded-sm">
+              <span className="w-2 h-2 rounded-full bg-[#D9777F] animate-pulse"></span>
+              <span className="text-[0.65rem] font-medium tracking-[2px] uppercase text-[#f1ebd8]/70">Local Compute Engine v2.0</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-light leading-[1.05] tracking-tight text-[#f1ebd8] mb-8 font-serif">
+              Definitive intelligence.<br />
+              <span className="font-semibold italic text-[#D9777F]">Zero-trust architecture.</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-[#f1ebd8]/70 font-light leading-relaxed max-w-2xl mb-12">
+              Marigold Insights is a strictly local-compute civic data platform. We execute mathematical proofs on voter rolls directly in your local memory heap. The data never leaves your infrastructure. 
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <Link href="/onboarding" className="group flex items-center justify-center h-12 px-8 bg-[#D9777F] text-white text-[0.75rem] font-medium tracking-[1.5px] uppercase transition-all shadow-[0_4px_14px_rgba(217,119,127,0.2)] hover:bg-[#e3868e] hover:shadow-[0_6px_20px_rgba(217,119,127,0.4)] hover:-translate-y-[1px] w-full sm:w-auto">
+                Initialize System
+              </Link>
+              <Link href="/developers" className="group flex items-center justify-center h-12 px-8 bg-[#1c1917] border border-white/20 text-[#f1ebd8] text-[0.75rem] font-medium tracking-[1.5px] uppercase transition-all hover:bg-white/10 w-full sm:w-auto">
+                Read Architecture
+              </Link>
+            </div>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif font-extrabold text-slate-900 leading-tight">
-            Find errors in local data. <br/>
-            <span className="text-emerald-700">No tech skills needed.</span>
-          </h1>
-          
-          <p className="text-xl sm:text-2xl text-slate-700 leading-relaxed font-medium max-w-3xl mx-auto">
-            A county clerk recently found 237 formatting errors in her records in just 3 minutes. She didn't need any IT help, and her data never left her laptop.
-          </p>
+          {/* Abstract Data Visualization / Geometry (Right) */}
+          <div className="lg:col-span-4 relative hidden lg:block h-[500px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1c1917] to-[#110f0e] border border-white/10 shadow-2xl p-8 flex flex-col justify-between overflow-hidden">
+              <div className="text-[0.65rem] font-mono text-[#f1ebd8]/40 tracking-widest uppercase">Memory Hex Dump</div>
+              <div className="font-mono text-xs leading-relaxed text-[#D9777F]/60 break-all">
+                0x0000 4d 61 72 69 67 6f 6c 64<br/>
+                0x0008 20 49 6e 73 69 67 68 74<br/>
+                0x0010 73 20 4c 6f 63 61 6c 20<br/>
+                0x0018 45 78 65 63 75 74 69 6f<br/>
+                ...<br/>
+                [ALGORITHM: FELLEGI-SUNTER]<br/>
+                [THREADS: AUTO]<br/>
+                [STATUS: SECURE]
+              </div>
+              <div className="w-full h-[1px] bg-white/10 my-4"></div>
+              <div className="flex justify-between items-end">
+                 <span className="text-3xl font-light text-[#f1ebd8]">0 PII</span>
+                 <span className="text-[0.65rem] tracking-[2px] uppercase text-[#f1ebd8]/50">Transmitted</span>
+              </div>
+            </div>
+          </div>
 
-          <div className="pt-8 flex flex-col sm:flex-row justify-center items-center gap-6">
-            <Link href="/onboarding" className="bg-emerald-600 text-white hover:bg-emerald-500 font-extrabold text-xl px-10 py-5 rounded-full shadow-xl transition-transform transform hover:-translate-y-1 w-full sm:w-auto text-center">
-              Start Here →
-            </Link>
-            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="bg-white text-slate-900 border-4 border-slate-200 hover:border-slate-300 font-bold text-xl px-10 py-4 rounded-full shadow-sm transition-all w-full sm:w-auto text-center">
-              Practice in the Sandbox
-            </a>
+        </div>
+      </section>
+
+      {/* 
+        STRUCTURAL PILLARS 
+        Vignelli Card Grid. 3 Columns. Hard borders. Monochromatic icons.
+      */}
+      <section className="px-4 sm:px-8 md:px-16 py-24 bg-[#110f0e]">
+        <div className="max-w-[1400px] mx-auto">
+          
+          <div className="mb-16">
+            <h2 className="text-[0.75rem] font-medium tracking-[3px] uppercase text-[#D9777F] mb-4">Core Principles</h2>
+            <h3 className="text-3xl md:text-4xl font-light text-[#f1ebd8]">Engineered for paranoia.</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-white/10">
+            
+            {/* Column 1 */}
+            <div className="bg-[#1c1917] p-10 flex flex-col group hover:bg-[#211e1c] transition-colors">
+              <ShieldCheck className="w-8 h-8 text-[#f1ebd8]/40 mb-8 group-hover:text-[#D9777F] transition-colors stroke-[1.5]" />
+              <h4 className="text-xl font-medium text-[#f1ebd8] mb-4 font-serif">Zero-Trust Processing</h4>
+              <p className="text-[0.85rem] text-[#f1ebd8]/60 leading-loose flex-grow">
+                Our architecture inherently distrusts the cloud. No records are transmitted over the wire. The algorithmic engine is downloaded and executed strictly within the local browser sandbox or edge compute node.
+              </p>
+            </div>
+
+            {/* Column 2 */}
+            <div className="bg-[#1c1917] p-10 flex flex-col group hover:bg-[#211e1c] transition-colors">
+              <Cpu className="w-8 h-8 text-[#f1ebd8]/40 mb-8 group-hover:text-[#D9777F] transition-colors stroke-[1.5]" />
+              <h4 className="text-xl font-medium text-[#f1ebd8] mb-4 font-serif">Mathematical Integrity</h4>
+              <p className="text-[0.85rem] text-[#f1ebd8]/60 leading-loose flex-grow">
+                Utilizing deterministic heuristics, including the Fellegi-Sunter algorithm and precise density matrices, the engine mathematically proves database anomalies without subjective human intervention.
+              </p>
+            </div>
+
+            {/* Column 3 */}
+            <div className="bg-[#1c1917] p-10 flex flex-col group hover:bg-[#211e1c] transition-colors">
+              <Box className="w-8 h-8 text-[#f1ebd8]/40 mb-8 group-hover:text-[#D9777F] transition-colors stroke-[1.5]" />
+              <h4 className="text-xl font-medium text-[#f1ebd8] mb-4 font-serif">Auditable Transparency</h4>
+              <p className="text-[0.85rem] text-[#f1ebd8]/60 leading-loose flex-grow">
+                Black-box algorithms have no place in civic intelligence. The entire codebase and matching criteria are strictly documented. The outputs are perfectly reproducible.
+              </p>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* Main Container */}
-      <div className="space-y-24 max-w-5xl mx-auto px-4 sm:px-6 pt-20">
-        
-        {/* Simple "Who Are You?" Stakeholders */}
-        <section id="stakeholders" className="space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl font-serif font-bold text-slate-900">How can we help you today?</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Choose the path that best describes you to read a plain-English guide.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Link href="/solutions/citizens" className="bg-white p-8 rounded-3xl border-4 border-amber-100 hover:border-amber-400 shadow-md transition-all group block text-center space-y-6">
-              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                <span className="text-4xl">🙋‍♀️</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900">I am a Citizen Volunteer</h3>
-              <p className="text-lg text-slate-600 leading-relaxed">
-                Read our plain-language guide on how you can help your community without being a programmer.
-              </p>
-              <span className="inline-block font-bold text-amber-700 text-lg group-hover:underline">Read the Citizen Guide →</span>
-            </Link>
-
-            <Link href="/solutions/organizations" className="bg-white p-8 rounded-3xl border-4 border-emerald-100 hover:border-emerald-400 shadow-md transition-all group block text-center space-y-6">
-              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                <span className="text-4xl">🤝</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900">I lead a Volunteer Group</h3>
-              <p className="text-lg text-slate-600 leading-relaxed">
-                Learn how your local chapter can share checklists and notes safely with other volunteers.
-              </p>
-              <span className="inline-block font-bold text-emerald-700 text-lg group-hover:underline">Read the Group Guide →</span>
-            </Link>
-
-            <Link href="/solutions/state-agencies" className="bg-white p-8 rounded-3xl border-4 border-blue-100 hover:border-blue-400 shadow-md transition-all group block text-center space-y-6">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                <span className="text-4xl">🏛️</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900">I am a Government Official</h3>
-              <p className="text-lg text-slate-600 leading-relaxed">
-                See how we meet strict security standards and help you verify your records instantly.
-              </p>
-              <span className="inline-block font-bold text-blue-700 text-lg group-hover:underline">Read the Official Guide →</span>
-            </Link>
-          </div>
-        </section>
-
-        {/* Video Explanation */}
-        <section className="bg-white rounded-3xl p-8 sm:p-12 border-4 border-slate-100 shadow-xl flex flex-col lg:flex-row gap-12 items-center">
-          <div className="space-y-6 max-w-xl">
-            <h2 className="text-4xl font-serif font-bold text-slate-900">
-              Watch: Why Your Data is Safe
+      {/* 
+        DATA FOOTPRINT SECTION
+        Minimalist, typographic emphasis.
+      */}
+      <section className="px-4 sm:px-8 md:px-16 py-32 bg-[#161413] border-t border-white/5">
+        <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-16">
+          <div className="lg:w-1/2">
+            <h2 className="text-4xl md:text-5xl font-light leading-tight text-[#f1ebd8] mb-6 font-serif">
+              The interaction of data <br/>and <span className="italic text-[#D9777F]">absolute privacy.</span>
             </h2>
-            <p className="text-xl text-slate-700 leading-relaxed">
-              Most software asks you to upload your files to the internet. We don't. Watch this short video to see how Marigold acts like a smart magnifying glass right on your own computer desk.
+            <p className="text-[#f1ebd8]/60 leading-relaxed font-light mb-10 max-w-lg">
+              Our commitment to the protection of Personally Identifiable Information is absolute. By severing the connection between analysis and cloud storage, we provide military-grade analytical capability with zero compliance liability.
             </p>
-            <ul className="space-y-3 text-lg font-bold text-slate-800">
-              <li className="flex items-center gap-3"><ShieldCheck className="text-emerald-600 w-6 h-6"/> No internet upload required.</li>
-              <li className="flex items-center gap-3"><ShieldCheck className="text-emerald-600 w-6 h-6"/> Results appear in seconds.</li>
-              <li className="flex items-center gap-3"><ShieldCheck className="text-emerald-600 w-6 h-6"/> 100% transparent math.</li>
-            </ul>
+            <Link href="/compliance" className="inline-flex items-center gap-3 text-[0.75rem] font-medium tracking-[2px] uppercase text-[#f1ebd8] hover:text-[#D9777F] transition-colors group">
+              Read the Compliance Manifesto 
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
-          <div className="w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden border-8 border-slate-100 shadow-lg bg-slate-200 shrink-0">
-            <iframe 
-              className="w-full h-full"
-              src="https://www.youtube.com/embed/AfCvrfkcx5M" 
-              title="Marigold Insights Overview" 
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-              allowFullScreen
-            ></iframe>
-          </div>
-        </section>
-
-        {/* Simple 3-Step Process */}
-        <section className="bg-emerald-50 rounded-3xl p-10 sm:p-16 border-2 border-emerald-100 shadow-md space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl font-serif font-bold text-slate-900">How it Works</h2>
-            <p className="text-xl text-slate-700 max-w-2xl mx-auto">
-              It's as easy as opening a file on your computer.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-10">
-            <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 font-bold text-2xl rounded-full flex items-center justify-center mx-auto">1</div>
-              <h3 className="text-2xl font-bold text-slate-900">Pick a Checklist</h3>
-              <p className="text-lg text-slate-600">Choose what you want to look for, like finding duplicate names or formatting errors.</p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 font-bold text-2xl rounded-full flex items-center justify-center mx-auto">2</div>
-              <h3 className="text-2xl font-bold text-slate-900">Select Your File</h3>
-              <p className="text-lg text-slate-600">Click on your spreadsheet. The system automatically reads the columns for you.</p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 font-bold text-2xl rounded-full flex items-center justify-center mx-auto">3</div>
-              <h3 className="text-2xl font-bold text-slate-900">See Results Instantly</h3>
-              <p className="text-lg text-slate-600">In just seconds, the system highlights the exact rows that need your attention.</p>
+          
+          {/* Swiss Poster style abstract graphic */}
+          <div className="lg:w-5/12 aspect-square bg-[#110f0e] border border-white/10 relative overflow-hidden flex items-center justify-center p-12">
+            <div className="w-full h-full border border-[#D9777F]/30 relative flex items-center justify-center group">
+               <div className="absolute top-4 left-4 text-[0.55rem] font-mono text-[#D9777F] uppercase tracking-widest">Fig. 1</div>
+               <div className="absolute bottom-4 right-4 text-[0.55rem] font-mono text-[#f1ebd8]/40 uppercase tracking-widest">Isolated System</div>
+               {/* Concentric precise squares */}
+               <div className="w-3/4 h-3/4 border border-[#f1ebd8]/20 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
+                 <div className="w-1/2 h-1/2 bg-[#D9777F]/90 transition-transform duration-700 group-hover:rotate-45 shadow-[0_0_30px_rgba(217,119,127,0.3)]"></div>
+               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Knowledge Base */}
-        <section className="bg-white rounded-3xl p-10 border-4 border-amber-100 shadow-lg flex flex-col md:flex-row items-center gap-10 justify-between">
-          <div className="space-y-6 max-w-2xl">
-            <h2 className="text-4xl font-serif font-bold text-slate-900">Need to read more?</h2>
-            <p className="text-xl text-slate-700 leading-relaxed">
-              We have a friendly Learning Center that explains exactly how we find duplicate records and formatting errors, written in simple, everyday language.
-            </p>
-          </div>
-          <Link href="/learning-center" className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold text-xl px-10 py-5 rounded-full shadow-sm transition-transform transform hover:-translate-y-1 whitespace-nowrap flex items-center gap-3">
-            <BookOpen className="w-6 h-6" />
-            Go to Learning Center
-          </Link>
-        </section>
-
-      </div>
-    </div>
+    </main>
   );
 }
