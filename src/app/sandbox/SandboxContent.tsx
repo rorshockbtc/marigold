@@ -37,18 +37,16 @@ export function SandboxContent() {
   const router = useRouter();
 
   const handleStartSimulation = () => {
-    // Instant Bootloader: Bypass fake screens and hydrate local state immediately
+    setSimulationState('running');
+    setCurrentStep(0);
+  };
+
+  const handleEnterFullSandbox = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem("marigold_active_group", "State of Roosevelt (Demo)");
       localStorage.setItem("marigold_onboarding_done", "true");
       router.push('/analysis');
     }
-  };
-
-  const handleEnterFullSandbox = () => {
-    setSimulationState('full_sandbox');
-    setMariTourState('active');
-    setTourStep(0);
   };
 
   const handleRestartTour = () => {

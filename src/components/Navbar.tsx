@@ -11,15 +11,39 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLargeText, setIsLargeText] = useState(false);
   const [showMobileWarning, setShowMobileWarning] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize from localStorage
+  useEffect(() => {
+    setMounted(true);
+    const savedScale = localStorage.getItem('marigold_large_text');
+    if (savedScale === 'true') {
+      setIsLargeText(true);
+    }
+    
+    const savedWarning = localStorage.getItem('marigold_mobile_warning_dismissed');
+    if (savedWarning === 'true') {
+      setShowMobileWarning(false);
+    }
+  }, []);
 
   // Handle Text Scale Toggle
   useEffect(() => {
+    if (!mounted) return;
+    
     if (isLargeText) {
-      document.documentElement.style.fontSize = '20px'; // Bump up root font size
+      document.documentElement.style.fontSize = '20px';
+      localStorage.setItem('marigold_large_text', 'true');
     } else {
       document.documentElement.style.fontSize = '16px';
+      localStorage.setItem('marigold_large_text', 'false');
     }
-  }, [isLargeText]);
+  }, [isLargeText, mounted]);
+
+  const dismissWarning = () => {
+    setShowMobileWarning(false);
+    localStorage.setItem('marigold_mobile_warning_dismissed', 'true');
+  };
 
   return (
     <>
@@ -29,11 +53,11 @@ export function Navbar() {
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 sm:mt-0" />
             <span className="font-medium leading-tight">
-              Hey there! You can browse on your phone, but running data audits requires local file access. Marigold is much easier to use on a desktop computer.
+              Hey there! Mobile is great for browsing, but the data restrictions are much harder on a phone. For users who want performance, Marigold is completely desktop-first.
             </span>
           </div>
           <button 
-            onClick={() => setShowMobileWarning(false)}
+            onClick={dismissWarning}
             className="shrink-0 p-1 hover:bg-white/20 rounded transition-colors"
           >
             <X className="w-4 h-4" />
