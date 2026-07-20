@@ -1,17 +1,46 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Type, AlertTriangle } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname() || '';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLargeText, setIsLargeText] = useState(false);
+  const [showMobileWarning, setShowMobileWarning] = useState(true);
+
+  // Handle Text Scale Toggle
+  useEffect(() => {
+    if (isLargeText) {
+      document.documentElement.style.fontSize = '20px'; // Bump up root font size
+    } else {
+      document.documentElement.style.fontSize = '16px';
+    }
+  }, [isLargeText]);
 
   return (
     <>
+      {/* Mobile Warning Banner */}
+      {showMobileWarning && (
+        <div className="md:hidden bg-[#D9777F] text-white p-3 text-sm flex items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 sm:mt-0" />
+            <span className="font-medium leading-tight">
+              Hey there! You can browse on your phone, but running data audits requires local file access. Marigold is much easier to use on a desktop computer.
+            </span>
+          </div>
+          <button 
+            onClick={() => setShowMobileWarning(false)}
+            className="shrink-0 p-1 hover:bg-white/20 rounded transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <header className="h-[68px] min-h-[68px] bg-[#110f0e] border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50 transition-all">
         
         {/* Brand Architecture */}
@@ -43,6 +72,16 @@ export function Navbar() {
 
           {/* Action Area */}
           <div className="flex items-center gap-3 ml-2">
+            
+            {/* Display Toggle */}
+            <button
+              onClick={() => setIsLargeText(!isLargeText)}
+              title="Toggle Large Text"
+              className={`p-2 rounded-md transition-colors ${isLargeText ? 'bg-[#D9777F] text-white' : 'text-[#f1ebd8]/70 hover:text-white hover:bg-white/10'}`}
+            >
+              <Type className="w-4 h-4" />
+            </button>
+
             <Show when="signed-out">
               <SignInButton mode="redirect">
                 <button className="text-[0.72rem] font-medium tracking-[1px] uppercase text-[#f1ebd8]/70 hover:text-white px-2 transition-colors focus:outline-none">
@@ -70,13 +109,23 @@ export function Navbar() {
           </div>
         </nav>
 
-        {/* Mobile Toggle */}
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden text-[#f1ebd8]/70 hover:text-white p-2 focus:outline-none transition-colors"
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Mobile Actions */}
+        <div className="flex items-center gap-4 lg:hidden">
+          <button
+            onClick={() => setIsLargeText(!isLargeText)}
+            title="Toggle Large Text"
+            className={`p-1.5 rounded-md transition-colors ${isLargeText ? 'bg-[#D9777F] text-white' : 'text-[#f1ebd8]/70 hover:text-white hover:bg-white/10'}`}
+          >
+            <Type className="w-5 h-5" />
+          </button>
+          
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-[#f1ebd8]/70 hover:text-white p-1.5 focus:outline-none transition-colors"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer */}
@@ -89,7 +138,7 @@ export function Navbar() {
         </nav>
       )}
 
-      {/* Guided Context Bar (Optional Subnav styling based on the user's design doc) */}
+      {/* Guided Context Bar */}
       <div className="h-[46px] min-h-[46px] bg-[#1c1917] border-b border-white/10 px-4 sm:px-8 flex items-center overflow-x-auto z-[9] gap-3">
         <span className="font-sans text-[0.7rem] font-normal tracking-[1.5px] uppercase text-[#f1ebd8]/50 whitespace-nowrap">
           Current Context:
