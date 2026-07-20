@@ -303,7 +303,7 @@ export default function MarketingHomePage() {
               FY26 FEMA HSGP Compliant
             </span>
             <span className="bg-slate-800/80 text-slate-200 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-slate-600 shadow-sm">
-              Zero Cloud PII Exposure
+              Your Data Stays Private. Always.
             </span>
             <a 
               href="https://github.com/rorshockbtc/marigold" 
@@ -321,7 +321,7 @@ export default function MarketingHomePage() {
           </h1>
           
           <p className="text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
-            Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
+            A county clerk in Ohio discovered 237 clerical errors in her voter rolls in 3 minutes. No IT help needed. No data uploaded. Just a laptop, a spreadsheet, and Marigold.
           </p>
 
           {/* Editorial Reflection & Literary Facet Display */}
@@ -348,11 +348,11 @@ export default function MarketingHomePage() {
           </div>
 
           <div className="pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-600 font-bold uppercase tracking-wider border-t border-slate-200/80 max-w-2xl mx-auto mt-8">
-            <span>100% Client-Side Memory</span>
+            <span>No IT Help Needed</span>
             <span>•</span>
-            <span>No PII Uploads</span>
+            <span>Data Never Leaves Your Computer</span>
             <span>•</span>
-            <span>Wyoming LLC Built</span>
+            <span>Built for Trust</span>
           </div>
         </div>
       </section>
@@ -392,9 +392,9 @@ export default function MarketingHomePage() {
               Why did we build Marigold with a strict zero-cloud air-gapped architecture? Watch this direct overview to see how client-side memory auditing protects citizen privacy, empowers county election officials, and eliminates multi-million-dollar cloud risks.
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-bold text-amber-300/90">
-              <span className="flex items-center gap-1">✅ No PII Uploads</span>
+              <span className="flex items-center gap-1">✅ Data Never Leaves Your Computer</span>
               <span>•</span>
-              <span className="flex items-center gap-1">⚡ 100ms In-Memory Linkage</span>
+              <span className="flex items-center gap-1">⚡ Results in seconds, not hours</span>
               <span>•</span>
               <span className="flex items-center gap-1">🛡️ Open Standards</span>
             </div>
@@ -628,9 +628,9 @@ export default function MarketingHomePage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold bg-amber-400 text-slate-950 px-2.5 py-1 rounded">LOCAL MEMORY SPEED</span>
-                <span className="text-xs text-slate-600 font-mono">100k Rows / Sec</span>
+                <span className="text-xs text-slate-600 font-mono">Results in seconds, not hours</span>
               </div>
-              <h3 className="font-serif font-bold text-slate-900 text-2xl">Universal CSV Self-Healing Mapper</h3>
+              <h3 className="font-serif font-bold text-slate-900 text-2xl">Any spreadsheet, any format—automatically cleaned</h3>
               <p className="text-sm text-slate-700 leading-relaxed">
                 Every state and county exports voter rolls in a different layout. Our intelligent client-side engine automatically detects column headers, splits full names, and normalizes messy formatting in seconds.
               </p>

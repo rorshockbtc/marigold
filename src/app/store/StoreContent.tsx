@@ -75,9 +75,9 @@ export function StoreContent() {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-2">
             <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider">Step 1: Save Checklist</span>
-            <h3 className="font-serif font-bold text-primary text-lg">Click Download</h3>
+            <h3 className="font-serif font-bold text-primary text-lg">Use This Checklist</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Choose an audit test below (such as High-Density Dormitory verification) and click **Download Checklist**. A small file ending in `.json` will save to your computer&apos;s Downloads folder.
+              Choose an audit test below (such as High-Density Dormitory verification) and click **Use This Checklist**. A small file ending in `.json` will save to your computer&apos;s Downloads folder.
             </p>
           </div>
 
@@ -145,8 +145,8 @@ export function StoreContent() {
                     }}
                     className="bg-primary group-hover:bg-accent text-slate-900 text-xs font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2"
                   >
-                    <span>Download Checklist</span>
-                    <span>↓</span>
+                    <span>Use This Checklist</span>
+                    <span>→</span>
                   </button>
                 </div>
               </div>

@@ -51,40 +51,44 @@ export default function HistoricalDeltaPage() {
           }
         />
 
-        <h2>Request Schema</h2>
-        <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-slate-900 font-bold">session_fingerprint</span>
-              <span className="text-[10px] text-slate-500 font-mono">string</span>
-              <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-            </div>
-            <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">SHA-256 hash representing this specific delta comparison run.</p>
-          </div>
-          
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-slate-900 font-bold">encrypted_vault_a</span>
-              <span className="text-[10px] text-slate-500 font-mono">object</span>
-              <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-            </div>
-            <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">The baseline/historical dataset encrypted via AES-GCM.</p>
-          </div>
+        <NonTechnicalTranslator 
+          title="Request Schema"
+          mariContextPrompt="I just read the non-technical translation for Request Schema. Why do I need to include a fingerprint with my data?"
+          technicalContent={
+            <>
+              <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-slate-900 font-bold">session_fingerprint</span>
+                    <span className="text-[10px] text-slate-500 font-mono">string</span>
+                    <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                  </div>
+                  <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">SHA-256 hash representing this specific delta comparison run.</p>
+                </div>
+                
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-slate-900 font-bold">encrypted_vault_a</span>
+                    <span className="text-[10px] text-slate-500 font-mono">object</span>
+                    <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                  </div>
+                  <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">The baseline/historical dataset encrypted via AES-GCM.</p>
+                </div>
 
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-slate-900 font-bold">encrypted_vault_b</span>
-              <span className="text-[10px] text-slate-500 font-mono">object</span>
-              <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-            </div>
-            <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">The current dataset encrypted via AES-GCM.</p>
-          </div>
-        </div>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-slate-900 font-bold">encrypted_vault_b</span>
+                    <span className="text-[10px] text-slate-500 font-mono">object</span>
+                    <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                  </div>
+                  <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">The current dataset encrypted via AES-GCM.</p>
+                </div>
+              </div>
 
-        <CodeBlock
-          language="json"
-          title="Delta Request Example"
-          code={`{
+              <CodeBlock
+                language="json"
+                title="Delta Request Example"
+                code={`{
   "session_fingerprint": "9a8b7c6d5e4f3a...",
   "encrypted_vault_a": {
     "payload": "OLD_DATA_BASE64_CIPHERTEXT"
@@ -93,17 +97,29 @@ export default function HistoricalDeltaPage() {
     "payload": "NEW_DATA_BASE64_CIPHERTEXT"
   }
 }`}
+              />
+            </>
+          }
+          eli5Content={
+            <p>
+              When you send data to our servers, you need to follow our exact format. It's like mailing a package: you need a return address, a destination address, and the package itself. Here, you are sending us a tracking number (the fingerprint) so we know which request this is, along with two locked boxes (Vault A for the old data, and Vault B for the new data). We do all the heavy lifting using these two boxes.
+            </p>
+          }
         />
 
-        <h2>Response Schema</h2>
-        <p>
-          The response yields the statistical shifts and aberrant trend lines across the two datasets.
-        </p>
+        <NonTechnicalTranslator 
+          title="Response Schema"
+          mariContextPrompt="I just read the non-technical translation for Response Schema. What is an aberration velocity?"
+          technicalContent={
+            <>
+              <p>
+                The response yields the statistical shifts and aberrant trend lines across the two datasets.
+              </p>
 
-        <CodeBlock
-          language="json"
-          title="Delta Response Example"
-          code={`{
+              <CodeBlock
+                language="json"
+                title="Delta Response Example"
+                code={`{
   "status": "SUCCESS",
   "delta_metrics": {
     "volume_shift_percentage": "+4.2%",
@@ -117,6 +133,14 @@ export default function HistoricalDeltaPage() {
     }
   ]
 }`}
+              />
+            </>
+          }
+          eli5Content={
+            <p>
+              When Marigold finishes analyzing the two boxes of data you sent, we send back a report. This report is structured in a very specific way so your computer can read it easily. We tell you the overall trends (like if the amount of problems is suddenly growing very fast) and we give you a specific list of the exact records (like "ROW_0001") that had dramatic, alarming changes since the last time you checked.
+            </p>
+          }
         />
 
       </div>

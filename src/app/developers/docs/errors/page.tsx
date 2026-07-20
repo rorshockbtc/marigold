@@ -72,89 +72,101 @@ export default function ErrorCodesPage() {
           }
         />
 
-        <h2>Canonical Error Codes</h2>
-        <p>
-          When a request fails, the response body will contain a <code>code</code> and a <code>message</code> field. Use the <code>code</code> for programmatic branching.
-        </p>
+        <NonTechnicalTranslator 
+          title="Canonical Error Codes"
+          mariContextPrompt="I just read the non-technical translation for Canonical Error Codes. What does programmatic branching mean?"
+          technicalContent={
+            <>
+              <p>
+                When a request fails, the response body will contain a <code>code</code> and a <code>message</code> field. Use the <code>code</code> for programmatic branching.
+              </p>
 
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-sm not-prose my-8">
-          <div className="grid grid-cols-12 bg-slate-50 font-bold border-b border-slate-200 p-4 text-slate-600 text-xs uppercase tracking-wider">
-            <div className="col-span-3">Status</div>
-            <div className="col-span-4">Canonical Code</div>
-            <div className="col-span-5">Resolution Guide</div>
-          </div>
-          <div className="divide-y divide-slate-100">
-            
-            {/* Auth Tag */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-rose-600">400 Bad Request</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_AUTH_TAG_MISMATCH</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                <p className="mb-2">The AES-GCM authentication tag failed verification.</p>
-                <ul className="list-disc pl-4 space-y-1 text-xs">
-                  <li>Ensure your IV (Nonce) is exactly 12 bytes.</li>
-                  <li>Ensure your master key is exactly 32 bytes (256-bit).</li>
-                  <li>Ensure you appended the exact 16-byte Auth Tag to the end of the ciphertext before Base64 encoding.</li>
-                </ul>
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-sm not-prose my-8">
+                <div className="grid grid-cols-12 bg-slate-50 font-bold border-b border-slate-200 p-4 text-slate-600 text-xs uppercase tracking-wider">
+                  <div className="col-span-3">Status</div>
+                  <div className="col-span-4">Canonical Code</div>
+                  <div className="col-span-5">Resolution Guide</div>
+                </div>
+                <div className="divide-y divide-slate-100">
+                  
+                  {/* Auth Tag */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-rose-600">400 Bad Request</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_AUTH_TAG_MISMATCH</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      <p className="mb-2">The AES-GCM authentication tag failed verification.</p>
+                      <ul className="list-disc pl-4 space-y-1 text-xs">
+                        <li>Ensure your IV (Nonce) is exactly 12 bytes.</li>
+                        <li>Ensure your master key is exactly 32 bytes (256-bit).</li>
+                        <li>Ensure you appended the exact 16-byte Auth Tag to the end of the ciphertext before Base64 encoding.</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Validation */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-rose-600">400 Bad Request</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_SCHEMA_VALIDATION</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      The JSON payload does not match the OpenAPI 3.1 specification. Check the <code>details</code> array in the response for the exact missing field (e.g. <code>session_fingerprint</code> is missing).
+                    </div>
+                  </div>
+
+                  {/* Module Unrecognized */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-rose-600">400 Bad Request</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_UNSUPPORTED_MODULE</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      The <code>anomaly_type</code> string requested does not exist or has been deprecated. Call the <code>/modules/list</code> endpoint to view active modules.
+                    </div>
+                  </div>
+
+                  {/* Token Expired */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-amber-600">401 Unauthorized</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_TOKEN_EXPIRED</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      The <code>mg_live_</code> Bearer token has exceeded its 30-day lifecycle limit. Trigger your rotation cron job to fetch a new token via the <code>/tokens/rotate</code> endpoint using your administrative credential.
+                    </div>
+                  </div>
+
+                  {/* IP Blocked */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-amber-600">403 Forbidden</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_IP_RESTRICTED</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      Your server's egress IP address is not on the institutional Network ACL whitelist. Contact the architecture desk immediately. Do not automate retries for this error.
+                    </div>
+                  </div>
+
+                  {/* Rate Limit */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-blue-600">429 Too Many Requests</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_RATE_LIMIT_EXCEEDED</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      You have exceeded the API calls per minute threshold for your SLA tier. Parse the <code>Retry-After</code> HTTP header (returns seconds) and implement a sleep/backoff loop before transmitting the next chunk.
+                    </div>
+                  </div>
+
+                  {/* Z-Score Overflow */}
+                  <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="col-span-3 font-mono font-bold text-slate-900">500 Server Error</div>
+                    <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_Z_SCORE_OVERFLOW</div>
+                    <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
+                      The standard deviation mathematical matrix calculation resulted in a 64-bit float overflow. This almost exclusively occurs when you fail to partition your payload. Ensure you are sending no more than 10,000 records per API call.
+                    </div>
+                  </div>
+
+                </div>
               </div>
-            </div>
-
-            {/* Validation */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-rose-600">400 Bad Request</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_SCHEMA_VALIDATION</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                The JSON payload does not match the OpenAPI 3.1 specification. Check the <code>details</code> array in the response for the exact missing field (e.g. <code>session_fingerprint</code> is missing).
-              </div>
-            </div>
-
-            {/* Module Unrecognized */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-rose-600">400 Bad Request</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_UNSUPPORTED_MODULE</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                The <code>anomaly_type</code> string requested does not exist or has been deprecated. Call the <code>/modules/list</code> endpoint to view active modules.
-              </div>
-            </div>
-
-            {/* Token Expired */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-amber-600">401 Unauthorized</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_TOKEN_EXPIRED</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                The <code>mg_live_</code> Bearer token has exceeded its 30-day lifecycle limit. Trigger your rotation cron job to fetch a new token via the <code>/tokens/rotate</code> endpoint using your administrative credential.
-              </div>
-            </div>
-
-            {/* IP Blocked */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-amber-600">403 Forbidden</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_IP_RESTRICTED</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                Your server's egress IP address is not on the institutional Network ACL whitelist. Contact the architecture desk immediately. Do not automate retries for this error.
-              </div>
-            </div>
-
-            {/* Rate Limit */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-blue-600">429 Too Many Requests</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_RATE_LIMIT_EXCEEDED</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                You have exceeded the API calls per minute threshold for your SLA tier. Parse the <code>Retry-After</code> HTTP header (returns seconds) and implement a sleep/backoff loop before transmitting the next chunk.
-              </div>
-            </div>
-
-            {/* Z-Score Overflow */}
-            <div className="grid grid-cols-12 p-4 items-start gap-4 hover:bg-slate-50 transition-colors">
-              <div className="col-span-3 font-mono font-bold text-slate-900">500 Server Error</div>
-              <div className="col-span-4 font-mono font-bold text-slate-900 text-xs bg-slate-100 p-2 rounded max-w-max">ERR_Z_SCORE_OVERFLOW</div>
-              <div className="col-span-5 text-slate-600 text-sm leading-relaxed">
-                The standard deviation mathematical matrix calculation resulted in a 64-bit float overflow. This almost exclusively occurs when you fail to partition your payload. Ensure you are sending no more than 10,000 records per API call.
-              </div>
-            </div>
-
-          </div>
-        </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              When something breaks, we don't just say "Error." We give you a specific code name for the problem, like "ERR_TOKEN_EXPIRED". This is helpful because your programmer can tell their computer, "If you see ERR_TOKEN_EXPIRED, automatically try to log back in without asking a human for help." The chart above tells programmers exactly how to fix each possible problem they might encounter.
+            </p>
+          }
+        />
 
       </div>
 

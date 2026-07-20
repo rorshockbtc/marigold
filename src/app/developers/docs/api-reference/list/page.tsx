@@ -54,15 +54,19 @@ export default function ActiveModulesPage() {
   -H "Authorization: Bearer mg_live_..."`}
         />
 
-        <h2>Response Schema</h2>
-        <p>
-          The response is a flat JSON array of strings. You should cache this response locally (e.g. Redis) and refresh it every 24 hours, as we routinely deploy new statistical modules over the air.
-        </p>
+        <NonTechnicalTranslator 
+          title="Response Schema"
+          mariContextPrompt="I just read the non-technical translation for the List Modules Response Schema. Why do I need to save the list locally?"
+          technicalContent={
+            <>
+              <p>
+                The response is a flat JSON array of strings. You should cache this response locally (e.g. Redis) and refresh it every 24 hours, as we routinely deploy new statistical modules over the air.
+              </p>
 
-        <CodeBlock
-          language="json"
-          title="JSON Response"
-          code={`[
+              <CodeBlock
+                language="json"
+                title="JSON Response"
+                code={`[
   "HIGH_DENSITY",
   "NCOA_MISMATCH",
   "FUZZY_DUPLICATE",
@@ -70,6 +74,14 @@ export default function ActiveModulesPage() {
   "COMMERCIAL_ZONING",
   "PO_BOX_RESIDENCE"
 ]`}
+              />
+            </>
+          }
+          eli5Content={
+            <p>
+              When you ask to see our menu of algorithms, we send back a simple list of names (like "HIGH_DENSITY" or "DOB_SPIKE"). Because we are constantly adding new and improved algorithms to catch fraud, this list changes sometimes. It's a good idea for your computers to save this list and check back with us once a day to see if there's anything new.
+            </p>
+          }
         />
       </div>
 

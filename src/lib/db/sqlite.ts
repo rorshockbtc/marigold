@@ -56,6 +56,9 @@ export function getDb() {
 
     // Ensure Mississippi and North Carolina mission playbooks exist
     const defaults = [
+      ['[FLFE] Macro Trend: Registration Spikes by Source', 'macro-registration', 0, 'Statewide'],
+      ['[FLFE] Macro Trend: Party Affiliation Shifts (Net)', 'macro-party', 0, 'Statewide'],
+      ['[FLFE] Macro Trend: Anomalous Voter Purges/Removals', 'macro-removals', 0, 'Statewide'],
       ['[MS Mission] Hinds County High-Density Residential (>12)', 'density', 12, 'Hinds'],
       ['[MS Mission] DeSoto County Registration Spikes', 'spikes', 0, 'DeSoto'],
       ['[MS Mission] Harrison County Commercial P.O. Box Disguise', 'po-box', 0, 'Harrison'],

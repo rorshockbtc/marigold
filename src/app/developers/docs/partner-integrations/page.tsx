@@ -70,18 +70,21 @@ export default function PartnerIntegrationsPage() {
           }
         />
 
-        <h2>Building Blocks for Secure Cross-Platform Communication</h2>
-        
-        <p>
-          To establish a secure bridge between a legacy monolith and Marigold Insights, partners must construct an abstraction layer that handles Client-Side Encryption, Anonymous Session Handoff, and Asynchronous Webhooks.
-        </p>
+        <NonTechnicalTranslator 
+          title="Building Blocks for Secure Cross-Platform Communication"
+          mariContextPrompt="I just read the non-technical translation for the Building Blocks section. What are the key concepts for connecting legacy systems securely?"
+          technicalContent={
+            <>
+              <p>
+                To establish a secure bridge between a legacy monolith and Marigold Insights, partners must construct an abstraction layer that handles Client-Side Encryption, Anonymous Session Handoff, and Asynchronous Webhooks.
+              </p>
 
-        <h3>1. Local AES-GCM Encryption (The Air-Gap)</h3>
-        <p>
-          Before any data leaves the partner's secure perimeter, it must be encrypted. If you are unable to use our pre-built Node.js or .NET SDKs, your integration must replicate the following cryptographic flow explicitly:
-        </p>
-        
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
+              <h3>1. Local AES-GCM Encryption (The Air-Gap)</h3>
+              <p>
+                Before any data leaves the partner's secure perimeter, it must be encrypted. If you are unable to use our pre-built Node.js or .NET SDKs, your integration must replicate the following cryptographic flow explicitly:
+              </p>
+              
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
 <code>{`// Architectural Pseudocode for Legacy C#/Java Enclaves
 1. Extract Dataset (ID, Name, DOB, Address) from Monolith SQL.
 2. Initialize AES-256-GCM cipher using a Partner-managed Master Key.
@@ -91,38 +94,45 @@ export default function PartnerIntegrationsPage() {
      c. Extract 16-byte Authentication Tag.
      d. Construct Encrypted Vault Object: { id, iv, ciphertext, authTag }.
 4. Send Encrypted Vault Object over TLS 1.3 to Marigold API.`}</code>
-        </pre>
+              </pre>
 
-        <h3>2. Embedded iFrame / Seamless Dashboard Handoff</h3>
-        <p>
-          The ultimate goal of a partnership integration is to allow the end-user (the volunteer) to seamlessly view Marigold's visual analytics directly inside the partner's existing portal. 
-        </p>
-        <p>
-          Because Marigold relies on encrypted session tokens, partners can use an <strong>Anonymous Handoff Token</strong> via an iFrame or authenticated redirect.
-        </p>
+              <h3>2. Embedded iFrame / Seamless Dashboard Handoff</h3>
+              <p>
+                The ultimate goal of a partnership integration is to allow the end-user (the volunteer) to seamlessly view Marigold's visual analytics directly inside the partner's existing portal. 
+              </p>
+              <p>
+                Because Marigold relies on encrypted session tokens, partners can use an <strong>Anonymous Handoff Token</strong> via an iFrame or authenticated redirect.
+              </p>
 
-        <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
+              <pre className="bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed my-6 shadow-sm">
 <code>{`<!-- Embedded Integration Example -->
 <iframe 
   src="https://marigoldinsights.org/embed/task-board?session_token=XYZ123&hide_nav=true" 
   sandbox="allow-scripts allow-same-origin"
   className="w-full h-[800px] border-none"
 />`}</code>
-        </pre>
-        <p>
-          By passing <code>hide_nav=true</code> and an ephemeral <code>session_token</code>, the user experiences Marigold as a native module of your platform. Marigold will display the visual anomalies (e.g., "Row 101 flags as Commercial Zoning"), and the partner platform retains the mapping of "Row 101" to the actual citizen's plaintext identity.
-        </p>
+              </pre>
+              <p>
+                By passing <code>hide_nav=true</code> and an ephemeral <code>session_token</code>, the user experiences Marigold as a native module of your platform. Marigold will display the visual anomalies (e.g., "Row 101 flags as Commercial Zoning"), and the partner platform retains the mapping of "Row 101" to the actual citizen's plaintext identity.
+              </p>
 
-        <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
-          <Lock className="w-6 h-6 text-amber-600 shrink-0 mt-1" />
-          <div>
-            <h4 className="font-bold text-amber-900 mb-1">State Preservation & Synchronization</h4>
-            <p className="text-sm text-amber-800 leading-relaxed">
-              It is critical that you pass the exact <code>state</code> and <code>dateOfVoterRoll</code> metadata in your initial ingestion payload. Because state voter rolls fluctuate daily, Marigold utilizes this metadata to track historical anomalies across rolling timelines. Without these identifiers, temporal synchronization between our analytical engine and your monolith will drift.
+              <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl my-8 not-prose flex items-start gap-4 shadow-sm">
+                <Lock className="w-6 h-6 text-amber-600 shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-bold text-amber-900 mb-1">State Preservation & Synchronization</h4>
+                  <p className="text-sm text-amber-800 leading-relaxed">
+                    It is critical that you pass the exact <code>state</code> and <code>dateOfVoterRoll</code> metadata in your initial ingestion payload. Because state voter rolls fluctuate daily, Marigold utilizes this metadata to track historical anomalies across rolling timelines. Without these identifiers, temporal synchronization between our analytical engine and your monolith will drift.
+                  </p>
+                </div>
+              </div>
+            </>
+          }
+          eli5Content={
+            <p>
+              When connecting old computer systems to Marigold, we need to build a safe bridge. First, all data must be securely locked up (encrypted) before it even leaves the partner's system. Think of it like putting a letter in a locked safe before shipping it. Second, when users look at our charts, they should feel like they never left the partner's website. We achieve this by opening a small window (an iframe) to our charts, while keeping everyone's identity safely anonymous. Lastly, it's very important to always label the data with its location and date so we don't mix up old records with new ones!
             </p>
-          </div>
-        </div>
-
+          }
+        />
       </div>
 
       {/* Footer Nav */}

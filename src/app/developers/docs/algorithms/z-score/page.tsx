@@ -57,13 +57,26 @@ export default function ZScorePage() {
           }
         />
 
-        <h2>Module Integration</h2>
-        <p>
-          When analyzing housing density, Marigold calculates the rolling Z-Score for every residential structure in your encrypted payload. If an address contains 14 voters, but the mean occupancy in that county is 2.1 (with a standard deviation of 0.8), the Z-Score is computed as <strong>14.875</strong>.
-        </p>
-        <p>
-          This immediately triggers a <code>severity: HIGH</code> flag, returning the encrypted Row ID back to your infrastructure for investigation.
-        </p>
+        <NonTechnicalTranslator 
+          title="Module Integration"
+          mariContextPrompt="I just read the non-technical translation for Module Integration. How does Marigold apply the Z-Score to real data?"
+          eli5Content={
+            <p>
+              When we analyze housing density, we automatically run the Z-Score math for every single house in your data. If one house has 14 voters, but most houses in that county only have 2, the math will shout "this is way too high!" and immediately flag the house for you to investigate.
+            </p>
+          }
+          technicalContent={
+            <>
+              <h2>Module Integration</h2>
+              <p>
+                When analyzing housing density, Marigold calculates the rolling Z-Score for every residential structure in your encrypted payload. If an address contains 14 voters, but the mean occupancy in that county is 2.1 (with a standard deviation of 0.8), the Z-Score is computed as <strong>14.875</strong>.
+              </p>
+              <p>
+                This immediately triggers a <code>severity: HIGH</code> flag, returning the encrypted Row ID back to your infrastructure for investigation.
+              </p>
+            </>
+          }
+        />
 
       </div>
 

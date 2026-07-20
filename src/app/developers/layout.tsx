@@ -7,6 +7,7 @@ import {
   Terminal, BookOpen, Key, Shield, Calculator, FileJson, 
   Search, ChevronRight, Layers, LayoutTemplate, Activity, AlertTriangle, Blocks, Building2, ArrowDownUp
 } from "lucide-react";
+import MariRightPanel from "@/components/MariRightPanel";
 
 export default function DevelopersLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -116,6 +117,9 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
           {children}
         </div>
       </main>
+
+      {/* Persistent Mari AI Side Panel */}
+      <MariRightPanel />
     </div>
   );
 }

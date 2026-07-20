@@ -61,88 +61,127 @@ export default function FellegiSunterPage() {
           }
         />
 
-        <h2>Marigold's Vector Space Mapping</h2>
-        <p>
-          Running an O(N²) quadratic comparison across a 10-million row state database would require 100 trillion comparisons, melting standard CPU architecture. Marigold optimizes this by projecting the demographic data into a high-dimensional vector space using <strong>Locality-Sensitive Hashing (LSH)</strong>.
-        </p>
-        
-        <ol>
-          <li><strong>Blocking:</strong> We first divide the encrypted dataset into logical "blocks" (e.g., grouping by Soundex of the Last Name and the Year of Birth). This reduces the comparison matrix from O(N²) to a highly manageable subset.</li>
-          <li><strong>Vectorization:</strong> The remaining candidate pairs are vectorized utilizing Jaro-Winkler distance for strings and Levenshtein distance for numeric IDs.</li>
-          <li><strong>Log-Odds Summation:</strong> We sum the log-odds weights for every field vector.</li>
-        </ol>
+        <NonTechnicalTranslator 
+          title="Marigold's Vector Space Mapping"
+          mariContextPrompt="I just read the non-technical translation for Vector Space Mapping. How does Marigold handle checking millions of records so quickly?"
+          eli5Content={
+            <p>
+              If we had to compare every single voter to every other voter, a 10-million person list would mean 100 trillion comparisons—which would crash most computers! Instead, we group people into "blocks" (like putting everyone whose last name sounds like 'Smith' in one pile). Then we use clever math to only compare the people inside those small piles, saving a huge amount of time.
+            </p>
+          }
+          technicalContent={
+            <>
+              <h2>Marigold's Vector Space Mapping</h2>
+              <p>
+                Running an O(N²) quadratic comparison across a 10-million row state database would require 100 trillion comparisons, melting standard CPU architecture. Marigold optimizes this by projecting the demographic data into a high-dimensional vector space using <strong>Locality-Sensitive Hashing (LSH)</strong>.
+              </p>
+              
+              <ol>
+                <li><strong>Blocking:</strong> We first divide the encrypted dataset into logical "blocks" (e.g., grouping by Soundex of the Last Name and the Year of Birth). This reduces the comparison matrix from O(N²) to a highly manageable subset.</li>
+                <li><strong>Vectorization:</strong> The remaining candidate pairs are vectorized utilizing Jaro-Winkler distance for strings and Levenshtein distance for numeric IDs.</li>
+                <li><strong>Log-Odds Summation:</strong> We sum the log-odds weights for every field vector.</li>
+              </ol>
 
-        <table className="min-w-full border-collapse my-8 text-sm not-prose">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="text-left py-3 px-4 font-bold text-slate-900">Field</th>
-              <th className="text-left py-3 px-4 font-bold text-slate-900">M-Probability (True Match)</th>
-              <th className="text-left py-3 px-4 font-bold text-slate-900">U-Probability (Random Chance)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            <tr>
-              <td className="py-3 px-4 font-mono font-bold text-slate-700">Date of Birth</td>
-              <td className="py-3 px-4">0.98</td>
-              <td className="py-3 px-4">0.0027 (1 in 365)</td>
-            </tr>
-            <tr>
-              <td className="py-3 px-4 font-mono font-bold text-slate-700">First Name</td>
-              <td className="py-3 px-4">0.92</td>
-              <td className="py-3 px-4">Dynamic (Based on Census Frequency)</td>
-            </tr>
-            <tr>
-              <td className="py-3 px-4 font-mono font-bold text-slate-700">Last Name</td>
-              <td className="py-3 px-4">0.95</td>
-              <td className="py-3 px-4">Dynamic (Based on Census Frequency)</td>
-            </tr>
-            <tr>
-              <td className="py-3 px-4 font-mono font-bold text-slate-700">Street Number</td>
-              <td className="py-3 px-4">0.90</td>
-              <td className="py-3 px-4">0.05</td>
-            </tr>
-          </tbody>
-        </table>
+              <table className="min-w-full border-collapse my-8 text-sm not-prose">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    <th className="text-left py-3 px-4 font-bold text-slate-900">Field</th>
+                    <th className="text-left py-3 px-4 font-bold text-slate-900">M-Probability (True Match)</th>
+                    <th className="text-left py-3 px-4 font-bold text-slate-900">U-Probability (Random Chance)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-700">Date of Birth</td>
+                    <td className="py-3 px-4">0.98</td>
+                    <td className="py-3 px-4">0.0027 (1 in 365)</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-700">First Name</td>
+                    <td className="py-3 px-4">0.92</td>
+                    <td className="py-3 px-4">Dynamic (Based on Census Frequency)</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-700">Last Name</td>
+                    <td className="py-3 px-4">0.95</td>
+                    <td className="py-3 px-4">Dynamic (Based on Census Frequency)</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-700">Street Number</td>
+                    <td className="py-3 px-4">0.90</td>
+                    <td className="py-3 px-4">0.05</td>
+                  </tr>
+                </tbody>
+              </table>
+            </>
+          }
+        />
 
-        <h2>Thresholds and the Grey Zone</h2>
-        <p>
-          Once the final statistical score is computed for a pair of records, it is evaluated against two critical thresholds: the <strong>Upper Bound (μ)</strong> and the <strong>Lower Bound (λ)</strong>.
-        </p>
+        <NonTechnicalTranslator 
+          title="Thresholds and the Grey Zone"
+          mariContextPrompt="I just read the non-technical translation for Thresholds and the Grey Zone. How does the system decide what's a duplicate and what's not?"
+          eli5Content={
+            <p>
+              After giving points for how similar two records are, we get a final score. If the score is super high, it's definitely a duplicate and we flag it automatically. If it's super low, it's definitely two different people and we ignore it. But if it's somewhere in the middle (the "Grey Zone", like a father and son with the same name living at the same house), we flag it for a human worker to review manually.
+            </p>
+          }
+          technicalContent={
+            <>
+              <h2>Thresholds and the Grey Zone</h2>
+              <p>
+                Once the final statistical score is computed for a pair of records, it is evaluated against two critical thresholds: the <strong>Upper Bound (μ)</strong> and the <strong>Lower Bound (λ)</strong>.
+              </p>
 
-        <ul className="not-prose space-y-4 my-8">
-          <li className="flex items-start gap-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50">
-            <div className="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center shrink-0 mt-0.5">
-              <span className="font-black text-emerald-800 text-xs">μ</span>
-            </div>
-            <div>
-              <strong className="text-emerald-900 block mb-1">Score &gt; Upper Bound</strong>
-              <p className="text-sm text-emerald-800">The pair is mathematically guaranteed to be a duplicate. The record ID is flagged and encrypted into the return vault with <code>severity: HIGH</code>.</p>
-            </div>
-          </li>
-          <li className="flex items-start gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50">
-            <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center shrink-0 mt-0.5">
-              <span className="font-black text-amber-800 text-xs">λ</span>
-            </div>
-            <div>
-              <strong className="text-amber-900 block mb-1">Lower Bound &lt; Score &lt; Upper Bound</strong>
-              <p className="text-sm text-amber-800">The pair exists in the clerical grey zone (e.g., father and son residing at the same address). Returned with <code>severity: MEDIUM</code> for manual auditor review.</p>
-            </div>
-          </li>
-          <li className="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 mt-0.5">
-              <span className="font-black text-slate-600 text-xs">-</span>
-            </div>
-            <div>
-              <strong className="text-slate-900 block mb-1">Score &lt; Lower Bound</strong>
-              <p className="text-sm text-slate-600">The pair is definitively not a match. The algorithm discards the pair silently.</p>
-            </div>
-          </li>
-        </ul>
+              <ul className="not-prose space-y-4 my-8">
+                <li className="flex items-start gap-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50">
+                  <div className="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="font-black text-emerald-800 text-xs">μ</span>
+                  </div>
+                  <div>
+                    <strong className="text-emerald-900 block mb-1">Score &gt; Upper Bound</strong>
+                    <p className="text-sm text-emerald-800">The pair is mathematically guaranteed to be a duplicate. The record ID is flagged and encrypted into the return vault with <code>severity: HIGH</code>.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50">
+                  <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="font-black text-amber-800 text-xs">λ</span>
+                  </div>
+                  <div>
+                    <strong className="text-amber-900 block mb-1">Lower Bound &lt; Score &lt; Upper Bound</strong>
+                    <p className="text-sm text-amber-800">The pair exists in the clerical grey zone (e.g., father and son residing at the same address). Returned with <code>severity: MEDIUM</code> for manual auditor review.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
+                  <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="font-black text-slate-600 text-xs">-</span>
+                  </div>
+                  <div>
+                    <strong className="text-slate-900 block mb-1">Score &lt; Lower Bound</strong>
+                    <p className="text-sm text-slate-600">The pair is definitively not a match. The algorithm discards the pair silently.</p>
+                  </div>
+                </li>
+              </ul>
+            </>
+          }
+        />
 
-        <h2>Implementation in the <code>FUZZY_DUPLICATE</code> Module</h2>
-        <p>
-          When you execute the <code>FUZZY_DUPLICATE</code> anomaly type via the <code>/modules/anomalies/detect</code> endpoint, our algorithmic workers automatically perform the Fellegi-Sunter matrix evaluation against the hashed records provided in your payload. You do not need to configure the M/U probabilities manually; our engines are pre-trained on terabytes of declassified US Census demographic distribution data to ensure hyper-accurate thresholding.
-        </p>
+        <NonTechnicalTranslator 
+          title="Implementation in the FUZZY_DUPLICATE Module"
+          mariContextPrompt="I just read the non-technical translation for the FUZZY_DUPLICATE Module. How do you actually use this in Marigold?"
+          eli5Content={
+            <p>
+              You don't need a math degree to use this system! When you ask Marigold to check for "fuzzy duplicates," our servers automatically do all the heavy lifting using huge reference books (like old US Census data) to understand how common or rare every name is.
+            </p>
+          }
+          technicalContent={
+            <>
+              <h2>Implementation in the <code>FUZZY_DUPLICATE</code> Module</h2>
+              <p>
+                When you execute the <code>FUZZY_DUPLICATE</code> anomaly type via the <code>/modules/anomalies/detect</code> endpoint, our algorithmic workers automatically perform the Fellegi-Sunter matrix evaluation against the hashed records provided in your payload. You do not need to configure the M/U probabilities manually; our engines are pre-trained on terabytes of declassified US Census demographic distribution data to ensure hyper-accurate thresholding.
+              </p>
+            </>
+          }
+        />
 
       </div>
 

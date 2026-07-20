@@ -53,10 +53,22 @@ export default function DevelopersPage() {
           }
         />
 
-        <h3 className="text-xl font-bold text-slate-900 mt-10 mb-4">Why Not Standard REST?</h3>
-        <p className="text-slate-700 leading-relaxed mb-6">
-          State agencies operate on legacy C#, Java, and Mainframe paradigms. Enforcing a standard REST architecture where we own the database creates immense compliance friction (SOC 2, FedRAMP, HIPAA, etc.). By offloading the storage completely to your system, we allow you to utilize our proprietary Fellegi-Sunter log-odds algorithms and standard deviation matrices without violating local data sovereignty laws.
-        </p>
+        <NonTechnicalTranslator 
+          title="Why Not Standard REST?"
+          mariContextPrompt="I just read the non-technical translation for Why Not Standard REST. Can you explain what data sovereignty means?"
+          technicalContent={
+            <>
+              <p className="text-slate-700 leading-relaxed mb-6">
+                State agencies operate on legacy C#, Java, and Mainframe paradigms. Enforcing a standard REST architecture where we own the database creates immense compliance friction (SOC 2, FedRAMP, HIPAA, etc.). By offloading the storage completely to your system, we allow you to utilize our proprietary Fellegi-Sunter log-odds algorithms and standard deviation matrices without violating local data sovereignty laws.
+              </p>
+            </>
+          }
+          eli5Content={
+            <p>
+              Normally, when you use a software tool on the internet, you have to upload all of your files to their servers. This is very dangerous when dealing with sensitive information like voter rolls because of strict government privacy laws. Instead of forcing you to give us the data (which requires expensive lawyers and compliance forms), Marigold simply hands you our mathematical formulas. You run the formulas on your own computer and only tell us the final score. 
+            </p>
+          }
+        />
 
         <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2 mt-12 mb-6">Navigating This Wiki</h2>
         <p className="text-slate-700 leading-relaxed mb-6">

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown, BookOpen, Terminal } from 'lucide-react';
+import { Globe, Map, Shield, Sparkles, X, Menu, ArrowRight, ChevronDown, BookOpen, Terminal, Activity } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname() || '';
@@ -47,14 +47,17 @@ export function Navbar() {
           {/* Desktop Primary Navigation */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-700">
             <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-[#D96B27] transition-colors">Public Sandbox ↗</a>
-            <Link href="/store" className="hover:text-[#D96B27] transition-colors">Audit Checklists</Link>
-            <Link href="/registry" className="hover:text-[#D96B27] transition-colors">State Registry</Link>
+            <Link href="/investors" className="text-amber-500 font-bold hover:text-amber-600 transition-colors">Investors & Vision</Link>
+            <Link href="/store" className="hover:text-[#D96B27] transition-colors">Playbook Library</Link>
+            <Link href="/macro" className="hover:text-[#D96B27] transition-colors font-bold text-indigo-600 flex items-center gap-1.5"><Activity className="w-4 h-4"/>Macro Trends</Link>
             <Link href="/compliance" className="hover:text-[#D96B27] transition-colors">FEMA Compliance</Link>
-            <Link href="/partners" className="text-[#D96B27] font-bold hover:text-[#C85A1B] transition-colors flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 shadow-sm">
-              <span>🤝 Partnerships</span>
+            <Link href="/learning-center" className="hover:text-[#D96B27] transition-colors flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-amber-500" />
+              <span>Docs & FAQ</span>
             </Link>
-            
-            {/* More Resources Dropdown */}
+            <a href="mailto:sales@colonhyphenbracket.pink" className="text-white font-bold hover:text-white transition-colors flex items-center gap-1.5 bg-[#D96B27] px-3.5 py-1.5 rounded-full shadow-sm hover:bg-[#C85A1B]">
+              <span>Contact Sales</span>
+            </a>
             <div 
               className="relative" 
               onMouseEnter={handleMouseEnter}
@@ -148,7 +151,9 @@ export function Navbar() {
         {mobileMenuOpen && (
           <nav className="lg:hidden mt-4 pt-4 border-t border-slate-200 flex flex-col gap-2 text-sm font-medium text-slate-700 px-2 pb-2">
             <a href="/sandbox" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">Public Sandbox ↗</a>
+            <Link href="/investors" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-500 text-black font-bold border border-amber-600 hover:bg-amber-400">Investors & Vision</Link>
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">Audit Checklists</Link>
+            <Link href="/macro" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 text-indigo-600 font-bold flex items-center gap-2"><Activity className="w-4 h-4"/>Macro Trends</Link>
             <Link href="/registry" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">State Registry</Link>
             <Link href="/compliance" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded hover:bg-slate-50 border border-slate-200 hover:text-[#D96B27]">FEMA Compliance</Link>
             <Link href="/partners" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded bg-amber-50 text-[#D96B27] font-bold flex items-center gap-2 border border-amber-200">
@@ -202,7 +207,7 @@ export function Navbar() {
         <div className="flex items-center gap-2 max-w-6xl mx-auto">
           <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
           <span>
-            <strong className="font-bold text-slate-900">Architecture Notice:</strong> This execution engine processes all civic records 100% locally inside client memory. Zero citizen files are ever uploaded or transmitted.
+            <strong className="font-bold text-slate-900">Privacy Guarantee:</strong> Your data never leaves your computer. No citizen files are ever uploaded or transmitted.
           </span>
         </div>
       </div>
