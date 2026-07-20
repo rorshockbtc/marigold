@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronLeft, Terminal, Play, Lock, AlertTriangle, Layers } from "lucide-react";
+import { ChevronRight, ChevronLeft, Terminal, Play, CheckCircle2, AlertTriangle } from "lucide-react";
 import { NonTechnicalTranslator } from "@/components/NonTechnicalTranslator";
 import { CodeBlock } from "@/components/CodeBlock";
 
@@ -16,14 +16,15 @@ export default function DetectEndpointPage() {
     setTimeout(() => {
       setSimResponse(JSON.stringify({
         status: "SUCCESS",
-        anomalies_found: 12,
+        anomalies_found: 2,
+        execution_time_ms: 14,
         flags: [
           { record_id: "ROW_99182", flag_reason: "HIGH_DENSITY_RESIDENCE", severity: "HIGH" },
           { record_id: "ROW_10291", flag_reason: "NCOA_MISMATCH", severity: "MEDIUM" }
         ]
       }, null, 2));
       setIsSimulating(false);
-    }, 1500);
+    }, 400); // Super fast local execution simulation
   };
 
   return (
@@ -37,14 +38,14 @@ export default function DetectEndpointPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-md text-sm font-black tracking-widest uppercase">
-            POST
+            LOCAL
           </span>
           <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tight text-slate-900">
-            /modules/anomalies/detect
+            engine.detect()
           </h1>
         </div>
         <p className="text-xl text-slate-600 leading-relaxed max-w-3xl mt-4">
-          Submits an encrypted algorithmic payload to detect civic anomalies. This is the primary workhorse endpoint for the Marigold architecture.
+          Executes the core algorithmic engine against a local array of records. Because this runs entirely in memory, you do not need to encrypt the payload before passing it to this function.
         </p>
       </div>
 
@@ -52,43 +53,27 @@ export default function DetectEndpointPage() {
         {/* Left Column: Schema Docs */}
         <div className="lg:col-span-3 space-y-12">
           <div className="prose prose-slate prose-emerald max-w-none">
-            <h2>Headers</h2>
-            <p>You must authenticate this request using your institutional Bearer token.</p>
-            <table className="min-w-full border-collapse text-sm not-prose mb-8">
-              <tbody className="divide-y divide-slate-100 border-y border-slate-200">
-                <tr>
-                  <td className="py-3 pr-4 font-mono font-bold text-slate-900">Authorization</td>
-                  <td className="py-3 px-4 font-mono text-slate-500 text-xs">string</td>
-                  <td className="py-3 px-4 text-slate-600">Bearer <code>mg_live_...</code></td>
-                </tr>
-                <tr>
-                  <td className="py-3 pr-4 font-mono font-bold text-slate-900">Content-Type</td>
-                  <td className="py-3 px-4 font-mono text-slate-500 text-xs">string</td>
-                  <td className="py-3 px-4 text-slate-600">Must be <code>application/json</code></td>
-                </tr>
-              </tbody>
-            </table>
 
             <NonTechnicalTranslator 
-              title="Request and Response Schemas"
-              mariContextPrompt="I just read the non-technical translation for Request and Response Schemas. Why do we need a session fingerprint?"
+              title="Function Parameters and Return Type"
+              mariContextPrompt="I just read the non-technical translation for Parameters. Why is this easier than a REST API?"
               technicalContent={
                 <>
-                  <h2>Request Body Schema</h2>
+                  <h2>Parameters</h2>
                   <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-slate-900 font-bold">session_fingerprint</span>
-                        <span className="text-[10px] text-slate-500 font-mono">string</span>
-                        <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
+                         <span className="font-mono text-slate-900 font-bold">dataset</span>
+                         <span className="text-[10px] text-slate-500 font-mono">Array&lt;Object&gt;</span>
+                         <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
                       </div>
-                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">SHA-256 hash of the dataset batch. Used for idempotency and replay protection.</p>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">An array of Javascript objects representing your rows. No encryption required; data remains in local heap.</p>
                     </div>
                     
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-slate-900 font-bold">anomaly_type</span>
-                        <span className="text-[10px] text-slate-500 font-mono">string (enum)</span>
+                        <span className="font-mono text-slate-900 font-bold">options.anomalyType</span>
+                        <span className="text-[10px] text-slate-500 font-mono">AnomalyType (enum)</span>
                         <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
                       </div>
                       <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Available values: <code>HIGH_DENSITY</code>, <code>NCOA_MISMATCH</code>, <code>FUZZY_DUPLICATE</code></p>
@@ -96,24 +81,15 @@ export default function DetectEndpointPage() {
 
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-slate-900 font-bold">record_identifiers</span>
-                        <span className="text-[10px] text-slate-500 font-mono">array of strings</span>
+                        <span className="font-mono text-slate-900 font-bold">options.threads</span>
+                        <span className="text-[10px] text-slate-500 font-mono">number | 'auto'</span>
                       </div>
-                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Strict array of non-PII Row IDs you are scanning.</p>
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-slate-900 font-bold">encrypted_vault.payload</span>
-                        <span className="text-[10px] text-slate-500 font-mono">string</span>
-                        <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 rounded uppercase font-black">Required</span>
-                      </div>
-                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Base64 encoded AES-GCM output (Nonce + CipherText + AuthTag).</p>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Number of background workers to spawn. Defaults to single-threaded.</p>
                     </div>
                   </div>
 
-                  <h2>Response Schema</h2>
-                  <p>A successful <code>200 OK</code> returns the following structure:</p>
+                  <h2>Return Object</h2>
+                  <p>The function returns synchronously (unless multithreaded) with the following structure:</p>
                   <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm space-y-6 not-prose shadow-sm mb-8">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
@@ -131,17 +107,24 @@ export default function DetectEndpointPage() {
                     </div>
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-slate-900 font-bold">flags</span>
-                        <span className="text-[10px] text-slate-500 font-mono">array of objects</span>
+                        <span className="font-mono text-slate-900 font-bold">execution_time_ms</span>
+                        <span className="text-[10px] text-slate-500 font-mono">number</span>
                       </div>
-                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Contains <code>record_id</code>, <code>flag_reason</code>, and <code>severity</code> (LOW/MEDIUM/HIGH/CRITICAL).</p>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Time taken to process the dataset locally.</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-slate-900 font-bold">flags</span>
+                        <span className="text-[10px] text-slate-500 font-mono">Array&lt;Object&gt;</span>
+                      </div>
+                      <p className="text-xs text-slate-600 pl-4 border-l-2 border-slate-200 ml-2">Contains <code>record_id</code>, <code>flag_reason</code>, and <code>severity</code>.</p>
                     </div>
                   </div>
                 </>
               }
               eli5Content={
                 <p>
-                  A schema is just a set of rules for how to write a message. Imagine you are ordering a pizza. The rules say you must include your address, your payment info, and your toppings. If you forget to include the toppings, the restaurant rejects your order. The <b>Request Schema</b> are the rules for what your computer must send to Marigold (like the encrypted vault). The <b>Response Schema</b> is what Marigold promises to send back to you (like how many anomalies we found, and how severe they are).
+                  This explains exactly what you have to give the system (a list of your records, and what type of problem you're looking for) and what the system gives you back (a report of how many issues it found and how fast it did the math). Because it happens entirely inside your own computer's memory, you don't have to deal with complicated internet networking or passwords.
                 </p>
               }
             />
@@ -150,49 +133,47 @@ export default function DetectEndpointPage() {
 
         {/* Right Column: Interactive Sandbox */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl border border-slate-200 overflow-hidden shadow-2xl sticky top-6">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-2xl sticky top-6">
             <div className="bg-slate-100 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
                 <Terminal className="w-4 h-4" />
-                <span>Interactive Sandbox</span>
+                <span>Local JS Execution Sandbox</span>
               </div>
               <button 
                 onClick={handleTestEndpoint}
                 disabled={isSimulating}
                 className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] px-4 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50"
               >
-                {isSimulating ? <Lock className="w-3 h-3 animate-pulse" /> : <Play className="w-3 h-3" />}
-                {isSimulating ? "EXECUTING..." : "SEND REQUEST"}
+                {isSimulating ? <Play className="w-3 h-3 animate-pulse" /> : <Play className="w-3 h-3" />}
+                {isSimulating ? "RUNNING..." : "RUN LOCALLY"}
               </button>
             </div>
             
             <div className="p-4 space-y-4">
               <div className="space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Payload Request</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Node.js Input</span>
                 <CodeBlock
-                  language="json"
-                  code={`{
-  "session_fingerprint": "e3b0c4429...",
-  "anomaly_type": "HIGH_DENSITY",
-  "encrypted_vault": {
-    "payload": "8f9a0b1c2d3e4f5a6b7c..."
-  }
-}`}
+                  language="typescript"
+                  code={`const data = [...]; // 10,000 rows
+                  
+const results = engine.detect(data, {
+  anomalyType: "HIGH_DENSITY"
+});`}
                 />
               </div>
 
               <div className="space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Response</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Local Output</span>
                 <div className="bg-white shadow-inner h-56 rounded-xl border border-slate-300 overflow-y-auto p-4 relative">
                   {!simResponse && !isSimulating && (
                     <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-600 font-mono">
-                      Click "SEND REQUEST" to test endpoint
+                      Click "RUN LOCALLY" to execute WASM
                     </div>
                   )}
                   {isSimulating && (
                     <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs text-emerald-500 font-mono">
                       <Terminal className="w-4 h-4 animate-bounce" />
-                      Awaiting server response...
+                      Crunching arrays...
                     </div>
                   )}
                   {simResponse && (
@@ -203,10 +184,10 @@ export default function DetectEndpointPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 p-4 rounded-xl shadow-sm">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-900 leading-relaxed font-medium">
-              This sandbox uses deterministic synthetic outputs to prevent PII leakage. Production endpoints require a valid Bearer token and AES-GCM encrypted payload.
+          <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-emerald-900 leading-relaxed font-medium">
+              Notice the incredible speed. By running this strictly on your local CPU without making network roundtrips, the algorithm executes in a fraction of a second.
             </p>
           </div>
         </div>
@@ -224,10 +205,10 @@ export default function DetectEndpointPage() {
         </Link>
         <Link 
           href="/developers/docs/errors"
-          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 text-slate-900 hover:bg-emerald-600 hover:text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm group"
         >
-          Next: Error Codes Dictionary
-          <ChevronRight className="w-4 h-4" />
+          <span className="group-hover:text-white">Next: Error Codes Dictionary</span>
+          <ChevronRight className="w-4 h-4 group-hover:text-white" />
         </Link>
       </div>
 

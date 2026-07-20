@@ -1,598 +1,71 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
-import Link from 'next/link';
-
-interface StateGroup {
-  id: string;
-  name: string;
-  state: string;
-  website?: string;
-  desc: string;
-  memberCount: number;
-}
-
-const PUBLIC_GROUPS: StateGroup[] = [
-  { id: 'msfe', name: 'Mississippi Fair Elections', state: 'Mississippi', website: 'https://msfe.org', desc: 'Non-partisan volunteer network verifying voter rolls across all 82 MS counties.', memberCount: 1 },
-  { id: 'roosevelt_demo', name: 'State of Roosevelt (Demo)', state: 'Other / Multi-State', desc: 'Synthetically generated sample state environment for public demos, training, and video recording.', memberCount: 1 }
-];
+import React from "react";
+import Link from "next/link";
+import { Sparkles, Activity, Download } from "lucide-react";
 
 export default function OnboardingPage() {
-  const router = useRouter();
-  const { user, isLoaded } = useUser();
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedState, setSelectedState] = useState("Mississippi");
-  const [actionType, setActionType] = useState<'join' | 'create'>('join');
-  const [legalAccepted, setLegalAccepted] = useState(false);
-
-  // Profile & Existing Admin recognition
-  const [customName, setCustomName] = useState("");
-  const [existingGroup, setExistingGroup] = useState<string | null>(null);
-  const [existingRole, setExistingRole] = useState<string | null>(null);
-
-  // Join form state
-  const [targetGroup, setTargetGroup] = useState<StateGroup | null>(PUBLIC_GROUPS[0]);
-  const [inviteCodeInput, setInviteCodeInput] = useState("");
-  const [applicantPhone, setApplicantPhone] = useState("");
-  const [applicantNote, setApplicantNote] = useState("");
-  const [requestSubmitted, setRequestSubmitted] = useState(false);
-
-  // Create group state
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupWebsite, setNewGroupWebsite] = useState("");
-
-  // Onboarding Web3Form & Danger Zone
-  const [onboardingSubmitted, setOnboardingSubmitted] = useState(false);
-  const [onboardingLoading, setOnboardingLoading] = useState(false);
-  const [showDangerZoneModal, setShowDangerZoneModal] = useState(false);
-  const [dangerZoneUnlocked, setDangerZoneUnlocked] = useState(false);
-
-  const handleOnboardingSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setOnboardingLoading(true);
-    const formData = new FormData(e.currentTarget);
-    
-    // Web3Forms access key
-    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "0a997a5d-fccb-46f4-bc7b-7df7ec33d90d";
-    formData.append("access_key", accessKey);
-    formData.append("subject", `New Onboarding & Calibration Request: ${selectedState}`);
-    formData.append("source", "Onboarding Group Calibration Form");
-
-    try {
-      await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData
-      });
-      setOnboardingSubmitted(true);
-    } catch {
-      alert("Submission failed. Please email us directly at partnerships@colonhyphenbracket.com.");
-    } finally {
-      setOnboardingLoading(false);
-    }
-  };
-
-  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
-  const fallbackName = user?.fullName || userEmail.split('@')[0] || "New Auditor";
-
-  React.useEffect(() => {
-    if (isLoaded) {
-      const savedGroup = localStorage.getItem("marigold_active_group");
-      const savedRole = localStorage.getItem("marigold_user_role");
-      const savedName = localStorage.getItem("marigold_user_name");
-      if (savedGroup) setExistingGroup(savedGroup);
-      if (savedRole) setExistingRole(savedRole);
-      setCustomName(savedName || fallbackName);
-    }
-  }, [isLoaded, fallbackName]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500"></div>
-      </div>
-    );
-  }
-
-  const handleCompleteOnboarding = (groupTitle: string, role: string) => {
-    localStorage.setItem("marigold_active_group", groupTitle);
-    localStorage.setItem("marigold_user_role", role);
-    localStorage.setItem("marigold_user_name", customName || fallbackName);
-    if (userEmail) {
-      localStorage.setItem("marigold_user_email", userEmail);
-    }
-    if (newGroupWebsite) {
-      localStorage.setItem("marigold_active_website", newGroupWebsite);
-    }
-    if (selectedState) {
-      localStorage.setItem("marigold_active_jurisdiction", `${selectedState} Coverage Area`);
-    }
-    localStorage.setItem("marigold_onboarding_done", "true");
-    router.push('/dashboard');
-  };
-
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 space-y-8">
-      {/* Header Banner */}
-      <div className="text-center space-y-3">
-        <span className="bg-amber-100 text-amber-950 font-extrabold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider">
-          Step {step} of 2 • Workspace Setup
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-primary">
-          Welcome to Marigold Insights, {customName || fallbackName}
-        </h1>
-        <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-          Let&apos;s configure your zero-PII local analysis environment and connect you with your civic jurisdiction.
-        </p>
-      </div>
-
-      {/* Existing Group Admin Banner */}
-      {existingGroup && (
-        <div className="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-6 shadow-md space-y-4 text-emerald-950 animate-in fade-in">
-          <div className="flex flex-wrap justify-between items-center gap-2">
-            <span className="bg-emerald-200 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              👑 Active Organization Detected
-            </span>
-            <span className="font-mono text-xs bg-white px-3 py-1 rounded border border-emerald-300">
-              Role: {existingRole || 'Group Admin'}
-            </span>
+    <div className="min-h-screen bg-[#FAF8F5] py-20 px-4 sm:px-6 flex flex-col items-center justify-center font-sans">
+      <div className="max-w-3xl w-full space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        
+        {/* Warm Welcome */}
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+            <span className="text-3xl">👋</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-serif font-bold text-primary">
-            Welcome back, {customName || fallbackName}! You are governing <strong>{existingGroup}</strong>.
-          </h2>
-          <p className="text-xs text-emerald-900 leading-relaxed">
-            Your zero-PII local workspace is already connected. Enter your dashboard directly or manage new member applicants in group settings.
+          <h1 className="text-4xl md:text-5xl font-serif font-extrabold text-slate-900 tracking-tight">
+            Welcome to Marigold.
+          </h1>
+          <p className="text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto">
+            You cannot break anything here. We built this to be easy, safe, and entirely private. Your data never leaves your computer. 
+            <br/><br/>
+            <strong>What would you like to do today?</strong>
           </p>
-          <div className="flex flex-wrap gap-3 pt-1">
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-6 py-2.5 rounded-xl text-xs shadow transition-all"
-            >
-              Enter Dashboard →
-            </button>
-            <button
-              onClick={() => router.push('/settings/group')}
-              className="bg-white hover:bg-emerald-100 text-emerald-950 font-bold px-6 py-2.5 rounded-xl border border-emerald-400 text-xs shadow-sm transition-all"
-            >
-              ⚙️ Manage Roster & Apps
-            </button>
-            <button
-              onClick={() => {
-                localStorage.removeItem("marigold_active_group");
-                setExistingGroup(null);
-              }}
-              className="text-xs text-slate-500 hover:text-red-600 font-bold underline px-2 py-2.5 ml-auto transition-colors"
-            >
-              Switch / Create New Group
-            </button>
-          </div>
         </div>
-      )}
 
-      {/* Step 1: Jurisdiction & Compliance */}
-      {step === 1 && (
-        <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md space-y-6 animate-in fade-in duration-200">
-          <div className="border-b border-border pb-4">
-            <h2 className="text-xl font-bold text-primary">1. Configure Profile &amp; Jurisdiction</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Set your display title and select your state election record area.</p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-bold text-slate-800 block mb-1">Your Full Name / Display Title *</label>
-              <input
-                type="text"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder="e.g., Kyle (Lead Auditor)"
-                className="w-full h-12 px-4 rounded-xl border border-border bg-slate-50 text-base font-medium text-primary focus:ring-2 focus:ring-amber-500 outline-none"
-              />
+        {/* Three Massive Choices */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Option 1: Practice */}
+          <Link href="/sandbox" className="bg-white border-2 border-slate-200 hover:border-amber-400 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Sparkles className="w-8 h-8 text-amber-600" />
             </div>
-
-            <div>
-              <label className="text-sm font-bold text-slate-800 block mb-1">Which State Voter Rolls Will You Analyze?</label>
-              <select
-              value={selectedState}
-              onChange={(e) => {
-                setSelectedState(e.target.value);
-                const match = PUBLIC_GROUPS.find(g => g.state === e.target.value);
-                if (match) setTargetGroup(match);
-              }}
-              className="w-full h-12 px-4 rounded-xl border border-border bg-slate-50 text-base font-medium text-primary focus:ring-2 focus:ring-amber-500 outline-none"
-            >
-              <option value="Mississippi">Mississippi</option>
-              <option value="Wyoming">Wyoming</option>
-              <option value="Ohio">Ohio</option>
-              <option value="Pennsylvania">Pennsylvania</option>
-              <option value="Other / Multi-State">Other / Multi-State Jurisdiction</option>
-            </select>
-            </div>
-          </div>
-
-          {/* State Specific Legal & Privacy Notice */}
-          <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 space-y-3 text-xs text-amber-950">
-            <div className="flex items-center gap-2 font-bold text-amber-900 text-sm">
-              <span>⚠️ Notice on {selectedState} Public Record Access</span>
-            </div>
-            <p className="leading-relaxed">
-              Official voter files in <strong>{selectedState}</strong> contain protected citizen information and are governed by state statute. By proceeding, you acknowledge that:
+            <h2 className="text-2xl font-bold text-slate-900">I want to practice</h2>
+            <p className="text-base text-slate-600">
+              Use our "Sandbox" with fake, pretend data to see how the system finds errors without any real risk.
             </p>
-            <ul className="list-disc pl-5 space-y-1 text-amber-900 font-medium">
-              <li>You will never transmit or upload raw citizen files across public cloud servers.</li>
-              <li>You will run all voter file analyses strictly inside your local browser memory using Marigold&apos;s zero-PII execution engine.</li>
-              <li>Published group reports must contain only aggregate statistical summaries (Playbook Summaries) without individual PII.</li>
-            </ul>
-          </div>
+            <span className="mt-auto pt-4 font-bold text-amber-600 group-hover:underline">Launch Sandbox →</span>
+          </Link>
 
-          {/* Statutory Liability & Terms Acceptance Checkbox */}
-          <div className="bg-slate-50 border border-slate-200 border border-slate-200 rounded-xl p-5 text-xs text-slate-700 space-y-3 shadow-inner">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={legalAccepted}
-                onChange={(e) => setLegalAccepted(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500 shrink-0 cursor-pointer"
-              />
-              <span className="leading-relaxed">
-                I acknowledge and agree to the <Link href="/terms" target="_blank" className="text-accent underline font-bold">Terms of Service &amp; Statutory Data Liability Agreement</Link> and <Link href="/privacy" target="_blank" className="text-accent underline font-bold">Zero-Knowledge Privacy Policy</Link>. I warrant that any civic dataset or voter roll spreadsheet connected locally to my browser tab complies with all applicable Secretary of State regulations and state election laws.
-              </span>
-            </label>
-          </div>
+          {/* Option 2: State Trends */}
+          <Link href="/macro" className="bg-white border-2 border-slate-200 hover:border-indigo-400 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Activity className="w-8 h-8 text-indigo-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900">See State Trends</h2>
+            <p className="text-base text-slate-600">
+              Look at safe, high-level charts showing voter shifts across Florida and other states. No personal data.
+            </p>
+            <span className="mt-auto pt-4 font-bold text-indigo-600 group-hover:underline">View Trends →</span>
+          </Link>
 
-          <div className="pt-4 flex justify-end">
-            <button
-              onClick={() => setStep(2)}
-              disabled={!legalAccepted}
-              className="bg-primary hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 font-bold px-8 py-3.5 rounded-xl shadow transition-all text-sm flex items-center gap-2"
-            >
-              <span>Continue to Organization Setup</span>
-              <span>→</span>
-            </button>
-          </div>
+          {/* Option 3: Analyze My Data */}
+          <Link href="/dashboard" className="bg-white border-2 border-slate-200 hover:border-emerald-400 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Download className="w-8 h-8 text-emerald-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900">I have my own file</h2>
+            <p className="text-base text-slate-600">
+              Select a spreadsheet from your computer to check for formatting errors. Remember, we don't save your file.
+            </p>
+            <span className="mt-auto pt-4 font-bold text-emerald-600 group-hover:underline">Go to Workspace →</span>
+          </Link>
+
         </div>
-      )}
 
-      {/* Step 2: Organization & Roster Path */}
-      {step === 2 && (
-        <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md space-y-6 animate-in fade-in duration-200">
-          <div className="border-b border-border pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-primary">2. Connect with an Organization Group</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Collaborate securely by sharing aggregate audit playbooks with teammates.</p>
-            </div>
-            <button onClick={() => setStep(1)} className="text-xs text-slate-500 font-bold hover:underline">
-              ← Back to Jurisdiction
-            </button>
-          </div>
-
-          {/* Path Selector Tabs */}
-          <div className="grid grid-cols-2 gap-4 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-            <button
-              onClick={() => { setActionType('join'); setRequestSubmitted(false); }}
-              className={`py-3 rounded-lg font-bold text-sm transition-all ${actionType === 'join' ? 'bg-white text-primary shadow' : 'text-slate-600 hover:text-primary'}`}
-            >
-              🤝 Join Existing Group
-            </button>
-            <button
-              onClick={() => setActionType('create')}
-              className={`py-3 rounded-lg font-bold text-sm transition-all ${actionType === 'create' ? 'bg-white text-primary shadow' : 'text-slate-600 hover:text-primary'}`}
-            >
-              👑 Create New Group
-            </button>
-          </div>
-
-          {/* JOIN EXISTING GROUP FLOW */}
-          {actionType === 'join' && (
-            <div className="space-y-6 pt-2">
-              {/* Anti-Scraping UUID Lookup */}
-              <div className="bg-slate-50 border border-slate-200 text-slate-900 p-5 rounded-2xl space-y-3 border border-slate-200 shadow-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <span>🔒 Anti-Scraping Protected UUID Lookup</span>
-                  </span>
-                  <span className="text-[10px] bg-slate-800 text-slate-700 px-2.5 py-1 rounded font-mono border border-slate-700">Private Join Mode</span>
-                </div>
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  To protect citizen volunteer lists and client identities from automated scraping, many organizations hide from public directories. Enter your group invitation UUID or code below:
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2.5">
-                  <input
-                    type="text"
-                    value={inviteCodeInput}
-                    onChange={(e) => setInviteCodeInput(e.target.value)}
-                    placeholder="Enter Invite UUID or Code (e.g. MSFE-PILOT-8821)"
-                    className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const val = inviteCodeInput.toUpperCase();
-                      if (val.includes("MSFE") || val.includes("MISS") || val.includes("PILOT")) {
-                        setTargetGroup(PUBLIC_GROUPS[0]);
-                      } else {
-                        alert("Invalid Invitation Code. For testing, try typing 'MSFE-PILOT-8821'.");
-                      }
-                    }}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition-colors shrink-0 shadow"
-                  >
-                    Lookup & Select Group →
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Available Public Groups in {selectedState}:</label>
-                <div className="grid grid-cols-1 gap-3">
-                  {PUBLIC_GROUPS.filter(g => selectedState === "Other / Multi-State" || g.state === selectedState).map(group => (
-                    <div
-                      key={group.id}
-                      onClick={() => setTargetGroup(group)}
-                      className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center ${targetGroup?.id === group.id ? 'border-amber-500 bg-amber-50/40' : 'border-slate-200 hover:border-slate-300'}`}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <strong className="text-base text-primary font-bold">{group.name}</strong>
-                          {group.website && (
-                            <a href={group.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2 py-0.5 rounded font-mono">
-                              🌐 Official Website ↗
-                            </a>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{group.desc}</p>
-                      </div>
-                      <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full whitespace-nowrap">
-                        👥 {group.memberCount} Members
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {targetGroup && !requestSubmitted ? (
-                <div className="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4">
-                  <h3 className="font-bold text-sm text-primary">Request Membership Access for {targetGroup.name}</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Your Full Name</label>
-                      <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 focus:border-amber-500 outline-none" />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Email Address</label>
-                      <input type="email" readOnly value={userEmail} className="w-full px-3 py-2 bg-slate-200 border border-slate-300 rounded-lg font-medium text-slate-700" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="font-bold text-slate-700 block mb-1">Phone Number (Required for Auditor Verification)</label>
-                      <input 
-                        type="tel" 
-                        value={applicantPhone} 
-                        onChange={(e) => setApplicantPhone(e.target.value)} 
-                        placeholder="(601) 555-0199" 
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800 focus:border-amber-500 outline-none" 
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="font-bold text-slate-700 block mb-1">Message to Group Admin</label>
-                      <textarea 
-                        rows={2} 
-                        value={applicantNote} 
-                        onChange={(e) => setApplicantNote(e.target.value)} 
-                        placeholder="Briefly state your volunteering interest or county jurisdiction..." 
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800 focus:border-amber-500 outline-none" 
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      const newApp = {
-                        id: `APP-${Date.now()}`,
-                        name: customName || "Volunteer Auditor",
-                        email: userEmail || "volunteer@example.org",
-                        phone: applicantPhone || "(601) 555-0199",
-                        note: applicantNote || `Requesting access to ${targetGroup?.name || "group"} shared audit checklists.`,
-                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                        status: 'pending'
-                      };
-                      try {
-                        const existing = JSON.parse(localStorage.getItem("marigold_group_applications") || "[]");
-                        localStorage.setItem("marigold_group_applications", JSON.stringify([...existing, newApp]));
-                      } catch (e) {}
-                      setRequestSubmitted(true);
-                    }}
-                    disabled={!applicantPhone}
-                    className="w-full bg-accent hover:bg-amber-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow transition-all text-sm"
-                  >
-                    Submit Access Application to Group Lead
-                  </button>
-                </div>
-              ) : requestSubmitted ? (
-                <div className="bg-emerald-50 border border-emerald-300 p-6 rounded-xl text-center space-y-4 animate-in fade-in">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500 text-white font-bold text-2xl flex items-center justify-center mx-auto shadow">✓</div>
-                  <h3 className="font-bold text-lg text-emerald-950">Membership Application Submitted!</h3>
-                  <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
-                    Your request has been forwarded to the <strong>{targetGroup?.name}</strong> administration queue. While awaiting approval, you have full access to run local zero-PII audits in your personal workspace.
-                  </p>
-                  <button
-                    onClick={() => handleCompleteOnboarding(targetGroup?.name || "State of Roosevelt (Demo)", "Pending Member")}
-                    className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
-                  >
-                    Enter Workspace Now →
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          {/* CREATE NEW GROUP FLOW */}
-          {actionType === 'create' && (
-            <div className="space-y-6 pt-2">
-              {!onboardingSubmitted ? (
-                <div className="space-y-5">
-                  <div className="bg-slate-50 border border-slate-200 text-slate-100 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-lg">
-                    <span className="text-xs font-bold uppercase tracking-wider text-amber-400 block">
-                      💡 Recommended: Request Developer Calibration &amp; Setup
-                    </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">
-                      State voter registries utilize highly variable CSV and database layouts. Running voter rolls without official calibration will likely yield inaccurate statistics or database ingestion errors.
-                    </p>
-                    <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                      Submit a setup request to have Kyle (system developer) map your state&apos;s schema columns, verify index headers, and calibrate Benford&apos;s Law algorithms.
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleOnboardingSubmit} className="space-y-4 text-sm bg-slate-50 p-5 rounded-xl border border-slate-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="font-bold text-slate-700 block mb-1">State / Jurisdiction *</label>
-                        <input type="text" name="jurisdiction" readOnly value={selectedState} className="w-full px-3 py-2 bg-slate-200 border border-slate-300 rounded-lg text-slate-600 font-bold" />
-                      </div>
-                      <div>
-                        <label className="font-bold text-slate-700 block mb-1">Volunteers Network Size (approx) *</label>
-                        <select name="volunteers_count" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800">
-                          <option value="1-5 volunteers">1-5 volunteers</option>
-                          <option value="6-20 volunteers">6-20 volunteers</option>
-                          <option value="20+ volunteers">20+ volunteers</option>
-                          <option value="State Agency / Official Group">State Agency / Official Group</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Target Organization / Group Name *</label>
-                      <input required type="text" name="organization" placeholder="e.g. Madison County Civic Audit Coalition" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800 focus:border-amber-500 outline-none" />
-                    </div>
-
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Additional Notes / Calibration Needs</label>
-                      <textarea rows={2} name="notes" placeholder="Tell us about the voter file columns, your target timeline, or state regulations..." className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-800 focus:border-amber-500 outline-none" />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={onboardingLoading}
-                      className="w-full bg-primary hover:bg-slate-800 disabled:opacity-50 text-slate-900 font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
-                    >
-                      {onboardingLoading ? "Transmitting Calibration Request..." : "Request Developer Calibration & Setup Briefing →"}
-                    </button>
-                  </form>
-
-                  {/* Danger Zone Link */}
-                  <div className="pt-4 text-center">
-                    <button
-                      type="button"
-                      onClick={() => setShowDangerZoneModal(true)}
-                      className="text-xs text-pink-600 hover:text-pink-700 font-extrabold underline transition-all"
-                    >
-                      Bypass Calibration &amp; Setup Independently (Danger Zone)
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-emerald-50 border border-emerald-300 p-6 rounded-xl text-center space-y-4 animate-in fade-in">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500 text-white font-bold text-2xl flex items-center justify-center mx-auto shadow font-sans">✓</div>
-                  <h3 className="font-bold text-lg text-emerald-950">Setup Request Transmitted!</h3>
-                  <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
-                    Thank you! Kyle has received your request. We will contact you within 24 hours to schedule your calibration briefing and terms check.
-                  </p>
-                  <p className="text-xs text-emerald-800 leading-relaxed font-medium">
-                    In the meantime, you have full access to explore the sandbox workspace with simulated voter files.
-                  </p>
-                  <button
-                    onClick={() => handleCompleteOnboarding("State of Roosevelt (Demo)", "Verified Tester")}
-                    className="bg-primary hover:bg-slate-800 text-slate-900 font-bold px-8 py-3 rounded-xl text-sm shadow transition-all"
-                  >
-                    Enter Demo Workspace Now →
-                  </button>
-                </div>
-              )}
-
-              {/* Danger Zone Setup Input Fields (unlocked only if dangerZoneUnlocked) */}
-              {dangerZoneUnlocked && (
-                <div className="border-t border-slate-200 pt-6 space-y-4 animate-in fade-in">
-                  <div className="bg-pink-50 border border-pink-200 p-4 rounded-xl text-xs text-pink-950 font-bold">
-                    🚨 DANGER ZONE OVERRIDE ACTIVE: You are force-creating an uncalibrated group. File uploading may fail unless headers match perfectly.
-                  </div>
-                  <div className="space-y-4 text-sm bg-white p-5 rounded-xl border border-slate-200">
-                    <div>
-                      <label className="font-bold text-slate-800 block mb-1">Organization / Group Name *</label>
-                      <input
-                        type="text"
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        placeholder="e.g., Madison County Civic Audit Coalition"
-                        className="w-full px-4 py-2.5 border border-border rounded-xl font-medium focus:border-amber-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-800 block mb-1">Official Organization Website URL (Optional)</label>
-                      <input
-                        type="url"
-                        value={newGroupWebsite}
-                        onChange={(e) => setNewGroupWebsite(e.target.value)}
-                        placeholder="https://yourcivicgroup.org"
-                        className="w-full px-4 py-2.5 border border-border rounded-xl font-medium focus:border-amber-500 outline-none"
-                      />
-                    </div>
-                    <button
-                      onClick={() => handleCompleteOnboarding(newGroupName || `${selectedState} Audit Group`, "👑 Group Admin")}
-                      disabled={!newGroupName}
-                      className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-slate-900 font-bold py-3.5 rounded-xl shadow transition-all text-sm flex items-center justify-center gap-2"
-                    >
-                      <span>Create Uncalibrated Group &amp; Enter Dashboard</span>
-                      <span>→</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Danger Zone Modal */}
-      {showDangerZoneModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-200/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-8 sm:p-10 max-w-md w-full shadow-2xl border border-slate-200 space-y-6 text-slate-800 animate-in fade-in zoom-in-95 duration-150 text-left">
-            <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
-              <h3 className="text-xl font-serif font-bold text-pink-600 flex items-center gap-2">
-                <span>⚠️ Danger Zone Override</span>
-              </h3>
-              <button onClick={() => setShowDangerZoneModal(false)} className="text-slate-600 hover:text-slate-700 font-bold">✕</button>
-            </div>
-
-            <div className="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-              <p>
-                Bypassing developer calibration means you are force-creating an uncalibrated workspace. 
-              </p>
-              <p className="bg-pink-50 p-4 rounded-xl border border-pink-200 text-pink-950 font-medium text-xs leading-normal">
-                State voter files use wildly differing column schemas, date encodings, and headers. Bypassing official calibration may lead to database ingestion failure, name column mismatching, chart errors, or statutory data compliance issues.
-              </p>
-              <p className="text-xs text-slate-500 font-medium">
-                You assume full responsibility for database mapping integrity.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-col gap-2">
-              <button 
-                onClick={() => {
-                  setDangerZoneUnlocked(true);
-                  setShowDangerZoneModal(false);
-                }}
-                className="w-full bg-pink-600 hover:bg-pink-700 text-slate-900 font-bold py-3 rounded-xl text-sm transition-all shadow"
-              >
-                Yes, Proceed &amp; Assume All Liability
-              </button>
-              <button 
-                onClick={() => setShowDangerZoneModal(false)}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-all"
-              >
-                Cancel / Request Calibration Setup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

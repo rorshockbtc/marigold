@@ -96,7 +96,7 @@ export default function ActiveModulesPage() {
         </Link>
         <Link 
           href="/developers/docs/errors"
-          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-slate-50 border border-slate-200 hover:bg-emerald-600 text-slate-900 hover:text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
           Next: Error Codes Dictionary
           <ChevronRight className="w-4 h-4" />

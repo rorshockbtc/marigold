@@ -6,6 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import AppSidebar from '@/components/AppSidebar';
 import MariRightPanel from '@/components/MariRightPanel';
+import { GlobalMariButton } from '@/components/GlobalMariButton';
 import { Shield } from 'lucide-react';
 
 const WORKSPACE_ROUTES = [
@@ -83,6 +84,8 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
       <Navbar />
+      <MariRightPanel />
+      <GlobalMariButton />
       <main className={`flex-1 ${pathname === '/' ? '' : 'container mx-auto p-4 md:p-8'}`}>
         {children}
       </main>
