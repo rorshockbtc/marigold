@@ -46,14 +46,14 @@ export function Navbar() {
 
           {/* Desktop Primary Navigation */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-700">
-            <Link href="/onboarding" className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-2 rounded-full shadow-lg transition-transform transform hover:scale-105 flex items-center gap-2 text-base">
-              <span>Start Here</span>
-            </Link>
-            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-[#D96B27] transition-colors font-medium">Practice Sandbox ↗</a>
-            <Link href="/macro" className="hover:text-[#D96B27] transition-colors font-bold text-indigo-600 flex items-center gap-1.5"><Activity className="w-4 h-4"/>State Trends</Link>
-            <Link href="/learning-center" className="hover:text-[#D96B27] transition-colors flex items-center gap-1.5 font-medium">
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="hover:text-[#D96B27] transition-colors">Public Sandbox ↗</a>
+            <Link href="/investors" className="text-amber-500 font-bold hover:text-amber-600 transition-colors">Investors & Vision</Link>
+            <Link href="/store" className="hover:text-[#D96B27] transition-colors">Playbook Library</Link>
+            <Link href="/macro" className="hover:text-[#D96B27] transition-colors font-bold text-indigo-600 flex items-center gap-1.5"><Activity className="w-4 h-4"/>Macro Trends</Link>
+            <Link href="/compliance" className="hover:text-[#D96B27] transition-colors">FEMA Compliance</Link>
+            <Link href="/learning-center" className="hover:text-[#D96B27] transition-colors flex items-center gap-1.5">
               <BookOpen className="w-4 h-4 text-amber-500" />
-              <span>Help & Docs</span>
+              <span>Docs & FAQ</span>
             </Link>
             <a href="mailto:sales@colonhyphenbracket.pink" className="text-white font-bold hover:text-white transition-colors flex items-center gap-1.5 bg-[#D96B27] px-3.5 py-1.5 rounded-full shadow-sm hover:bg-[#C85A1B]">
               <span>Contact Sales</span>
@@ -93,7 +93,7 @@ export function Navbar() {
                     </Link>
                     <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2 font-bold tracking-tight">
                       <Terminal className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                      <span>How the Tech Works</span>
+                      <span>Dev SDK</span>
                     </Link>
                     <div className="border-t border-slate-200 my-1"></div>
                     <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-[#D96B27] font-extrabold hover:bg-slate-100 transition-colors flex items-center gap-2 bg-amber-50">
