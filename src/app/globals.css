@@ -3,32 +3,34 @@
 @tailwind utilities;
 
 :root {
-  /* Astryx Warm Editorial Terracotta Palette (Inspired by Antigravity IDE) */
-  --background: #FAF8F5; /* Warm Cream / Linen Canvas */
-  --foreground: #2D3142; /* Deep Graphite Typography */
+  /* Neutral Slate / Marigold Palette */
+  --background: #F8FAFC; /* Slate 50 */
+  --foreground: #0F172A; /* Slate 900 */
   
-  --primary: #232733; /* Warm Charcoal Navigation / Header Blocks */
+  --primary: #0F172A; /* Deep Slate / Navy */
   --primary-foreground: #FFFFFF;
   
-  --secondary: #EADDCB; /* Warm Sandstone Surface Accent */
-  --secondary-foreground: #2D3142;
+  --secondary: #334155; /* Muted Slate Blue */
+  --secondary-foreground: #FFFFFF;
   
-  --accent: #D96B27; /* Vibrant Terracotta Ochre */
+  --accent: #D97706; /* Marigold Gold */
   --accent-foreground: #FFFFFF;
   
-  --muted: #F0ECE3; /* Soft Tactile Surface Canvas */
-  --muted-foreground: #4A5060; /* Legible Muted Graphite */
+  --muted: #E2E8F0;
+  --muted-foreground: #475569;
   
-  --border: #E5E0D8; /* Sandstone Border */
+  --border: #CBD5E1;
   --input: #FFFFFF;
-  --ring: #D96B27;
+  --ring: #D97706;
   
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 }
 
-/* Base styles focused on legibility and warm visual comfort */
+
+
+/* Base styles focused on readability for older users */
 html {
-  font-size: 16px;
+  font-size: 16px; /* Base 16px rem as requested */
   scroll-behavior: smooth;
 }
 
@@ -41,21 +43,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Astryx Component Primitives */
+/* Component classes */
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl text-sm font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-[#D96B27] text-white hover:bg-[#C85A1B] h-11 px-5 py-2.5;
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:opacity-90 h-10 px-4 py-2;
   }
   
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl text-sm font-bold transition-all border border-[#E5E0D8] bg-white text-[#2D3142] hover:bg-[#F0ECE3] shadow-sm h-11 px-5 py-2.5;
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:opacity-90 h-10 px-4 py-2;
   }
 
   .input-field {
-    @apply flex h-11 w-full rounded-xl border border-[#E5E0D8] bg-white px-3.5 py-2.5 text-sm shadow-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .card {
-    @apply rounded-2xl border border-[#E5E0D8] bg-white text-foreground shadow-sm p-6 overflow-hidden;
+    @apply rounded-lg border border-border bg-white text-foreground shadow-sm p-6 overflow-hidden;
   }
 }
