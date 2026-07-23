@@ -310,8 +310,8 @@ export function fellegiSunterScore(recordA: LinkageRecord, recordB: LinkageRecor
       dobScore = 7.5;
     } else {
       // Check if only year matches or transposition
-      const yearA = rA.dob.slice(-4);
-      const yearB = rB.dob.slice(-4);
+      const yearA = rA.dob.slice(0, 4);
+      const yearB = rB.dob.slice(0, 4);
       if (yearA && yearB && yearA === yearB) {
         dobScore = 1.5; // Partial match (same birth year)
       } else {

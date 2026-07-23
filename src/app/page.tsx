@@ -1,117 +1,187 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Box, Cpu, ShieldCheck } from "lucide-react";
+import { Play, Sparkles, BookOpen, ShieldCheck, FileSpreadsheet, HeartHandshake } from "lucide-react";
 
-export default function LandingPage() {
+export default function GrandmaFriendlyHomePage() {
+  const schemaMarkup = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Marigold Insights",
+    "operatingSystem": "All",
+    "applicationCategory": "Government & Business Application",
+    "description": "Civic data auditing platform that runs completely on your local computer.",
+    "offers": {
+      "@type": "Offer",
+      "price": "1500.00",
+      "priceCurrency": "USD"
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-[#161413] text-[#f1ebd8] font-sans selection:bg-[#D9777F] selection:text-white">
+    <div className="pb-24 font-sans bg-[#FAF8F5]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
+      />
       
-      {/* 
-        HERO SECTION 
-        Vignelli Grid: Strict alignments, but friendly copy.
-      */}
-      <section className="relative w-full min-h-[85vh] flex flex-col justify-center px-4 sm:px-8 md:px-16 pt-20 pb-24 overflow-hidden border-b border-white/10">
+      {/* Friendly Hero Section */}
+      <section className="w-full text-center py-20 sm:py-28 bg-white border-b border-slate-200 shadow-sm px-4 sm:px-6 relative overflow-hidden">
+        {/* Soft Background Accent */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-amber-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
         
-        {/* Architectural Background Grid */}
-        <div className="absolute inset-0 pointer-events-none opacity-20"
-             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
-        ></div>
+        <div className="relative z-10 space-y-8 max-w-4xl mx-auto">
+          {/* Trust Badges */}
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            <span className="bg-emerald-50 text-emerald-800 font-bold text-sm px-4 py-2 rounded-full border border-emerald-200 shadow-sm flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              Your Data Stays on Your Computer. Always.
+            </span>
+            <span className="bg-blue-50 text-blue-800 font-bold text-sm px-4 py-2 rounded-full border border-blue-200 shadow-sm flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-blue-600" />
+              Approved by Government Standards
+            </span>
+          </div>
 
-        <div className="relative max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif font-extrabold text-slate-900 leading-tight">
+            Find errors in local data. <br/>
+            <span className="text-emerald-700">No tech skills needed.</span>
+          </h1>
           
-          {/* Typographic Core (Left) */}
-          <div className="lg:col-span-8 flex flex-col items-start z-10">
-            <div className="inline-flex items-center gap-3 px-3 py-1 mb-8 bg-[#110f0e] border border-white/10 rounded-sm">
-              <span className="w-2 h-2 rounded-full bg-[#D9777F] animate-pulse"></span>
-              <span className="text-[0.65rem] md:text-sm font-medium tracking-[2px] uppercase text-[#f1ebd8]/70">No Cloud Servers Involved</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-light leading-[1.05] tracking-tight text-[#f1ebd8] mb-8 font-serif">
-              Clean your voter rolls.<br />
-              <span className="font-semibold italic text-[#D9777F]">Safely, on your own desk.</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-[#f1ebd8]/80 font-light leading-relaxed max-w-2xl mb-12">
-              Most tech companies want you to upload your sensitive spreadsheets to their "cloud." We think that's a terrible idea. Marigold is a tool that runs entirely inside your web browser, letting you find duplicate voters instantly without ever sending your data across the internet. 
+          <p className="text-xl sm:text-2xl text-slate-700 leading-relaxed font-medium max-w-3xl mx-auto">
+            A county clerk recently found 237 formatting errors in her records in just 3 minutes. She didn't need any IT help, and her data never left her laptop.
+          </p>
+
+          <div className="pt-8 flex flex-col sm:flex-row justify-center items-center gap-6">
+            <Link href="/onboarding" className="bg-emerald-600 text-white hover:bg-emerald-500 font-extrabold text-xl px-10 py-5 rounded-full shadow-xl transition-transform transform hover:-translate-y-1 w-full sm:w-auto text-center">
+              Start Here →
+            </Link>
+            <a href="/sandbox" target="_blank" rel="noopener noreferrer" className="bg-white text-slate-900 border-4 border-slate-200 hover:border-slate-300 font-bold text-xl px-10 py-4 rounded-full shadow-sm transition-all w-full sm:w-auto text-center">
+              Practice in the Sandbox
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Container */}
+      <div className="space-y-24 max-w-5xl mx-auto px-4 sm:px-6 pt-20">
+        
+        {/* Simple "Who Are You?" Stakeholders */}
+        <section id="stakeholders" className="space-y-12">
+          <div className="text-center space-y-4">
+            <h2 className="text-4xl font-serif font-bold text-slate-900">How can we help you today?</h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Choose the path that best describes you to read a plain-English guide.
             </p>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <Link href="/onboarding" className="group flex items-center justify-center h-14 px-8 bg-[#D9777F] text-white text-[0.85rem] font-medium tracking-[1.5px] uppercase transition-all shadow-[0_4px_14px_rgba(217,119,127,0.2)] hover:bg-[#e3868e] hover:shadow-[0_6px_20px_rgba(217,119,127,0.4)] hover:-translate-y-[1px] w-full sm:w-auto rounded-sm">
-                Get Started Now
-              </Link>
-              <Link href="/developers" className="group flex items-center justify-center h-14 px-8 bg-[#1c1917] border border-white/20 text-[#f1ebd8] text-[0.85rem] font-medium tracking-[1.5px] uppercase transition-all hover:bg-white/10 w-full sm:w-auto rounded-sm">
-                How It Works
-              </Link>
-            </div>
           </div>
 
-          {/* Friendly Abstract Data Visualization (Right) */}
-          <div className="lg:col-span-4 relative hidden lg:block h-[500px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1c1917] to-[#110f0e] border border-white/10 shadow-2xl p-8 flex flex-col justify-between overflow-hidden rounded-sm">
-              <div className="text-[0.65rem] font-mono text-[#f1ebd8]/40 tracking-widest uppercase">Your Computer's Brain</div>
-              <div className="font-mono text-sm leading-relaxed text-[#D9777F] font-bold break-all">
-                Loading Spreadsheet...<br/><br/>
-                Found 10,492 Rows.<br/>
-                No internet connection needed.<br/>
-                Checking for duplicates...<br/><br/>
-                Wait, did John Smith register at the UPS store again?<br/><br/>
-                [STATUS: CAUGHT HIM]
+          <div className="grid md:grid-cols-3 gap-8">
+            <Link href="/solutions/citizens" className="bg-white p-8 rounded-3xl border-4 border-amber-100 hover:border-amber-400 shadow-md transition-all group block text-center space-y-6">
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                <span className="text-4xl">🙋‍♀️</span>
               </div>
-              <div className="w-full h-[1px] bg-white/10 my-4"></div>
-              <div className="flex justify-between items-end">
-                 <span className="text-4xl font-bold text-[#f1ebd8]">100%</span>
-                 <span className="text-xs tracking-[2px] uppercase text-[#f1ebd8]/50">Private</span>
+              <h3 className="text-2xl font-bold text-slate-900">I am a Citizen Volunteer</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Read our plain-language guide on how you can help your community without being a programmer.
+              </p>
+              <span className="inline-block font-bold text-amber-700 text-lg group-hover:underline">Read the Citizen Guide →</span>
+            </Link>
+
+            <Link href="/solutions/organizations" className="bg-white p-8 rounded-3xl border-4 border-emerald-100 hover:border-emerald-400 shadow-md transition-all group block text-center space-y-6">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                <span className="text-4xl">🤝</span>
               </div>
-            </div>
+              <h3 className="text-2xl font-bold text-slate-900">I lead a Volunteer Group</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Learn how your local chapter can share checklists and notes safely with other volunteers.
+              </p>
+              <span className="inline-block font-bold text-emerald-700 text-lg group-hover:underline">Read the Group Guide →</span>
+            </Link>
+
+            <Link href="/solutions/state-agencies" className="bg-white p-8 rounded-3xl border-4 border-blue-100 hover:border-blue-400 shadow-md transition-all group block text-center space-y-6">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                <span className="text-4xl">🏛️</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900">I am a Government Official</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                See how we meet strict security standards and help you verify your records instantly.
+              </p>
+              <span className="inline-block font-bold text-blue-700 text-lg group-hover:underline">Read the Official Guide →</span>
+            </Link>
+          </div>
+        </section>
+
+        {/* Video Explanation */}
+        <section className="bg-white rounded-3xl p-8 sm:p-12 border-4 border-slate-100 shadow-xl flex flex-col lg:flex-row gap-12 items-center">
+          <div className="space-y-6 max-w-xl">
+            <h2 className="text-4xl font-serif font-bold text-slate-900">
+              Watch: Why Your Data is Safe
+            </h2>
+            <p className="text-xl text-slate-700 leading-relaxed">
+              Most software asks you to upload your files to the internet. We don't. Watch this short video to see how Marigold acts like a smart magnifying glass right on your own computer desk.
+            </p>
+            <ul className="space-y-3 text-lg font-bold text-slate-800">
+              <li className="flex items-center gap-3"><ShieldCheck className="text-emerald-600 w-6 h-6"/> No internet upload required.</li>
+              <li className="flex items-center gap-3"><ShieldCheck className="text-emerald-600 w-6 h-6"/> Results appear in seconds.</li>
+              <li className="flex items-center gap-3"><ShieldCheck className="text-emerald-600 w-6 h-6"/> 100% transparent math.</li>
+            </ul>
+          </div>
+          <div className="w-full lg:w-1/2 aspect-video rounded-2xl overflow-hidden border-8 border-slate-100 shadow-lg bg-slate-200 shrink-0">
+            <iframe 
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/AfCvrfkcx5M" 
+              title="Marigold Insights Overview" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowFullScreen
+            ></iframe>
+          </div>
+        </section>
+
+        {/* Simple 3-Step Process */}
+        <section className="bg-emerald-50 rounded-3xl p-10 sm:p-16 border-2 border-emerald-100 shadow-md space-y-12">
+          <div className="text-center space-y-4">
+            <h2 className="text-4xl font-serif font-bold text-slate-900">How it Works</h2>
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto">
+              It's as easy as opening a file on your computer.
+            </p>
           </div>
 
-        </div>
-      </section>
-
-      {/* 
-        STRUCTURAL PILLARS 
-      */}
-      <section className="px-4 sm:px-8 md:px-16 py-24 bg-[#110f0e]">
-        <div className="max-w-[1400px] mx-auto">
-          
-          <div className="mb-16">
-            <h2 className="text-[0.75rem] md:text-sm font-medium tracking-[3px] uppercase text-[#D9777F] mb-4">Core Principles</h2>
-            <h3 className="text-3xl md:text-4xl font-light text-[#f1ebd8]">Built for people who distrust computers.</h3>
+          <div className="grid md:grid-cols-3 gap-10">
+            <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 font-bold text-2xl rounded-full flex items-center justify-center mx-auto">1</div>
+              <h3 className="text-2xl font-bold text-slate-900">Pick a Checklist</h3>
+              <p className="text-lg text-slate-600">Choose what you want to look for, like finding duplicate names or formatting errors.</p>
+            </div>
+            <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 font-bold text-2xl rounded-full flex items-center justify-center mx-auto">2</div>
+              <h3 className="text-2xl font-bold text-slate-900">Select Your File</h3>
+              <p className="text-lg text-slate-600">Click on your spreadsheet. The system automatically reads the columns for you.</p>
+            </div>
+            <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 font-bold text-2xl rounded-full flex items-center justify-center mx-auto">3</div>
+              <h3 className="text-2xl font-bold text-slate-900">See Results Instantly</h3>
+              <p className="text-lg text-slate-600">In just seconds, the system highlights the exact rows that need your attention.</p>
+            </div>
           </div>
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-white/10">
-            
-            {/* Column 1 */}
-            <div className="bg-[#1c1917] p-10 flex flex-col group hover:bg-[#211e1c] transition-colors">
-              <ShieldCheck className="w-10 h-10 text-[#f1ebd8]/40 mb-8 group-hover:text-[#D9777F] transition-colors stroke-[1.5]" />
-              <h4 className="text-2xl font-medium text-[#f1ebd8] mb-4 font-serif">Totally Private</h4>
-              <p className="text-base text-[#f1ebd8]/70 leading-loose flex-grow">
-                When you drag and drop a file into Marigold, it stays on your computer. We literally don't have the server space to steal your data even if we wanted to. You can disconnect your WiFi and the site still works!
-              </p>
-            </div>
-
-            {/* Column 2 */}
-            <div className="bg-[#1c1917] p-10 flex flex-col group hover:bg-[#211e1c] transition-colors">
-              <Cpu className="w-10 h-10 text-[#f1ebd8]/40 mb-8 group-hover:text-[#D9777F] transition-colors stroke-[1.5]" />
-              <h4 className="text-2xl font-medium text-[#f1ebd8] mb-4 font-serif">Mathematical Magic</h4>
-              <p className="text-base text-[#f1ebd8]/70 leading-loose flex-grow">
-                Finding a needle in a haystack of millions of voters is hard. We do the math for you. We highlight the anomalies—like 50 people registered to a 2-bedroom apartment—so you can focus on writing letters, not fighting spreadsheets.
-              </p>
-            </div>
-
-            {/* Column 3 */}
-            <div className="bg-[#1c1917] p-10 flex flex-col group hover:bg-[#211e1c] transition-colors">
-              <Box className="w-10 h-10 text-[#f1ebd8]/40 mb-8 group-hover:text-[#D9777F] transition-colors stroke-[1.5]" />
-              <h4 className="text-2xl font-medium text-[#f1ebd8] mb-4 font-serif">No Hidden Agendas</h4>
-              <p className="text-base text-[#f1ebd8]/70 leading-loose flex-grow">
-                Black-box "AI" has no place in civic intelligence. We just run standard, boring statistical formulas. We tell you exactly how they work, and you get exactly the answers the math dictates.
-              </p>
-            </div>
-
+        {/* Knowledge Base */}
+        <section className="bg-white rounded-3xl p-10 border-4 border-amber-100 shadow-lg flex flex-col md:flex-row items-center gap-10 justify-between">
+          <div className="space-y-6 max-w-2xl">
+            <h2 className="text-4xl font-serif font-bold text-slate-900">Need to read more?</h2>
+            <p className="text-xl text-slate-700 leading-relaxed">
+              We have a friendly Learning Center that explains exactly how we find duplicate records and formatting errors, written in simple, everyday language.
+            </p>
           </div>
-        </div>
-      </section>
+          <Link href="/learning-center" className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold text-xl px-10 py-5 rounded-full shadow-sm transition-transform transform hover:-translate-y-1 whitespace-nowrap flex items-center gap-3">
+            <BookOpen className="w-6 h-6" />
+            Go to Learning Center
+          </Link>
+        </section>
 
-    </main>
+      </div>
+    </div>
   );
 }
