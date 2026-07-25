@@ -13,7 +13,6 @@ const NAV_ITEMS = [
   { label: 'Explore & Review', href: '/explore', icon: GitCompare },
   { label: 'Guided Playbooks', href: '/audit', icon: BookOpen },
   { label: 'Advanced Stats', href: '/advanced-stats', icon: LineChart },
-  { label: 'Upload Data', href: '/onboarding', icon: Search },
   { label: 'Volunteer Team', href: '/settings/group', icon: Users },
   { label: 'Developer Docs', href: '/developers', icon: Terminal },
 ];
@@ -194,10 +193,7 @@ export default function AppSidebar() {
             Workspace Modules
           </div>
         )}
-        {NAV_ITEMS.filter(item => {
-          if (item.href === '/onboarding' && isDataLoaded) return false;
-          return true;
-        }).map((item) => {
+        {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
             <Link
