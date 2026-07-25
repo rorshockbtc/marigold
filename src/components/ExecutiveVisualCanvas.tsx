@@ -1120,7 +1120,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 Close View
               </button>
               <Link 
-                href="/analysis"
+                href="/explore"
                 onClick={() => setSelectedMetric(null)}
                 className="px-5 py-2.5 rounded-xl bg-accent hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow transition-all text-center flex items-center justify-center gap-2"
               >

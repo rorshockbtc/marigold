@@ -24,7 +24,7 @@ export default function DataPrepPage() {
     setIsLoadingDemo(true);
     try {
       await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
-      window.location.href = "/analysis";
+      window.location.href = "/explore";
     } catch (err) {
       setIsLoadingDemo(false);
       alert("Failed to auto-load demo dataset: " + err);
@@ -183,7 +183,7 @@ export default function DataPrepPage() {
           </div>
           <div className="flex flex-wrap gap-4 pt-2">
             <Link
-              href="/analysis"
+              href="/explore"
               className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
             >
               <span>🚀 Resume Session with Existing Shard →</span>
@@ -289,10 +289,10 @@ export default function DataPrepPage() {
             </div>
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               <Link
-                href="/analysis"
+                href="/explore"
                 className="bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98] w-full sm:w-auto"
               >
-                <span>🚀 Continue to Explore &amp; Review (/analysis) →</span>
+                <span>🚀 Continue to Explore &amp; Review (/explore) →</span>
               </Link>
               <Button onClick={handleReset} variant="outline" className="w-full sm:w-auto">
                 Clear &amp; Start Over
@@ -419,7 +419,7 @@ export default function DataPrepPage() {
                   <p className="text-xs text-emerald-800">Your chunked rows are now ready for immediate high-speed traversal in local browser memory.</p>
                 </div>
                 <div className="flex gap-3 shrink-0">
-                  <a href="/analysis" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition-colors whitespace-nowrap">
+                  <a href="/explore" className="bg-accent hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition-colors whitespace-nowrap">
                     ⚡ Launch Pro Mode Analytics →
                   </a>
                   <a href="/dashboard" className="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-4 py-2.5 rounded-lg border border-slate-300 transition-colors whitespace-nowrap">

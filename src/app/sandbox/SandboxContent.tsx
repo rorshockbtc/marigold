@@ -45,7 +45,7 @@ export function SandboxContent() {
     if (typeof window !== 'undefined') {
       localStorage.setItem("marigold_active_group", "State of Roosevelt (Demo)");
       localStorage.setItem("marigold_onboarding_done", "true");
-      router.push('/analysis');
+      router.push('/explore');
     }
   };
 

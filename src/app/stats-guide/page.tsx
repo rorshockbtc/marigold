@@ -87,7 +87,7 @@ export default function StatsGuidePage() {
         <section>
           <h3 className="text-2xl font-bold border-b border-border pb-2 text-primary">5. How to Craft High-Signal Searches</h3>
           <p className="text-base leading-relaxed mt-4">
-            Now that you know the language, how do you actually find anomalies in <strong><Link href="/analysis" className="text-primary underline">Pro Mode</Link></strong>?
+            Now that you know the language, how do you actually find anomalies in <strong><Link href="/explore" className="text-primary underline">Pro Mode</Link></strong>?
           </p>
 
           <div className="space-y-6 mt-6">

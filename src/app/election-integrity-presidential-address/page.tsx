@@ -818,7 +818,7 @@ export default function ElectionIntegrityHub() {
                     </p>
                   </div>
                   <Link
-                    href="/analysis"
+                    href="/explore"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2.5 rounded-lg shadow whitespace-nowrap transition-colors"
                   >
                     Launch Local Audit &rarr;

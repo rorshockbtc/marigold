@@ -178,7 +178,7 @@ export default function MissionControl() {
         <div className="card text-center py-12">
           <h2 className="text-xl font-bold mb-2">No Playbooks Found</h2>
           <p className="text-muted-foreground mb-6">No playbooks found for {selectedCounty}. Click below to create one!</p>
-          <Link href="/analysis" className="btn-primary">
+          <Link href="/explore" className="btn-primary">
             Go to Pro Mode to create one
           </Link>
         </div>
@@ -219,7 +219,7 @@ export default function MissionControl() {
                 type="button"
                 onClick={() => {
                   setLaunchingId(p.id);
-                  router.push(`/analysis?audit=${p.audit_type}&county=${encodeURIComponent(p.county)}&threshold=${p.threshold}`);
+                  router.push(`/explore?audit=${p.audit_type}&county=${encodeURIComponent(p.county)}&threshold=${p.threshold}`);
                 }}
                 disabled={launchingId === p.id}
                 className="btn-primary w-full justify-center bg-primary/90 disabled:opacity-75 disabled:cursor-wait flex items-center gap-2"

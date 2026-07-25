@@ -2,7 +2,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const tempPdfPath = path.join(__dirname, '..', 'marigold_whitepaper.pdf');
+const tempPdfPath = path.join(__dirname, '..', 'public', 'marigold_whitepaper.pdf');
 const printUrl = 'http://localhost:3001/whitepaper/print';
 
 // Common paths for Chrome/Chromium on Mac

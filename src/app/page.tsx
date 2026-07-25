@@ -335,7 +335,7 @@ export default function MarketingHomePage() {
               <span className="text-3xl group-hover:translate-x-2 transition-transform font-light text-primary/50 group-hover:text-primary">→</span>
             </Link>
 
-            <Link href="/data-linkage" className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm hover:border-primary transition-colors group flex justify-between items-center">
+            <Link href="/data-prep" className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm hover:border-primary transition-colors group flex justify-between items-center">
               <div className="space-y-3">
                 <span className="text-xs font-bold text-primary uppercase tracking-widest font-mono block">Statistical Matching</span>
                 <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors leading-snug">Smart Duplicate Finder</h3>

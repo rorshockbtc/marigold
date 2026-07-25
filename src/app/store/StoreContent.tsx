@@ -161,7 +161,7 @@ export function StoreContent() {
         <p className="text-slate-700 text-sm max-w-xl mx-auto leading-relaxed font-normal">
           Export your sorting parameters or statistical thresholds from Pro Mode and share them with the civic community to assist volunteers across America.
         </p>
-        <Link href="/analysis" className="inline-block bg-accent hover:bg-amber-600 text-white font-bold text-sm px-6 py-3 rounded-lg shadow transition-all">
+        <Link href="/explore" className="inline-block bg-accent hover:bg-amber-600 text-white font-bold text-sm px-6 py-3 rounded-lg shadow transition-all">
           Create Checklist in Pro Mode →
         </Link>
       </div>
