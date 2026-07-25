@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import { LocalFolderGuideModal } from "@/components/LocalFolderGuideModal";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function DashboardPage() {
   const [activeGroup, setActiveGroup] = useState("");
   const [recordCount, setRecordCount] = useState("0");
   const [activeTab, setActiveTab] = useState("kanban");
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -79,7 +81,18 @@ export default function DashboardPage() {
               <p className="text-sm text-text-body">Not sure what to do? Open the Mari AI panel on the right and ask for a tour.</p>
             </div>
           </Button>
+
+          <div onClick={() => setIsGuideOpen(true)} className="bg-white border-2 border-border hover:border-primary p-6 rounded-2xl shadow-sm flex items-center gap-6 transition-all group hover:-translate-y-1 cursor-pointer">
+            <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center shrink-0 text-text-body group-hover:text-primary group-hover:bg-albers-green-soft">
+              <FileText className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-serif text-text-header mb-1 group-hover:text-primary">Returning User Guide</h3>
+              <p className="text-sm text-text-body">Already have a Marigold Local folder? Learn how to securely reconnect and unlock it.</p>
+            </div>
+          </div>
         </div>
+        <LocalFolderGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       </div>
     );
   }
@@ -162,6 +175,8 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm">Group Chat & Activity Feed will go here.</p>
         </div>
       )}
+
+      <LocalFolderGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </div>
   );
 }
