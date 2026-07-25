@@ -19,6 +19,10 @@ export default function ExplorePage() {
   const [isDataLoaded, setIsDataLoaded] = useState(true); // Default true to avoid flash
   const [showAllPlaybooks, setShowAllPlaybooks] = useState(false);
   
+  const [countyFilter, setCountyFilter] = useState('');
+  const [thresholdFilter, setThresholdFilter] = useState(12);
+  const [searchQuery, setSearchQuery] = useState('');
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const group = localStorage.getItem("marigold_active_group") || "";
@@ -56,11 +60,14 @@ export default function ExplorePage() {
 
   const visiblePlaybooks = showAllPlaybooks ? playbooks : playbooks.slice(0, 3);
 
-  const runPlaybook = async (id: string) => {
+  const runPlaybook = async (id: string, overrideCounty?: string, overrideThreshold?: number) => {
     setActivePlaybook(id);
     setSelectedRecord(null);
+    const finalCounty = overrideCounty !== undefined ? overrideCounty : countyFilter;
+    const finalThreshold = overrideThreshold !== undefined ? overrideThreshold : thresholdFilter;
+    
     try {
-      const data = await runLocalAudit(id, "", 12);
+      const data = await runLocalAudit(id, finalCounty, finalThreshold);
       setResults(data);
     } catch (e) {
       console.error(e);
@@ -68,11 +75,21 @@ export default function ExplorePage() {
     }
   };
 
+  const filteredResults = results.filter(row => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (row.name && row.name.toLowerCase().includes(q)) ||
+      (row.id && String(row.id).toLowerCase().includes(q)) ||
+      (row.address && row.address.toLowerCase().includes(q))
+    );
+  });
+
   const exportCSV = () => {
-    if (results.length === 0) return;
+    if (filteredResults.length === 0) return;
     const headers = ["Voter ID", "Name", "Address", "City", "State", "Zip", "County", "Risk Level", "Anomaly Details", "Investigator Notes"];
     
-    const rows = results.map(r => [
+    const rows = filteredResults.map(r => [
       r.id, r.name, r.address, r.city, r.state, r.zip, r.county, r.risk_level, r.details, ""
     ]);
     
@@ -243,9 +260,9 @@ export default function ExplorePage() {
               
               <Button 
                 onClick={exportCSV}
-                disabled={results.length === 0}
+                disabled={filteredResults.length === 0}
                 className={`flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-bold transition-colors ${
-                  results.length > 0 ? 'bg-white border border-border-soft text-text-header hover:bg-surface shadow-sm' : 'opacity-50 cursor-not-allowed bg-surface border border-transparent'
+                  filteredResults.length > 0 ? 'bg-white border border-border-soft text-text-header hover:bg-surface shadow-sm' : 'opacity-50 cursor-not-allowed bg-surface border border-transparent'
                 }`}
               >
                 <Download className="w-4 h-4" />
@@ -294,6 +311,49 @@ export default function ExplorePage() {
           </div>
         </div>
 
+        {/* Filter Toolbar */}
+        <div className="bg-white border border-border-soft p-4 rounded-2xl mb-6 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex flex-col w-full md:w-64">
+              <label className="text-xs font-bold text-text-body mb-1">Target County</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Franklin (Leave blank for all)" 
+                className="border border-border-soft rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                value={countyFilter}
+                onChange={(e) => setCountyFilter(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col w-full md:w-32">
+              <label className="text-xs font-bold text-text-body mb-1">Threshold</label>
+              <input 
+                type="number" 
+                className="border border-border-soft rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                value={thresholdFilter}
+                onChange={(e) => setThresholdFilter(parseInt(e.target.value) || 12)}
+                min={1}
+              />
+            </div>
+            <Button 
+              onClick={() => activePlaybook && runPlaybook(activePlaybook)}
+              disabled={!activePlaybook || isQuerying}
+              className="mt-5 bg-surface border border-border-soft hover:border-primary text-text-header font-bold px-4 py-2 rounded-lg transition-colors"
+            >
+              Update Engine
+            </Button>
+          </div>
+          <div className="flex flex-col w-full md:w-64">
+            <label className="text-xs font-bold text-text-body mb-1">Search Results</label>
+            <input 
+              type="text" 
+              placeholder="Search names or addresses..." 
+              className="border border-border-soft rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
         {/* Results Area */}
         <Card className="bg-white border border-border-soft rounded-2xl shadow-sm overflow-hidden min-h-[400px]">
           {isQuerying ? (
@@ -301,7 +361,7 @@ export default function ExplorePage() {
               <Activity className="w-8 h-8 text-primary animate-pulse mb-4" />
               <p className="text-sm text-text-body font-mono">Running Local Query Engine ({queryProgress}%)...</p>
             </div>
-          ) : results.length > 0 ? (
+          ) : filteredResults.length > 0 ? (
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border-soft bg-surface">
@@ -314,7 +374,7 @@ export default function ExplorePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-soft">
-                {results.slice(0, verboseMode ? 1000 : 50).map((row, idx) => (
+                {filteredResults.slice(0, verboseMode ? 1000 : 50).map((row, idx) => (
                   <tr 
                     key={idx} 
                     onClick={() => setSelectedRecord(row)}
