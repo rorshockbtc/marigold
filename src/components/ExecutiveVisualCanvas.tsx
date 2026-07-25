@@ -857,15 +857,15 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                       paddingAngle={4}
                       dataKey="count"
                       cursor="pointer"
-                      onClick={(entry: RechartsSliceEntry) => setSelectedMetric(entry.payload || entry)}
-                      label={({ name, percent }: { name: string; percent?: number }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                      onClick={(entry: any) => setSelectedMetric(entry.payload || entry)}
+                      label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
                     >
                       {dynamicCategories.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <RechartsTooltip 
-                      formatter={(value: number | string) => [`${value.toLocaleString()} records`, 'Count']}
+                      formatter={(value: any) => [`${value.toLocaleString()} records`, 'Count']}
                       contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                     />
                   </PieChart>
@@ -931,15 +931,15 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                   paddingAngle={4}
                   dataKey="count"
                   cursor="pointer"
-                  onClick={(entry: RechartsSliceEntry) => setSelectedMetric(entry.payload || entry)}
-                  label={({ name, percent }: { name: string; percent?: number }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                  onClick={(entry: any) => setSelectedMetric(entry.payload || entry)}
+                  label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
                 >
                   {dynamicCategories.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <RechartsTooltip 
-                  formatter={(value: number | string) => [`${value.toLocaleString()} records (Click slice to explore)`, 'Count']}
+                  formatter={(value: any) => [`${value.toLocaleString()} records (Click slice to explore)`, 'Count']}
                   contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                 />
               </PieChart>

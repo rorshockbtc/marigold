@@ -374,7 +374,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                     <p className="text-sm text-text-body leading-relaxed">{msg.suggestedPlaybook.description}</p>
                     <button
                       type="button"
-                      onClick={() => handleSaveSuggestedPlaybook(msg.suggestedPlaybook)}
+                      onClick={() => msg.suggestedPlaybook && handleSaveSuggestedPlaybook(msg.suggestedPlaybook)}
                       disabled={savedPlaybooks[msg.suggestedPlaybook.name]}
                       className={`w-full mt-2 py-3 rounded-full font-bold text-sm transition-all shadow-sm ${savedPlaybooks[msg.suggestedPlaybook.name] ? 'bg-albers-green-soft text-albers-green-bold border border-albers-green-bold/20 cursor-default' : 'bg-white border border-border-soft hover:border-primary text-text-header'}`}
                     >
