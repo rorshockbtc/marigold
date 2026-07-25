@@ -73,12 +73,13 @@ export default function InsightsPage() {
           subtitle="Explore visual intelligence briefings generated from your local datasets."
           actions={
             <div className="flex gap-3">
-              <a 
-                href="/onboarding"
-                className="btn-primary"
-              >
+              <a href="/data-prep" className="btn-secondary hidden sm:flex items-center">
+                <Database className="w-4 h-4 mr-2" />
+                Upload Data
+              </a>
+              <a href="/onboarding" className="btn-secondary hidden sm:flex items-center">
                 <FileUp className="w-4 h-4 mr-2" />
-                Open Local .mari File
+                Re-link Folder
               </a>
             </div>
           }

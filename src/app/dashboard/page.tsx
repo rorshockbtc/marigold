@@ -98,9 +98,17 @@ export default function DashboardPage() {
         }
         actions={
           <div className="flex gap-3">
+            <Button onClick={() => router.push('/data-prep')} variant="outline" className="flex items-center gap-2 hidden sm:flex">
+              <Database className="w-4 h-4" />
+              Upload Data
+            </Button>
+            <Button onClick={() => router.push('/onboarding')} variant="outline" className="flex items-center gap-2 hidden sm:flex">
+              <FolderKey className="w-4 h-4" />
+              Re-link Folder
+            </Button>
             <div className="relative">
               <Button 
-                onClick={() => { /* Toggle filter dropdown - to be implemented fully */ alert("Filter Board: Scope for future Sprint"); }}
+                onClick={() => { alert("Filter Board: Scope for future Sprint"); }}
                 variant="secondary"
                 className="flex items-center gap-2"
               >
