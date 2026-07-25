@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve("."),
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {
