@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { ArrowRight, Search, Target, Users, BookOpen, Fingerprint } from "lucide-react";
 
 const REGIONS = [
   {
@@ -99,6 +100,7 @@ const REGIONS = [
 export default function MarketingHomePage() {
   const [activeRegion, setActiveRegion] = useState(0);
   const current = REGIONS[activeRegion];
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -107,237 +109,260 @@ export default function MarketingHomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    videoRefs.current.forEach((vid, index) => {
+      if (vid) {
+        if (index === activeRegion) {
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+        }
+      }
+    });
+  }, [activeRegion]);
+
   return (
-    <div className="pb-24 font-sans">
-      {/* Full-Width Edge-to-Edge Hero Section */}
-      <section className="w-full text-center space-y-8 py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800 shadow-2xl px-4 sm:px-6">
-        {/* Instant Static Background Fallbacks & Layered Video Streams */}
-        {REGIONS.map((reg) => (
-          <React.Fragment key={reg.id}>
-            <div 
-              className={`absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform origin-center scale-[1.12] transition-opacity duration-1000 ease-in-out ${
-                activeRegion === reg.id ? 'opacity-100 z-0' : 'opacity-0 -z-10'
-              }`}
-              style={{ backgroundImage: `url("${reg.bg}")` }}
-            />
-            <video
-              src={reg.video}
-              poster={reg.bg}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className={`absolute inset-0 w-full h-full object-cover pointer-events-none transform origin-center scale-[1.12] transition-opacity duration-1000 ease-in-out ${
-                activeRegion === reg.id ? 'opacity-100 z-10' : 'opacity-0 -z-10'
-              }`}
-            />
-          </React.Fragment>
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
-
-        {/* Top Badges */}
-        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-4">
-          <span className="bg-amber-400/20 text-amber-300 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-amber-400/30 shadow-sm">
-            FY26 FEMA HSGP Compliant
-          </span>
-          <span className="bg-slate-800/80 text-slate-200 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-slate-600 shadow-sm">
-            Zero Cloud PII Exposure
-          </span>
-          <a 
-            href="https://github.com/rorshockbtc/marigold" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="bg-white text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider hover:bg-slate-200 transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <span>GitHub Open Source ↗</span>
-          </a>
-        </div>
-
-        {/* Main Heading */}
-        <h1 className="relative z-10 text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white max-w-5xl mx-auto leading-tight drop-shadow-lg">
-          Non-Partisan Civic Data Exploration
-        </h1>
+    <div className="pb-24 font-sans bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+      {/* Editorial Hero Section (WhiteHouse / Cassandra Style) */}
+      <section className="w-full text-center py-24 sm:py-36 relative overflow-hidden px-4 sm:px-6">
         
-        <p className="relative z-10 text-lg sm:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal drop-shadow">
-          Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
-        </p>
+        {/* Soft Background Layer */}
+        <div className="absolute inset-0 z-0 bg-background" />
+        
+        {/* Border Frame for Video to match editorial layout */}
+        <div className="absolute inset-0 z-0 opacity-40 overflow-hidden mix-blend-multiply border-b border-border pointer-events-none">
+          {REGIONS.map((reg) => (
+            <React.Fragment key={reg.id}>
+              <div 
+                className={`absolute inset-0 bg-cover bg-center bg-no-repeat transform origin-center transition-opacity duration-1000 ease-in-out ${
+                  activeRegion === reg.id ? 'opacity-100' : 'opacity-0'
+                }`}
+                style={{ backgroundImage: `url("${reg.bg}")` }}
+              />
+              <video
+                ref={(el) => {
+                  videoRefs.current[reg.id] = el;
+                }}
+                src={reg.video}
+                poster={reg.bg}
+                loop
+                muted
+                playsInline
+                className={`absolute inset-0 w-full h-full object-cover transform origin-center transition-opacity duration-1000 ease-in-out ${
+                  activeRegion === reg.id ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </React.Fragment>
+          ))}
+          <div className="absolute inset-0 bg-background/40" />
+        </div>
 
-        {/* America the Beautiful Animated Lyric Display */}
-        <div className="relative z-10 pt-4 pb-2 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur border border-slate-700 px-5 py-2 rounded-full text-sm text-amber-300 font-serif italic tracking-wide shadow-inner transition-all duration-500">
-            <span>🇺🇸 "{current.lyric}"</span>
-            <span className="text-slate-400 font-sans not-italic">— {current.location}</span>
+        {/* Content */}
+        <div className="relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
+          
+          {/* Top Badges */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <span className="font-mono text-xs font-bold px-3 py-1.5 uppercase tracking-widest text-foreground border border-foreground/20 bg-foreground/5 rounded-full">
+              FY26 FEMA HSGP Compliant
+            </span>
+            <span className="font-mono text-xs font-bold px-3 py-1.5 uppercase tracking-widest text-foreground border border-foreground/20 bg-card-bg rounded-full shadow-sm">
+              Zero Cloud PII Exposure
+            </span>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="relative z-10 pt-4 flex flex-wrap justify-center items-center gap-4">
-          <Link href="/sandbox" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all transform hover:-translate-y-0.5 min-w-[200px]">
-            Try Public Sandbox →
-          </Link>
-          <Link href="/store" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-xl bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 transition-all min-w-[200px]">
-            Browse Audit Checklists
-          </Link>
-          <Link href="/registry" className="h-13 py-3.5 flex items-center justify-center px-8 text-base font-bold rounded-xl shadow-sm bg-slate-900/80 text-slate-200 border border-slate-700 hover:bg-slate-800 transition-all min-w-[200px]">
-            State Registry
-          </Link>
-        </div>
+          {/* Main Heading */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-foreground max-w-5xl mx-auto leading-tight drop-shadow-sm px-4">
+            Non-Partisan Civic Data Exploration
+          </h1>
+          
+          <p className="mt-8 text-lg sm:text-xl text-foreground max-w-3xl mx-auto leading-loose font-medium">
+            Making local public record review straightforward, safe, and transparent. Verify civic data directly on your own personal computer without programming expertise, expensive server costs, or transmitting private records across the internet.
+          </p>
 
-        <div className="relative z-10 pt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800/80 max-w-2xl mx-auto mt-8">
-          <span>100% Client-Side Memory</span>
-          <span>•</span>
-          <span>No PII Uploads</span>
-          <span>•</span>
-          <span>Wyoming LLC Built</span>
+          {/* America the Beautiful Animated Lyric Display */}
+          <div className="pt-10 pb-4 max-w-4xl mx-auto opacity-90">
+            <div className="inline-flex flex-col items-center gap-1.5">
+              <span className="text-base sm:text-lg text-foreground font-bold font-serif italic tracking-wide transition-all duration-500">
+                "{current.lyric}"
+              </span>
+              <span className="text-foreground/80 text-xs uppercase tracking-widest font-mono font-bold transition-all duration-500">
+                — {current.location}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-10 flex flex-wrap justify-center items-center gap-6">
+            <Link href="/sandbox" className="btn-primary h-14 px-8 text-base shadow-sm min-w-[200px] flex items-center justify-center gap-2">
+              <Search className="w-5 h-5" />
+              Try Public Sandbox
+            </Link>
+            <Link href="/store" className="btn-secondary h-14 px-8 text-base shadow-sm min-w-[200px] flex items-center justify-center gap-2">
+              <BookOpen className="w-5 h-5 text-secondary" />
+              Browse Checklists
+            </Link>
+          </div>
+
         </div>
       </section>
 
       {/* Main Container for Rest of Content */}
-      <div className="space-y-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+      <div className="space-y-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+        
         {/* The Three Major Stakeholder Groups */}
-        <section className="space-y-10 max-w-6xl mx-auto px-2">
-          <div className="text-center space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary">Engineered for Every Civic Stakeholder</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Click any overview card below to read a clear, non-technical walkthrough tailored specifically for your role.</p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Group 1: State Administrative Agencies */}
-          <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-400 transition-all">
-            <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-100 px-3 py-1 rounded-md border border-sky-200">
-                State Level
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-primary">State Administrative Agencies (SAAs)</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Safely fulfill mandatory **FEMA election security spend requirements** with zero embarrassing audit surprises. Professional verification structured as a flat-rate micro-purchase ($1,500/yr) that processes data inside local RAM without cloud risk.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-slate-100">
-              <Link href="/solutions/state-agencies" className="text-sm font-bold text-sky-700 hover:underline inline-flex items-center gap-1">
-                Read State Guide &amp; Procurement Details →
-              </Link>
-            </div>
-          </div>
-
-          {/* Group 2: Citizens & Volunteers */}
-          <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-400 transition-all">
-            <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-md border border-amber-200">
-                Citizen Level
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-primary">Citizen Auditors &amp; Volunteers</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Written in plain, everyday language. You don&apos;t need to be a programmer to help maintain accurate community records. Think of Marigold as a smart magnifying glass that runs right on your computer desk with total privacy.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-slate-100">
-              <Link href="/solutions/citizens" className="text-sm font-bold text-amber-700 hover:underline inline-flex items-center gap-1">
-                Read Plain-Language Citizen Guide →
-              </Link>
-            </div>
-          </div>
-
-          {/* Group 3: Civic Lead Groups */}
-          <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-400 transition-all">
-            <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-md border border-emerald-200">
-                Organization Level
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-primary">Civic Integrity Networks</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Unify your volunteer chapters across county lines. Share effective search queries and standardized review checklists exclusively with your trusted network—ensuring strategic alignment without broadcasting public data.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-slate-100">
-              <Link href="/solutions/organizations" className="text-sm font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">
-                Read Coalition Collaboration Guide →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works (The In-Memory Engine) */}
-      <section className="bg-slate-900 text-white rounded-3xl p-8 sm:p-14 shadow-xl space-y-10 max-w-6xl mx-auto">
-        <div className="text-center space-y-3">
-          <span className="bg-slate-800 text-amber-400 font-bold text-xs px-3.5 py-1.5 rounded uppercase tracking-wider border border-slate-700">
-            The Technological Breakthrough
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold">Inverting Traditional Cloud Architecture</h2>
-          <p className="text-slate-300 text-base max-w-2xl mx-auto leading-relaxed">
-            Traditional platforms force counties to upload sensitive citizen records to centralized cloud servers. Marigold brings the algorithms down to the local file instead.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8 pt-2">
-          <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 space-y-3">
-            <div className="text-sm font-bold text-amber-400 font-mono tracking-widest uppercase">Step 01</div>
-            <h4 className="font-serif font-bold text-white text-xl">Download Checklist</h4>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Browse the public library and download a standardized text file (e.g., National Change of Address verification filter) directly to your computer.
+        <section className="space-y-16 max-w-6xl mx-auto">
+          <div className="text-center space-y-6 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both">
+            <h2 className="text-3xl sm:text-5xl font-serif font-bold text-foreground tracking-tight">Engineered for Every Civic Stakeholder</h2>
+            <p className="text-secondary text-lg leading-loose">
+              Whether you are a state agency enforcing compliance, or a citizen volunteer organizing a verification chapter, Marigold's localized architecture empowers your specific role.
             </p>
           </div>
 
-          <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 space-y-3">
-            <div className="text-sm font-bold text-amber-400 font-mono tracking-widest uppercase">Step 02</div>
-            <h4 className="font-serif font-bold text-white text-xl">Select Local File</h4>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Open your jurisdiction&apos;s official spreadsheet on your computer. The browser maps columns securely in local computer RAM without internet upload.
+          <div className="grid md:grid-cols-3 gap-10">
+            {/* Group 1: State Administrative Agencies */}
+            <div className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm space-y-6 flex flex-col justify-between hover:border-primary/50 transition-colors animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
+              <div className="space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-primary font-mono block">
+                  State Level
+                </span>
+                <h3 className="text-2xl font-serif font-bold text-foreground leading-snug">State Administrative Agencies (SAAs)</h3>
+                <p className="text-secondary leading-loose">
+                  Safely fulfill mandatory FEMA election security spend requirements with zero embarrassing audit surprises. Professional verification structured as a flat-rate micro-purchase.
+                </p>
+              </div>
+              <div className="pt-6 border-t border-border-soft">
+                <Link href="/solutions/state-agencies" className="text-sm font-bold text-primary hover:underline flex items-center gap-1.5">
+                  Read Procurement Details <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Group 2: Citizens & Volunteers */}
+            <div className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm space-y-6 flex flex-col justify-between hover:border-primary/50 transition-colors animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200 fill-mode-both">
+              <div className="space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-primary font-mono block">
+                  Citizen Level
+                </span>
+                <h3 className="text-2xl font-serif font-bold text-foreground leading-snug">Citizen Auditors &amp; Volunteers</h3>
+                <p className="text-secondary leading-loose">
+                  Written in plain, everyday language. You don't need to be a programmer to help maintain accurate community records. Think of Marigold as a smart magnifying glass running right on your computer.
+                </p>
+              </div>
+              <div className="pt-6 border-t border-border-soft">
+                <Link href="/solutions/citizens" className="text-sm font-bold text-primary hover:underline flex items-center gap-1.5">
+                  Read Citizen Guide <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Group 3: Civic Lead Groups */}
+            <div className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm space-y-6 flex flex-col justify-between hover:border-primary/50 transition-colors animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-both">
+              <div className="space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-primary font-mono block">
+                  Organization Level
+                </span>
+                <h3 className="text-2xl font-serif font-bold text-foreground leading-snug">Civic Integrity Networks</h3>
+                <p className="text-secondary leading-loose">
+                  Unify your volunteer chapters across county lines. Share effective search queries and standardized review checklists exclusively with your trusted network without broadcasting public data.
+                </p>
+              </div>
+              <div className="pt-6 border-t border-border-soft">
+                <Link href="/solutions/organizations" className="text-sm font-bold text-primary hover:underline flex items-center gap-1.5">
+                  Read Coalition Guide <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works (The In-Memory Engine) */}
+        <section className="bg-foreground text-background rounded-[24px] p-12 sm:p-20 shadow-xl space-y-16 max-w-6xl mx-auto relative overflow-hidden animate-in fade-in duration-1000 slide-in-from-bottom-8">
+          {/* subtle background pattern could go here */}
+          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+            <Fingerprint className="w-96 h-96" />
+          </div>
+
+          <div className="text-center space-y-6 relative z-10 max-w-3xl mx-auto">
+            <span className="text-primary font-bold text-xs uppercase tracking-widest font-mono border border-primary/30 px-4 py-2 rounded-full">
+              The Technological Breakthrough
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-white">Inverting Traditional Cloud Architecture</h2>
+            <p className="text-background/80 text-lg leading-loose">
+              Traditional platforms force counties to upload sensitive citizen records to centralized cloud servers. Marigold brings the verification algorithms directly down to your local computer instead.
             </p>
           </div>
 
-          <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 space-y-3">
-            <div className="text-sm font-bold text-amber-400 font-mono tracking-widest uppercase">Step 03</div>
-            <h4 className="font-serif font-bold text-white text-xl">Instant Audit Results</h4>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Client-side memory processes up to 100,000 rows per second, isolating clerical formatting errors and formatting clean verification reports instantly.
-            </p>
+          <div className="grid md:grid-cols-3 gap-12 pt-8 relative z-10">
+            <div className="space-y-4">
+              <div className="text-sm font-bold text-primary font-mono tracking-widest uppercase border-b border-background/20 pb-2">Step 01</div>
+              <h4 className="font-serif font-bold text-white text-2xl tracking-tight">Download Checklist</h4>
+              <p className="text-background/70 leading-loose">
+                Browse the public library and download a standardized text file (e.g., National Change of Address verification filter) directly to your computer.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-sm font-bold text-primary font-mono tracking-widest uppercase border-b border-background/20 pb-2">Step 02</div>
+              <h4 className="font-serif font-bold text-white text-2xl tracking-tight">Select Local File</h4>
+              <p className="text-background/70 leading-loose">
+                Open your jurisdiction's official spreadsheet on your computer. The browser maps columns securely in local computer RAM without any internet uploads.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-sm font-bold text-primary font-mono tracking-widest uppercase border-b border-background/20 pb-2">Step 03</div>
+              <h4 className="font-serif font-bold text-white text-2xl tracking-tight">Instant Audit Results</h4>
+              <p className="text-background/70 leading-loose">
+                Client-side memory processes up to 100,000 rows per second, isolating clerical formatting errors and producing clean verification reports instantly.
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Feature Showcase Grid */}
-      <section className="space-y-8 max-w-6xl mx-auto px-2">
-        <h2 className="text-3xl font-serif font-bold text-primary text-center">Explore Core System Modules</h2>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <Link href="/store" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-accent uppercase tracking-wider font-mono">Shared Library</span>
-              <h3 className="text-xl font-serif font-bold text-primary group-hover:text-accent transition-colors">National Audit Checklists</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Crowdsourced verification parameters shareable across state lines.</p>
-            </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
-          </Link>
+        {/* Feature Showcase Grid */}
+        <section className="space-y-16 max-w-6xl mx-auto">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-5xl font-serif font-bold text-foreground tracking-tight">Explore Core System Modules</h2>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 gap-8">
+            <Link href="/store" className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm hover:border-primary transition-colors group flex justify-between items-center">
+              <div className="space-y-3">
+                <span className="text-xs font-bold text-primary uppercase tracking-widest font-mono block">Shared Library</span>
+                <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors leading-snug">National Audit Checklists</h3>
+                <p className="text-secondary leading-relaxed">Crowdsourced verification parameters shareable across state lines.</p>
+              </div>
+              <span className="text-3xl group-hover:translate-x-2 transition-transform font-light text-primary/50 group-hover:text-primary">→</span>
+            </Link>
 
-          <Link href="/data-linkage" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider font-mono">Statistical Matching</span>
-              <h3 className="text-xl font-serif font-bold text-primary group-hover:text-emerald-700 transition-colors">Smart Duplicate Finder</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Test our probabilistic fuzzy linkage simulator directly in your browser.</p>
-            </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
-          </Link>
+            <Link href="/data-linkage" className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm hover:border-primary transition-colors group flex justify-between items-center">
+              <div className="space-y-3">
+                <span className="text-xs font-bold text-primary uppercase tracking-widest font-mono block">Statistical Matching</span>
+                <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors leading-snug">Smart Duplicate Finder</h3>
+                <p className="text-secondary leading-relaxed">Test our probabilistic fuzzy linkage simulator directly in your browser.</p>
+              </div>
+              <span className="text-3xl group-hover:translate-x-2 transition-transform font-light text-primary/50 group-hover:text-primary">→</span>
+            </Link>
 
-          <Link href="/registry" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-sky-700 uppercase tracking-wider font-mono">50-State Index</span>
-              <h3 className="text-xl font-serif font-bold text-primary group-hover:text-sky-700 transition-colors">State Acquisition Registry</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">View formatting parameters and cost structures nationwide.</p>
-            </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
-          </Link>
+            <Link href="/registry" className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm hover:border-primary transition-colors group flex justify-between items-center">
+              <div className="space-y-3">
+                <span className="text-xs font-bold text-primary uppercase tracking-widest font-mono block">50-State Index</span>
+                <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors leading-snug">State Acquisition Registry</h3>
+                <p className="text-secondary leading-relaxed">View formatting parameters and statutory cost structures nationwide.</p>
+              </div>
+              <span className="text-3xl group-hover:translate-x-2 transition-transform font-light text-primary/50 group-hover:text-primary">→</span>
+            </Link>
 
-          <Link href="/roadmap" className="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group flex justify-between items-center">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-purple-700 uppercase tracking-wider font-mono">Civic Integration</span>
-              <h3 className="text-xl font-serif font-bold text-primary group-hover:text-purple-700 transition-colors">Technical Roadmap</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Cross-agency integrations and federal grant alignment milestones.</p>
-            </div>
-            <span className="text-2xl group-hover:translate-x-1 transition-transform font-light text-slate-400">→</span>
-          </Link>
-        </div>
-      </section>
+            <Link href="/roadmap" className="bg-card-bg p-10 rounded-[12px] border border-border shadow-sm hover:border-primary transition-colors group flex justify-between items-center">
+              <div className="space-y-3">
+                <span className="text-xs font-bold text-primary uppercase tracking-widest font-mono block">Civic Integration</span>
+                <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors leading-snug">Technical Roadmap</h3>
+                <p className="text-secondary leading-relaxed">Cross-agency integrations and federal grant alignment milestones.</p>
+              </div>
+              <span className="text-3xl group-hover:translate-x-2 transition-transform font-light text-primary/50 group-hover:text-primary">→</span>
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

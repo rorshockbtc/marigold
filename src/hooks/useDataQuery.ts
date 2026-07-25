@@ -107,6 +107,16 @@ export function useDataQuery() {
       const typoList: Array<Record<string, any>> = [];
       const results: Array<Record<string, any>> = [];
       let activeMapping: any = null;
+      
+      const benfordsLawCounts: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0 };
+      let benfordsTotal = 0;
+
+      let exclusions: Record<string, string[]> = {};
+      try {
+        const ext = typeof window !== 'undefined' ? localStorage.getItem('marigold_exclusions') : null;
+        if (ext) exclusions = JSON.parse(ext);
+      } catch (e) {}
+      const activeExclusions = exclusions[auditType] || [];
 
       return new Promise((resolve, reject) => {
         const countReq = store.count();
@@ -168,6 +178,13 @@ export function useDataQuery() {
                       },
                       residents: [{ name: std.name, id: std.voter_id, date: std.date_registered }]
                     });
+                  }
+                  
+                  // Track Benford's Law Distribution
+                  const match = addr.match(/^[^\d]*([1-9])/);
+                  if (match) {
+                    benfordsLawCounts[match[1]]++;
+                    benfordsTotal++;
                   }
                 }
 
@@ -416,11 +433,59 @@ export function useDataQuery() {
               }
             } else if (auditType === 'typo-names') {
               results.push(...typoList);
+            } else if (auditType === 'benfords-law') {
+              const expectedPercentages: Record<string, number> = {
+                '1': 30.1, '2': 17.6, '3': 12.5, '4': 9.7, '5': 7.9, '6': 6.7, '7': 5.8, '8': 5.1, '9': 4.6
+              };
+              let totalVariance = 0;
+              for (let i = 1; i <= 9; i++) {
+                const digit = i.toString();
+                const actualCount = benfordsLawCounts[digit];
+                const actualPercentage = benfordsTotal > 0 ? (actualCount / benfordsTotal) * 100 : 0;
+                const expectedPercentage = expectedPercentages[digit];
+                const variance = Math.abs(actualPercentage - expectedPercentage);
+                totalVariance += variance;
+                results.push({
+                  id: `BENFORD-${digit}`,
+                  name: `Leading Digit ${digit}`,
+                  address: `Actual: ${actualPercentage.toFixed(2)}%`,
+                  city: `Expected: ${expectedPercentage}%`,
+                  state: '',
+                  zip: '',
+                  county: '',
+                  occupant_count: actualCount,
+                  risk_level: variance > 5 ? 'HIGH' : variance > 2 ? 'MEDIUM' : 'LOW',
+                  details: `Digit ${digit} appeared ${actualCount} times. Variance from expected: ${variance.toFixed(2)}%`,
+                  raw: { variance, actualCount, actualPercentage, expectedPercentage }
+                });
+              }
+              const meanAbsoluteError = totalVariance / 9;
+              let conclusion = "Normal Distribution (Follows Benford's Law)";
+              if (meanAbsoluteError > 2) conclusion = 'Suspicious Distribution (Possible Fabrication)';
+              if (meanAbsoluteError > 5) conclusion = 'Highly Anomalous (Likely Fabricated Data)';
+              
+              results.unshift({
+                id: `BENFORD-SUMMARY`,
+                name: `Benford's Law Analysis`,
+                address: `Conclusion: ${conclusion}`,
+                city: '',
+                state: '',
+                zip: '',
+                county: '',
+                occupant_count: benfordsTotal,
+                risk_level: meanAbsoluteError > 5 ? 'CRITICAL' : meanAbsoluteError > 2 ? 'HIGH' : 'LOW',
+                details: `Total records analyzed: ${benfordsTotal}. Mean Absolute Error: ${meanAbsoluteError.toFixed(2)}%`,
+                raw: { meanAbsoluteError, conclusion, total: benfordsTotal }
+              });
             }
+            
+            // Apply Exclusions
+            const filteredResults = results.filter(r => !activeExclusions.includes(r.address) && !activeExclusions.includes(r.id));
+            
             setQueryProgress(100);
-            results.sort((a, b) => (b.occupant_count || 0) - (a.occupant_count || 0));
+            filteredResults.sort((a, b) => (b.occupant_count || 0) - (a.occupant_count || 0));
             releaseScreenWakeLock(wakeLock);
-            resolve(results);
+            resolve(filteredResults);
           }
         };
         request.onerror = () => { setIsQuerying(false); setQueryProgress(0); releaseScreenWakeLock(wakeLock); reject(request.error); };
@@ -433,5 +498,17 @@ export function useDataQuery() {
     }
   }, []);
 
-  return { query, runLocalAudit, isQuerying, queryProgress };
+  const addExclusion = useCallback((auditType: string, value: string) => {
+    try {
+      const ext = localStorage.getItem('marigold_exclusions');
+      const exclusions = ext ? JSON.parse(ext) : {};
+      if (!exclusions[auditType]) exclusions[auditType] = [];
+      if (!exclusions[auditType].includes(value)) {
+        exclusions[auditType].push(value);
+        localStorage.setItem('marigold_exclusions', JSON.stringify(exclusions));
+      }
+    } catch (e) {}
+  }, []);
+
+  return { query, runLocalAudit, addExclusion, isQuerying, queryProgress };
 }

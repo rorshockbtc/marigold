@@ -12,6 +12,11 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', children, icon, ...props }, ref) => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (!props.onClick && props.type !== 'submit' && props.type !== 'reset') {
+        console.warn('Button must have an actionable intent (onClick, type="submit", or type="reset").');
+      }
+    }
     
     // Base styles
     const baseStyles = "inline-flex items-center justify-center font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap";

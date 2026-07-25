@@ -58,6 +58,7 @@ export const metadata: Metadata = {
 };
 
 import MobileWarning from "@/components/MobileWarning";
+import LocalDevTools from "@/components/dev/LocalDevTools";
 
 export default function RootLayout({
   children,
@@ -74,6 +75,7 @@ export default function RootLayout({
             </AppNavigationWrapper>
           </AuthProvider>
           <MobileWarning />
+          <LocalDevTools />
           <Analytics />
           <SpeedInsights />
         </body>

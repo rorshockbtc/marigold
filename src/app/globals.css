@@ -2,62 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Neutral Slate / Marigold Palette */
-  --background: #F8FAFC; /* Slate 50 */
-  --foreground: #0F172A; /* Slate 900 */
-  
-  --primary: #0F172A; /* Deep Slate / Navy */
-  --primary-foreground: #FFFFFF;
-  
-  --secondary: #334155; /* Muted Slate Blue */
-  --secondary-foreground: #FFFFFF;
-  
-  --accent: #D97706; /* Marigold Gold */
-  --accent-foreground: #FFFFFF;
-  
-  --muted: #E2E8F0;
-  --muted-foreground: #475569;
-  
-  --border: #CBD5E1;
-  --input: #FFFFFF;
-  --ring: #D97706;
-  
-  --radius: 0.5rem;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Cassandra / Terracotta Garden Palette */
+    --background: #E8E2D5; /* Warm Cream Surface */
+    --foreground: #4A352F; /* Chocolate Header Text */
+    
+    --card-bg: #FDFBF7; /* Interaction Areas */
+    
+    --primary: #E05B37; /* Terracotta / Muted Sunset Orange */
+    --primary-foreground: #FFFFFF;
+    
+    --secondary: #7C665F; /* Milk Chocolate Body Text / Muted */
+    --secondary-foreground: #FFFFFF;
+    
+    --accent: #D97706; /* Marigold Gold Warning */
+    --accent-foreground: #FFFFFF;
+    
+    --muted: rgba(74, 53, 47, 0.05);
+    --muted-foreground: #7C665F;
+    
+    --border: rgba(74, 53, 47, 0.15); /* Soft chocolate border */
+    --input: #FDFBF7;
+    --ring: #E05B37;
+    
+    --radius: 0.75rem; /* 12px quirky border radius */
+    
+    /* Albers Accent Palette for Badges */
+    --albers-pink-soft: #F9E6E9;
+    --albers-pink-bold: #D36C95;
+    --albers-purple-soft: #E6E1F6;
+    --albers-purple-bold: #735496;
+    --albers-blue-soft: #DDE8F4;
+    --albers-blue-bold: #4578A6;
+    --albers-green-soft: #E3EEDC;
+    --albers-green-bold: #528B65;
+  }
 }
-
-
 
 /* Base styles focused on readability for older users */
 html {
-  font-size: 16px; /* Base 16px rem as requested */
+  font-size: 16px; /* Base 16px rem */
   scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+  line-height: 1.8; /* Generous leading */
+  letter-spacing: 0.01em; /* Slight tracking for readability */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif), serif;
+  color: var(--foreground);
+  letter-spacing: -0.02em; /* Tighter tracking for display text */
+  font-weight: 500;
 }
 
 /* Component classes */
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:opacity-90 h-10 px-4 py-2;
+    @apply inline-flex items-center justify-center rounded-[12px] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:opacity-90 h-10 px-4 py-2;
   }
   
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:opacity-90 h-10 px-4 py-2;
+    @apply inline-flex items-center justify-center rounded-[12px] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-white border border-border text-foreground hover:bg-muted h-10 px-4 py-2;
   }
 
   .input-field {
-    @apply flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-10 w-full rounded-[12px] border border-border bg-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .card {
-    @apply rounded-lg border border-border bg-white text-foreground shadow-sm p-6 overflow-hidden;
+    @apply rounded-[12px] border border-border bg-[var(--card-bg)] text-foreground shadow-sm p-6;
   }
 }

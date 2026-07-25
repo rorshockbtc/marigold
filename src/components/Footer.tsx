@@ -1,42 +1,76 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { FlaskConical } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-slate-50 text-slate-700 py-10 px-6 border-t border-slate-200 mt-auto font-sans">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs md:text-sm">
-        <div className="space-y-2 text-center md:text-left">
-          <div className="font-serif font-bold text-slate-900 text-base flex items-center justify-center md:justify-start gap-2.5">
-            <MarigoldIcon className="w-5 h-5 flex-shrink-0 drop-shadow-sm" />
+    <footer className="bg-background text-foreground py-16 px-6 border-t border-border mt-auto font-sans">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12 md:gap-8">
+        
+        {/* Brand & Mission Statement */}
+        <div className="space-y-4 md:w-1/3">
+          <div className="font-serif font-bold text-foreground text-xl flex items-center gap-3">
+            <MarigoldIcon className="w-6 h-6 flex-shrink-0 text-primary drop-shadow-sm" />
             <span>Marigold Insights</span>
-            <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[11px] font-mono font-bold border border-slate-300">v1.2</span>
           </div>
-          <p className="text-slate-600 max-w-md leading-relaxed">
+          <p className="text-secondary text-sm leading-relaxed max-w-sm">
             Politically neutral civic data traversal engineered for local memory execution and zero-PII cloud compliance.
           </p>
+          <div className="pt-2">
+            <span className="bg-muted text-secondary px-3 py-1 rounded-full text-xs font-mono font-bold border border-border-soft inline-block">
+              Engine Version 1.2.0
+            </span>
+          </div>
         </div>
 
-        <div className="text-center md:text-right space-y-3">
-          <p className="font-medium text-slate-700">
-            Architected & Built by <strong className="text-slate-900 font-bold">Colon Hyphen Bracket, a Wyoming LLC</strong>.
-          </p>
-          <div className="flex flex-wrap justify-center md:justify-end gap-x-5 gap-y-2 font-bold text-slate-700">
+        {/* Link Columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:w-2/3 md:justify-items-end text-sm">
+          
+          {/* Column 1: Platform & Resources */}
+          <div className="space-y-4 flex flex-col">
+            <h4 className="font-bold text-foreground font-serif tracking-tight">Platform</h4>
+            <Link href="/store" className="text-secondary hover:text-primary transition-colors">Audit Checklists</Link>
+            <Link href="/registry" className="text-secondary hover:text-primary transition-colors">State Registry</Link>
+            <Link href="/developers" className="text-secondary hover:text-primary transition-colors">Developer Docs</Link>
+            <Link href="/roadmap" className="text-secondary hover:text-primary transition-colors">Technical Roadmap</Link>
+            <Link 
+              href="/sandbox" 
+              className="text-accent hover:text-primary transition-colors flex items-center gap-1.5 font-bold mt-2"
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span>Public Sandbox</span>
+            </Link>
+          </div>
+
+          {/* Column 2: Legal & Compliance */}
+          <div className="space-y-4 flex flex-col">
+            <h4 className="font-bold text-foreground font-serif tracking-tight">Compliance</h4>
+            <Link href="/compliance" className="text-secondary hover:text-primary transition-colors">FEMA Standards</Link>
+            <Link href="/terms" className="text-secondary hover:text-primary transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="text-secondary hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link href="/cookies" className="text-secondary hover:text-primary transition-colors">Cookie Policy</Link>
+            <Link href="/accessibility" className="text-secondary hover:text-primary transition-colors">Section 508 / WCAG</Link>
+          </div>
+
+          {/* Column 3: Corporate */}
+          <div className="space-y-4 flex flex-col">
+            <h4 className="font-bold text-foreground font-serif tracking-tight">Corporate</h4>
             <a 
               href="https://colonhyphenbracket.pink" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
+              className="text-secondary hover:text-primary transition-colors"
             >
-              Corporate Site ↗
+              Colon Hyphen Bracket ↗
             </a>
             <a 
               href="https://hire.colonhyphenbracket.pink" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
+              className="text-secondary hover:text-primary transition-colors"
             >
               Architect Portfolio ↗
             </a>
@@ -44,49 +78,20 @@ export function Footer() {
               href="https://github.com/rorshockbtc/marigold" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-emerald-700 hover:text-emerald-800 hover:underline transition-all"
+              className="text-secondary hover:text-primary transition-colors"
             >
-              GitHub Repository ↗
-            </a>
-            <a 
-              href="/terms" 
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
-            >
-              Terms of Service &amp; Liability
-            </a>
-            <a 
-              href="/privacy" 
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
-            >
-              Privacy Policy
-            </a>
-            <a 
-              href="/cookies" 
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
-            >
-              Cookie Policy
-            </a>
-            <a 
-              href="/accessibility" 
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
-            >
-              Section 508 / WCAG Accessibility
-            </a>
-            <a 
-              href="/compliance" 
-              className="text-slate-600 hover:text-emerald-700 hover:underline transition-all"
-            >
-              Statutory Compliance
-            </a>
-            <a 
-              href="/sandbox" 
-              className="text-amber-700 hover:text-amber-900 hover:underline transition-all flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
-            >
-              <FlaskConical className="w-3.5 h-3.5" />
-              <span>ACME Sandbox (Mock Data Demo)</span>
+              GitHub Source ↗
             </a>
           </div>
+
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-border-soft flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-secondary">
+        <p>
+          Architected &amp; Built by <strong className="text-foreground font-bold">Colon Hyphen Bracket, a Wyoming LLC</strong>.
+        </p>
+        <p>&copy; {new Date().getFullYear()} Marigold Insights. All rights reserved.</p>
       </div>
     </footer>
   );

@@ -51,22 +51,22 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col md:flex-row">
       
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-72 border-r border-slate-200 bg-slate-50 md:min-h-screen flex flex-col sticky top-0 z-40 md:h-screen shadow-sm">
-        <div className="p-5 border-b border-slate-200 flex flex-col gap-4">
-          <Link href="/" className="flex items-center gap-2 text-slate-900 hover:text-emerald-600 transition-colors">
-            <Layers className="w-5 h-5 text-emerald-600" />
+      <aside className="w-full md:w-72 border-r border-border bg-card-bg md:min-h-screen flex flex-col sticky top-0 z-40 md:h-screen shadow-sm">
+        <div className="p-5 border-b border-border-soft flex flex-col gap-4">
+          <Link href="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+            <Layers className="w-5 h-5 text-primary" />
             <span className="font-black tracking-tight text-lg">Marigold Docs</span>
           </Link>
           
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-600" />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-secondary" />
             <input 
               type="text" 
               placeholder="Search documentation (Cmd+K)" 
-              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-sm"
+              className="w-full pl-9 pr-3 py-2 bg-input border border-border-soft rounded-[12px] text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
             />
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
         <nav className="flex-1 overflow-y-auto p-4 space-y-8">
           {navigation.map((section, idx) => (
             <div key={idx}>
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 mb-3 px-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-foreground mb-3 px-2">
                 {section.group}
               </h4>
               <div className="space-y-1">
@@ -84,17 +84,17 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-all group ${
+                      className={`w-full text-left px-3 py-2 rounded-[12px] flex items-center justify-between transition-all group ${
                         isActive 
-                          ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm border border-emerald-100' 
-                          : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 font-medium'
+                          ? 'bg-primary/10 text-primary font-bold shadow-sm border border-primary/20' 
+                          : 'text-secondary hover:bg-muted hover:text-foreground font-medium'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <item.icon className={`w-4 h-4 ${isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                        <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-secondary group-hover:text-foreground'}`} />
                         <span className="text-sm">{item.name}</span>
                       </div>
-                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />}
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-primary" />}
                     </Link>
                   );
                 })}
@@ -103,16 +103,16 @@ export default function DevelopersLayout({ children }: { children: React.ReactNo
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 bg-white mt-auto flex justify-between items-center">
-          <span className="text-xs font-bold text-slate-500">v1.0.4 Enterprise</span>
-          <Link href="/contact" className="text-xs font-bold text-emerald-600 hover:underline">
+        <div className="p-4 border-t border-border-soft bg-card-bg mt-auto flex justify-between items-center">
+          <span className="text-xs font-bold text-secondary">v1.0.4 Enterprise</span>
+          <Link href="/contact" className="text-xs font-bold text-primary hover:underline">
             Support
           </Link>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-white relative">
+      <main className="flex-1 overflow-y-auto bg-background relative">
         <div className="max-w-4xl mx-auto px-8 py-12 lg:px-16 lg:py-16">
           {children}
         </div>

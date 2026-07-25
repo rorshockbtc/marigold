@@ -69,7 +69,11 @@ export default function MariRightPanel() {
       {isOpen && (
         <aside 
           style={{ width: isFullScreen ? '100%' : `${panelWidth}px` }}
-          className={`fixed top-0 right-0 bottom-0 ${isFullScreen ? 'w-full max-w-full' : 'max-w-[90vw]'} bg-[#FAF8F5] border-l border-border shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-300`}
+          className={
+            isFullScreen
+              ? `fixed inset-0 z-50 bg-[#FAF8F5] flex flex-col animate-in fade-in duration-300`
+              : `relative h-full bg-[#FAF8F5] border-l border-border shadow-[-10px_0_30px_rgba(74,53,47,0.05)] flex flex-col z-50 animate-in slide-in-from-right duration-300`
+          }
         >
           {/* Drag Resize Handle on left border */}
           {!isFullScreen && (
@@ -90,7 +94,7 @@ export default function MariRightPanel() {
               <MarigoldIcon className="w-8 h-8 flex-shrink-0 text-[#D96B27] drop-shadow-md" />
               <div>
                 <h3 className="font-black text-foreground text-sm leading-tight">Mari AI Guidance Co-Pilot</h3>
-                <p className="text-[10px] text-[#646A7A] font-mono mt-0.5">100% Local Memory • Non-Partisan Guide</p>
+                <p className="text-[10px] text-[#646A7A] font-mono mt-0.5">100% Private • Non-Partisan Guide</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">

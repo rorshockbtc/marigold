@@ -62,8 +62,9 @@ Advanced longitudinal data orchestration, cryptographic state synchronization, a
 
 When executed on standard consumer hardware, the Marigold Insights engine achieves:
 1. **Air-Gapped PII Shield:** 100% compliance with federal data privacy mandates; server network panels confirm zero data payload transmission during audit runs.
-2. **Sub-Second Traversal:** Pre-indexed local database shards execute complex multi-variable aggregation queries in $< 250\text{ms}$.
-3. **Guided Citizen Workflow:** Demotes technical developer jargon into clear, empowering single-click action buttons designed for non-technical volunteers and state officials alike.
+2. **Automagic Secure Ingestion:** Dynamic LLM routing (via Data Concierge) orchestrates on-the-fly public data ingestion. A Real-time Security Scanner inspects incoming byte streams against strict XSS and null-byte signatures before committing chunks to the browser's OPFS.
+3. **Sub-Second Traversal:** Pre-indexed local database shards execute complex multi-variable aggregation queries in $< 250\text{ms}$.
+4. **Guided Citizen Workflow:** Demotes technical developer jargon into clear, empowering single-click action buttons designed for non-technical volunteers and state officials alike.
 
 ---
 

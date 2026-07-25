@@ -24,9 +24,9 @@ Marigold qualifies as an allowable voter list maintenance expenditure under the 
 
 ## 🚀 Quick Start (For Non-Technical Users)
 
-1. **Download a Checklist:** Browse the National Audit Checklist Store and download a ruleset (e.g., "Find duplicate P.O. boxes").
-2. **Open Your Spreadsheet:** Launch the Marigold workspace and select your local CSV file.
-3. **See Results Instantly:** The local engine highlights errors in seconds.
+1. **Ask Mari (The AI Concierge):** Type what anomaly you are looking for (e.g., "Find high density obesity rates"). If you lack local data, Mari will intelligently discover public datasets (like Data.gov) and initiate the Automagic Ingestion Pipeline.
+2. **Automagic Secure Ingestion:** Datasets are streamed directly to your browser's private OPFS (Origin Private File System). A Real-time Security Scanner actively inspects the streaming bytes to block XSS and malicious payloads.
+3. **Execute Playbooks:** The local WASM engine processes and highlights errors instantly, all air-gapped on your own machine.
 
 ---
 

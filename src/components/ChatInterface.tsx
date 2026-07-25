@@ -4,21 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { getSearchRecipes, saveSearchRecipe, SearchRecipe } from "@/lib/firebase/db";
 import ReactMarkdown from 'react-markdown';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Volume2, Sparkles, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope } from 'lucide-react';
+import { BookOpen, Volume2, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope } from 'lucide-react';
+import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { Button } from "@/components/ui/Button";
+import { PIIRedactor } from '@/lib/security/PIIRedactor';
 
-export interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-  suggestedPlaybook?: any;
-}
-
-export interface ChatSession {
-  id: string;
-  title: string;
-  timestamp: number;
-  messages: ChatMessage[];
-}
+import { ChatMessage, ChatSession, Playbook } from '@/lib/types';
 
 export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean } = {}) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -52,9 +43,9 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
 
   // Listen for external requests to fill the query box (e.g. from NonTechnicalTranslator)
   useEffect(() => {
-    const handleSetQuery = (e: any) => {
-      if (e.detail?.query) {
-        setQuery(e.detail.query);
+    const handleSetQuery = (e: CustomEvent | Event) => {
+      if ('detail' in e && (e as CustomEvent).detail?.query) {
+        setQuery((e as CustomEvent).detail.query);
         // Optionally focus the textarea
         if (textareaRef.current) {
           textareaRef.current.focus();
@@ -98,7 +89,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     recognition.interimResults = false;
     recognition.lang = "en-US";
     recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: { results: { transcript: string }[][] }) => {
       const transcript = event.results[0][0].transcript;
       setQuery(prev => (prev ? prev + " " + transcript : transcript));
       setIsListening(false);
@@ -131,7 +122,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleSaveSuggestedPlaybook = async (pb: any) => {
+  const handleSaveSuggestedPlaybook = async (pb: Playbook) => {
     try {
       await fetch('/api/playbooks', {
         method: 'POST',
@@ -207,6 +198,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     e.preventDefault();
     if (!query.trim()) return;
 
+    const scrubbedQuery = PIIRedactor.scrub(query);
     let currentSessionId = activeSessionId;
     let currentMessages = messages;
 
@@ -214,7 +206,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     if (!currentSessionId) {
       const newSession: ChatSession = {
         id: "s" + Date.now(),
-        title: query.substring(0, 30) + "...",
+        title: scrubbedQuery.substring(0, 30) + (scrubbedQuery.length > 30 ? "..." : ""),
         timestamp: Date.now(),
         messages: [{ role: "assistant", content: "Hello! I am your Marigold Guide. Ask me how to find specific records, use filters, or navigate the platform!" }]
       };
@@ -224,7 +216,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
       setActiveSessionId(newSession.id);
     }
 
-    const userMessage: ChatMessage = { role: "user", content: query };
+    const userMessage: ChatMessage = { role: "user", content: scrubbedQuery };
     const newMessages = [...currentMessages, userMessage];
     
     // Update active session locally
@@ -259,7 +251,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage] } : s));
 
     } catch (error) {
-      const errorMsg: ChatMessage = { role: "assistant", content: "Network error occurred." };
+      const errorMsg: ChatMessage = { role: "assistant", content: "I'm having trouble connecting to the local model (Gemini). Please ensure your API key is configured correctly or try asking again in a moment. If this persists, contact your group administrator." };
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, errorMsg] } : s));
     } finally {
       setIsLoading(false);
@@ -275,8 +267,8 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     const firstQuery = userQueries.length > 0 ? userQueries[0].content : "Example query...";
 
     const newRecipe: SearchRecipe = {
-      name: templateName,
-      description: templateDesc,
+      name: PIIRedactor.scrub(templateName),
+      description: PIIRedactor.scrub(templateDesc),
       queryTemplate: firstQuery,
       author: "Volunteer",
       successRate: 100
@@ -296,7 +288,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
   };
 
   return (
-    <div className={isDrawer ? "flex h-full w-full gap-0 bg-[#FAF8F5]" : "flex h-[calc(100vh-8rem)] max-w-6xl mx-auto gap-6"}>
+    <div className={isDrawer ? "flex h-full w-full gap-0 bg-background" : "flex h-[calc(100vh-8rem)] max-w-6xl mx-auto gap-6"}>
       
       {/* Sidebar: History */}
       {!isDrawer && (
@@ -331,89 +323,62 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
       )}
 
       {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col bg-white overflow-hidden relative ${isDrawer ? 'border-0 rounded-none shadow-none h-full' : 'rounded-xl shadow-sm border border-border'}`}>
-        <div className="bg-secondary text-secondary-foreground p-4 shadow-sm z-10 flex flex-wrap justify-between items-center gap-4">
+      <div className={`flex-1 flex flex-col bg-background overflow-hidden relative ${isDrawer ? 'border-0 rounded-none shadow-none h-full' : 'rounded-2xl shadow-sm border border-border'}`}>
+        <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex justify-between items-center">
           <div>
-            <h2 className="text-lg font-bold">{activeSession ? activeSession.title : "New Question"}</h2>
-            <p className="text-xs opacity-80">Marigold Documentation & Guidance</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsFriendlyMode(!isFriendlyMode)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${isFriendlyMode ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm' : 'bg-slate-800 text-slate-200 border-slate-600'}`}
-              title={isFriendlyMode ? "Plain English analogies without statistical formulas" : "Rigorous Z-scores, kurtosis, and mathematical distributions"}
-            >
-              {isFriendlyMode ? (
-                <>
-                  <Sprout className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Friendly Guide Mode</span>
-                </>
-              ) : (
-                <>
-                  <Microscope className="w-3.5 h-3.5 text-slate-700" />
-                  <span>Analyst Pro Mode</span>
-                </>
-              )}
-            </button>
-            {activeSession && activeSession.messages.length > 1 && (
-              <button onClick={() => setIsTemplateModalOpen(true)} className="text-xs bg-white text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-muted font-medium border border-border">
-                Save as Common Question
-              </button>
-            )}
+            <h2 className="text-lg font-serif font-black text-text-header">{activeSession ? activeSession.title : "How can I help you?"}</h2>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-background">
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {!activeSession && (
-             <div className="h-full flex items-center justify-center text-muted-foreground flex-col text-center px-8">
-               <BookOpen className="w-12 h-12 text-slate-600 mb-4" />
-               <p className="text-lg font-medium text-foreground">Welcome to the Marigold Guide</p>
-               <p className="mt-2">I am here to help you learn how to navigate Marigold Insights and find the records you need.</p>
+             <div className="h-full flex items-center justify-center text-text-body flex-col text-center px-4 animate-in fade-in duration-500">
+               <div className="w-16 h-16 bg-white border border-border-soft rounded-2xl shadow-sm flex items-center justify-center mb-6 overflow-hidden border-primary">
+                 <MarigoldIcon className="w-8 h-8 text-primary drop-shadow-sm" />
+               </div>
+               <h3 className="text-2xl font-serif text-text-header mb-2">Welcome to the Marigold Guide</h3>
+               <p className="text-sm max-w-xs leading-relaxed">
+                 I can help you navigate your records, explain anomalies in plain English, and run automated audits. What would you like to investigate today?
+               </p>
              </div>
           )}
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-2xl p-4 shadow-2xs relative group ${msg.role === 'user' ? 'bg-accent text-white font-medium' : 'bg-white border border-border text-foreground'}`}>
+              <div className={`max-w-[85%] rounded-2xl px-5 py-4 relative group ${msg.role === 'user' ? 'bg-primary text-white font-medium shadow-sm rounded-br-none' : 'bg-white border border-border-soft text-text-header shadow-sm rounded-bl-none'}`}>
                 {msg.role === 'assistant' && (
-                  <div className="flex justify-end mb-1">
+                  <div className="flex justify-end mb-2">
                     <button
                       type="button"
                       onClick={() => handleSpeakText(msg.content)}
-                      className="text-[11px] bg-[#FAF8F5] hover:bg-[#EAE5DC] text-[#4A5060] px-2 py-0.5 rounded border border-border flex items-center gap-1 transition-colors font-semibold"
+                      className="text-[10px] text-text-body hover:text-primary transition-colors flex items-center gap-1 font-bold uppercase tracking-wider"
                       title="Read this response out loud"
                     >
-                      <Volume2 className="w-3.5 h-3.5 text-[#D96B27]" />
-                      <span>Read Aloud</span>
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Listen</span>
                     </button>
                   </div>
                 )}
-                <div className={`text-sm md:text-[0.95rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-white' : 'text-foreground'}`}>
+                <div className={`text-sm md:text-[0.95rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-white' : 'text-text-header'}`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
 
                 {msg.suggestedPlaybook && (
-                  <div className="mt-4 p-3 bg-[#FAF8F5] border border-[#D96B27]/30 rounded-xl text-foreground space-y-2 text-left">
-                    <div className="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-[#D96B27]">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>AI Suggested Mission Playbook</span>
-                      </span>
-                      <span className="bg-accent/15 px-2 py-0.5 rounded">{msg.suggestedPlaybook.audit_type}</span>
+                  <div className="mt-4 p-4 bg-surface border border-border-soft rounded-2xl text-text-header space-y-2 text-left">
+                    <div className="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-primary mb-2">
+                       <span className="flex items-center gap-1.5">
+                         <MarigoldIcon className="w-3.5 h-3.5" />
+                         <span>Suggested Mission</span>
+                       </span>
                     </div>
-                    <p className="font-bold text-sm">{msg.suggestedPlaybook.name}</p>
-                    <p className="text-xs text-[#4A5060] leading-relaxed">{msg.suggestedPlaybook.description}</p>
-                    <div className="flex gap-2 text-xs text-[#646A7A] font-mono pt-1">
-                      <span>Threshold: {msg.suggestedPlaybook.threshold || 'N/A'}</span>
-                      <span>• County: {msg.suggestedPlaybook.county || 'Statewide'}</span>
-                    </div>
+                    <p className="font-serif font-bold text-lg">{msg.suggestedPlaybook.name}</p>
+                    <p className="text-sm text-text-body leading-relaxed">{msg.suggestedPlaybook.description}</p>
                     <button
                       type="button"
                       onClick={() => handleSaveSuggestedPlaybook(msg.suggestedPlaybook)}
                       disabled={savedPlaybooks[msg.suggestedPlaybook.name]}
-                      className={`w-full py-2 rounded-lg font-bold text-xs transition-colors shadow-2xs ${savedPlaybooks[msg.suggestedPlaybook.name] ? 'bg-emerald-600 text-white cursor-default' : 'bg-accent hover:bg-[#C85A1B] text-white'}`}
+                      className={`w-full mt-2 py-3 rounded-full font-bold text-sm transition-all shadow-sm ${savedPlaybooks[msg.suggestedPlaybook.name] ? 'bg-albers-green-soft text-albers-green-bold border border-albers-green-bold/20 cursor-default' : 'bg-white border border-border-soft hover:border-primary text-text-header'}`}
                     >
-                      {savedPlaybooks[msg.suggestedPlaybook.name] ? '✓ Saved to Mission Control!' : '⚡ Save as Mission Playbook'}
+                      {savedPlaybooks[msg.suggestedPlaybook.name] ? '✓ Saved to Playbooks' : 'Save as Mission Playbook'}
                     </button>
                   </div>
                 )}
@@ -422,74 +387,14 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white border border-border rounded-2xl p-4 shadow-2xs animate-pulse">
-                <p className="text-[#646A7A] text-sm font-medium">Thinking & reviewing local data records...</p>
-              </div>
+               <div className="bg-white border border-border-soft rounded-2xl rounded-bl-none px-5 py-4 shadow-sm flex items-center gap-3">
+                 <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                 <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                 <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+               </div>
             </div>
           )}
         </div>
-
-        {/* Suggested Starter Actions Grid */}
-        {messages.length <= 1 && (
-          <div className="p-4 bg-muted border-t border-border space-y-3">
-            <div className="text-[11px] font-black text-[#646A7A] uppercase tracking-wider flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#D96B27]" />
-                <span>Suggested Forensic Inquiries</span>
-              </span>
-              <span className="text-[10px] font-normal font-mono">Click any card to ask</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setQuery("Are there any unusual apartment complexes or dorms registered in my jurisdiction?")}
-                className="text-left p-3 rounded-xl bg-white border border-border hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
-              >
-                <Building2 className="w-5 h-5 text-[#D96B27] shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-foreground group-hover:text-[#D96B27] truncate">High-Density Registration Scan</div>
-                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Check over-registered apartments & dorms</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQuery("Can you check if any commercial shipping stores or PO boxes are listed as residential homes?")}
-                className="text-left p-3 rounded-xl bg-white border border-border hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
-              >
-                <Package className="w-5 h-5 text-[#D96B27] shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-foreground group-hover:text-[#D96B27] truncate">Audit Commercial Mail Drops</div>
-                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Identify shipping boxes used as residences</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQuery("Explain what a Z-Score is and how Marigold detects anomalies without partisan bias.")}
-                className="text-left p-3 rounded-xl bg-white border border-border hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
-              >
-                <HelpCircle className="w-5 h-5 text-[#D96B27] shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-foreground group-hover:text-[#D96B27] truncate">Plain-English Z-Scores Guide</div>
-                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Understand objective statistical anomalies</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQuery("Run a full statistical anomaly check on Franklin County and summarize priority findings.")}
-                className="text-left p-3 rounded-xl bg-white border border-border hover:border-[#D96B27] transition-all group flex items-start gap-2.5 shadow-2xs"
-              >
-                <BarChart3 className="w-5 h-5 text-[#D96B27] shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-foreground group-hover:text-[#D96B27] truncate">Sample County Audit (Franklin)</div>
-                  <div className="text-[11px] text-[#646A7A] line-clamp-1">Generate county anomaly report</div>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Clean Modern Input Form */}
         <div className="p-4 bg-white border-t border-border">
@@ -502,7 +407,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 onChange={(e) => {
                   setQuery(e.target.value);
                   e.target.style.height = 'auto';
-                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 250)}px`;
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -512,14 +417,14 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                     }
                   }
                 }}
-                className="w-full bg-[#FAF8F5] border border-border focus:border-[#D96B27] rounded-xl px-4 py-3 pr-11 text-sm text-foreground outline-none font-medium placeholder-[#646A7A] resize-none overflow-y-auto leading-relaxed" 
+                className="w-full bg-background border border-border focus:border-primary rounded-xl px-4 py-3 pr-11 text-sm text-foreground outline-none font-medium placeholder-muted-foreground resize-none overflow-y-auto leading-relaxed" 
                 placeholder={isListening ? "Listening... speak now..." : "Type a question or ask for guidance... (Shift+Enter for new line)"} 
                 disabled={isLoading || isListening}
               />
               <button
                 type="button"
                 onClick={toggleSpeechRecognition}
-                className={`absolute right-2 bottom-2 p-2 rounded-lg transition-all flex items-center justify-center ${isListening ? 'bg-rose-600 text-white animate-pulse' : 'text-[#646A7A] hover:text-[#D96B27] hover:bg-[#EAE5DC]'}`}
+                className={`absolute right-2 bottom-2 p-2 rounded-lg transition-all flex items-center justify-center ${isListening ? 'bg-rose-600 text-white animate-pulse' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}
                 title="Speak your question out loud"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -529,7 +434,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
             </div>
             <button 
               type="submit" 
-              className="bg-accent hover:bg-[#C85A1B] disabled:opacity-50 text-slate-900 font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0 flex items-center gap-2" 
+              className="bg-accent hover:bg-primary/90 disabled:opacity-50 text-slate-900 font-black px-5 py-3 rounded-xl transition-all shadow-2xs shrink-0 flex items-center gap-2" 
               disabled={isLoading || isListening || !query.trim()}
             >
               <span>Send</span>
@@ -538,7 +443,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
               </svg>
             </button>
           </form>
-          <p className="text-[11px] text-[#646A7A] mt-2 text-center">
+          <p className="text-[11px] text-muted-foreground mt-2 text-center">
             AI generated guidance runs locally. Always verify findings before reporting.
           </p>
         </div>
@@ -561,7 +466,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Visibility Scope</label>
-                  <select value={templateScope} onChange={(e: any) => setTemplateScope(e.target.value)} className="input-field w-full">
+                  <select value={templateScope} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTemplateScope(e.target.value as "local" | "org")} className="input-field w-full">
                     <option value="local">Personal (Save to this browser only)</option>
                     <option value="org">Organization (Publish to all MSFE volunteers)</option>
                   </select>

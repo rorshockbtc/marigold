@@ -48,3 +48,18 @@ next-env.d.ts
 *.csv
 /data/
 .env*
+tests/ux_scenarios.md
+
+# Marigold Intellectual Property & AI Tooling
+.agents/
+AGENTS.md
+skills-lock.json
+full_prompt*.txt
+user_tests.txt
+clipboard.txt
+*.js
+!next.config.js
+!postcss.config.js
+!tailwind.config.js
+!eslint.config.js
+!playwright.config.js

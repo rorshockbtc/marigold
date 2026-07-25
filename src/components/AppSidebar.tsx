@@ -5,15 +5,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/dashboard', desc: 'Overview & verification hub', icon: LayoutDashboard },
-  { label: 'Explore & Review', href: '/analysis', desc: 'Find anomalies & verify records', icon: Search },
-  { label: 'Duplicate Finder', href: '/data-linkage', desc: 'Cross-check address & voter links', icon: GitCompare },
-  { label: 'Audit Playbooks', href: '/playbooks', desc: 'Step-by-step verification guides', icon: BookOpen },
-  { label: 'Ask AI Guide', href: '/chat', desc: 'Plain-English help & analysis', icon: MessageSquare },
-  { label: 'Volunteer Team', href: '/settings/group', desc: 'Group roster & shared missions', icon: Users },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Data Insights', href: '/insights', icon: BarChart },
+  { label: 'Explore & Review', href: '/explore', icon: GitCompare },
+  { label: 'Guided Playbooks', href: '/audit', icon: BookOpen },
+  { label: 'Advanced Stats', href: '/advanced-stats', icon: LineChart },
+  { label: 'Upload Data', href: '/onboarding', icon: Search },
+  { label: 'Volunteer Team', href: '/settings/group', icon: Users },
+  { label: 'Developer Docs', href: '/developers', icon: Terminal },
 ];
 
 export default function AppSidebar() {
@@ -27,6 +29,8 @@ export default function AppSidebar() {
   });
   const [isSwitcherOpen, setIsSwitcherOpen] = React.useState(false);
 
+  const [isDataLoaded, setIsDataLoaded] = React.useState(false);
+
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const handleGroupChange = (e: Event) => {
@@ -36,7 +40,12 @@ export default function AppSidebar() {
         } else {
           setActiveGroup(localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)");
         }
+        setIsDataLoaded(localStorage.getItem("marigold_file_connected") === "true");
       };
+      
+      // Initialize on mount
+      setIsDataLoaded(localStorage.getItem("marigold_file_connected") === "true");
+      
       window.addEventListener('marigold-group-change', handleGroupChange);
       return () => window.removeEventListener('marigold-group-change', handleGroupChange);
     }
@@ -47,6 +56,7 @@ export default function AppSidebar() {
   }, [isCollapsed]);
 
   const handleSwitchGroup = (targetGroup: string) => {
+    // ... (rest of handleSwitchGroup remains same)
     setActiveGroup(targetGroup);
     setIsSwitcherOpen(false);
     if (typeof window !== 'undefined') {
@@ -76,13 +86,14 @@ export default function AppSidebar() {
           localStorage.setItem("marigold_file_name", "ms_voter_roll_2024.csv");
         }
       }
+      setIsDataLoaded(localStorage.getItem("marigold_file_connected") === "true");
       window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: targetGroup } }));
       window.location.reload();
     }
   };
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-muted text-foreground flex flex-col h-screen fixed left-0 top-0 border-r border-border z-50 shadow-lg font-sans select-none transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-muted text-foreground flex flex-col h-screen border-r border-border z-50 shadow-lg font-sans select-none transition-all duration-300`}>
       {/* Brand Header */}
       <div className={`p-4 border-b border-border flex items-center justify-between bg-[#EAE5DC]/60 ${isCollapsed ? 'flex-col gap-3' : ''}`}>
         <div className="flex items-center gap-2.5 overflow-hidden">
@@ -183,13 +194,16 @@ export default function AppSidebar() {
             Workspace Modules
           </div>
         )}
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter(item => {
+          if (item.href === '/onboarding' && isDataLoaded) return false;
+          return true;
+        }).map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}
               href={item.href}
-              title={isCollapsed ? `${item.label} - ${item.desc}` : undefined}
+              title={isCollapsed ? item.label : undefined}
               className={`block px-3.5 py-3 rounded-xl transition-all duration-150 group ${
                 isActive
                   ? 'bg-white text-foreground font-extrabold border border-border shadow-sm'
@@ -203,11 +217,6 @@ export default function AppSidebar() {
                 </div>
                 {!isCollapsed && isActive && <span className="w-2 h-2 rounded-full bg-accent" />}
               </div>
-              {!isCollapsed && (
-                <div className={`text-[11px] leading-tight mt-1 pl-6.5 ${isActive ? 'text-[#D96B27] font-semibold' : 'text-[#7A8090] group-hover:text-[#5A6070]'}`}>
-                  {item.desc}
-                </div>
-              )}
             </Link>
           );
         })}

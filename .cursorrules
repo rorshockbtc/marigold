@@ -1,0 +1,17 @@
+# Marigold Insights Operating Agreement
+
+## 1. Zero-Trust Architecture (The Golden Rule)
+- **NO BACKEND DATA PROCESSING:** Marigold Insights is an air-gapped application. You must NEVER write data analysis logic, SQL queries, or data transformations in `/src/app/api/`. 
+- **WASM / IndexedDB ONLY:** All data ingestion, parsing, and analytical logic must be executed on the client-side within the browser (e.g., in `src/hooks/useDataQuery.ts` or via Web Workers). 
+
+## 2. UI/UX Design System (IxD)
+- **Use Shared Components:** Do NOT write one-off, page-level Tailwind CSS utilities for interactive elements like buttons, inputs, or cards. 
+- **Design Tokens:** Always utilize the shared CSS classes defined in `globals.css` (e.g., `.btn-primary`, `.btn-secondary`, `.bg-surface`, `.text-text-header`).
+- **Interaction Design (IxD):** Ensure every button or interactive element provides immediate feedback (loaders, toasts, or routing). No "dead" buttons.
+
+## 3. Test-Driven Development (TDD)
+- **Do Not Push Broken Code:** Before suggesting a user review your code, you must independently verify that the code compiles, the components mount, and the logic executes successfully.
+- **Automated Verification:** Rely on TDD. Write unit tests or manually verify logic locally. The user expects a fully optimized application, not a broken draft.
+
+# Security Rules
+- NEVER use better-sqlite3, fs, or path modules anywhere inside /src/app/api.

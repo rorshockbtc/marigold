@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageCircleHeart, X } from "lucide-react";
+import { MarigoldIcon } from "@/components/MarigoldIcon";
 import { usePathname } from "next/navigation";
 
 export function GlobalMariButton() {
@@ -33,19 +33,19 @@ export function GlobalMariButton() {
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3 animate-in slide-in-from-bottom-8 duration-700 fade-in group">
       {/* Friendly Tooltip Bubble */}
-      <div className="bg-white border-2 border-emerald-500 shadow-xl rounded-2xl rounded-br-none p-3 max-w-[200px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-        <p className="text-sm font-bold text-slate-800">
+      <div className="bg-card-bg border border-border-soft shadow-xl rounded-2xl rounded-br-none p-3 max-w-[200px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <p className="text-sm font-bold text-foreground">
           Need help? <br />
-          <span className="text-emerald-600 font-normal">Click me and I&apos;ll explain in plain English!</span>
+          <span className="text-primary font-normal">Click me and I&apos;ll explain in plain English!</span>
         </p>
       </div>
 
       <button
         onClick={openMari}
-        className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full p-4 shadow-2xl transition-transform transform hover:scale-110 flex items-center justify-center border-4 border-emerald-100"
+        className="bg-card-bg hover:bg-muted text-primary rounded-full p-3 shadow-xl transition-transform transform hover:scale-105 flex items-center justify-center border border-border-soft"
         aria-label="Ask Mari for Help"
       >
-        <MessageCircleHeart className="w-8 h-8" />
+        <MarigoldIcon className="w-8 h-8" />
       </button>
     </div>
   );

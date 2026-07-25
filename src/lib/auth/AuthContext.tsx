@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUser, useClerk } from "@clerk/nextjs";
 
 export interface UserProfile {
   id: string;
@@ -13,8 +14,16 @@ export interface UserProfile {
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
-  login: (groupName?: string, role?: 'admin' | 'member') => void;
+  
+  // Web2 Identity
+  login: () => void; // We rely on Clerk now, but keeping signature for legacy mocks if needed
   logout: () => void;
+  
+  // Local Data Encryption (AuthZ)
+  isWorkspaceUnlocked: boolean;
+  unlockWorkspace: (pin: string) => Promise<boolean>;
+  lockWorkspace: () => void;
+
   transferAdmin: (newAdminEmail: string) => void;
   updateGroup: (newGroup: string) => void;
 }
@@ -22,54 +31,78 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
+
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isWorkspaceUnlocked, setIsWorkspaceUnlocked] = useState(false);
 
   useEffect(() => {
-    // Check local storage for mock session
-    const saved = localStorage.getItem('marigold_user');
-    if (saved) {
-      try {
-        setUser(JSON.parse(saved));
-      } catch {
-        localStorage.removeItem('marigold_user');
-      }
+    if (isLoaded && clerkUser) {
+      setUser({
+        id: clerkUser.id,
+        name: clerkUser.fullName || "Citizen",
+        email: clerkUser.primaryEmailAddress?.emailAddress || "",
+        groupName: "Independent Audit Workspace",
+        role: "admin"
+      });
+    } else if (isLoaded && !clerkUser) {
+      setUser(null);
+      setIsWorkspaceUnlocked(false);
     }
-  }, []);
+  }, [isLoaded, clerkUser]);
 
-  const login = (groupName = "", role: 'admin' | 'member' = 'member') => {
-    const mockUser: UserProfile = {
-      id: "usr_" + Math.random().toString(36).substring(2, 8),
-      name: "Authenticated Citizen",
-      email: "volunteer@example.org",
-      groupName,
-      role
-    };
-    setUser(mockUser);
-    localStorage.setItem('marigold_user', JSON.stringify(mockUser));
+  const login = () => {
+    alert("Please use the Clerk login buttons for Identity.");
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('marigold_user');
+  const logout = async () => {
+    setIsWorkspaceUnlocked(false);
+    await signOut();
+  };
+
+  const unlockWorkspace = async (pin: string): Promise<boolean> => {
+    // In Phase 2:
+    // 1. Fetch encrypted blob from 'Marigold Local' via File System API
+    // 2. Decrypt with PIN using LocalKeyManager
+    // 3. Sign server ZK challenge to prove ownership
+    
+    if (pin.length >= 4) {
+      // Mocking successful decryption
+      setIsWorkspaceUnlocked(true);
+      return true;
+    }
+    return false;
+  };
+
+  const lockWorkspace = () => {
+    setIsWorkspaceUnlocked(false);
+    // In a real implementation, we'd clear the decrypted CryptoKey from memory
   };
 
   const transferAdmin = (newAdminEmail: string) => {
     if (!user || user.role !== 'admin') return;
     alert(`Admin rights successfully transferred to ${newAdminEmail}. You are now a Standard Member.`);
-    const updated = { ...user, role: 'member' as const };
-    setUser(updated);
-    localStorage.setItem('marigold_user', JSON.stringify(updated));
+    setUser({ ...user, role: 'member' });
   };
 
   const updateGroup = (newGroup: string) => {
     if (!user) return;
-    const updated = { ...user, groupName: newGroup };
-    setUser(updated);
-    localStorage.setItem('marigold_user', JSON.stringify(updated));
+    setUser({ ...user, groupName: newGroup });
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, transferAdmin, updateGroup }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated: !!user, 
+      isWorkspaceUnlocked,
+      unlockWorkspace,
+      lockWorkspace,
+      login, 
+      logout, 
+      transferAdmin, 
+      updateGroup 
+    }}>
       {children}
     </AuthContext.Provider>
   );

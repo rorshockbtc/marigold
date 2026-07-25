@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ChatMessage } from "@/lib/types";
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 // @ts-ignore
 import { jStat } from 'jstat';
-import { getDb, getFeedbackLogs, analyzeBenfordsLaw } from '@/lib/db/sqlite';
 
 const DOCS_DATA = `
 Multi-File State Releases (Weekly Delta vs. Historical Master Rolls):
@@ -168,8 +168,8 @@ export async function POST(req: NextRequest) {
     const ai = new GoogleGenAI({ apiKey: activeApiKey });
     
     // Fetch live feedback logs for transparency
-    const recentFeedback = getFeedbackLogs();
-    const feedbackContext = recentFeedback.map((f: any) => `- Audit: ${f.audit_type}, Feedback: ${f.user_feedback}, Date: ${f.created_at}`).join('\\n');
+    const recentFeedback: { audit_type: string; user_feedback: string; created_at: string }[] = [];
+    const feedbackContext = recentFeedback.map((f) => `- Audit: ${f.audit_type}, Feedback: ${f.user_feedback}, Date: ${f.created_at}`).join('\\n');
 
     const modePrompt = isFriendlyMode !== false ? `
       CRITICAL INSTRUCTION FOR FRIENDLY GUIDE MODE (ACTIVE):
@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
     `;
 
     // Construct history for multi-turn
-    const formattedHistory = history.map((msg: any) => ({
+    const formattedHistory = history.map((msg: ChatMessage) => ({
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }]
     }));
@@ -268,109 +268,14 @@ export async function POST(req: NextRequest) {
       const call = response.functionCalls[0];
       
       if (call.name === "run_robust_statistics") {
-        const { metric, county } = call.args as any;
-        const db = getDb();
-        let statsResult = {};
-
-        if (db) {
-          try {
-            let data: number[] = [];
-            const countyFilter = county ? `WHERE county = '${county.replace(/'/g, "''")}'` : '';
-            
-            if (metric === 'occupancy') {
-              const rows = db.prepare(`SELECT COUNT(*) as c FROM voters ${countyFilter} GROUP BY address HAVING c > 0`).all() as any[];
-              data = rows.map(r => r.c);
-            } else if (metric === 'registrations') {
-              const rows = db.prepare(`SELECT COUNT(*) as c FROM voters ${countyFilter} GROUP BY date_registered HAVING c > 0`).all() as any[];
-              data = rows.map(r => r.c);
-            }
-
-            if (data.length > 0) {
-              const vector = jStat(data);
-              const maxVal = vector.max();
-              const meanVal = vector.mean();
-              const stdevVal = vector.stdev();
-              // Calculate Z-Score of the maximum outlier
-              const maxZScore = stdevVal > 0 ? ((maxVal - meanVal) / stdevVal).toFixed(2) : 0;
-
-              statsResult = {
-                metric,
-                county: county || "Statewide",
-                sampleSize: data.length,
-                mean: meanVal,
-                median: vector.median(),
-                standardDeviation: stdevVal,
-                variance: vector.variance(),
-                skewness: vector.skewness(),
-                kurtosis: vector.kurtosis(),
-                quartiles: vector.quartiles(),
-                min: vector.min(),
-                max: maxVal,
-                maxOutlierZScore: maxZScore
-              };
-            } else {
-              statsResult = { error: "No data found for this metric/county." };
-            }
-          } catch (e: any) {
-            statsResult = { error: e.message };
-          }
-        } else {
-          statsResult = { error: "Database not connected." };
-        }
-
-        response = await chat.sendMessage({
-          message: [{
-            functionResponse: {
-              name: call.name,
-              response: statsResult
-            }
-          }]
-        });
+        const { metric, county } = call.args as { metric: string; county?: string };
+        return NextResponse.json({ action: 'run_tool', tool: 'run_robust_statistics', args: { metric, county } });
       } else if (call.name === "run_benfords_law") {
-        const { county } = call.args as any;
-        const db = getDb();
-        let statsResult = {};
-        
-        if (db) {
-          try {
-            const results = analyzeBenfordsLaw(county || '');
-            if (results) {
-              statsResult = results;
-            } else {
-              statsResult = { error: "No data found for this county." };
-            }
-          } catch (e: any) {
-            statsResult = { error: e.message };
-          }
-        } else {
-          statsResult = { error: "Database not connected." };
-        }
-
-        response = await chat.sendMessage({
-          message: [{
-            functionResponse: {
-              name: call.name,
-              response: statsResult
-            }
-          }]
-        });
+        const { county } = call.args as { county?: string };
+        return NextResponse.json({ action: 'run_tool', tool: 'run_benfords_law', args: { county } });
       } else if (call.name === "suggest_mission_playbook") {
-        const { name, audit_type, threshold, county, description } = call.args as any;
-        const suggestion = { name, audit_type, threshold: threshold || 0, county: county || '', description };
-        
-        response = await chat.sendMessage({
-          message: [{
-            functionResponse: {
-              name: call.name,
-              response: { success: true, message: "Suggested playbook created. Tell the user they can click the Save button below." }
-            }
-          }]
-        });
-
-        return NextResponse.json({
-          reply: response.text,
-          suggestedPlaybook: suggestion
-        });
+        const { name, audit_type, threshold, county, description } = call.args as { name: string; audit_type: string; threshold?: number; county?: string; description: string };
+        return NextResponse.json({ action: 'run_tool', tool: 'suggest_mission_playbook', args: { name, audit_type, threshold, county, description } });
       }
     }
 
@@ -378,8 +283,8 @@ export async function POST(req: NextRequest) {
       reply: response.text
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Chat API Error:", error);
-    return NextResponse.json({ error: error.message || "An error occurred during processing." }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "An error occurred during processing." }, { status: 500 });
   }
 }

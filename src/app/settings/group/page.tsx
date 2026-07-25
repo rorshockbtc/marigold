@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
+import { useRouter } from 'next/navigation';
+import { PageHeader } from '@/components/PageHeader';
 
 interface Application {
   id: string;
@@ -18,8 +20,9 @@ interface Application {
   status: 'pending' | 'approved' | 'rejected';
 }
 
-export default function GroupAdminSettingsPage() {
+export default function GroupSettingsPage() {
   const { user } = useUser();
+  const router = useRouter();
   const [groupName, setGroupName] = useState("");
   const [website, setWebsite] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
@@ -28,6 +31,7 @@ export default function GroupAdminSettingsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [roster, setRoster] = useState<{ name: string; email: string; role: string; joined: string }[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("👤 Group Member");
@@ -64,7 +68,7 @@ export default function GroupAdminSettingsPage() {
   }, []);
 
   useEffect(() => {
-    const savedGroup = localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
+    const savedGroup = localStorage.getItem("marigold_active_group") || "Independent Researcher";
     const rosterKey = (savedGroup === "State of Roosevelt (Demo)") ? "marigold_demo_roster" : "marigold_group_roster";
     const savedRoster = localStorage.getItem(rosterKey);
     if (savedRoster) {
@@ -86,8 +90,8 @@ export default function GroupAdminSettingsPage() {
     }
 
     const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem("marigold_user_email") || "";
-    const userName = user?.fullName || localStorage.getItem("marigold_user_name") || userEmail.split('@')[0] || "Volunteer Auditor";
-    const userRole = localStorage.getItem("marigold_user_role") || (userEmail.includes("kyle") || userEmail.includes("rorshock") ? "👑 Group Admin" : "🛡️ Verified Auditor");
+    const userName = user?.fullName || localStorage.getItem("marigold_user_name") || userEmail.split('@')[0] || "Independent Auditor";
+    const userRole = "👑 Group Admin"; // Default to admin for solo/new users
     
     if (user?.primaryEmailAddress?.emailAddress) {
       localStorage.setItem("marigold_user_email", user.primaryEmailAddress.emailAddress);
@@ -99,6 +103,15 @@ export default function GroupAdminSettingsPage() {
     setRoster(initialRoster);
     localStorage.setItem(rosterKey, JSON.stringify(initialRoster));
   }, [user]);
+
+  const setIndependentMode = () => {
+    localStorage.setItem("marigold_active_group", "Independent Researcher");
+    localStorage.setItem("marigold_active_jurisdiction", "Local / Independent");
+    setGroupName("Independent Researcher");
+    setJurisdiction("Local / Independent");
+    alert("You are now set up as an Independent Researcher!");
+    router.push("/dashboard");
+  };
 
   const handleSimulateApplicant = () => {
     const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
@@ -178,36 +191,45 @@ export default function GroupAdminSettingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 pt-4 px-4 font-sans">
-      {/* Navigation Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <Badge variant="warning">👑 Organization Console</Badge>
-          </div>
-          <h1 className="text-3xl font-serif font-black text-primary mt-2">Group Administration &amp; Roster Management</h1>
-          <p className="text-sm text-muted-foreground font-medium">Manage your organization credentials, review applicant requests, and govern zero-PII Playbook broadcast rules.</p>
-        </div>
-
-        <div className="flex gap-3">
+      <PageHeader
+        title="Organization Settings"
+        subtitle="Manage your team, review applicant requests, or set yourself as an independent researcher."
+        actions={
           <Link href="/dashboard">
             <Button variant="secondary" size="md">
               ← Return to Dashboard
             </Button>
           </Link>
+        }
+      />
+      
+      {/* Independent Researcher Callout */}
+      <div className="bg-background border-2 border-primary/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+        <div>
+          <h2 className="text-2xl font-serif text-text-header mb-2">Flying Solo?</h2>
+          <p className="text-text-body max-w-2xl">
+            If you are not part of an organization and just want to analyze your own local data, you can set your account to <strong>Independent Researcher</strong>. This bypasses the need to invite members or manage an organization roster.
+          </p>
         </div>
+        <button 
+          onClick={setIndependentMode}
+          className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-full shadow-md whitespace-nowrap transition-transform hover:-translate-y-0.5"
+        >
+          Work Independently
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Group Credentials Editor */}
         <Card>
           <CardHeader>
-            <CardTitle>Organization Profile</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Public details displayed on the onboarding directory.</p>
+            <CardTitle>Team Profile</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Public details displayed to volunteers who want to join your team.</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <Input
-                label="Group / Organization Title"
+                label="Team / Organization Name"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
               />
@@ -219,13 +241,13 @@ export default function GroupAdminSettingsPage() {
                 onChange={(e) => setWebsite(e.target.value)}
               />
               <Input
-                label="Jurisdiction Coverage Area"
+                label="City, County, or State"
                 value={jurisdiction}
                 onChange={(e) => setJurisdiction(e.target.value)}
               />
               <div className="pt-2">
                 <Button type="submit" variant="primary" className="w-full">
-                  Save Credentials
+                  Save Details
                 </Button>
                 {savedMessage && <p className="text-emerald-700 font-bold text-center pt-2 text-xs">✓ Settings successfully updated</p>}
               </div>
@@ -240,13 +262,13 @@ export default function GroupAdminSettingsPage() {
             <div className="flex justify-between items-center border-b border-border pb-4 mb-4">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  📬 Membership Application Review Queue
+                  📬 Volunteer Requests
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Citizens requesting access to join your shared audit missions.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">People asking to join your team.</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button onClick={handleSimulateApplicant} variant="outline" size="sm">
-                  🧪 Simulate Applicant
+                  🧪 Add Fake Request
                 </Button>
                 <Badge variant="warning">{applications.filter(a => a.status === 'pending').length} Pending</Badge>
               </div>
@@ -256,12 +278,12 @@ export default function GroupAdminSettingsPage() {
               {applications.length === 0 ? (
                 <div className="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 space-y-4">
                   <span className="text-3xl block">📭</span>
-                  <p className="text-sm font-bold text-slate-700">No Pending Applications</p>
+                  <p className="text-sm font-bold text-slate-700">No Pending Requests</p>
                   <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                    When volunteers apply from this device, their requests appear here. For multi-device workflows (e.g. parents applying on their own computer), applications remain saved in their browser memory until Firebase cloud database broadcast is enabled.
+                    When someone tries to join your team, their request will appear here for you to approve.
                   </p>
                   <Button onClick={handleSimulateApplicant} variant="primary">
-                    🧪 Simulate Volunteer Applicant Now →
+                    🧪 Create a Test Request →
                   </Button>
                 </div>
               ) : (
@@ -280,12 +302,12 @@ export default function GroupAdminSettingsPage() {
                         <div className="flex gap-2">
                           {app.status === 'pending' ? (
                             <>
-                              <Button onClick={() => handleApprove(app)} variant="success" size="sm">Approve Access</Button>
+                              <Button onClick={() => handleApprove(app)} variant="success" size="sm">Approve</Button>
                               <Button onClick={() => handleReject(app)} variant="secondary" size="sm">Decline</Button>
                             </>
                           ) : (
                             <Badge variant={app.status === 'approved' ? 'success' : 'danger'}>
-                              {app.status === 'approved' ? '✓ Approved Member' : '✕ Declined'}
+                              {app.status === 'approved' ? '✓ Approved' : '✕ Declined'}
                             </Badge>
                           )}
                         </div>
@@ -304,25 +326,15 @@ export default function GroupAdminSettingsPage() {
           {/* Active Roster Table */}
           <Card>
             <CardHeader className="border-b-0 pb-0">
-              <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl text-xs text-emerald-950 flex items-start gap-3 mb-4">
-                <span className="text-base shrink-0">💡</span>
-                <div className="space-y-1">
-                  <strong className="font-bold block text-emerald-900">Organization Data Ingestion Policy</strong>
-                  <p className="text-emerald-800 leading-relaxed">
-                    To maintain strict compliance with state privacy statutes, all group members must stream and chunk raw voter rolls locally on their individual devices using the <Link href="/data-prep" className="underline font-bold">Data Chunking Studio</Link>. Only zero-PII statistical frequency summaries (Shared Playbooks) synchronize across group accounts.
-                  </p>
-                </div>
-              </div>
               <div className="flex justify-between items-center border-b border-border pb-4">
                 <div>
-                  <CardTitle>👥 Active Group Roster ({roster.length})</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Members authorized to synchronize zero-PII Shared Playbooks.</p>
+                  <CardTitle>👥 Active Team Members ({roster.length})</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">People authorized to see your shared findings.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button onClick={() => setShowAddModal(!showAddModal)} variant="primary" size="sm">
-                    ➕ Manually Add Member
+                    ➕ Add Member
                   </Button>
-                  <Badge variant="success" className="hidden sm:inline-flex">🔒 PII Playbook Lock Active</Badge>
                 </div>
               </div>
             </CardHeader>
@@ -330,12 +342,12 @@ export default function GroupAdminSettingsPage() {
               {showAddModal && (
                 <form onSubmit={handleAddManualMember} className="bg-slate-50 p-5 rounded-xl border border-slate-300 space-y-4 mb-4">
                   <div className="font-bold text-slate-800 text-sm flex items-center justify-between">
-                    <span>➕ Manually Add Volunteer / Auditor to Roster</span>
+                    <span>➕ Add Team Member Manually</span>
                     <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-600 hover:text-slate-600 font-normal">✕ Close</button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
-                      label="Member Full Name"
+                      label="Full Name"
                       value={newMemberName}
                       onChange={(e) => setNewMemberName(e.target.value)}
                       required
@@ -348,20 +360,20 @@ export default function GroupAdminSettingsPage() {
                       required
                     />
                     <div className="flex flex-col gap-1.5 w-full">
-                      <label className="text-xs font-bold text-muted-foreground tracking-wide uppercase">Group Role</label>
+                      <label className="text-xs font-bold text-muted-foreground tracking-wide uppercase">Role</label>
                       <select
                         value={newMemberRole}
                         onChange={(e) => setNewMemberRole(e.target.value)}
                         className="flex h-11 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
-                        <option value="👤 Group Member">👤 Group Member (Standard)</option>
-                        <option value="👑 Group Admin">👑 Group Admin</option>
+                        <option value="👤 Group Member">👤 Team Member</option>
+                        <option value="👑 Group Admin">👑 Team Admin</option>
                       </select>
                     </div>
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" onClick={() => setShowAddModal(false)} variant="secondary">Cancel</Button>
-                    <Button type="submit" variant="primary">Add to Roster →</Button>
+                    <Button type="submit" variant="primary">Save Member</Button>
                   </div>
                 </form>
               )}
@@ -383,7 +395,7 @@ export default function GroupAdminSettingsPage() {
                       </div>
                       {m.email !== 'kyle@msfe.org' && (
                         <Button onClick={() => handleToggleRole(m.email)} variant="secondary" size="sm" className="text-[11px] h-8 px-2.5">
-                          {m.role === '👑 Group Admin' ? 'Demote to Member' : 'Promote to Admin'}
+                          {m.role === '👑 Group Admin' ? 'Demote' : 'Promote'}
                         </Button>
                       )}
                     </div>

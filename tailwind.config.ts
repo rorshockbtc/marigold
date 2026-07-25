@@ -12,6 +12,11 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        surface: "var(--background)",
+        "card-bg": "var(--card-bg)",
+        "text-header": "var(--foreground)",
+        "text-body": "var(--secondary)",
+        "border-soft": "var(--border)",
         primary: {
           DEFAULT: "var(--primary)",
           foreground: "var(--primary-foreground)",
@@ -31,6 +36,24 @@ const config: Config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        albers: {
+          pink: {
+            soft: "var(--albers-pink-soft)",
+            bold: "var(--albers-pink-bold)",
+          },
+          purple: {
+            soft: "var(--albers-purple-soft)",
+            bold: "var(--albers-purple-bold)",
+          },
+          blue: {
+            soft: "var(--albers-blue-soft)",
+            bold: "var(--albers-blue-bold)",
+          },
+          green: {
+            soft: "var(--albers-green-soft)",
+            bold: "var(--albers-green-bold)",
+          },
+        }
       },
       fontFamily: {
         sans: ["var(--font-sans)", "sans-serif"],

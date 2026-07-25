@@ -254,7 +254,7 @@ export default function DataPrepPage() {
 
           {/* Live Mission Security Log */}
           <div className="bg-muted text-foreground p-5 rounded-xl space-y-3 font-mono text-xs border border-border shadow-inner">
-            <div className="flex items-center gap-2 text-[#D96B27] font-bold border-b border-border pb-2">
+            <div className="flex items-center gap-2 text-primary font-bold border-b border-border pb-2">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               LIVE MISSION SECURITY LOG
             </div>
@@ -262,7 +262,7 @@ export default function DataPrepPage() {
               <p>✔ [System] Web Worker spawned on background thread (RAM usage locked flat at ~100MB).</p>
               <p>✔ [Backpressure] Segmenting CSV stream into safe 5MB chunks to prevent memory spikes.</p>
               <p>✔ [IndexedDB] Writing row batch #{Math.floor(parseState.rowsParsed / 5000) + 1} into private local VoterDataDB.</p>
-              <p className="text-[#D96B27] font-bold">🔒 [Network Audit] 0 bytes transmitted outbound. 100% air-gapped processing.</p>
+              <p className="text-primary font-bold">🔒 [Network Audit] 0 bytes transmitted outbound. 100% air-gapped processing.</p>
             </div>
             <div className="bg-white/80 p-3 rounded-lg border border-border font-sans text-[#4A5060] text-xs mt-3 leading-relaxed">
               <strong className="text-foreground block mb-1">🏛️ Why does this process take a few minutes?</strong>
@@ -304,7 +304,7 @@ export default function DataPrepPage() {
             <div className="bg-muted text-foreground border border-border p-6 rounded-xl shadow-sm space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h3 className="text-lg font-black flex items-center gap-2 text-[#D96B27]">
+                  <h3 className="text-lg font-black flex items-center gap-2 text-primary">
                     <span>🧭 Universal Column Mapping Interpreter</span>
                   </h3>
                   <p className="text-xs text-[#646A7A] mt-0.5">

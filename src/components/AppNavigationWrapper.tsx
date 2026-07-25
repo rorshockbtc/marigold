@@ -8,17 +8,20 @@ import AppSidebar from '@/components/AppSidebar';
 import MariRightPanel from '@/components/MariRightPanel';
 import { GlobalMariButton } from '@/components/GlobalMariButton';
 import { Shield } from 'lucide-react';
+import ThreePaneLayout from '@/components/layout/ThreePaneLayout';
 
 const WORKSPACE_ROUTES = [
   '/dashboard',
-  '/analysis',
-  '/data-linkage',
-  '/data-prep',
+  '/explore',
+  '/insights',
+  '/onboarding',
+  '/audit',
   '/playbooks',
   '/chat',
   '/perspectives',
   '/settings',
   '/advanced-stats',
+  '/comprehensive-audit',
 ];
 
 export default function AppNavigationWrapper({ children }: { children: React.ReactNode }) {
@@ -27,6 +30,11 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
   const [isMariFullScreen, setIsMariFullScreen] = React.useState(false);
   const [mariPanelWidth, setMariPanelWidth] = React.useState(440);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    // Notify Mari of page change for JIT context
+    window.dispatchEvent(new CustomEvent('mari-page-change', { detail: { pathname } }));
+  }, [pathname]);
 
   React.useEffect(() => {
     const handlePanelChange = (e: any) => {
@@ -53,39 +61,16 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
 
   if (isWorkspace) {
     return (
-      <div className="flex min-h-screen bg-[#FAF8F5] font-sans">
-        <AppSidebar />
-        <MariRightPanel />
-        <main 
-          style={{ paddingRight: isMariOpen && !isMariFullScreen ? `${mariPanelWidth}px` : undefined }}
-          className={`flex-1 ${isSidebarCollapsed ? 'pl-20' : 'pl-64'} transition-all duration-300 overflow-x-hidden flex flex-col justify-between min-h-screen`}
-        >
-          <div className="p-6 md:p-10 max-w-7xl mx-auto w-full flex-1">
-            {children}
-          </div>
-          <footer className="border-t border-border bg-white py-4 px-6 md:px-10 text-xs text-[#646A7A] flex flex-col sm:flex-row justify-between items-center gap-3 mt-auto">
-            <div className="flex flex-wrap items-center gap-4 font-bold text-foreground">
-              <a href="/terms" className="hover:text-[#D96B27] transition-colors">Terms of Service &amp; Statutory Liability</a>
-              <span>•</span>
-              <a href="/privacy" className="hover:text-[#D96B27] transition-colors">Zero-Knowledge Privacy Policy</a>
-              <span>•</span>
-              <a href="/compliance" className="hover:text-[#D96B27] transition-colors">Security &amp; Compliance</a>
-            </div>
-            <div className="font-mono text-[11px] text-[#D96B27] font-bold flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5" />
-              <span>100% Local Browser Memory Execution • Zero Cloud PII</span>
-            </div>
-          </footer>
-        </main>
-      </div>
+      <ThreePaneLayout>
+        {children}
+        <GlobalMariButton />
+      </ThreePaneLayout>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
       <Navbar />
-      <MariRightPanel />
-      <GlobalMariButton />
       <main className={`flex-1 ${pathname === '/' ? '' : 'container mx-auto p-4 md:p-8'}`}>
         {children}
       </main>
