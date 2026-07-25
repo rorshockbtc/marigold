@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:benchmark": "npx -y tsx tests/linkage-benchmark.test.ts",
+    "predeploy": "npm run build && npm run lint",
     "deploy": "git push && npx vercel deploy --prod --yes"
   },
   "dependencies": {
