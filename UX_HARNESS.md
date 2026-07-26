@@ -9,6 +9,7 @@ This document defines the strict, repeatable test suite that **MUST** be execute
 - [ ] **Test 1.3:** Click the "Sign In" button in the Navbar. Does it result in a followup action (navigating to the login page)? Ensure it does not silently fail.
 - [ ] **Test 1.4:** Complete the login flow via Clerk. Ensure you are successfully redirected to `/dashboard`.
 - [ ] **Test 1.5:** Click the "Sign Out" button. Ensure the session clears and you are redirected to the public area.
+- [ ] **Test 1.6:** Verify Content Security Policy (CSP). Open DevTools on the landing page, verify no Clerk resources are blocked by CSP. Click "Sign In" and ensure it successfully routes to the Clerk portal without a fatal `failed_to_load_clerk_js` crash.
 
 ## 2. Cryptographic Key Management (Phase 1)
 **Description:** Verify that the 3-Layer Zero-Knowledge architecture and `WebCryptoManager` are correctly defending the local data shard.
