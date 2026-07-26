@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { WebCryptoManager } from '@/lib/security/WebCryptoManager';
 
 interface CryptographicNoteModalProps {
   record: any;
@@ -26,10 +27,7 @@ export function CryptographicNoteModal({ record, isOpen, onClose }: Cryptographi
 
   async function computeSha256(message: string): Promise<string> {
     try {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return await WebCryptoManager.generateHash(message);
     } catch (e) {
       let hash = 0;
       for (let i = 0; i < message.length; i++) {

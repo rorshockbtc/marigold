@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Download, Printer, ShieldCheck, CheckCircle2, Lock } from "lucide-react";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
+import { WebCryptoManager } from "@/lib/security/WebCryptoManager";
 
 export interface PlaybookAuditSummary {
   id: string;
@@ -22,6 +23,7 @@ export interface ExecutiveBriefingProps {
   executionTimestamp: string;
   playbookResults: PlaybookAuditSummary[];
   auditorName: string;
+  isAuditComplete: boolean;
 }
 
 export function ExecutiveBriefingExport({
@@ -32,6 +34,7 @@ export function ExecutiveBriefingExport({
   executionTimestamp,
   playbookResults,
   auditorName,
+  isAuditComplete,
 }: ExecutiveBriefingProps) {
   const [isGeneratingJson, setIsGeneratingJson] = useState(false);
   const [jsonDownloaded, setJsonDownloaded] = useState(false);
@@ -69,10 +72,7 @@ export function ExecutiveBriefingExport({
 
       // Create SHA-256 signature string of this exact payload
       const payloadString = JSON.stringify(summaryPayload, null, 2);
-      const msgBuffer = new TextEncoder().encode(payloadString);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+      const hashHex = await WebCryptoManager.generateHash(payloadString);
 
       const finalCartridge = {
         ...summaryPayload,
@@ -126,7 +126,8 @@ export function ExecutiveBriefingExport({
           <button
             type="button"
             onClick={handlePrintPdf}
-            className="flex-1 sm:flex-initial bg-[#2D3142] hover:bg-[#1E212D] text-slate-900 font-bold px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 border border-slate-700"
+            disabled={!isAuditComplete}
+            className="flex-1 sm:flex-initial bg-[#2D3142] hover:bg-[#1E212D] text-slate-100 font-bold px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Printer className="w-4 h-4 text-amber-400" />
             <span>Print / Save Executive PDF Brief</span>
@@ -135,8 +136,8 @@ export function ExecutiveBriefingExport({
           <button
             type="button"
             onClick={generateZeroPiiCartridge}
-            disabled={isGeneratingJson}
-            className="flex-1 sm:flex-initial bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-75"
+            disabled={isGeneratingJson || !isAuditComplete}
+            className="flex-1 sm:flex-initial bg-accent hover:bg-[#C85A1B] text-slate-100 font-black px-5 py-3 rounded-xl shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGeneratingJson ? (
               <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>

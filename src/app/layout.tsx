@@ -3,6 +3,8 @@ import { Lora, Roboto, Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/lib/auth/AuthContext";
+import { WorkspaceProvider } from "@/lib/workspace/WorkspaceContext";
+import { KanbanProvider } from "@/lib/workspace/KanbanContext";
 import AppNavigationWrapper from "@/components/AppNavigationWrapper";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -70,9 +72,13 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${roboto.variable} ${lora.variable} ${inter.variable} ${fraunces.variable} font-sans antialiased min-h-screen flex flex-col`}>
           <AuthProvider>
-            <AppNavigationWrapper>
-              {children}
-            </AppNavigationWrapper>
+            <WorkspaceProvider>
+              <KanbanProvider>
+                <AppNavigationWrapper>
+                  {children}
+                </AppNavigationWrapper>
+              </KanbanProvider>
+            </WorkspaceProvider>
           </AuthProvider>
           <MobileWarning />
           <LocalDevTools />

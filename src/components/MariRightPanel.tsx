@@ -52,18 +52,7 @@ export default function MariRightPanel() {
 
   return (
     <>
-      {/* Floating Action Trigger Button */}
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-accent hover:bg-[#C85A1B] text-slate-900 font-black px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all transform hover:scale-105 active:scale-95 border-2 border-white"
-          title="Open Mari AI Assistant in Side Panel"
-        >
-          <MarigoldIcon className="w-5 h-5 flex-shrink-0 drop-shadow-sm" />
-          <span className="text-sm tracking-wide">Ask Mari AI</span>
-        </button>
-      )}
+      {/* Removed local Floating Action Trigger Button to rely on GlobalMariButton */ }
 
       {/* Right Slide-Over Panel */}
       {isOpen && (

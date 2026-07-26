@@ -4,6 +4,7 @@ import { ChevronRight, Filter, AlertTriangle, Play, FileText, FolderKey, PlayCir
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
+import { DataRequiredState } from "@/components/DataRequiredState";
 
 export default function AuditPage() {
   const router = useRouter();
@@ -47,39 +48,10 @@ export default function AuditPage() {
 
   if (!isDataLoaded) {
     return (
-      <div className="flex flex-col h-full font-sans max-w-4xl mx-auto">
-        <div className="mb-12 mt-8">
-          <div className="flex items-center gap-2 text-xs font-bold text-text-body uppercase tracking-wider mb-3">
-            <span>Playbook Library</span>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-[#735496]">All Playbooks</span>
-          </div>
-          <h1 className="text-4xl font-serif text-text-header mb-3">Data Required</h1>
-          <p className="text-lg text-text-body">You cannot run Playbooks because your local data engine is empty.</p>
-        </div>
-
-        <div className="grid gap-4">
-          <Link href="/onboarding" className="bg-white border-2 border-border hover:border-primary p-6 rounded-[24px] shadow-sm flex items-center gap-6 transition-all group hover:-translate-y-1">
-            <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center shrink-0 text-text-body group-hover:text-primary group-hover:bg-[#E3EEDC]">
-              <FolderKey className="w-8 h-8" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-serif text-text-header mb-1 group-hover:text-primary">Initialize Local Data Engine</h3>
-              <p className="text-sm text-text-body">Set up your encrypted "Marigold Local" folder and run the Demo Sandbox or upload your CSV first.</p>
-            </div>
-          </Link>
-          
-          <button onClick={() => openMariWithQuery("What is the Duplicate Voter Audit Playbook?")} className="bg-white border-2 border-border hover:border-primary p-6 rounded-[24px] shadow-sm flex items-center gap-6 transition-all group hover:-translate-y-1 text-left w-full">
-            <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center shrink-0 text-text-body group-hover:text-primary group-hover:bg-[#E3EEDC]">
-              <PlayCircle className="w-8 h-8" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-serif text-text-header mb-1 group-hover:text-primary">Ask the AI Guide</h3>
-              <p className="text-sm text-text-body">Learn how this playbook works before loading any data.</p>
-            </div>
-          </button>
-        </div>
-      </div>
+      <DataRequiredState 
+        title="Data Required" 
+        subtitle="You cannot run Playbooks because your local data engine is empty." 
+      />
     );
   }
 

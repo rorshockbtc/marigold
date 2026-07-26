@@ -63,3 +63,5 @@ clipboard.txt
 !tailwind.config.js
 !eslint.config.js
 !playwright.config.js
+keyManagementPolicy.md
+QA_PIPELINE.md

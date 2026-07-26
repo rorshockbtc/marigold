@@ -22,6 +22,21 @@ export function useVoterRollConnection(groupName?: string): VoterRollConnectionS
       const isDemoMode = isDemoGroupActive(grp);
       const dbName = getActiveDatabaseName(grp);
 
+      // Startup Data Purge: Wipe the old XOR-encrypted database if it hasn't been done yet
+      if (!localStorage.getItem("marigold_crypto_purged")) {
+        console.warn("Purging old insecure database...");
+        const deleteReq = indexedDB.deleteDatabase(dbName);
+        deleteReq.onsuccess = () => {
+          console.log(`Successfully purged old insecure database: ${dbName}`);
+          localStorage.setItem("marigold_crypto_purged", "true");
+          checkDataConnection(); // Re-run the connection check
+        };
+        deleteReq.onerror = () => {
+          console.error(`Failed to purge old insecure database: ${dbName}`);
+        };
+        return; // Wait for the delete to finish before checking connection
+      }
+
       try {
         const request = indexedDB.open(dbName, 1);
         request.onsuccess = (e) => {

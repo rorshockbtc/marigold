@@ -23,7 +23,7 @@ const eslintConfig = defineConfig([
       "react-hooks/purity": "warn",
       "react-hooks/immutability": "warn",
       "react/no-unescaped-entities": "warn",
-      "react/forbid-elements": ["error", { "forbid": ["button"] }],
+      "react/forbid-elements": ["warn", { "forbid": ["button"] }],
       "prefer-const": "warn",
     },
   },

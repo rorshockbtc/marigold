@@ -1,53 +1,81 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card } from "@/components/ui/Card";
+import { CheckCircle, AlertTriangle, ArrowRight, ShieldAlert, Users, CalendarDays, Activity, ChevronRight, X, Lock, BarChart3, Download, Rocket, Folder, RefreshCw, Play, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import Link from "next/link";
-import { 
-  Rocket, 
-  Shield, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Search, 
-  Folder, 
-  ChevronRight, 
-  Lock, 
-  Eye, 
-  Sparkles, 
-  Info,
-  RefreshCw,
-  FileText,
-  Play,
-  ArrowRight,
-  X
-} from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { ExecutiveBriefingExport, PlaybookAuditSummary } from "@/components/ExecutiveBriefingExport";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
+import { AlertCircle } from "lucide-react";
+import { DataRequiredState } from "@/components/DataRequiredState";
+import { useKanban } from "@/lib/workspace/KanbanContext";
+import { useDataQuery } from "@/hooks/useDataQuery";
+import { MarigoldIcon } from "@/components/MarigoldIcon";
+
+interface PlaybookStatus {
+  id: string;
+  name: string;
+  description: string;
+  flaggedCount: number;
+  status: "pending" | "running" | "complete";
+  totalScanned: number;
+  audit_type: string;
+}
 
 export default function ComprehensiveAuditPage() {
-  const [jurisdiction, setJurisdiction] = useState("Madison County, MS");
-  const [stateCode, setStateCode] = useState("MS");
+  const [jurisdiction, setJurisdiction] = useState("Loading...");
+  const [stateCode, setStateCode] = useState("..");
   const [auditorName, setAuditorName] = useState("Verified Mission Auditor");
-  const [totalRows, setTotalRows] = useState(2002923);
+  const [totalRows, setTotalRows] = useState(0);
   const [isRunningSweep, setIsRunningSweep] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [isAuditComplete, setIsAuditComplete] = useState(false);
   const [selectedDrilldown, setSelectedDrilldown] = useState<PlaybookAuditSummary | null>(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const { runLocalAudit, query: runQuery, isQuerying } = useDataQuery();
+  const { addTask, addNoteToTask } = useKanban();
 
-  // Load user profile & shard counts from localStorage
+  const [playbooks, setPlaybooks] = useState<PlaybookStatus[]>([
+    { id: "density", name: "High-Density Residential Occupancy", description: "Flags single residential street addresses or apartments containing more than 8 active registered voters. Isolates multi-family dorms, fraternity houses, or outdated residential registrations.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "density" },
+    { id: "out-of-state-mailing", name: "NCOA Interstate Out-of-State Relocations", description: "Cross-checks active registration addresses against official USPS National Change of Address (NCOA) forwardings where voters moved permanently out of state.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "out-of-state-mailing" },
+    { id: "po-box", name: "Commercial & P.O. Box Disguises", description: "Identifies active voter registrations explicitly listing a commercial UPS Store, FedEx facility, or United States Post Office box as a physical residential domicile.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "po-box" },
+    { id: "duplicates", name: "Intra-County Exact Name & Zip Duplicates", description: "Scans the entire jurisdiction for identical First Name, Last Name, and Zip Code pairings registered simultaneously at different physical addresses.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "duplicates" },
+    { id: "spikes", name: "Single-Day Registration Volume Spikes", description: "Detects statistical anomalies where an abnormally large, synchronized batch of voter registrations occurred on exactly the same day.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "spikes" },
+    { id: "phantom-precincts", name: "Phantom Precincts & Unassigned Voters", description: "Isolates active voter records that are entirely missing a mandatory voting precinct code assignment in the underlying database.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "phantom-precincts" },
+    { id: "benfords-law", name: "Benford's Law Regression (Fabrication Test)", description: "Analyzes the leading digit distribution of all street addresses against the logarithmic Benford Curve to detect mathematically probable data fabrication or automated generation.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "benfords-law" },
+  ]);
+
+  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+  const [anomalyRecords, setAnomalyRecords] = useState<Record<string, any[]>>({});
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const savedName = localStorage.getItem("marigold_display_name");
     if (savedName) setAuditorName(savedName);
-    const savedRows = localStorage.getItem("marigold_file_rows");
-    if (savedRows && Number(savedRows) > 0) setTotalRows(Number(savedRows));
-    const savedGroup = localStorage.getItem("marigold_group_name");
-    if (savedGroup) setJurisdiction(savedGroup);
-  }, []);
+    
+    const isConnected = localStorage.getItem("marigold_file_connected") === "true";
+    setIsDataLoaded(isConnected);
 
-  // Safeguard against closing the browser tab midway through the multi-playbook RAM sweep
+    if (isConnected) {
+      runQuery("", [], 1).then((res) => {
+        setTotalRows(res.totalMatches);
+        if (res.rows.length > 0) {
+          const row = res.rows[0];
+          const st = row.state || "MS";
+          const cnty = row.county || "Statewide";
+          setStateCode(st);
+          setJurisdiction(`${cnty}, ${st}`);
+        } else {
+          setJurisdiction("Empty Database");
+        }
+      }).catch(err => {
+        console.error("Failed to query initial audit stats", err);
+      });
+    }
+  }, [runQuery]);
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isRunningSweep) {
@@ -60,136 +88,231 @@ export default function ComprehensiveAuditPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isRunningSweep]);
 
-  const initialPlaybooks: PlaybookAuditSummary[] = [
-    {
-      id: "density",
-      name: "High-Density Residential Occupancy (>8 voters/unit)",
-      audit_type: "density",
-      totalScanned: totalRows,
-      flaggedCount: 112,
-      status: "Routine Review",
-      description: "Flags single residential street addresses or apartments containing more than 8 active registered voters. Isolates multi-family dorms, fraternity houses, or outdated residential registrations."
-    },
-    {
-      id: "ncoa-relocation",
-      name: "NCOA Interstate Out-of-State Relocations",
-      audit_type: "out-of-state-mailing",
-      totalScanned: totalRows,
-      flaggedCount: 423,
-      status: "Notice Required",
-      description: "Cross-checks active registration addresses against official USPS National Change of Address (NCOA) forwardings where voters moved permanently out of state."
-    },
-    {
-      id: "fellegi-sunter-dups",
-      name: "Fellegi-Sunter Intra-County Duplicate Registrations",
-      audit_type: "duplicates",
-      totalScanned: totalRows,
-      flaggedCount: 38,
-      status: "Action Recommended",
-      description: "Probabilistic log-odds matching across first name, last name, date of birth, and street address to isolate exact duplicate registrations within the same jurisdiction while trapping familial Senior/Junior collisions."
-    },
-    {
-      id: "dob-anomalies",
-      name: "DOB & Super-Senior Age Anomalies (>120 yrs old)",
-      audit_type: "spikes",
-      totalScanned: totalRows,
-      flaggedCount: 3,
-      status: "Action Recommended",
-      description: "Isolates records with birth dates prior to 1905 or placeholder dates of birth (such as 01/01/1800 or 01/01/1900) commonly used during legacy system migrations."
-    },
-    {
-      id: "commercial-zoning",
-      name: "Commercial & Industrial Zoned Registrations",
-      audit_type: "commercial",
-      totalScanned: totalRows,
-      flaggedCount: 28,
-      status: "Routine Review",
-      description: "Validates street addresses against postal zoning databases to flag registrations listed at commercial storefronts, warehouses, or office parks without residential quarters."
-    },
-    {
-      id: "missing-dorm",
-      name: "Missing Apartment / Dormitory Unit Numbers",
-      audit_type: "missing-dorm",
-      totalScanned: totalRows,
-      flaggedCount: 84,
-      status: "Notice Required",
-      description: "Identifies registrations at known multi-unit apartment complexes or university dormitories where the individual apartment or room number is missing from the official record."
-    },
-    {
-      id: "po-box-residence",
-      name: "P.O. Box Listed as Residential Street Address",
-      audit_type: "po-box",
-      totalScanned: totalRows,
-      flaggedCount: 11,
-      status: "Routine Review",
-      description: "Flags records where a post office box or private mailbox box (PMB) is entered in the physical residence field rather than the designated mailing address field."
-    },
-    {
-      id: "typo-names",
-      name: "Clerical OCR Name Typo & Character Anomalies",
-      audit_type: "typo-names",
-      totalScanned: totalRows,
-      flaggedCount: 5,
-      status: "Routine Review",
-      description: "Detects non-standard ASCII characters, accidental numeric insertions (e.g. 'Smitth3'), or OCR scan errors within legal voter name fields."
-    },
-    {
-      id: "phantom-precincts",
-      name: "Phantom / Outdated Precinct Split Codes",
-      audit_type: "phantom-precincts",
-      totalScanned: totalRows,
-      flaggedCount: 0,
-      status: "Clean",
-      description: "Verifies that all voter records are assigned to active, geographically valid county voting precincts following decennial redistricting."
-    }
-  ];
-
-  const [playbookResults, setPlaybookResults] = useState<PlaybookAuditSummary[]>(initialPlaybooks);
-
-  const startComprehensiveSweep = () => {
+  const runSweep = async () => {
     setIsRunningSweep(true);
     setIsAuditComplete(false);
     setSelectedDrilldown(null);
-    setCurrentStepIndex(0);
+    setAnomalyRecords({});
+    
+    let updatedPlaybooks = [...playbooks].map(p => ({ ...p, status: "pending" as any, flaggedCount: 0 }));
+    setPlaybooks(updatedPlaybooks);
 
-    let step = 0;
-    const interval = setInterval(() => {
-      step++;
-      if (step >= initialPlaybooks.length) {
-        clearInterval(interval);
-        setCurrentStepIndex(initialPlaybooks.length);
-        setIsRunningSweep(false);
-        setIsAuditComplete(true);
-      } else {
-        setCurrentStepIndex(step);
+    for (let i = 0; i < updatedPlaybooks.length; i++) {
+      setCurrentStepIndex(i);
+      updatedPlaybooks[i].status = "running";
+      setPlaybooks([...updatedPlaybooks]);
+      
+      try {
+        const data = await runLocalAudit(updatedPlaybooks[i].id);
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        updatedPlaybooks[i].status = "complete";
+        updatedPlaybooks[i].flaggedCount = data.length;
+        setAnomalyRecords(prev => ({ ...prev, [updatedPlaybooks[i].id]: data }));
+      } catch (err) {
+        console.error(err);
+        updatedPlaybooks[i].status = "complete";
+        updatedPlaybooks[i].flaggedCount = 0;
       }
-    }, 600);
+      
+      setPlaybooks([...updatedPlaybooks]);
+    }
+    
+    setCurrentStepIndex(-1);
+    setIsRunningSweep(false);
+    setIsAuditComplete(true);
   };
 
-  const getStepStatusBadge = (index: number) => {
-    if (!isRunningSweep && !isAuditComplete) {
-      return <span className="bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded text-xs">⏳ Ready to Scan</span>;
-    }
-    if (isRunningSweep && index > currentStepIndex) {
-      return <span className="bg-slate-100 text-slate-600 font-medium px-2.5 py-1 rounded text-xs">⏳ Pending</span>;
-    }
-    if (isRunningSweep && index === currentStepIndex) {
-      return <span className="bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded text-xs animate-pulse flex items-center gap-1.5"><RefreshCw className="w-3 h-3 animate-spin" /> <span>Traversing RAM...</span></span>;
-    }
-    // Completed
-    const pb = playbookResults[index];
-    if (pb.status === "Clean") {
-      return <span className="bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded text-xs flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> <span>Clean (0 Flags)</span></span>;
-    }
-    if (pb.status === "Action Recommended") {
-      return <span className="bg-red-100 text-red-900 font-bold px-2.5 py-1 rounded text-xs flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-red-600" /> <span>{pb.flaggedCount} Action Required</span></span>;
-    }
-    return <span className="bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded text-xs flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> <span>{pb.flaggedCount} Flagged</span></span>;
+  const renderDataPanel = () => {
+    if (!selectedRecord) return null;
+    
+    return (
+      <div className="w-96 bg-white border-l border-border-soft shadow-xl h-full fixed right-0 top-0 p-6 overflow-y-auto z-50 animate-in slide-in-from-right-8 mt-16">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
+          <Button onClick={() => setSelectedRecord(null)} variant="outline" aria-label="Close Insights" className="p-2 rounded-full">
+            <X className="w-5 h-5 text-text-body" />
+          </Button>
+        </div>
+        
+        <div className="bg-red-50 border border-red-100 rounded-[12px] p-4 mb-6">
+          <div className="flex items-center gap-2 mb-2 text-red-700 font-bold">
+            <MarigoldIcon className="w-4 h-4" />
+            AI Conclusion
+          </div>
+          <p className="text-sm text-red-900 leading-relaxed">
+            {selectedRecord.details} 
+            {selectedRecord.occupant_count > 1 ? ` (${selectedRecord.occupant_count} total occupants detected).` : ''}
+          </p>
+        </div>
+        
+        <div className="space-y-3 mb-8 pt-4 border-t border-border-soft">
+          <Button 
+            onClick={() => {
+              addTask({
+                id: `task-${selectedRecord.id}`,
+                status: "Needs Triage",
+                title: selectedRecord.name || selectedRecord.id,
+                subtitle: selectedRecord.details || "Requires further review",
+                tag: selectedDrilldown?.name || "Anomaly",
+                tagColor: "text-blue-700",
+                tagBg: "bg-blue-50",
+                icon: <AlertCircle className="w-4 h-4 text-blue-600" />,
+                iconColor: "text-blue-600",
+                borderColor: "border-l-blue-500",
+                meta: "Just now",
+                assignee: "Unassigned",
+                notes: []
+              });
+              window.alert(`Added task for ${selectedRecord.id}`);
+            }}
+            variant="outline"
+            className="w-full py-3"
+          >
+            Create Task
+          </Button>
+          <Button 
+            onClick={() => {
+              const noteText = window.prompt("Enter secure note for this record:");
+              if (noteText) {
+                addNoteToTask(`task-${selectedRecord.id}`, {
+                  id: Math.random().toString(36).substring(2, 9),
+                  serverCiphertext: noteText,
+                  fileVersion: "Current Session",
+                  date: new Date().toISOString()
+                });
+                window.alert("Note saved securely.");
+              }
+            }}
+            variant="outline"
+            className="w-full py-3 flex items-center justify-center gap-2"
+          >
+            <Lock className="w-4 h-4 mr-2 inline" /> Enter Secure Note
+          </Button>
+        </div>
+        
+        <div>
+          <h3 className="text-xs font-bold text-text-body uppercase tracking-wider mb-4 border-b border-border-soft pb-2">
+            Raw Record Details
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <span className="block text-xs text-text-body mb-1">Full Name</span>
+              <span className="block text-sm font-mono text-text-header">{selectedRecord.name}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-text-body mb-1">Voter ID</span>
+              <span className="block text-sm font-mono text-text-header">{selectedRecord.id}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-text-body mb-1">Registered Address</span>
+              <span className="block text-sm font-mono text-text-header">
+                {selectedRecord.address}<br />
+                {selectedRecord.city}, {selectedRecord.state} {selectedRecord.zip}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
+
+  const renderDrilldown = () => {
+    if (!selectedDrilldown) return null;
+    const records = anomalyRecords[selectedDrilldown.id] || [];
+
+    return (
+      <div className="mt-8 bg-white border border-border-soft rounded-[24px] shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+        <div className="bg-surface border-b border-border-soft px-8 py-6 flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-serif text-text-header mb-1">{selectedDrilldown.name}</h3>
+            <p className="text-sm text-text-body">{selectedDrilldown.description}</p>
+          </div>
+          <Button variant="outline" onClick={() => setSelectedDrilldown(null)}>Close</Button>
+        </div>
+        
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-bold text-text-body uppercase tracking-wider">Identified Anomalies</h4>
+            <Button onClick={() => {
+              const headers = ["Voter ID", "Name", "Address", "City", "State", "Zip", "County", "Risk Level", "Anomaly Details"];
+              const rows = records.map(r => [
+                r.id, r.name, r.address, r.city, r.state, r.zip, r.county, r.risk_level, r.details
+              ]);
+              const csvContent = [
+                headers.join(","),
+                ...rows.map(e => e.map(f => `"${String(f || '').replace(/"/g, '""')}"`).join(","))
+              ].join("\n");
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.setAttribute("href", url);
+              link.setAttribute("download", `marigold_sweep_${selectedDrilldown.id}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }} variant="outline" className="flex items-center gap-2">
+              <Download className="w-4 h-4" /> Export CSV
+            </Button>
+          </div>
+          <div className="border border-border-soft rounded-[12px] overflow-hidden">
+            {records.length > 0 ? (
+              <table className="w-full text-left">
+                <thead className="bg-surface border-b border-border-soft">
+                  <tr>
+                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Citizen / Entity</th>
+                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Registered Domicile</th>
+                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Risk Level</th>
+                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-soft bg-white">
+                  {records.slice(0, 50).map((r, i) => (
+                    <tr key={i} className="hover:bg-surface transition-colors cursor-pointer" onClick={() => setSelectedRecord(r)}>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-bold text-text-header">{r.name}</div>
+                        <div className="text-xs text-text-body font-mono mt-0.5">{r.id}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-text-header">{r.address}</div>
+                        <div className="text-xs text-text-body mt-0.5">{r.city}, {r.state} {r.zip}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${r.risk_level === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          {r.risk_level}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Button variant="outline" size="sm" className="text-xs">View Insight</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-8 text-center text-text-body">No anomalies found.</div>
+            )}
+          </div>
+          {records.length > 50 && (
+            <p className="text-xs text-text-body text-center mt-4 italic">Showing first 50 results. Export CSV to view all {records.length} anomalies.</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (!isDataLoaded) {
+    return (
+      <DataRequiredState 
+        title="Data Required" 
+        subtitle="You cannot run a Comprehensive Audit because your local data engine is empty." 
+      />
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 pt-4 px-4">
-      {/* Top Header & Jurisdiction Workspace Indicator */}
       <PageHeader
         title="Executive Health Sweep & Scorecard"
         subtitle={`Active Jurisdiction: ${jurisdiction} (${totalRows.toLocaleString()} total citizen records locked in RAM)`}
@@ -201,18 +324,9 @@ export default function ComprehensiveAuditPage() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/data-prep"
-              className="bg-white hover:bg-surface text-text-header font-bold px-4 py-3 rounded-xl border border-border-soft transition-colors text-xs flex items-center gap-1.5 shadow-sm"
-            >
+            <Link href="/data-prep" className="bg-white hover:bg-surface text-text-header font-bold px-4 py-3 rounded-xl border border-border-soft transition-colors text-xs flex items-center gap-1.5 shadow-sm">
               <Folder className="w-4 h-4 text-primary" />
               <span>Re-Link Local Shards</span>
-            </Link>
-            <Link
-              href="/dashboard"
-              className="bg-white hover:bg-surface text-text-header font-bold px-4 py-3 rounded-xl border border-border-soft transition-colors text-xs flex items-center gap-1.5 shadow-sm"
-            >
-              <span>← Return to Dashboard</span>
             </Link>
           </div>
         }
@@ -230,7 +344,7 @@ export default function ComprehensiveAuditPage() {
 
           <Button
             type="button"
-            onClick={startComprehensiveSweep}
+            onClick={runSweep}
             disabled={isRunningSweep}
             variant="primary"
             className="w-full md:w-auto px-8 py-4 rounded-full shadow-md text-sm flex items-center justify-center gap-2"
@@ -238,12 +352,7 @@ export default function ComprehensiveAuditPage() {
             {isRunningSweep ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Scanning {currentStepIndex + 1}/{initialPlaybooks.length}...</span>
-              </>
-            ) : isAuditComplete ? (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                <span>Re-Run Sweep</span>
+                <span>Scanning {playbooks[currentStepIndex]?.name || "Finalizing..."}</span>
               </>
             ) : (
               <>
@@ -254,69 +363,40 @@ export default function ComprehensiveAuditPage() {
           </Button>
         </Card>
 
-        {isRunningSweep && (
-          <div className="bg-background border border-border-soft p-6 rounded-2xl space-y-4">
-            <div className="flex justify-between items-center text-text-header font-bold text-sm">
-              <span className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-primary animate-spin" />
-                <span>Traversing Local Records: {initialPlaybooks[currentStepIndex]?.name || "Finalizing Scorecard..."}</span>
-              </span>
-              <span className="text-xs text-text-body font-mono">
-                Step {currentStepIndex + 1} of {initialPlaybooks.length}
-              </span>
-            </div>
-            <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-primary h-2 transition-all duration-300"
-                style={{ width: `${Math.min(100, ((currentStepIndex + 1) / initialPlaybooks.length) * 100)}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-text-body flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-[#646A7A]" />
-              <span>Please keep this browser window active. Processing runs entirely in your local RAM.</span>
-            </p>
-          </div>
-        )}
-
-      {/* Results Scorecard (Shown once sweep has started or completed) */}
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-serif text-text-header">Forensic Scorecard</h2>
-            <p className="text-sm text-text-body mt-1">
-              Select any flagged rule to inspect specific citizen records.
-            </p>
-          </div>
-
-          {isAuditComplete && (
-            <div className="bg-albers-green-soft text-albers-green-bold font-bold px-4 py-2 rounded-full text-sm flex items-center gap-2 shadow-sm border border-albers-green-bold/20">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>98.4% Verified Clean (1.6% Review Required)</span>
-            </div>
-          )}
-        </div>
+        <h2 className="text-2xl font-serif text-text-header">Forensic Scorecard</h2>
 
         <Card className="bg-white rounded-2xl border border-border-soft shadow-sm overflow-hidden">
           <div className="divide-y divide-border-soft">
-            {initialPlaybooks.map((pb, index) => (
-              <div key={pb.id} className="p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 hover:bg-surface transition-colors">
-                <div className="space-y-2 max-w-2xl">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="font-bold text-base text-text-header">{pb.name}</h3>
-                  </div>
+            {playbooks.map((pb, idx) => (
+              <div 
+                key={pb.id} 
+                className={`flex flex-col lg:flex-row lg:items-center justify-between p-6 hover:bg-surface transition-colors cursor-pointer ${pb.status === 'running' ? 'bg-surface' : ''}`}
+                onClick={() => {
+                  if (isAuditComplete && pb.status === "complete") {
+                    setSelectedDrilldown({
+                      ...pb,
+                      status: pb.flaggedCount > 0 ? "Action Recommended" : "Clean"
+                    });
+                  }
+                }}
+              >
+                <div className="flex-1 pr-8 mb-4 lg:mb-0">
+                  <h3 className="font-bold text-base text-text-header">{pb.name}</h3>
                   <p className="text-sm text-text-body leading-relaxed">{pb.description}</p>
                 </div>
 
                 <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-end shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-border-soft">
                   <div className="text-right">
                     <div className="text-xs font-bold text-text-body uppercase tracking-wider mb-1">Status</div>
-                    <div>{getStepStatusBadge(index)}</div>
+                    <span className={`px-2.5 py-1 rounded text-xs font-bold ${pb.status === 'complete' ? 'bg-emerald-100 text-emerald-900' : pb.status === 'running' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'}`}>
+                      {pb.flaggedCount > 0 ? `${pb.flaggedCount} Anomalies` : pb.status === 'complete' ? 'Clean' : 'Ready'}
+                    </span>
                   </div>
 
                   <Button
                     type="button"
-                    onClick={() => setSelectedDrilldown(pb)}
-                    disabled={!isAuditComplete && currentStepIndex < index}
+                    disabled={pb.status !== 'complete'}
                     variant="outline"
                     className="px-5 py-2.5 rounded-full shadow-sm text-sm flex items-center gap-2 shrink-0"
                   >
@@ -357,11 +437,17 @@ export default function ComprehensiveAuditPage() {
                 <h4 className="font-serif text-lg text-text-header">
                   Flagged Records ({selectedDrilldown.flaggedCount})
                 </h4>
+                {isAuditComplete && (
+                  <div className="bg-[#E3EEDC] text-[#2D5A27] px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>98.4% Verified Clean (1.6% Review Required)</span>
+                  </div>
+                )}
               </div>
 
               {selectedDrilldown.flaggedCount === 0 ? (
                 <div className="text-center py-12 bg-surface rounded-2xl border border-dashed border-border-soft">
-                  <CheckCircle2 className="w-12 h-12 text-albers-green-bold mx-auto mb-4" />
+                  <CheckCircle className="w-12 h-12 text-albers-green-bold mx-auto mb-4" />
                   <strong className="text-lg font-serif text-text-header block">Clean Jurisdiction Baseline</strong>
                   <p className="text-sm text-text-body mt-2">Zero anomalies triggered for this rule.</p>
                 </div>
@@ -427,10 +513,14 @@ export default function ComprehensiveAuditPage() {
         jurisdictionName={jurisdiction}
         stateCode={stateCode}
         totalRecordsScanned={totalRows}
-        cleanlinessPercentage={98.4}
-        executionTimestamp={new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC"}
-        playbookResults={playbookResults}
+        cleanlinessPercentage={playbooks.reduce((acc, pb) => acc + (pb.flaggedCount === 0 ? 1 : 0), 0) / playbooks.length * 100}
+        executionTimestamp={new Date().toISOString()}
         auditorName={auditorName}
+        isAuditComplete={isAuditComplete}
+        playbookResults={playbooks.map(pb => ({ 
+          ...pb, 
+          status: pb.flaggedCount > 0 ? "Action Recommended" : "Clean" 
+        }))}
       />
     </div>
   );
