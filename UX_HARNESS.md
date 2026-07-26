@@ -6,8 +6,9 @@ This document defines the strict, repeatable test suite that **MUST** be execute
 **Description:** Verify that the core Web2 Identity layer is intact.
 - [ ] **Test 1.1:** Navigate to the root URL `/`. Ensure the landing page loads without errors.
 - [ ] **Test 1.2:** Navigate to `/dashboard` while logged out. Ensure you are redirected to `/sign-in`.
-- [ ] **Test 1.3:** Complete the login flow via Clerk. Ensure you are successfully redirected to `/dashboard`.
-- [ ] **Test 1.4:** Click the "Sign Out" button. Ensure the session clears and you are redirected to the public area.
+- [ ] **Test 1.3:** Click the "Sign In" button in the Navbar. Does it result in a followup action (navigating to the login page)? Ensure it does not silently fail.
+- [ ] **Test 1.4:** Complete the login flow via Clerk. Ensure you are successfully redirected to `/dashboard`.
+- [ ] **Test 1.5:** Click the "Sign Out" button. Ensure the session clears and you are redirected to the public area.
 
 ## 2. Cryptographic Key Management (Phase 1)
 **Description:** Verify that the 3-Layer Zero-Knowledge architecture and `WebCryptoManager` are correctly defending the local data shard.

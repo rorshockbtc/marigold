@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { ChevronDown, ArrowRight, Menu, X, Globe, Map, Shield, Sparkles, Terminal } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -97,16 +97,12 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             {!isAuthenticated ? (
               <>
-                <SignInButton mode="redirect">
-                  <button className="hidden sm:block text-sm font-medium text-secondary hover:text-primary px-3 py-2 transition-colors">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="redirect">
-                  <button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4 sm:px-5 py-2 text-xs sm:text-sm rounded-[12px] shadow-sm transition-transform transform hover:-translate-y-0.5">
-                    Get Started
-                  </button>
-                </SignUpButton>
+                <Link href="/sign-in" className="hidden sm:block text-sm font-medium text-secondary hover:text-primary px-3 py-2 transition-colors">
+                  Sign In
+                </Link>
+                <Link href="/sign-up" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4 sm:px-5 py-2 text-xs sm:text-sm rounded-[12px] shadow-sm transition-transform transform hover:-translate-y-0.5 flex items-center justify-center">
+                  Get Started
+                </Link>
               </>
             ) : (
               <>
