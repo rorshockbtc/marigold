@@ -10,6 +10,8 @@ import { Download, Sparkles, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { PinSetupModal } from "@/components/PinSetupModal";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -20,7 +22,20 @@ export default function DataPrepPage() {
   const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   const [demoStatusMsg, setDemoStatusMsg] = useState("");
 
-  const handle1ClickLoadDemo = async () => {
+  const { hasPinSet } = useAuth();
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  const requirePin = (action: () => void) => {
+    if (!hasPinSet) {
+      setPendingAction(() => action);
+      setIsPinModalOpen(true);
+    } else {
+      action();
+    }
+  };
+
+  const execute1ClickLoadDemo = async () => {
     setIsLoadingDemo(true);
     try {
       await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
@@ -30,6 +45,7 @@ export default function DataPrepPage() {
       alert("Failed to auto-load demo dataset: " + err);
     }
   };
+  const handle1ClickLoadDemo = () => requirePin(execute1ClickLoadDemo);
 
   // Auto-detect existing local database shard on shared household devices
   useEffect(() => {
@@ -91,18 +107,22 @@ export default function DataPrepPage() {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      if (checkDemoFileAllowed(file)) parseFile(file);
+      if (checkDemoFileAllowed(file)) {
+        requirePin(() => parseFile(file));
+      }
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      if (checkDemoFileAllowed(file)) parseFile(file);
+      if (checkDemoFileAllowed(file)) {
+        requirePin(() => parseFile(file));
+      }
     }
   };
 
-  const handleExport = () => {
+  const executeExport = () => {
     if (parseState.columns.length > 0) {
       const activeGroup = (typeof window !== "undefined" && localStorage.getItem("marigold_active_group") || "").toLowerCase();
       const fileName = (typeof window !== "undefined" && localStorage.getItem("marigold_file_name") || "").toUpperCase();
@@ -110,6 +130,7 @@ export default function DataPrepPage() {
       startExport(parseState.columns, rowsPerFile, isDemo ? "DEMO-dataset" : "dataset");
     }
   };
+  const handleExport = () => requirePin(executeExport);
 
   const handleReset = () => {
     clearData();
@@ -434,6 +455,17 @@ export default function DataPrepPage() {
 
         </div>
       )}
+
+      <PinSetupModal 
+        isOpen={isPinModalOpen} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
+        }} 
+      />
     </div>
   );
 }

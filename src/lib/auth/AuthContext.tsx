@@ -21,6 +21,8 @@ interface AuthContextType {
   
   // Local Data Encryption (AuthZ)
   isWorkspaceUnlocked: boolean;
+  hasPinSet: boolean;
+  setupWorkspacePin: (pin: string) => Promise<boolean>;
   unlockWorkspace: (pin: string) => Promise<boolean>;
   lockWorkspace: () => void;
 
@@ -36,6 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isWorkspaceUnlocked, setIsWorkspaceUnlocked] = useState(false);
+  const [hasPinSet, setHasPinSet] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasPinSet(localStorage.getItem("marigold_has_pin") === "true");
+    }
+  }, []);
 
   useEffect(() => {
     if (isLoaded && clerkUser) {
@@ -59,6 +68,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setIsWorkspaceUnlocked(false);
     await signOut();
+  };
+
+  const setupWorkspacePin = async (pin: string): Promise<boolean> => {
+    if (pin.length >= 4) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("marigold_has_pin", "true");
+      }
+      setHasPinSet(true);
+      setIsWorkspaceUnlocked(true);
+      return true;
+    }
+    return false;
   };
 
   const unlockWorkspace = async (pin: string): Promise<boolean> => {
@@ -96,6 +117,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, 
       isAuthenticated: !!user, 
       isWorkspaceUnlocked,
+      hasPinSet,
+      setupWorkspacePin,
       unlockWorkspace,
       lockWorkspace,
       login, 
