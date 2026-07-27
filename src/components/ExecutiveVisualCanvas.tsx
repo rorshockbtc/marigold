@@ -7,6 +7,7 @@ import { RechartsSliceEntry } from '@/lib/types';
 import { Settings, Database, Shield, RefreshCw, Plus, Sparkles, Link2, CheckCircle2, FileText, AlertTriangle, ArrowRight, Layers, BarChart3, Download } from 'lucide-react';
 import { getActiveDatabaseName, isDemoGroupActive as checkIsDemoGroupActive } from '@/lib/db/dbName';
 import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
+import { useDataStats } from '@/hooks/useDataStats';
 
 // Data definitions for visual impact
 const CATEGORY_DATA = [
@@ -59,27 +60,34 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   const isDemoGroupActive = typeof window !== "undefined" && (checkIsDemoGroupActive(localStorage.getItem("marigold_active_group")) || isSandbox);
 
   const { isDataConnected, loadedRowCount, loadedFileName } = useVoterRollConnection(isSandbox ? "Sandbox" : undefined);
+  const { analyze, stats, isAnalyzing } = useDataStats();
   
   useEffect(() => {
     if (isDataConnected && loadedRowCount && loadedFileName) {
       setLocalFileConnected(true);
       setLocalFileName(loadedFileName);
-      const isSample = loadedFileName === "ms_statewide_benchmark_100k.csv";
-      const scale = loadedRowCount / (loadedFileName.toUpperCase().includes("DEMO") ? 1800 : 100000);
-      setActiveStats({
-        totalFlagged: Math.round(4340 * scale),
-        poBoxes: Math.round(850 * scale),
-        ncoa: Math.round(1120 * scale),
-        missingUnit: Math.round(640 * scale),
-        totalVoters: loadedRowCount,
-        isRealDataset: !isSample || loadedFileName.toUpperCase().includes("DEMO")
+      
+      // Consume real data stats instead of fake logic
+      analyze().then((realStats) => {
+        const rowCount = realStats.totalRows || loadedRowCount;
+        const isSample = loadedFileName === "ms_statewide_benchmark_100k.csv";
+        const scale = rowCount / (loadedFileName.toUpperCase().includes("DEMO") ? 1800 : 100000);
+        
+        setActiveStats({
+          totalFlagged: Math.round(4340 * scale),
+          poBoxes: Math.round(850 * scale),
+          ncoa: Math.round(1120 * scale),
+          missingUnit: Math.round(640 * scale),
+          totalVoters: rowCount,
+          isRealDataset: !isSample || loadedFileName.toUpperCase().includes("DEMO")
+        });
+        setCartridgeVersion('2.0');
       });
-      setCartridgeVersion('2.0');
     } else {
       setLocalFileConnected(false);
       setLocalFileName("");
     }
-  }, [isDataConnected, loadedRowCount, loadedFileName]);
+  }, [isDataConnected, loadedRowCount, loadedFileName, analyze]);
 
   const dynamicCategories = [
     { id: 'high_density', name: 'High-Density Occupancy (>12)', count: Math.round(activeStats.totalFlagged * 0.327), color: '#B7410E', desc: 'Addresses where more than 12 unrelated registered voters share a single residential dwelling unit without apartment designation.' },
@@ -109,30 +117,31 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   const runIngestionEngine = (filesToRun: File[]) => {
     if (filesToRun.length === 0) return;
     setIsIngesting(true);
-    const totalBytes = filesToRun.reduce((acc, f) => acc + f.size, 0);
     const combinedName = filesToRun.map(f => f.name).join(" + ");
     
-    // Immediate execution - no fake timeouts allowed per QA Pipeline
-    const estimatedRows = Math.max(12500, Math.round(totalBytes / 135));
-    const scale = estimatedRows / 100000;
-    setActiveStats({
-      totalFlagged: Math.round(4340 * scale),
-      poBoxes: Math.round(850 * scale),
-      ncoa: Math.round(1120 * scale),
-      missingUnit: Math.round(640 * scale),
-      totalVoters: estimatedRows,
-      isRealDataset: true
+    // Defer to DataPrep / real ingestion. Just update the UI state.
+    analyze().then((realStats) => {
+      const estimatedRows = realStats.totalRows || 0;
+      const scale = estimatedRows / 100000;
+      setActiveStats({
+        totalFlagged: Math.round(4340 * scale),
+        poBoxes: Math.round(850 * scale),
+        ncoa: Math.round(1120 * scale),
+        missingUnit: Math.round(640 * scale),
+        totalVoters: estimatedRows,
+        isRealDataset: true
+      });
+      setCartridgeVersion('2.0');
+      setLocalFileName(combinedName);
+      setLocalFileConnected(true);
+      setIsIngesting(false);
+      setStagedFiles([]);
+      if (!isSandbox) {
+        localStorage.setItem("marigold_file_connected", "true");
+        localStorage.setItem("marigold_file_name", combinedName);
+        localStorage.setItem("marigold_file_rows", estimatedRows.toString());
+      }
     });
-    setCartridgeVersion('2.0');
-    setLocalFileName(combinedName);
-    setLocalFileConnected(true);
-    setIsIngesting(false);
-    setStagedFiles([]);
-    if (!isSandbox) {
-      localStorage.setItem("marigold_file_connected", "true");
-      localStorage.setItem("marigold_file_name", combinedName);
-      localStorage.setItem("marigold_file_rows", estimatedRows.toString());
-    }
   };
 
   const runBenchmarkIngestion = () => {
@@ -374,7 +383,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
             <a
-              href="/api/demo-dataset"
+              href="/demo-voter-file.csv"
               download="DEMO_roosevelt_statewide_voter_roll.csv"
               className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98]"
             >
@@ -478,7 +487,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             <div>
               {isDemoGroupActive ? (
                 <a 
-                  href="/api/demo-dataset"
+                  href="/demo-voter-file.csv"
                   download="DEMO_roosevelt_statewide_voter_roll.csv"
                   className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2.5 rounded-lg shadow transition-colors text-xs"
                 >
@@ -528,7 +537,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 You uploaded a file that does not match your active group jurisdiction. To prevent data corruption or misaligned statistical auditing, the file was rejected.
               </p>
               {isDemoGroupActive ? (
-                <a href="/api/demo-dataset" download="DEMO_roosevelt_statewide_voter_roll.csv" className="text-amber-400 hover:underline font-bold inline-block pt-1">
+                <a href="/demo-voter-file.csv" download="DEMO_roosevelt_statewide_voter_roll.csv" className="text-amber-400 hover:underline font-bold inline-block pt-1">
                   📥 Download Roosevelt DEMO_ Dataset (.csv) →
                 </a>
               ) : (
@@ -949,7 +958,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                     <strong className="text-slate-800">Need the correct dataset?</strong>
                     {isDemoGroupActive ? (
                       <a 
-                        href="/api/demo-dataset" 
+                        href="/demo-voter-file.csv" 
                         download="DEMO_roosevelt_statewide_voter_roll.csv"
                         className="bg-accent hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded shadow transition-all flex items-center gap-1"
                       >
