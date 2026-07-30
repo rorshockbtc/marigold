@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Folder, UploadCloud, ArrowRight, Lock, KeyRound, CheckCircle2, Play, Activity } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { generateWorkspaceKey, encryptKeyWithPIN } from "@/lib/crypto/LocalKeyManager";
 import { autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
 import { useRouter } from "next/navigation";
@@ -105,49 +106,58 @@ export default function OnboardingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <button 
+            <Button 
               onClick={() => setComfortLevel("new")}
-              className={`p-8 rounded-[24px] border-2 text-left transition-all ${comfortLevel === 'new' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
+              variant="ghost"
+              className={`p-8 rounded-[24px] border-2 text-left transition-all h-auto ${comfortLevel === 'new' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
             >
-              <h3 className="text-2xl font-serif text-text-header mb-3">I'm a Beginner</h3>
-              <p className="text-sm text-text-body leading-relaxed">
-                I want Marigold to guide me step-by-step. Let's start with the Demo Sandbox to learn how it works.
-              </p>
-            </button>
-
-            <button 
-              onClick={() => setComfortLevel("pro")}
-              className={`p-8 rounded-[24px] border-2 text-left transition-all ${comfortLevel === 'pro' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
-            >
-              <h3 className="text-2xl font-serif text-text-header mb-3">I'm an Expert</h3>
-              <p className="text-sm text-text-body leading-relaxed">
-                I know my way around a voter file. Skip the tutorials, I'm ready to upload my own state's CSV.
-              </p>
-            </button>
-
-            <button 
-              onClick={() => setComfortLevel("returning")}
-              className={`p-8 rounded-[24px] border-2 text-left transition-all ${comfortLevel === 'returning' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Folder className="w-5 h-5 text-primary" />
-                <h3 className="text-2xl font-serif text-text-header">I'm Returning</h3>
+              <div>
+                <h3 className="text-2xl font-serif text-text-header mb-3">I'm a Beginner</h3>
+                <p className="text-sm text-text-body leading-relaxed">
+                  I want Marigold to guide me step-by-step. Let's start with the Demo Sandbox to learn how it works.
+                </p>
               </div>
-              <p className="text-sm text-text-body leading-relaxed">
-                I already have a Marigold Local folder on my computer. I just need to re-link it and unlock it to continue where I left off.
-              </p>
-            </button>
+            </Button>
+
+            <Button 
+              onClick={() => setComfortLevel("pro")}
+              variant="ghost"
+              className={`p-8 rounded-[24px] border-2 text-left transition-all h-auto ${comfortLevel === 'pro' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
+            >
+              <div>
+                <h3 className="text-2xl font-serif text-text-header mb-3">I'm an Expert</h3>
+                <p className="text-sm text-text-body leading-relaxed">
+                  I know my way around a voter file. Skip the tutorials, I'm ready to upload my own state's CSV.
+                </p>
+              </div>
+            </Button>
+
+            <Button 
+              onClick={() => setComfortLevel("returning")}
+              variant="ghost"
+              className={`p-8 rounded-[24px] border-2 text-left transition-all h-auto ${comfortLevel === 'returning' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
+            >
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Folder className="w-5 h-5 text-primary" />
+                  <h3 className="text-2xl font-serif text-text-header">I'm Returning</h3>
+                </div>
+                <p className="text-sm text-text-body leading-relaxed">
+                  I already have a Marigold Local folder on my computer. I just need to re-link it and unlock it to continue where I left off.
+                </p>
+              </div>
+            </Button>
           </div>
 
           <div className="flex justify-end">
-            <button 
+            <Button 
               disabled={!comfortLevel}
               onClick={() => setStep("technical")}
               className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${comfortLevel ? 'bg-primary text-white hover:opacity-90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5' : 'bg-surface text-text-body border border-border-soft cursor-not-allowed opacity-50'}`}
             >
               Set Up My Secure Folder
               <ArrowRight className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -185,8 +195,9 @@ export default function OnboardingPage() {
                     ? "Select your existing 'Marigold Local' folder from your Documents to grant the browser access again."
                     : "Create a new, empty folder in your Documents to store your private workspace."}
                 </p>
-                <button 
+                <Button 
                   onClick={handleSelectFolder}
+                  variant="outline"
                   className={`flex items-center gap-2 border px-6 py-3 rounded-[12px] text-sm font-bold transition-all ${
                     directoryHandle 
                       ? 'bg-surface text-text-body border-border-soft cursor-default' 
@@ -195,7 +206,7 @@ export default function OnboardingPage() {
                 >
                   <Folder className={`w-5 h-5 ${directoryHandle ? 'text-text-body' : 'text-primary'}`} />
                   {directoryHandle ? 'Folder Locked In' : 'Select Local Folder'}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -227,9 +238,10 @@ export default function OnboardingPage() {
                       className="pl-12 pr-4 py-3 rounded-[12px] border border-border-soft bg-white text-text-header w-56 font-mono tracking-widest outline-none focus:border-primary transition-colors"
                     />
                   </div>
-                  <button 
+                  <Button 
                     onClick={handleGenerateKey}
                     disabled={!directoryHandle || !!workspaceKey} 
+                    variant="outline"
                     className={`flex items-center gap-2 px-6 py-3 rounded-[12px] text-sm font-bold transition-all ${
                       directoryHandle && !workspaceKey
                         ? 'bg-white border border-border-soft text-text-header hover:bg-surface shadow-sm'
@@ -238,7 +250,7 @@ export default function OnboardingPage() {
                   >
                     <KeyRound className="w-5 h-5" />
                     {workspaceKey ? (comfortLevel === 'returning' ? 'Folder Unlocked' : 'Folder Locked') : (comfortLevel === 'returning' ? 'Unlock Workspace' : 'Set PIN')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -262,7 +274,7 @@ export default function OnboardingPage() {
                 
                 <div className="flex flex-wrap gap-4">
                   {comfortLevel === 'new' ? (
-                    <button 
+                    <Button 
                       disabled={!workspaceKey} 
                       onClick={() => startIngestion(true)}
                       className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${
@@ -271,10 +283,10 @@ export default function OnboardingPage() {
                     >
                       <Play className="w-5 h-5 fill-current" />
                       Run Demo Sandbox Engine
-                    </button>
+                    </Button>
                   ) : comfortLevel === 'pro' ? (
                     <div className="flex gap-3">
-                      <button 
+                      <Button 
                         disabled={!workspaceKey} 
                         onClick={() => alert("File Picker would open here.")}
                         className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${
@@ -283,19 +295,20 @@ export default function OnboardingPage() {
                       >
                         <UploadCloud className="w-5 h-5" />
                         Select CSV File
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         disabled={!workspaceKey} 
                         onClick={() => startIngestion(true)}
+                        variant="outline"
                         className={`flex items-center gap-2 px-6 py-4 rounded-full font-bold transition-all ${
                           workspaceKey ? 'bg-white text-text-header border border-border-soft hover:bg-surface' : 'hidden'
                         }`}
                       >
                         Or run Demo Sandbox
-                      </button>
+                      </Button>
                     </div>
                   ) : (
-                    <button 
+                    <Button 
                       disabled={!workspaceKey} 
                       onClick={() => {
                         localStorage.setItem("marigold_file_connected", "true");
@@ -307,7 +320,7 @@ export default function OnboardingPage() {
                     >
                       <Play className="w-5 h-5 fill-current" />
                       Go to Dashboard
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
