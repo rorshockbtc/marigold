@@ -12,6 +12,7 @@ import { MarigoldIcon } from "@/components/MarigoldIcon";
 import { DataRequiredState } from "@/components/DataRequiredState";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { ExploreDataPanel } from "@/components/ExploreDataPanel";
+import { FilterControl } from "@/components/ui/FilterControl";
 
 export default function ExplorePage() {
   const { runLocalAudit, isQuerying, queryProgress } = useDataQuery();
@@ -198,19 +199,16 @@ export default function ExplorePage() {
               {/* Sandbox Control / Manifest Override Dropdown */}
               <div className="flex items-center gap-2 border-r border-border-soft pr-4 mr-2">
                 <Database className="w-4 h-4 text-text-body" />
-                <select 
+                <FilterControl
+                  label=""
                   value={JSON.stringify(userLocalDatasets)}
-                  onChange={(e) => setUserLocalDatasets(JSON.parse(e.target.value))}
-                  className="text-sm font-bold bg-surface border border-border-soft rounded-lg px-2 py-1.5 outline-none cursor-pointer focus:border-primary"
-                >
-                  {/* UX Fix: Abstracted technical jargon into simple choices */}
-                  <option value={JSON.stringify(["Mississippi_July_2026", "Mari_Research_V1"])}>
-                    Workspace: Group Collaboration
-                  </option>
-                  <option value={JSON.stringify(["Mississippi_August_2026", "Wyoming_VoterRoll"])}>
-                    Workspace: Personal Research
-                  </option>
-                </select>
+                  onChange={(val) => setUserLocalDatasets(JSON.parse(val))}
+                  options={[
+                    { value: JSON.stringify(["Mississippi_July_2026", "Mari_Research_V1"]), label: "Workspace: Group Collaboration" },
+                    { value: JSON.stringify(["Mississippi_August_2026", "Wyoming_VoterRoll"]), label: "Workspace: Personal Research" },
+                  ]}
+                  className="text-sm font-bold"
+                />
               </div>
 
               <label className="flex items-center gap-2 cursor-pointer">
