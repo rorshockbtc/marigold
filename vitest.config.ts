@@ -8,10 +8,22 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
+    include: [
+      '__tests__/**/*.test.{ts,tsx}',
+      'tests/**/*.test.{ts,tsx}',
+      'src/**/*.test.{ts,tsx}',
+    ],
+    exclude: [
+      'node_modules/**',
+      'tests/e2e/**',
+      'e2e/**',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['src/lib/**', 'src/workers/**', 'src/components/**', 'src/app/**'],
+      include: ['src/lib/**', 'src/workers/**', 'src/components/**', 'src/hooks/**', 'src/app/**'],
       exclude: ['src/**/*.d.ts', 'src/**/index.ts']
     },
     alias: {

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Pre-commit hook: Runs the UAT Enforcer before every commit.
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+echo "🛡️ Running UAT Enforcer pre-commit check..."
+bash scripts/uat_enforcer.sh .
+
+echo "✅ Pre-commit governance check passed."

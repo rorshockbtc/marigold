@@ -13,6 +13,8 @@ import { DataRequiredState } from "@/components/DataRequiredState";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { useDataQuery } from "@/hooks/useDataQuery";
 import { MarigoldIcon } from "@/components/MarigoldIcon";
+import { AuditDataPanel } from "@/components/AuditDataPanel";
+import { AuditDrilldown } from "@/components/AuditDrilldown";
 
 interface PlaybookStatus {
   id: string;
@@ -124,183 +126,7 @@ export default function ComprehensiveAuditPage() {
     setIsAuditComplete(true);
   };
 
-  const renderDataPanel = () => {
-    if (!selectedRecord) return null;
-    
-    return (
-      <div className="w-96 bg-white border-l border-border-soft shadow-xl h-full fixed right-0 top-0 p-6 overflow-y-auto z-50 animate-in slide-in-from-right-8 mt-16">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
-          <Button onClick={() => setSelectedRecord(null)} variant="outline" aria-label="Close Insights" className="p-2 rounded-full">
-            <X className="w-5 h-5 text-text-body" />
-          </Button>
-        </div>
-        
-        <div className="bg-red-50 border border-red-100 rounded-[12px] p-4 mb-6">
-          <div className="flex items-center gap-2 mb-2 text-red-700 font-bold">
-            <MarigoldIcon className="w-4 h-4" />
-            AI Conclusion
-          </div>
-          <p className="text-sm text-red-900 leading-relaxed">
-            {selectedRecord.details} 
-            {selectedRecord.occupant_count > 1 ? ` (${selectedRecord.occupant_count} total occupants detected).` : ''}
-          </p>
-        </div>
-        
-        <div className="space-y-3 mb-8 pt-4 border-t border-border-soft">
-          <Button 
-            onClick={() => {
-              addTask({
-                id: `task-${selectedRecord.id}`,
-                status: "Needs Triage",
-                title: selectedRecord.name || selectedRecord.id,
-                subtitle: selectedRecord.details || "Requires further review",
-                tag: selectedDrilldown?.name || "Anomaly",
-                tagColor: "text-blue-700",
-                tagBg: "bg-blue-50",
-                icon: <AlertCircle className="w-4 h-4 text-blue-600" />,
-                iconColor: "text-blue-600",
-                borderColor: "border-l-blue-500",
-                meta: "Just now",
-                assignee: "Unassigned",
-                notes: []
-              });
-              window.alert(`Added task for ${selectedRecord.id}`);
-            }}
-            variant="outline"
-            className="w-full py-3"
-          >
-            Create Task
-          </Button>
-          <Button 
-            onClick={() => {
-              const noteText = window.prompt("Enter secure note for this record:");
-              if (noteText) {
-                addNoteToTask(`task-${selectedRecord.id}`, {
-                  id: Math.random().toString(36).substring(2, 9),
-                  serverCiphertext: noteText,
-                  fileVersion: "Current Session",
-                  date: new Date().toISOString()
-                });
-                window.alert("Note saved securely.");
-              }
-            }}
-            variant="outline"
-            className="w-full py-3 flex items-center justify-center gap-2"
-          >
-            <Lock className="w-4 h-4 mr-2 inline" /> Enter Secure Note
-          </Button>
-        </div>
-        
-        <div>
-          <h3 className="text-xs font-bold text-text-body uppercase tracking-wider mb-4 border-b border-border-soft pb-2">
-            Raw Record Details
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <span className="block text-xs text-text-body mb-1">Full Name</span>
-              <span className="block text-sm font-mono text-text-header">{selectedRecord.name}</span>
-            </div>
-            <div>
-              <span className="block text-xs text-text-body mb-1">Voter ID</span>
-              <span className="block text-sm font-mono text-text-header">{selectedRecord.id}</span>
-            </div>
-            <div>
-              <span className="block text-xs text-text-body mb-1">Registered Address</span>
-              <span className="block text-sm font-mono text-text-header">
-                {selectedRecord.address}<br />
-                {selectedRecord.city}, {selectedRecord.state} {selectedRecord.zip}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderDrilldown = () => {
-    if (!selectedDrilldown) return null;
-    const records = anomalyRecords[selectedDrilldown.id] || [];
-
-    return (
-      <div className="mt-8 bg-white border border-border-soft rounded-[24px] shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
-        <div className="bg-surface border-b border-border-soft px-8 py-6 flex items-center justify-between">
-          <div>
-            <h3 className="text-2xl font-serif text-text-header mb-1">{selectedDrilldown.name}</h3>
-            <p className="text-sm text-text-body">{selectedDrilldown.description}</p>
-          </div>
-          <Button variant="outline" onClick={() => setSelectedDrilldown(null)}>Close</Button>
-        </div>
-        
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-bold text-text-body uppercase tracking-wider">Identified Anomalies</h4>
-            <Button onClick={() => {
-              const headers = ["Voter ID", "Name", "Address", "City", "State", "Zip", "County", "Risk Level", "Anomaly Details"];
-              const rows = records.map(r => [
-                r.id, r.name, r.address, r.city, r.state, r.zip, r.county, r.risk_level, r.details
-              ]);
-              const csvContent = [
-                headers.join(","),
-                ...rows.map(e => e.map(f => `"${String(f || '').replace(/"/g, '""')}"`).join(","))
-              ].join("\n");
-              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement("a");
-              link.setAttribute("href", url);
-              link.setAttribute("download", `marigold_sweep_${selectedDrilldown.id}.csv`);
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-            }} variant="outline" className="flex items-center gap-2">
-              <Download className="w-4 h-4" /> Export CSV
-            </Button>
-          </div>
-          <div className="border border-border-soft rounded-[12px] overflow-hidden">
-            {records.length > 0 ? (
-              <table className="w-full text-left">
-                <thead className="bg-surface border-b border-border-soft">
-                  <tr>
-                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Citizen / Entity</th>
-                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Registered Domicile</th>
-                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Risk Level</th>
-                    <th className="px-6 py-3 text-xs font-bold text-text-body uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-soft bg-white">
-                  {records.slice(0, 50).map((r, i) => (
-                    <tr key={i} className="hover:bg-surface transition-colors cursor-pointer" onClick={() => setSelectedRecord(r)}>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-bold text-text-header">{r.name}</div>
-                        <div className="text-xs text-text-body font-mono mt-0.5">{r.id}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-text-header">{r.address}</div>
-                        <div className="text-xs text-text-body mt-0.5">{r.city}, {r.state} {r.zip}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${r.risk_level === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                          {r.risk_level}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Button variant="outline" size="sm" className="text-xs">View Insight</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="p-8 text-center text-text-body">No anomalies found.</div>
-            )}
-          </div>
-          {records.length > 50 && (
-            <p className="text-xs text-text-body text-center mt-4 italic">Showing first 50 results. Export CSV to view all {records.length} anomalies.</p>
-          )}
-        </div>
-      </div>
-    );
-  };
+  // renderDataPanel and renderDrilldown extracted to standalone components
 
   if (!isDataLoaded) {
     return (
@@ -503,6 +329,13 @@ export default function ComprehensiveAuditPage() {
                 <strong>Recommended Action:</strong><br />
                 Review the flagged records against local property tax or university housing rolls. Click 'Verify Record' once confirmed.
               </div>
+              <AuditDrilldown
+                selectedDrilldown={selectedDrilldown}
+                setSelectedDrilldown={setSelectedDrilldown}
+                anomalyRecords={anomalyRecords}
+                setSelectedRecord={setSelectedRecord}
+                isAuditComplete={isAuditComplete}
+              />
             </Card>
           </div>
         </Card>
@@ -521,6 +354,13 @@ export default function ComprehensiveAuditPage() {
           ...pb, 
           status: pb.flaggedCount > 0 ? "Action Recommended" : "Clean" 
         }))}
+      />
+      <AuditDataPanel
+        selectedRecord={selectedRecord}
+        setSelectedRecord={setSelectedRecord}
+        addTask={addTask}
+        addNoteToTask={addNoteToTask}
+        selectedDrilldown={selectedDrilldown}
       />
     </div>
   );

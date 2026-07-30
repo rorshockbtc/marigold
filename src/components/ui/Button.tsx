@@ -8,14 +8,37 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   size?: ButtonSize;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  /** Explicit test ID. If omitted, auto-generated from children text content. */
+  'data-testid'?: string;
 }
 
+/**
+ * Governed Button primitive.
+ * All interactive buttons in the application MUST use this component.
+ * Raw <button> elements are banned by the UAT enforcer (Rule 7).
+ *
+ * Enforcement:
+ * - In test env: throws if no actionable handler (onClick, type=submit/reset).
+ * - In dev env: console.warn for the same condition.
+ * - Auto-generates data-testid from children text for Playwright selectors.
+ */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', children, icon, ...props }, ref) => {
-    if (process.env.NODE_ENV !== 'production') {
-      if (!props.onClick && props.type !== 'submit' && props.type !== 'reset') {
-        console.warn('Button must have an actionable intent (onClick, type="submit", or type="reset").');
+    const isActionable = !!props.onClick || props.type === 'submit' || props.type === 'reset';
+
+    if (!isActionable) {
+      const msg = 'Button must have an actionable intent (onClick, type="submit", or type="reset"). A button that does nothing violates the Marigold UX contract.';
+      if (process.env.NODE_ENV === 'test') {
+        throw new Error(msg);
+      } else if (process.env.NODE_ENV !== 'production') {
+        console.warn(msg);
       }
+    }
+
+    // Auto-generate data-testid from children text if not explicitly provided
+    let testId = props['data-testid'];
+    if (!testId && typeof children === 'string') {
+      testId = `btn-${children.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
     }
     
     // Base styles
@@ -41,7 +64,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const combinedClassName = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
 
     return (
-      <button ref={ref} className={combinedClassName} {...props}>
+      <button ref={ref} className={combinedClassName} data-testid={testId} {...props}>
         {icon && <span className="mr-2">{icon}</span>}
         {children}
       </button>
@@ -50,3 +73,4 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+

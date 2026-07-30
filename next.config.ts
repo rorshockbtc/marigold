@@ -17,7 +17,6 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
   turbopack: {
     root: path.resolve("."),
   },
