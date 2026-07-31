@@ -377,24 +377,27 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           updatedArticle.title = args.title;
           hiddenContext = `[SYSTEM: Title updated to "${args.title}"]`;
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
-          finalReply = "I've updated the title of our Data Story. What should we look at next?";
+          finalReply = loopResponseData.reply || "I've updated the title of our Data Story. What should we look at next?";
           break;
         } else if (t === 'append_section') {
           updatedArticle.sections.push({ id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart });
           hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
-          finalReply = "I've added a new section to the Data Story. Please review it in the center pane.";
+          finalReply = loopResponseData.reply || "I've added a new section to the Data Story. Please review it in the center pane.";
           break;
         } else if (t === 'update_section') {
-          const idx = updatedArticle.sections.findIndex(s => s.id === args.id);
-          if (idx >= 0) {
-            updatedArticle.sections[idx] = { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart };
-            hiddenContext = `[SYSTEM: Updated section "${args.heading}"]`;
-          } else {
-            hiddenContext = `[SYSTEM: Error - section ${args.id} not found. Suggest adding a new one.]`;
+          const sec = updatedArticle.sections.find(s => s.id === args.id);
+          if (sec) {
+            if (args.heading) sec.heading = args.heading;
+            if (args.narrative) sec.narrative = args.narrative;
+            if (args.chart) sec.chart = args.chart;
+            hiddenContext = `[SYSTEM: Updated section "${args.id}"]`;
+            window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           }
-          window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
-          finalReply = "I've revised that section of our Data Story.";
+          finalReply = loopResponseData.reply || "I've updated that section of the Data Story. Let me know if you need any other changes.";
+          break;
+        } else if (t === 'triage_and_fetch_dataset') {
+          finalReply = loopResponseData.reply || `I found a dataset online! ${args.description}. However, I need you to connect it first.`;
           break;
         } else {
           break;

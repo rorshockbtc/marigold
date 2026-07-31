@@ -119,13 +119,13 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
                     const commonLegends: any[] = [
                       {
                         dataFrom: 'keys',
-                        anchor: 'bottom',
-                        direction: 'row',
+                        anchor: 'right',
+                        direction: 'column',
                         justify: false,
-                        translateX: 0,
-                        translateY: 80,
+                        translateX: 140,
+                        translateY: 0,
                         itemsSpacing: 10,
-                        itemWidth: 120,
+                        itemWidth: 140,
                         itemHeight: 20,
                         itemDirection: 'left-to-right',
                         itemOpacity: 0.85,
@@ -173,7 +173,7 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
                           data={barData}
                           keys={keys}
                           indexBy="label"
-                          margin={{ top: 20, right: 20, bottom: 120, left: 60 }}
+                          margin={{ top: 20, right: 180, bottom: 60, left: 60 }}
                           padding={0.3}
                           colors={{ scheme: 'set2' }}
                           axisBottom={axisBottom}
@@ -204,7 +204,7 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
                       return (
                         <ResponsiveLine
                           data={sortedSeries}
-                          margin={{ top: 20, right: 20, bottom: 120, left: 60 }}
+                          margin={{ top: 20, right: 180, bottom: 60, left: 60 }}
                           xScale={{ type: 'point' }}
                           yScale={{ type: 'linear', min: lineMin, max: lineMax, stacked: false, reverse: false }}
                           axisTop={null}
@@ -252,7 +252,7 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
                           arcLinkLabelsColor={{ from: 'color' }}
                           arcLabelsSkipAngle={10}
                           arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
-                          legends={commonLegends.map(l => ({ ...l, dataFrom: undefined, direction: 'row', anchor: 'bottom', translateY: 80 }))}
+                          legends={commonLegends.map(l => ({ ...l, dataFrom: undefined, direction: 'column', anchor: 'right', translateY: 0, translateX: 140 }))}
                         />
                       );
                     }

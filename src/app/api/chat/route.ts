@@ -391,22 +391,22 @@ export async function POST(req: NextRequest) {
       
       if (call.name === "run_robust_statistics") {
         const { metric, county } = call.args as { metric: string; county?: string };
-        return NextResponse.json({ action: 'run_tool', tool: 'run_robust_statistics', args: { metric, county } });
+        return NextResponse.json({ action: 'run_tool', tool: 'run_robust_statistics', args: { metric, county }, reply: response.text() || undefined });
       } else if (call.name === "run_benfords_law") {
         const { county } = call.args as { county?: string };
-        return NextResponse.json({ action: 'run_tool', tool: 'run_benfords_law', args: { county } });
+        return NextResponse.json({ action: 'run_tool', tool: 'run_benfords_law', args: { county }, reply: response.text() || undefined });
       } else if (call.name === "suggest_mission_playbook") {
-        return NextResponse.json({ action: 'suggest_playbook', playbook: call.args, reply: "I've drafted a Playbook based on your request. You can save it with 1-click." });
+        return NextResponse.json({ action: 'suggest_playbook', playbook: call.args, reply: response.text() || "I've drafted a Playbook based on your request. You can save it with 1-click." });
       } else if (call.name === "append_section") {
-        return NextResponse.json({ action: 'run_tool', tool: 'append_section', args: call.args });
+        return NextResponse.json({ action: 'run_tool', tool: 'append_section', args: call.args, reply: response.text() || undefined });
       } else if (call.name === "update_section") {
-        return NextResponse.json({ action: 'run_tool', tool: 'update_section', args: call.args });
+        return NextResponse.json({ action: 'run_tool', tool: 'update_section', args: call.args, reply: response.text() || undefined });
       } else if (call.name === "update_title") {
-        return NextResponse.json({ action: 'run_tool', tool: 'update_title', args: call.args });
+        return NextResponse.json({ action: 'run_tool', tool: 'update_title', args: call.args, reply: response.text() || undefined });
       } else if (call.name === "query_dataset") {
-        return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args });
+        return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args, reply: response.text() || undefined });
       } else if (call.name === "triage_and_fetch_dataset") {
-        return NextResponse.json({ action: 'run_tool', tool: 'triage_and_fetch_dataset', args: call.args });
+        return NextResponse.json({ action: 'run_tool', tool: 'triage_and_fetch_dataset', args: call.args, reply: response.text() || undefined });
       }
     }
 
