@@ -24,9 +24,10 @@ Marigold qualifies as an allowable voter list maintenance expenditure under the 
 
 ## 🚀 Quick Start (For Non-Technical Users)
 
-1. **Ask Mari (The AI Concierge):** Type what anomaly you are looking for (e.g., "Find high density obesity rates"). If you lack local data, Mari will intelligently discover public datasets (like Data.gov) and initiate the Automagic Ingestion Pipeline.
+1. **Ask Mari (The AI Concierge):** Type what anomaly you are looking for (e.g., "Find high density obesity rates") or ask her to explore broad demographic trends. She will dynamically execute local SQL queries and generate interactive **Data Stories** and charts on the fly.
 2. **Automagic Secure Ingestion:** Datasets are streamed directly to your browser's private OPFS (Origin Private File System). A Real-time Security Scanner actively inspects the streaming bytes to block XSS and malicious payloads.
-3. **Execute Playbooks:** The local WASM engine processes and highlights errors instantly, all air-gapped on your own machine.
+3. **Zero-PII Hydration:** When Mari analyzes your data, she receives cryptographic hashes (e.g., `[ENTITY_HASH_123]`) instead of real names. Your local browser decrypts and hydrates the real names back into the UI in real-time, ensuring PII never touches the AI.
+4. **Execute Playbooks:** The local WASM engine processes and highlights errors instantly, all air-gapped on your own machine.
 
 ---
 

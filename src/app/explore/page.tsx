@@ -20,6 +20,7 @@ export default function ExplorePage() {
   const [results, setResults] = useState<any[]>([]);
   const [activePlaybook, setActivePlaybook] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   
   // UX Fix: Better data loaded detection. We default to false until proven true.
   const [isDataLoaded, setIsDataLoaded] = useState(false); 
@@ -38,6 +39,7 @@ export default function ExplorePage() {
   const isGroupSynced = GROUP_MANIFEST.every(requiredDataset => userLocalDatasets.includes(requiredDataset));
 
   useEffect(() => {
+    setIsMounted(true);
     // Check if user already proceeded this session
     const hasProceeded = sessionStorage.getItem("marigold_zk_proceeded") === "true";
     if (hasProceeded) setNeedsZkProceed(false);
@@ -62,6 +64,14 @@ export default function ExplorePage() {
       }
     }
   }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 space-y-6 min-h-screen bg-background">
+        <div className="h-10 bg-surface rounded-xl animate-pulse" />
+      </div>
+    );
+  }
 
   const handleZkProceed = () => {
     sessionStorage.setItem("marigold_zk_proceeded", "true");
@@ -154,7 +164,7 @@ export default function ExplorePage() {
           <p className="text-sm text-text-body mb-8 leading-relaxed">
             Marigold is creating a secure connection and utilizing the knowledge stored in your computer's files. Marigold is limited to accessing only those files for which you've granted permission and complies with strict data privacy standards.
           </p>
-          <Button onClick={handleZkProceed} className="w-full py-4 text-lg font-bold">
+          <Button onClick={handleZkProceed} data-testid="btn-proceed-securely" className="w-full py-4 text-lg font-bold">
             Proceed Securely
           </Button>
         </div>
@@ -222,6 +232,7 @@ export default function ExplorePage() {
               <Button 
                 onClick={exportCSV}
                 disabled={filteredResults.length === 0}
+                data-testid="btn-generate-report"
                 className={`flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-bold transition-colors ${
                   filteredResults.length > 0 ? 'bg-white border border-border-soft text-text-header hover:bg-surface shadow-sm' : 'opacity-50 cursor-not-allowed bg-surface border border-transparent'
                 }`}
@@ -253,6 +264,7 @@ export default function ExplorePage() {
                 key={pb.id}
                 onClick={() => runPlaybook(pb.id)}
                 variant="outline"
+                data-testid={`btn-${pb.id}`}
                 className={`flex items-start gap-4 p-4 rounded-2xl h-auto text-left transition-all ${
                   activePlaybook === pb.id ? 'border-primary bg-primary/5 shadow-sm' : 'border-border-soft bg-white hover:border-primary/30'
                 }`}

@@ -4,11 +4,42 @@
  * rigorous typing and eliminating `any` types across the codebase.
  */
 
+// -- Data Story (Article) Interfaces --
+export interface ArticleChart {
+  type: 'bar' | 'pie' | 'line' | 'scatter';
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  yScaleMin?: number;
+  yScaleMax?: number;
+  series: {
+    id: string;
+    data: {
+      x: string | number;
+      y: number;
+    }[];
+  }[];
+}
+
+export interface ArticleSection {
+  id: string;
+  heading: string;
+  narrative: string;
+  chart?: ArticleChart;
+}
+
+export interface ArticleState {
+  title: string;
+  sections: ArticleSection[];
+}
+
 // -- Chat & LLM Interfaces --
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   suggestedPlaybook?: Playbook;
+  isTriage?: boolean;
+  originalQuery?: string;
+  hiddenContext?: string; // Used to feed tool execution memory back to the LLM without showing it in the UI
 }
 
 export interface ChatSession {
@@ -24,6 +55,8 @@ export interface ChatPayload {
   userApiKey: string;
   isFriendlyMode: boolean;
   pageContext: PageContext;
+  forceBypassTriage?: boolean;
+  articleState?: ArticleState; // The current state of the article, injected silently into the prompt
 }
 
 export interface PageContext {

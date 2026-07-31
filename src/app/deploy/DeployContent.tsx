@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { FilterControl } from '@/components/ui/FilterControl';
 
 export function DeployContent() {
   const [submitted, setSubmitted] = useState(false);
@@ -69,12 +71,13 @@ export function DeployContent() {
               <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
                 Thank you for reaching out. A systems architect will review your jurisdiction&apos;s data parameters and respond within 24 business hours.
               </p>
-              <button 
+              <Button 
                 onClick={() => setSubmitted(false)}
+                variant="ghost"
                 className="text-sm text-accent hover:text-amber-700 underline font-bold pt-4 block mx-auto"
               >
                 Submit another inquiry
-              </button>
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -95,14 +98,18 @@ export function DeployContent() {
                   <input required name="jurisdiction" type="text" className="w-full px-4 py-2.5 border border-border rounded-lg text-sm font-medium text-primary focus:ring-2 focus:ring-accent outline-none" placeholder="State Agency or County Commission" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Role / Organization *</label>
-                  <select name="role" className="w-full px-4 py-2.5 border border-border rounded-lg text-sm font-medium text-primary focus:ring-2 focus:ring-accent outline-none bg-white">
-                    <option value="State Administrative Agency (SAA)">State Administrative Agency (SAA)</option>
-                    <option value="County Election Commission / Clerk">County Election Commission / Clerk</option>
-                    <option value="Civic Organization / Volunteer Lead">Civic Organization / Volunteer Network</option>
-                    <option value="Feature Request / Data Provider">Feature Request / Data Provider Integration</option>
-                    <option value="Other">Other / Independent Researcher</option>
-                  </select>
+                  <FilterControl
+                    label="Role / Organization *"
+                    value="State Administrative Agency (SAA)"
+                    onChange={() => {}}
+                    options={[
+                      { value: "State Administrative Agency (SAA)", label: "State Administrative Agency (SAA)" },
+                      { value: "County Election Commission / Clerk", label: "County Election Commission / Clerk" },
+                      { value: "Civic Organization / Volunteer Lead", label: "Civic Organization / Volunteer Network" },
+                      { value: "Feature Request / Data Provider", label: "Feature Request / Data Provider Integration" },
+                      { value: "Other", label: "Other / Independent Researcher" }
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -111,13 +118,13 @@ export function DeployContent() {
                 <textarea rows={4} name="message" className="w-full px-4 py-2.5 border border-border rounded-lg text-sm font-medium text-primary focus:ring-2 focus:ring-accent outline-none" placeholder="Please describe your jurisdiction's file formatting or outline any custom data integrations requested..." />
               </div>
 
-              <button 
+              <Button 
                 type="submit" 
                 disabled={loading}
                 className="w-full bg-accent hover:bg-amber-600 text-white font-bold py-3.5 px-6 rounded-lg shadow transition-all text-sm flex items-center justify-center gap-2"
               >
                 {loading ? "Transmitting Inquiry..." : "Request Deployment Information →"}
-              </button>
+              </Button>
               <p className="text-center text-xs text-slate-500 font-medium">
                 Your inquiry is confidential and routed directly to lead deployment architects at Colon Hyphen Bracket LLC.
               </p>

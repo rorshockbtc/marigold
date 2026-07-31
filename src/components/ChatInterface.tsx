@@ -4,20 +4,36 @@ import { useState, useEffect, useRef } from "react";
 import { getSearchRecipes, saveSearchRecipe, SearchRecipe } from "@/lib/firebase/db";
 import ReactMarkdown from 'react-markdown';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Volume2, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope } from 'lucide-react';
+import { BookOpen, Volume2, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope, Save, ShieldCheck, Download } from 'lucide-react';
+import { LocalFolderGuideModal } from './LocalFolderGuideModal';
+import { DataStory } from '@/hooks/useDataConcierge';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { Button } from "@/components/ui/Button";
+import { FilterControl } from "@/components/ui/FilterControl";
 import { PIIRedactor } from '@/lib/security/PIIRedactor';
+import { useDataStoryFS } from '@/hooks/useDataStoryFS';
+import { TriageCache } from '@/lib/triage/TriageCache';
+import { executeLocalEngine } from '@/lib/data/LocalDataEngine';
 
-import { ChatMessage, ChatSession, Playbook } from '@/lib/types';
+import { ChatMessage, ChatSession, Playbook, ArticleState } from '@/lib/types';
 
-export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean } = {}) {
+export interface ChatInterfaceProps {
+  isDrawer?: boolean;
+  hideSidebar?: boolean;
+  initialQuery?: string;
+  articleState?: ArticleState;
+}
+
+export default function ChatInterface({ isDrawer = false, hideSidebar = false, initialQuery = "", articleState }: ChatInterfaceProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname() || '';
+  const { saveDataStory, isSaving, error: saveError } = useDataStoryFS();
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const getPageContext = () => {
     if (typeof window === 'undefined') return null;
@@ -40,6 +56,12 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
       textareaRef.current.style.height = 'auto';
     }
   }, [query]);
+
+  // Ethel Auto-scroll logic
+  const activeSessionCheck = sessions.find(s => s.id === activeSessionId);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activeSessionCheck?.messages?.length]);
 
   // Listen for external requests to fill the query box (e.g. from NonTechnicalTranslator)
   useEffect(() => {
@@ -166,6 +188,9 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
 
     // Load Org Recipes
     getSearchRecipes().then(setOrgRecipes);
+
+    // Pre-seed Semantic NLP Triage Cache
+    TriageCache.getInstance().preSeedFAQs();
   }, []);
 
   // Save sessions whenever they change
@@ -181,6 +206,16 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const messages = activeSession ? activeSession.messages : [];
 
+  useEffect(() => {
+    // If the component mounts with an initial query (e.g. from the Gemini landing page handoff), submit it automatically.
+    if (initialQuery.trim()) {
+      // Small timeout to allow state to settle
+      setTimeout(() => {
+        handleSubmit(new Event('submit') as any);
+      }, 100);
+    }
+  }, []);
+
   const handleNewSession = () => {
     setActiveSessionId(null);
   };
@@ -194,11 +229,11 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent, forceBypassTriage: boolean = false) => {
+    if (e?.preventDefault) e.preventDefault();
     if (!query.trim()) return;
 
-    const scrubbedQuery = PIIRedactor.scrub(query);
+    const scrubbedQuery = await PIIRedactor.scrubAsync(query);
     let currentSessionId = activeSessionId;
     let currentMessages = messages;
 
@@ -208,7 +243,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
         id: "s" + Date.now(),
         title: scrubbedQuery.substring(0, 30) + (scrubbedQuery.length > 30 ? "..." : ""),
         timestamp: Date.now(),
-        messages: [{ role: "assistant", content: "Hello! I am your Marigold Guide. Ask me how to find specific records, use filters, or navigate the platform!" }]
+        messages: [{ role: "assistant", content: "I am instructing your local machine to calculate that right now. Because we do this securely on your hardware, it may take a few moments." }]
       };
       setSessions(prev => [newSession, ...prev]);
       currentSessionId = newSession.id;
@@ -222,6 +257,22 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     // Update active session locally
     setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: newMessages } : s));
     
+    // Triage interception (unless escalated)
+    if (!forceBypassTriage) {
+      const triageAnswer = await TriageCache.getInstance().checkTriage(scrubbedQuery);
+      if (triageAnswer) {
+        const triageMessage: ChatMessage = { 
+          role: "assistant", 
+          content: triageAnswer,
+          isTriage: true,
+          originalQuery: scrubbedQuery
+        };
+        setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, triageMessage] } : s));
+        setQuery("");
+        return;
+      }
+    }
+
     setQuery("");
     setIsLoading(true);
 
@@ -236,19 +287,84 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           history: currentMessages,
           userApiKey,
           isFriendlyMode,
-          pageContext: getPageContext()
+          pageContext: getPageContext(),
+          articleState
         }),
       });
 
-      const data = await response.json();
+      let data = await response.json();
       
+      // BLIND LLM LOOP: If the AI wants to run a tool, execute it locally and resubmit
+      let hiddenContext = undefined;
+      
+      // We keep track of the local state so we can mutate it based on delta tools
+      let updatedArticle: ArticleState = { 
+        title: articleState?.title || "Data Investigation", 
+        sections: [...(articleState?.sections || [])] 
+      };
+
+      let loopResponseData = data;
+      let finalReply = loopResponseData.reply;
+
+      if (response.ok && loopResponseData.action === 'run_tool') {
+        const t = loopResponseData.tool;
+        const args = loopResponseData.args;
+
+        if (t === 'query_dataset' || t.startsWith('run_')) {
+          const localEngineResponse = await executeLocalEngine(t, args);
+          
+          const toolMessage: ChatMessage = { role: "user", content: `[LOCAL ENGINE RESPONSE]: ${JSON.stringify(localEngineResponse)}` };
+          const loopMessages = [...newMessages, toolMessage];
+          
+          const loopResponse = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              query: toolMessage.content, 
+              history: loopMessages,
+              userApiKey,
+              isFriendlyMode,
+              pageContext: getPageContext()
+            }),
+          });
+          loopResponseData = await loopResponse.json();
+          finalReply = loopResponseData.reply;
+        } else if (t === 'update_title') {
+          updatedArticle.title = args.title;
+          hiddenContext = `[SYSTEM: Title updated to "${args.title}"]`;
+          window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
+          finalReply = "I've updated the title of our Data Story. What should we look at next?";
+        } else if (t === 'append_section') {
+          updatedArticle.sections.push({ id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart });
+          hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
+          window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
+          finalReply = "I've added a new section to the Data Story. Please review it in the center pane.";
+        } else if (t === 'update_section') {
+          const idx = updatedArticle.sections.findIndex(s => s.id === args.id);
+          if (idx >= 0) {
+            updatedArticle.sections[idx] = { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart };
+            hiddenContext = `[SYSTEM: Updated section "${args.heading}"]`;
+          } else {
+            hiddenContext = `[SYSTEM: Error - section ${args.id} not found. Suggest adding a new one.]`;
+          }
+          window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
+          finalReply = "I've revised that section of our Data Story.";
+        }
+      }
+
       const assistantMessage: ChatMessage = { 
         role: "assistant", 
-        content: response.ok ? data.reply : `Error: ${data.error}`,
-        suggestedPlaybook: data.suggestedPlaybook
+        content: response.ok ? (finalReply || "I've updated the Data Story. Please review the changes in the center pane.") : `Error: ${loopResponseData.error || data.error}`,
+        suggestedPlaybook: loopResponseData.suggestedPlaybook || data.suggestedPlaybook,
+        hiddenContext
       };
 
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage] } : s));
+
+      // Self-teaching loop: If we bypassed triage and got a good answer, learn it
+      if (forceBypassTriage && response.ok) {
+        TriageCache.getInstance().learnNewAnswer(scrubbedQuery, data.reply);
+      }
 
     } catch (error) {
       const errorMsg: ChatMessage = { role: "assistant", content: "I'm having trouble connecting to the local model (Gemini). Please ensure your API key is configured correctly or try asking again in a moment. If this persists, contact your group administrator." };
@@ -258,40 +374,42 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
     }
   };
 
-  const handleSaveTemplate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!templateName || !activeSession) return;
-
-    // Extract the initial query from the session to use as the template
-    const userQueries = activeSession.messages.filter(m => m.role === "user");
-    const firstQuery = userQueries.length > 0 ? userQueries[0].content : "Example query...";
-
-    const newRecipe: SearchRecipe = {
-      name: PIIRedactor.scrub(templateName),
-      description: PIIRedactor.scrub(templateDesc),
-      queryTemplate: firstQuery,
-      author: "Volunteer",
-      successRate: 100
-    };
-
-    if (templateScope === "local") {
-      newRecipe.id = "l" + Date.now();
-      setLocalRecipes(prev => [newRecipe, ...prev]);
-    } else {
-      const id = await saveSearchRecipe(newRecipe);
-      setOrgRecipes(prev => [{ ...newRecipe, id }, ...prev]);
+  const handleSaveToDisk = async () => {
+    if (!activeSession) return;
+    try {
+      setSaveSuccess(false);
+      await saveDataStory(activeSession);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (e) {
+      // Error is handled by the hook and will be displayed via saveError
     }
+  };
 
-    setIsTemplateModalOpen(false);
-    setTemplateName("");
-    setTemplateDesc("");
+  const handleEscalate = (originalQuery: string, sessionId: string, messageIndex: number) => {
+    console.log("Telemetry: Escalate Triage failure for", originalQuery);
+    // Remove the triage message so we don't send it to Gemini as history
+    setSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        const newMsgs = [...s.messages];
+        newMsgs.splice(messageIndex, 1); // Remove assistant triage message
+        newMsgs.splice(messageIndex - 1, 1); // Remove the user query that triggered it
+        return { ...s, messages: newMsgs };
+      }
+      return s;
+    }));
+    setQuery(originalQuery);
+    setTimeout(() => {
+      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+      handleSubmit(fakeEvent, true); // true = force bypass triage
+    }, 50);
   };
 
   return (
-    <div className={isDrawer ? "flex h-full w-full gap-0 bg-background" : "flex h-[calc(100vh-8rem)] max-w-6xl mx-auto gap-6"}>
+    <div className={isDrawer ? "flex min-h-0 h-full w-full gap-0 bg-background" : "flex h-[calc(100vh-8rem)] w-full mx-auto gap-6"}>
       
       {/* Sidebar: History */}
-      {!isDrawer && (
+      {!isDrawer && !hideSidebar && (
         <div className="w-64 flex flex-col bg-white rounded-xl shadow-sm border border-border overflow-hidden shrink-0">
           <div className="p-4 border-b border-border">
             <Button onClick={handleNewSession} variant="primary">
@@ -322,45 +440,61 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
         </div>
       )}
 
-      {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col bg-background overflow-hidden relative ${isDrawer ? 'border-0 rounded-none shadow-none h-full' : 'rounded-2xl shadow-sm border border-border'}`}>
+      <div className={`flex-1 min-h-0 flex flex-col bg-background overflow-hidden relative ${isDrawer ? 'border-0 rounded-none shadow-none h-full' : 'rounded-2xl shadow-sm border border-border'}`}>
         <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex justify-between items-center">
           <div>
-            <h2 className="text-lg font-serif font-black text-text-header">{activeSession ? activeSession.title : "How can I help you?"}</h2>
+            <h2 className="text-lg font-serif font-black text-text-header">{activeSession ? activeSession.title : "Data Investigator"}</h2>
           </div>
+          {activeSession && (
+            <div className="flex items-center gap-3">
+              {saveError && <span className="text-xs text-red-500 font-mono truncate max-w-[200px]">{saveError}</span>}
+              <Button onClick={handleSaveToDisk} disabled={isSaving} variant="secondary" className="gap-2 text-xs h-9">
+                {isSaving ? <span className="animate-spin text-lg leading-none">⟳</span> : <Save className="w-4 h-4" />}
+                {saveSuccess ? "Saved to Local Disk" : "Save Story to Disk"}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {!activeSession && (
              <div className="h-full flex items-center justify-center text-text-body flex-col text-center px-4 animate-in fade-in duration-500">
                <div className="w-16 h-16 bg-white border border-border-soft rounded-2xl shadow-sm flex items-center justify-center mb-6 overflow-hidden border-primary">
-                 <MarigoldIcon className="w-8 h-8 text-primary drop-shadow-sm" />
+                 <ShieldCheck className="w-8 h-8 text-primary drop-shadow-sm" />
                </div>
-               <h3 className="text-2xl font-serif text-text-header mb-2">Welcome to the Marigold Guide</h3>
-               <p className="text-sm max-w-xs leading-relaxed">
-                 I can help you navigate your records, explain anomalies in plain English, and run automated audits. What would you like to investigate today?
+               <h3 className="text-2xl font-serif text-text-header mb-2">I am Mari, your Data Investigator.</h3>
+               <p className="text-sm max-w-md leading-relaxed text-muted-foreground mb-4">
+                 For your security, I cannot see your raw files. I only read the mathematical summaries your local machine generates, ensuring your research never leaves your hard drive.
                </p>
+               <div className="space-y-2 w-full max-w-md text-left bg-surface border border-border-soft rounded-xl p-4 shadow-sm">
+                 <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2"><MarigoldIcon className="w-4 h-4" /> You can ask me to do things like:</p>
+                 <button onClick={() => setQuery("Scan my active dataset and highlight the top 3 anomalies.")} className="w-full text-left p-2 hover:bg-muted rounded text-sm text-text-header transition-colors">→ "Scan my active dataset and highlight the top 3 anomalies."</button>
+                 <button onClick={() => setQuery("Explain to me how people use P.O. Box disguises, and why it matters.")} className="w-full text-left p-2 hover:bg-muted rounded text-sm text-text-header transition-colors">→ "Explain to me how people use P.O. Box disguises, and why it matters."</button>
+                 <button onClick={() => setQuery("Write a 3-paragraph summary of these exact findings that I can read aloud at tomorrow's county commissioner meeting.")} className="w-full text-left p-2 hover:bg-muted rounded text-sm text-text-header transition-colors">→ "Write a 3-paragraph summary of these exact findings..."</button>
+               </div>
              </div>
           )}
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-5 py-4 relative group ${msg.role === 'user' ? 'bg-primary text-white font-medium shadow-sm rounded-br-none' : 'bg-white border border-border-soft text-text-header shadow-sm rounded-bl-none'}`}>
-                {msg.role === 'assistant' && (
-                  <div className="flex justify-end mb-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSpeakText(msg.content)}
-                      className="text-[10px] text-text-body hover:text-primary transition-colors flex items-center gap-1 font-bold uppercase tracking-wider"
-                      title="Read this response out loud"
-                    >
-                      <Volume2 className="w-3.5 h-3.5" />
-                      <span>Listen</span>
-                    </button>
-                  </div>
-                )}
+
                 <div className={`text-sm md:text-[0.95rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-white' : 'text-text-header'}`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
+
+                {msg.isTriage && msg.originalQuery && activeSessionId && (
+                  <div className="mt-4 pt-3 border-t border-border-soft flex flex-col gap-2">
+                    <p className="text-xs text-muted-foreground font-medium">This is a fast, automated response. Did this answer your question?</p>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="text-xs py-1 h-7 border-border-soft hover:bg-albers-green-soft hover:text-albers-green-bold hover:border-albers-green-bold/30">
+                        Yes
+                      </Button>
+                      <Button onClick={() => handleEscalate(msg.originalQuery!, activeSessionId, i)} variant="outline" className="text-xs py-1 h-7 border-border-soft hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+                        No, ask Mari directly
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {msg.suggestedPlaybook && (
                   <div className="mt-4 p-4 bg-surface border border-border-soft rounded-2xl text-text-header space-y-2 text-left">
@@ -394,15 +528,16 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
                </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Clean Modern Input Form */}
-        <div className="p-4 bg-white border-t border-border">
+        <div className="p-4 bg-white border-t border-border shrink-0">
           <form onSubmit={handleSubmit} className="flex gap-2 items-end">
             <div className="relative flex-1">
               <textarea 
                 ref={textareaRef}
-                rows={1}
+                rows={3}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -448,38 +583,7 @@ export default function ChatInterface({ isDrawer = false }: { isDrawer?: boolean
           </p>
         </div>
 
-        {/* Save Template Modal */}
-        {isTemplateModalOpen && (
-          <div className="absolute inset-0 bg-white shadow-inner z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-              <h3 className="text-xl font-bold mb-4">Save Search as Template</h3>
-              <p className="text-sm text-muted-foreground mb-6">Distill this investigation into a reusable template for future searches.</p>
-              
-              <form onSubmit={handleSaveTemplate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Template Name</label>
-                  <input type="text" required value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="input-field w-full" placeholder="e.g. NCOA Flags Check" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <input type="text" required value={templateDesc} onChange={(e) => setTemplateDesc(e.target.value)} className="input-field w-full" placeholder="What does this search find?" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Visibility Scope</label>
-                  <select value={templateScope} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTemplateScope(e.target.value as "local" | "org")} className="input-field w-full">
-                    <option value="local">Personal (Save to this browser only)</option>
-                    <option value="org">Organization (Publish to all MSFE volunteers)</option>
-                  </select>
-                </div>
-                
-                <div className="flex justify-end gap-3 mt-6">
-                  <button type="button" onClick={() => setIsTemplateModalOpen(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md transition-colors">Cancel</button>
-                  <Button type="submit" variant="primary">Save Template</Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+
 
       </div>
     </div>

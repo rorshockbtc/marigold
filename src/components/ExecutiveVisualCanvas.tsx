@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/components/ui/Link';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { RechartsSliceEntry } from '@/lib/types';
 import { Settings, Database, Shield, RefreshCw, Plus, Sparkles, Link2, CheckCircle2, FileText, AlertTriangle, ArrowRight, Layers, BarChart3, Download } from 'lucide-react';
 import { getActiveDatabaseName, isDemoGroupActive as checkIsDemoGroupActive } from '@/lib/db/dbName';
 import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
 import { useDataStats } from '@/hooks/useDataStats';
+import { useCSVHydrate } from '@/hooks/useCSVHydrate';
 
 // Data definitions for visual impact
 const CATEGORY_DATA = [
@@ -61,6 +62,7 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
 
   const { isDataConnected, loadedRowCount, loadedFileName } = useVoterRollConnection(isSandbox ? "Sandbox" : undefined);
   const { analyze, stats, isAnalyzing } = useDataStats();
+  const { state: hydrateState, startHydration } = useCSVHydrate();
   
   useEffect(() => {
     if (isDataConnected && loadedRowCount && loadedFileName) {
@@ -207,6 +209,38 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   };
 
   if (!localFileConnected) {
+    if (hydrateState.isHydrating) {
+      return (
+        <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-10 border border-emerald-500/50 shadow-2xl space-y-8 animate-in fade-in max-w-4xl mx-auto text-center">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/40">
+            <Settings className="w-8 h-8 text-emerald-500 animate-spin" />
+          </div>
+          <div className="space-y-3">
+            <span className="bg-emerald-500/20 text-emerald-600 border border-emerald-500/40 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              Hydration Engine Active
+            </span>
+            <h3 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 pt-2">Restoring Workspace from Local Files</h3>
+            <p className="text-slate-700 text-sm max-w-xl mx-auto font-mono">
+              Streaming shards back into high-speed browser memory...
+            </p>
+          </div>
+
+          <div className="space-y-2 max-w-2xl mx-auto">
+            <div className="w-full bg-slate-200 h-4 rounded-full overflow-hidden p-0.5 border border-slate-300">
+              <div 
+                className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${hydrateState.progress}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono text-slate-600 px-1">
+              <span>{hydrateState.rowsHydrated.toLocaleString()} rows restored</span>
+              <span>{hydrateState.progress}% Completed</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (isIngesting) {
       return (
         <div className="bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl p-10 border border-amber-500/50 shadow-2xl space-y-8 animate-in fade-in max-w-4xl mx-auto text-center">
@@ -475,55 +509,63 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
             </div>
           </div>
 
-          {/* Step 2: Need Official Data? */}
-          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-slate-600 transition-all">
+          {/* Step 2: Restore Local Workspace */}
+          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-slate-600 transition-all shadow-lg">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm">2</div>
-              <h4 className="font-bold text-slate-900 text-base">Obtain State Dataset</h4>
+              <h4 className="font-bold text-slate-900 text-base">Restore Local Workspace</h4>
               <p className="text-xs text-slate-700 leading-relaxed">
-                Don&apos;t have the voter roll file? Visit the 50-State Data Acquisition Registry to view official Secretary of State request links.
+                Already chunked your data and re-linked your folder? Hydrate your workspace directly from the files saved on your computer.
               </p>
             </div>
-            <div>
+            <div className="space-y-2.5 pt-1">
+              <button onClick={() => {
+                startHydration().then(() => {
+                  if (!hydrateState.error) window.location.reload();
+                });
+              }} className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-emerald-400 font-extrabold px-4 py-3 rounded-xl shadow border border-slate-600 transition-colors text-xs cursor-pointer">
+                <span className="inline-flex items-center justify-center gap-1.5">
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Hydrate from Marigold Local</span>
+                </span>
+              </button>
+              {hydrateState.error && (
+                <div className="text-red-400 text-xs font-mono p-2 bg-red-950/30 rounded border border-red-900/50 mt-2">
+                  {hydrateState.error}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Step 3: Obtain State Dataset */}
+          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-slate-600 transition-all shadow-lg">
+            <div className="space-y-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm">3</div>
+              <h4 className="font-bold text-slate-900 text-base">Obtain State Dataset</h4>
+              <p className="text-xs text-slate-700 leading-relaxed">
+                Don't have the voter roll file? Visit the 50-State Data Acquisition Registry, or download our synthesized demo file.
+              </p>
+            </div>
+            <div className="space-y-2.5 pt-1">
               {isDemoGroupActive ? (
                 <a 
                   href="/demo-voter-file.csv"
                   download="DEMO_roosevelt_statewide_voter_roll.csv"
-                  className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2.5 rounded-lg shadow transition-colors text-xs"
+                  className="w-full text-center inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-3 rounded-xl shadow transition-colors text-xs"
                 >
                   <span className="inline-flex items-center justify-center gap-1.5">
                     <Download className="w-3.5 h-3.5" />
-                    <span>📥 Download Roosevelt DEMO_...csv</span>
+                    <span>📥 Download Roosevelt DEMO</span>
                   </span>
                 </a>
               ) : (
-                <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-slate-900 font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs">
+                <Link href="/registry" className="w-full text-center inline-block bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold px-4 py-3 rounded-xl border border-slate-600 transition-colors text-xs shadow">
                   <span className="inline-flex items-center justify-center gap-1.5">
                     <Link2 className="w-3.5 h-3.5" />
                     <span>Visit 50-State Data Registry →</span>
                   </span>
                 </Link>
               )}
-            </div>
-          </div>
-
-          {/* Step 3: Or Load Demo Benchmark */}
-          <div className="bg-slate-800/60 p-5 rounded-xl border border-slate-700/80 space-y-3 flex flex-col justify-between hover:border-indigo-500/50 transition-all">
-            <div className="space-y-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-sm">3</div>
-              <h4 className="font-bold text-slate-900 text-base">Load Sample Benchmark</h4>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                Want to evaluate the workflow first? Instantly load our synthesized Mississippi 100,000 benchmark dataset into RAM.
-              </p>
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={runBenchmarkIngestion}
-                className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-slate-900 font-bold px-4 py-2.5 rounded-lg shadow transition-colors text-xs"
-              >
-                ⚡ Load Sample Benchmark Roll
-              </button>
             </div>
           </div>
         </div>

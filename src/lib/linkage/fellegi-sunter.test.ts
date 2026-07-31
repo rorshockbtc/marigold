@@ -271,9 +271,9 @@ describe('Fellegi-Sunter Algorithm Core Mathematics', () => {
 
     it('hits the 1.0 lastName partial match branch', () => {
       // Lines 290-293 (jw >= 0.82 and < 0.90)
-      // Jaro-Winkler of WILLIAMS and WILLIS is ~ 0.85
-      const recordA = { first_name: 'JOHN', last_name: 'WILLIAMS' };
-      const recordB = { first_name: 'JOHN', last_name: 'WILLIS' };
+      // Jaro-Winkler of ANDERSON and ANDREWS is ~ 0.846
+      const recordA = { first_name: 'JOHN', last_name: 'ANDERSON' };
+      const recordB = { first_name: 'JOHN', last_name: 'ANDREWS' };
       const res = fellegiSunterScore(recordA, recordB);
       expect(res.fieldScores.lastName).toBe(1.0);
     });

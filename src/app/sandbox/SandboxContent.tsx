@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/components/ui/Link';
 import { useRouter } from 'next/navigation';
 import { ExecutiveVisualCanvas } from '@/components/ExecutiveVisualCanvas';
 import { Sparkles, Shield, Cpu, Database, CheckCircle2, ArrowRight, RefreshCw, HelpCircle, Play, X, Mail, Building2, Users, Lock, FlaskConical, MessageSquare, Download } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { FilterControl } from "@/components/ui/FilterControl";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -174,13 +176,13 @@ export function SandboxContent() {
             
             {simulationState === 'idle' && (
               <div className="pt-4 space-y-6">
-                <button
+                <Button
                   onClick={handleStartSimulation}
-                  className="bg-slate-100 hover:bg-slate-800 text-slate-900 font-extrabold text-base sm:text-lg px-10 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 inline-flex items-center gap-3 group border border-slate-200"
+                  className="bg-slate-100 hover:bg-slate-800 text-slate-900 font-extrabold text-base sm:text-lg px-10 py-5 rounded-2xl shadow-2xl transition-all transform hover:-translate-y-1 inline-flex items-center gap-3 group border border-slate-200 h-auto"
                 >
                   <Play className="w-5 h-5 text-amber-400 fill-amber-400 group-hover:scale-110 transition-transform" />
                   <span>Enter Live Demo Environment (Instant Access) →</span>
-                </button>
+                </Button>
                 
                 {/* Per-State Download Affordances */}
                 <div className="max-w-2xl mx-auto bg-slate-50 border border-slate-200 rounded-xl p-6 text-left">
@@ -192,22 +194,22 @@ export function SandboxContent() {
                     Once you understand how the synthetic demo works, you can download public voter rolls directly from state government portals. Due to state privacy laws, Marigold does not host these files. You must download them securely to your local machine first.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <a href="https://www.sos.state.tx.us/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                    <Link href="https://www.sos.state.tx.us/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">Texas SOS Portal</span>
                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
-                    </a>
-                    <a href="https://www.ohiosos.gov/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                    </Link>
+                    <Link href="https://www.ohiosos.gov/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">Ohio SOS Portal</span>
                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
-                    </a>
-                    <a href="https://dos.myflorida.com/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                    </Link>
+                    <Link href="https://dos.myflorida.com/elections/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">Florida DOS Portal</span>
                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
-                    </a>
-                    <a href="https://www.ncsbe.gov/results-data" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
+                    </Link>
+                    <Link href="https://www.ncsbe.gov/results-data" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-400 hover:shadow-sm transition-all group">
                       <span className="text-sm font-bold text-slate-700">North Carolina SBE</span>
                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-amber-500" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -286,7 +288,7 @@ export function SandboxContent() {
                       <span>Local In-Memory Database Ready</span>
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                      Then you download the new file and Marigold runs an optimized local database directly off your file in RAM, allowing for fast/easy exploration! It is as secure as modern cryptography allows—and if you have suggestions to improve it? <a href="#pilot-inquiry" className="text-amber-400 underline font-bold hover:text-amber-300">CONTACT US</a>.
+                      Then you download the new file and Marigold runs an optimized local database directly off your file in RAM, allowing for fast/easy exploration! It is as secure as modern cryptography allows—and if you have suggestions to improve it? <Link href="#pilot-inquiry" className="text-amber-400 underline font-bold hover:text-amber-300">CONTACT US</Link>.
                     </p>
                   </div>
                 </div>
@@ -303,13 +305,13 @@ export function SandboxContent() {
 
                 {simulationState === 'completed' && (
                   <div className="text-center pt-2 animate-in fade-in zoom-in-95 duration-200 space-y-4">
-                    <button
+                    <Button
                       onClick={handleEnterFullSandbox}
-                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-4 px-8 rounded-xl shadow-xl transition-all text-base sm:text-lg flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-4 px-8 rounded-xl shadow-xl transition-all text-base sm:text-lg flex items-center justify-center gap-2 transform hover:-translate-y-0.5 h-auto"
                     >
                       <span>Enter Full Sandbox Mode</span>
                       <ArrowRight className="w-5 h-5" />
-                    </button>
+                    </Button>
                     <p className="text-xs text-slate-600">
                       ✨ You are about to enter our interactive simulated admin experience.
                     </p>
@@ -348,13 +350,13 @@ export function SandboxContent() {
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
                   <span className="text-xs font-mono font-bold text-amber-400">Step {tourStep + 1} of {TOUR_STEPS.length}</span>
-                  <button 
+                  <IconButton 
                     onClick={() => setMariTourState('dismissed')}
+                    icon={<X className="w-5 h-5" />}
+                    aria-label="Dismiss tour"
+                    variant="ghost"
                     className="text-slate-600 hover:text-slate-900 p-1 rounded-lg transition-colors"
-                    title="Dismiss tour"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  />
                 </div>
               </div>
 
@@ -367,7 +369,7 @@ export function SandboxContent() {
 
               <div className="flex flex-wrap justify-between items-center gap-4 pt-2 border-t border-slate-200/80 relative z-10">
                 <div className="flex items-center gap-3">
-                  <button
+                  <Button
                     onClick={() => {
                       if (tourStep < TOUR_STEPS.length - 1) {
                         setTourStep(prev => prev + 1);
@@ -378,13 +380,14 @@ export function SandboxContent() {
                     className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-2.5 rounded-xl shadow transition-all text-xs sm:text-sm flex items-center gap-2"
                   >
                     <span>{tourStep < TOUR_STEPS.length - 1 ? "Next Explanation Step →" : "Complete Guided Tour ✓"}</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setMariTourState('dismissed')}
+                    variant="secondary"
                     className="bg-slate-800 hover:bg-slate-700 text-slate-700 font-semibold px-5 py-2.5 rounded-xl border border-slate-600 transition-all text-xs sm:text-sm"
                   >
                     Explore on My Own
-                  </button>
+                  </Button>
                 </div>
                 
                 <span className="text-[11px] text-slate-600 font-mono">
@@ -482,12 +485,13 @@ export function SandboxContent() {
                   Thank you! Our architecture desk has received your note and will reach out within 24 business hours to arrange your briefing.
                 </p>
                 <div className="pt-2 flex justify-center gap-4">
-                  <button
+                  <Button
                     onClick={() => setSubmitted(false)}
+                    variant="secondary"
                     className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-700 font-bold px-4 py-2 rounded-xl border border-slate-700 transition-all"
                   >
                     Submit another note
-                  </button>
+                  </Button>
                   <Link
                     href="/sign-up"
                     className="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-2 rounded-xl transition-all shadow"
@@ -524,15 +528,17 @@ export function SandboxContent() {
                     className="bg-slate-50 border border-slate-200 border-slate-200 text-slate-900 placeholder-slate-500 focus:border-amber-500"
                     placeholder="e.g., Ohio County Elections Board"
                   />
-                  <div className="flex flex-col gap-1.5 w-full">
-                    <label className="text-xs font-bold text-slate-700 tracking-wide uppercase">Inquiry Type *</label>
-                    <select name="inquiry_type" className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-                      <option value="Statewide Pilot / Briefing">Schedule Statewide Pilot / Briefing</option>
-                      <option value="Volunteer Group Deployment">Volunteer Group Deployment</option>
-                      <option value="Technical Suggestion / Feedback">Technical Suggestion / Feedback</option>
-                      <option value="Strategic Grant / Funding">Strategic Grant / Funding</option>
-                    </select>
-                  </div>
+                  <FilterControl
+                    label="Inquiry Type *"
+                    value="Statewide Pilot / Briefing"
+                    onChange={() => {}}
+                    options={[
+                      { value: "Statewide Pilot / Briefing", label: "Schedule Statewide Pilot / Briefing" },
+                      { value: "Volunteer Group Deployment", label: "Volunteer Group Deployment" },
+                      { value: "Technical Suggestion / Feedback", label: "Technical Suggestion / Feedback" },
+                      { value: "Strategic Grant / Funding", label: "Strategic Grant / Funding" }
+                    ]}
+                  />
                 </div>
 
                 <div>
@@ -541,13 +547,13 @@ export function SandboxContent() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                  <button
+                  <Button
                     type="submit"
                     disabled={loading}
                     className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2"
                   >
                     {loading ? "Transmitting Note..." : "Submit Pilot Inquiry & Briefing Request →"}
-                  </button>
+                  </Button>
                   <span className="text-xs text-slate-600">
                     🔒 Direct confidential routing to Colon Hyphen Bracket LLC.
                   </span>
@@ -559,13 +565,13 @@ export function SandboxContent() {
           {/* Floating Resume/Restart Guide Button when Dismissed */}
           {mariTourState === 'dismissed' && (
             <div className="fixed bottom-6 right-6 z-50 animate-in fade-in zoom-in-95">
-              <button
+              <Button
                 onClick={handleRestartTour}
                 className="bg-slate-50 border border-slate-200 hover:bg-slate-800 text-slate-900 font-extrabold text-xs sm:text-sm px-5 py-3.5 rounded-2xl shadow-2xl border-2 border-amber-500 flex items-center gap-2.5 transition-all transform hover:scale-105"
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
                 <span>💬 Continue Mari Guided Tour</span>
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -577,12 +583,13 @@ export function SandboxContent() {
           <div className="bg-white rounded-3xl p-8 sm:p-10 max-w-2xl w-full shadow-2xl border border-slate-200 space-y-6 text-foreground animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
               <h3 className="text-2xl font-serif font-bold text-primary">How Local-Compute Protects Your Privacy</h3>
-              <button 
+              <IconButton 
                 onClick={() => setShowGuideModal(false)}
-                className="text-slate-600 hover:text-slate-700 font-bold text-lg px-2"
-              >
-                ✕
-              </button>
+                icon={<X className="w-5 h-5" />}
+                aria-label="Close guide modal"
+                variant="ghost"
+                className="text-slate-600 hover:text-slate-700 font-bold text-lg p-2"
+              />
             </div>
 
             <div className="space-y-4 text-sm text-slate-700 leading-relaxed font-normal">
@@ -613,12 +620,12 @@ export function SandboxContent() {
             </div>
 
             <div className="pt-2">
-              <button 
+              <Button 
                 onClick={() => setShowGuideModal(false)}
                 className="w-full bg-primary hover:bg-slate-800 text-slate-900 font-bold py-3.5 rounded-xl text-sm transition-all shadow"
               >
                 Got It, Return to Sandbox
-              </button>
+              </Button>
             </div>
           </div>
         </div>

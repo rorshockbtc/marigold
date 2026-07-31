@@ -8,6 +8,7 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
   /** The icon element to render. */
   icon: React.ReactNode;
   size?: IconButtonSize;
+  variant?: 'default' | 'ghost' | 'outline';
   /** Explicit test ID. If omitted, auto-generated from aria-label. */
   'data-testid'?: string;
 }
@@ -22,7 +23,7 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
  * - Auto-generates data-testid from aria-label for Playwright selectors.
  */
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon, size = 'md', className = '', 'aria-label': ariaLabel, 'data-testid': explicitTestId, ...props }, ref) => {
+  ({ icon, size = 'md', variant = 'default', className = '', 'aria-label': ariaLabel, 'data-testid': explicitTestId, ...props }, ref) => {
     const isActionable = !!props.onClick || props.type === 'submit' || props.type === 'reset';
 
     if (!isActionable) {

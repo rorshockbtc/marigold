@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChatMessage } from "@/lib/types";
-import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
+import * as fs from 'fs';
+import * as path from 'path';
+import { GoogleGenerativeAI, SchemaType, FunctionDeclaration } from "@google/generative-ai";
 // @ts-ignore
 import { jStat } from 'jstat';
 
@@ -107,14 +109,14 @@ const runRobustStatisticsDeclaration: FunctionDeclaration = {
   name: "run_robust_statistics",
   description: "Runs rigorous mathematical statistics (mean, median, standard dev, variance, skewness, kurtosis, quartiles) on a database metric.",
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
       metric: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "The metric to analyze. Can be 'occupancy' (voters per address) or 'registrations' (voters registered per day)."
       },
       county: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Optional county name to filter the data. Leave blank for statewide."
       }
     },
@@ -126,13 +128,103 @@ const runBenfordsLawDeclaration: FunctionDeclaration = {
   name: "run_benfords_law",
   description: "Runs Benford's Law probability distribution analysis on street addresses to detect data fabrication (human fraud).",
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
       county: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Optional county name to filter the data. Leave blank for statewide."
       }
     }
+  }
+};
+
+const chartSchema: any = {
+  type: SchemaType.OBJECT,
+  description: "Optional visualization.",
+  properties: {
+    type: { type: SchemaType.STRING, description: "Type of chart: 'bar', 'pie', 'line', or 'scatter'. Choose the best one for the inquiry." },
+    xAxisLabel: { type: SchemaType.STRING, description: "Optional label for the X-axis" },
+    yAxisLabel: { type: SchemaType.STRING, description: "Optional label for the Y-axis" },
+    yScaleMin: { type: SchemaType.NUMBER, description: "Optional minimum value for the Y-axis" },
+    yScaleMax: { type: SchemaType.NUMBER, description: "Optional maximum value for the Y-axis" },
+    series: {
+      type: SchemaType.ARRAY,
+      description: "The data series to plot.",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          id: { type: SchemaType.STRING, description: "The label for this series (e.g., 'Black Voters')" },
+          data: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                x: { type: SchemaType.STRING, description: "The X value" },
+                y: { type: SchemaType.NUMBER, description: "The Y value" }
+              },
+              required: ["x", "y"]
+            }
+          }
+        },
+        required: ["id", "data"]
+      }
+    }
+  },
+  required: ["type", "series"]
+};
+
+const queryDatasetDeclaration: FunctionDeclaration = {
+  name: "query_dataset",
+  description: "Queries the active external or local dataset to get real mathematical aggregations for your charts. ALWAYS use this instead of hallucinating data.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      metric: { type: SchemaType.STRING, description: "What you are measuring (e.g. 'Party Affiliation', 'Age Group')" },
+      group_by: { type: SchemaType.STRING, description: "Optional field to group by (e.g. 'Race', 'Year')" }
+    },
+    required: ["metric"]
+  }
+};
+
+const appendSectionDeclaration: FunctionDeclaration = {
+  name: "append_section",
+  description: "Appends a new section to the end of the Data Story. Use this to add new charts or paragraphs without overwriting previous work.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      id: { type: SchemaType.STRING, description: "A unique string ID for this new section (e.g. 'sec_5')" },
+      heading: { type: SchemaType.STRING, description: "Section heading" },
+      narrative: { type: SchemaType.STRING, description: "The paragraphs/text for this section." },
+      chart: chartSchema
+    },
+    required: ["id", "heading", "narrative"]
+  }
+};
+
+const updateSectionDeclaration: FunctionDeclaration = {
+  name: "update_section",
+  description: "Modifies an existing section in the Data Story.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      id: { type: SchemaType.STRING, description: "The unique string ID of the section to update" },
+      heading: { type: SchemaType.STRING, description: "Updated section heading" },
+      narrative: { type: SchemaType.STRING, description: "Updated narrative text" },
+      chart: chartSchema
+    },
+    required: ["id", "heading", "narrative"]
+  }
+};
+
+const updateTitleDeclaration: FunctionDeclaration = {
+  name: "update_title",
+  description: "Updates the global title/executive summary of the Data Story.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      title: { type: SchemaType.STRING, description: "Global title of the entire article." }
+    },
+    required: ["title"]
   }
 };
 
@@ -140,13 +232,13 @@ const suggestMissionPlaybookDeclaration: FunctionDeclaration = {
   name: "suggest_mission_playbook",
   description: "Suggests a structured Mission Playbook template based on what the user wants to investigate, returning structured parameters that can be saved in 1-click.",
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
-      name: { type: Type.STRING, description: "Clear, descriptive name for the mission (e.g. '[MS Mission] Hinds County Dorm Filter')" },
-      audit_type: { type: Type.STRING, description: "Algorithm code: 'density', 'missing-dorm', 'po-box', 'typo-names', 'duplicates', 'commercial', 'spikes', 'phantom-precincts', or 'out-of-state-mailing'." },
-      threshold: { type: Type.NUMBER, description: "Numerical threshold parameter (e.g. 12 for occupancy, 50 for dorms). Defaults to 0." },
-      county: { type: Type.STRING, description: "Target county name (e.g. 'Hinds', 'DeSoto', 'Wake') or leave blank for Statewide." },
-      description: { type: Type.STRING, description: "Non-technical helpful explanation of what this query finds and why it matters." }
+      name: { type: SchemaType.STRING, description: "Clear, descriptive name for the mission (e.g. '[MS Mission] Hinds County Dorm Filter')" },
+      audit_type: { type: SchemaType.STRING, description: "Algorithm code: 'density', 'missing-dorm', 'po-box', 'typo-names', 'duplicates', 'commercial', 'spikes', 'phantom-precincts', or 'out-of-state-mailing'." },
+      threshold: { type: SchemaType.NUMBER, description: "Numerical threshold parameter (e.g. 12 for occupancy, 50 for dorms). Defaults to 0." },
+      county: { type: SchemaType.STRING, description: "Target county name (e.g. 'Hinds', 'DeSoto', 'Wake') or leave blank for Statewide." },
+      description: { type: SchemaType.STRING, description: "Non-technical helpful explanation of what this query finds and why it matters." }
     },
     required: ["name", "audit_type", "threshold", "description"]
   }
@@ -154,7 +246,22 @@ const suggestMissionPlaybookDeclaration: FunctionDeclaration = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { query, history, userApiKey, isFriendlyMode, pageContext } = await req.json();
+    const { query, history, userApiKey, isFriendlyMode, pageContext, articleState } = await req.json();
+
+    // LOCAL LOGGING INTERCEPT: Write query to file so the Antigravity agent can read it
+    try {
+      const logPath = path.join(process.cwd(), '__mari_chat.log');
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        query,
+        route: pageContext?.currentRoute || 'unknown',
+        dataset: pageContext?.datasetName || 'none',
+        historyLength: history?.length || 0,
+      };
+      fs.appendFileSync(logPath, `[TELEMETRY] ${JSON.stringify(logEntry)}\n`);
+    } catch (e) {
+      console.error("Failed to log query", e);
+    }
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
@@ -165,7 +272,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No Gemini API Key configured. Please add one in Settings." }, { status: 400 });
     }
 
-    const ai = new GoogleGenAI({ apiKey: activeApiKey });
+    const genAI = new GoogleGenerativeAI(activeApiKey);
     
     // Fetch live feedback logs for transparency
     const recentFeedback: { audit_type: string; user_feedback: string; created_at: string }[] = [];
@@ -196,49 +303,26 @@ export async function POST(req: NextRequest) {
     ` : "";
 
     const systemInstruction = `
-      You are the "Marigold Guide", an incredibly patient and statistically rigorous software tutor.
+      You are Mari, the highly-qualified Data Investigator for Marigold Insights (J.A.R.V.I.S for data explorers).
       ${modePrompt}
       ${pageContextPrompt}
       
-      Your user base consists of two distinct groups:
-      1. Non-Nerds (Volunteers): They want to work hard and find anomalies but lack statistical language.
-      2. Stats Nerds (like Ken Cyree or Seth Keshel): They demand robust, mathematically valid results (distributions, standard deviations, z-scores).
-
-      GENERAL TONE & PERSONA:
-      - BY DEFAULT, assume the user is extremely non-technical (like a 70-year-old retired administrative assistant). Be incredibly empathetic, gentle, and strictly step-by-step. Avoid all engineering jargon unless asked.
-      - However, if the user explicitly asks about the codebase, architecture, or grills you on code specifics (or comes from the Developer Documentation / SDK pages), you must demonstrate in-depth, expert knowledge of the Marigold public repository (e.g., zero-cloud PII architecture, client-side SQLite, Web Workers, Next.js, and cryptographic handshakes).
-      - DEVELOPER SDK GUIDANCE: When answering questions triggered by the "Talk to Mari" buttons on the Developer Documentation pages, be exceptionally gracious, encouraging, and clear. Act as an onboarding buddy who translates complex architectural constraints (like AES-GCM encryption or SOC 2 exemptions) into understandable business logic, while retaining the deep technical accuracy required by software engineers.
-      - NEVER dump huge walls of text or sound like a marketing brochure. Keep answers short, conversational, and hyper-focused on the user's immediate question.
-      - Use markdown to highlight important terms, but explain what you want the user to do NEXT.
+      CORE DIRECTIVES:
+      1. ABSOLUTE OPSEC (The Porcupine Defense): You are a "Blind LLM". You are structurally isolated from the user's raw data. You will receive encrypted metadata, mathematical geometry (e.g., standard deviations, Z-scores), and cryptographic placeholders (e.g., [ENTITY_HASH_123]) from the local engine. You must NEVER invent names or mock data. You must weave your narrative around these placeholders, knowing the user's secure browser will instantly decrypt and hydrate them before rendering.
+      2. PERSONA (EMPATHY FIRST): You are deferential, patient, and precise. You respect that "privacy takes time." Many users are elderly or non-technical volunteers. If a user signs their name or shares personal details (like 'Ethel (widow)'), you MUST acknowledge them warmly, validate that they are doing good work, and gently guide them. Never use overwhelming jargon. Make them feel respected and safe.
+      3. CONCISENESS: Answer in 2-3 short sentences maximum unless explicitly asked for a deep dive. Do not write long essays.
+      4. SUBSTACK ARTICLE BUILDER (CRITICAL): The center pane is a 'Data Story'—an article you are co-authoring with the user. You have delta-editing tools: 'append_section', 'update_section', and 'update_title'. Do NOT try to rewrite the whole article at once. Use 'append_section' to add a new paragraph and chart. Use 'query_dataset' to fetch real aggregations instead of hallucinating chart values.
+      5. ZERO HALLUCINATION: You do not simulate. You do not generate mock statistics. If you don't know the answer, tell the user you lack the data and provide actionable next steps to acquire it.
       
       CONVERSATIONAL PATTERN FOR STATS:
-      - Always bridge the gap. If a user asks for a simple average, you MUST run your 'run_robust_statistics' tool. 
-      - When you return the results, FIRST give the Stats Nerd their rigorous data (Standard Deviation, Skewness, Kurtosis, Z-Scores for outliers).
-      - SECOND, immediately provide a "Walkthrough for Non-Nerds" breaking down exactly what those numbers mean in plain English. 
-      - Coach the user into statistically valid practices. Explain that relying on averages is dangerous, and they should look at Z-Scores to identify true outliers (like massive nursing homes).
-      - Maintain a friendly but highly strict audit documentation tone. 
-
-      MACRO VS MICRO ANALYSIS (FLORIDA FAIR ELECTIONS):
-      - Most of Marigold operates on "Micro" row-level anomaly hunting (PO Boxes, high density dorms, NCOA moves).
-      - However, the newly ingested "Florida Fair Elections" datasets are "Macro" aggregated time-series reports (Statewide county-level totals, net monthly shifts in party affiliation, and purge events).
-      - When discussing Florida or "Macro Trends", direct the user to the "Macro Trends" tab in the navigation bar to parse these aggregated Excel files instantly in the browser using the new Generalized Parsing Engine.
-      - Remind the user that Macro Trends are used for detecting massive unexplainable shifts (e.g., Bay County purging 12,000 active voters in October), which then guides where to perform Micro row-level audits.
-
-      HANDLING EMPTY DATABASES:
-      - If a tool returns {"error": "Database not connected."}, do NOT apologize for a generic error.
-      - Instead, cheerfully inform the user that Marigold Insights has not received any data yet! 
-      - Instruct them to go to the "Advanced Stats" or "Data Linkage" page and drag-and-drop their November Voter Roll CSV into the system to initialize the database.
-
-      TRANSPARENCY & ACCURACY PREDICTION:
-      - We have a live feedback loop where volunteers rate audits as 'met', 'failed', or 'exceeded'.
-      - If a user asks why an audit has a specific Predicted Accuracy score, use the recent feedback log below to transparently explain how past users have rated it.
+      - Always bridge the gap between rigorous math and plain English.
+      - If provided with Z-scores, kurtosis, or variance by the local engine, explain what those mathematical shapes imply about the real world in kitchen-table analogies.
       
-      Recent User Feedback Log:
-      ${feedbackContext || 'No feedback logged yet.'}
-
-      SUGGESTING MISSIONS / PLAYBOOKS:
-      - Whenever a user asks how to find something, wants to explore a subject, or asks for query suggestions (e.g., 'How do I check for college dorms in Hinds?', 'Can we create a mission for out-of-state voters?'), you MUST call 'suggest_mission_playbook'.
-      - Help them structure the query by suggesting a clean name, the correct statistical audit_type, an appropriate threshold, and a clear description.
+      SUGGESTING MISSIONS / PLAYBOOKS & EXPLORING DATA:
+      - Whenever a user asks how to find something or asks for query suggestions, you MUST call 'suggest_mission_playbook'.
+      - IMPORTANT: When a user asks a broad analytical question (e.g., 'What are the demographic trends?' or 'Show me historical party affiliation'), DO NOT stonewall them or simply suggest a playbook. You MUST proactively use the 'query_dataset' tool to fetch the real aggregations. After getting the data, use 'append_section' to build the Data Story. You have full clearance to query the local engine for these exploratory requests.
+      
+      ${articleState ? `CURRENT ARTICLE STATE:\n${JSON.stringify(articleState, null, 2)}` : ''}
 
       Here is the complete documentation of the platform features:
       ---
@@ -246,26 +330,45 @@ export async function POST(req: NextRequest) {
       ---
     `;
 
-    // Construct history for multi-turn
-    const formattedHistory = history.map((msg: ChatMessage) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }]
-    }));
-
-    const chat = ai.chats.create({
-      model: 'gemini-2.5-flash',
-      history: formattedHistory,
-      config: {
-        systemInstruction: systemInstruction,
-        tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration] }],
-        temperature: 0.7
+    const rawHistory = history.map((msg: ChatMessage) => {
+      let text = msg.content;
+      if (msg.hiddenContext) {
+        text += `\n\n${msg.hiddenContext}`;
       }
+      return {
+        role: msg.role === "assistant" ? "model" : "user",
+        parts: [{ text }]
+      };
     });
 
-    let response = await chat.sendMessage({ message: query });
+    // GoogleGenerativeAI requires history to strictly alternate and start with 'user'
+    let formattedHistory: {role: string, parts: {text: string}[]}[] = [];
+    for (const msg of rawHistory) {
+      if (formattedHistory.length === 0) {
+        if (msg.role === 'user') formattedHistory.push(msg);
+      } else if (formattedHistory[formattedHistory.length - 1].role !== msg.role) {
+        formattedHistory.push(msg);
+      }
+    }
 
-    if (response.functionCalls && response.functionCalls.length > 0) {
-      const call = response.functionCalls[0];
+    const model = genAI.getGenerativeModel({
+      model: "gemini-flash-lite-latest",
+      systemInstruction: systemInstruction,
+      tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration] }]
+    });
+
+    const chat = model.startChat({
+      history: formattedHistory,
+      generationConfig: { temperature: 0.7 }
+    });
+
+    let result = await chat.sendMessage(query);
+    let response = result.response;
+
+    const functionCalls = typeof response.functionCalls === 'function' ? response.functionCalls() : undefined;
+    if (functionCalls && functionCalls.length > 0) {
+      const call = functionCalls[0];
+      if (!call) return NextResponse.json({ reply: response.text() || "" });
       
       if (call.name === "run_robust_statistics") {
         const { metric, county } = call.args as { metric: string; county?: string };
@@ -274,17 +377,30 @@ export async function POST(req: NextRequest) {
         const { county } = call.args as { county?: string };
         return NextResponse.json({ action: 'run_tool', tool: 'run_benfords_law', args: { county } });
       } else if (call.name === "suggest_mission_playbook") {
-        const { name, audit_type, threshold, county, description } = call.args as { name: string; audit_type: string; threshold?: number; county?: string; description: string };
-        return NextResponse.json({ action: 'run_tool', tool: 'suggest_mission_playbook', args: { name, audit_type, threshold, county, description } });
+        return NextResponse.json({ action: 'suggest_playbook', playbook: call.args, reply: "I've drafted a Playbook based on your request. You can save it with 1-click." });
+      } else if (call.name === "append_section") {
+        return NextResponse.json({ action: 'run_tool', tool: 'append_section', args: call.args });
+      } else if (call.name === "update_section") {
+        return NextResponse.json({ action: 'run_tool', tool: 'update_section', args: call.args });
+      } else if (call.name === "update_title") {
+        return NextResponse.json({ action: 'run_tool', tool: 'update_title', args: call.args });
+      } else if (call.name === "query_dataset") {
+        return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args });
       }
     }
 
     return NextResponse.json({ 
-      reply: response.text
+      reply: response.text()
     });
 
   } catch (error: unknown) {
     console.error("Chat API Error:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "An error occurred during processing." }, { status: 500 });
+    const msg = error instanceof Error ? error.message : "An error occurred during processing.";
+    if (msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("exhausted")) {
+      return NextResponse.json({ 
+        reply: "I'm so sorry, but our community free-tier compute credits have been completely exhausted for the day! This software is developed at a steep discount to help people, but free compute isn't infinite. If you know of grant funding, partnerships, or ways to help us monetize, please reach out via our [Contact Page](/contact). Otherwise, I'll be fully recharged and ready to help tomorrow!"
+      });
+    }
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

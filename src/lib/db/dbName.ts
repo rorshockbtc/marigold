@@ -15,22 +15,33 @@ export function getActiveDatabaseName(overrideGroup?: string | null): string {
 export function isDemoGroupActive(overrideGroup?: string | null): boolean {
   if (typeof window === "undefined") return false;
   const activeGroup = (overrideGroup || localStorage.getItem("marigold_active_group") || "").trim();
-  const grpLower = activeGroup.toLowerCase();
   return activeGroup === "State of Roosevelt (Demo)" ||
-         activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ||
-         grpLower.includes("demo") ||
-         grpLower.includes("roosevelt") ||
-         grpLower.includes("acme") ||
-         grpLower.includes("sandbox") ||
-         grpLower.includes("synthetic");
+         activeGroup === "ACME Civic Data Sandbox (Demo Environment)";
 }
 
 export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> {
   const dbName = customDbName || getActiveDatabaseName();
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(dbName, 1);
+    const request = indexedDB.open(dbName);
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('rows')) {
+        const currentVersion = db.version;
+        db.close();
+        const upgradeReq = indexedDB.open(dbName, currentVersion + 1);
+        upgradeReq.onupgradeneeded = (event) => {
+          const upDb = (event.target as IDBOpenDBRequest).result;
+          if (!upDb.objectStoreNames.contains('rows')) {
+            upDb.createObjectStore('rows', { autoIncrement: true });
+          }
+        };
+        upgradeReq.onsuccess = () => resolve(upgradeReq.result);
+        upgradeReq.onerror = () => reject(upgradeReq.error);
+        return;
+      }
+      resolve(db);
+    };
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains('rows')) {

@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-flash-lite-latest",
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -44,14 +44,25 @@ export async function POST(req: Request) {
     const text = response.text();
     
     return NextResponse.json(JSON.parse(text));
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Mari API Error:", error);
+    
+    const msg = error instanceof Error ? error.message : "";
+    if (msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("exhausted")) {
+      return NextResponse.json({
+        action: "chat_response",
+        source_url: null,
+        description: "I'm so sorry, but our community free-tier compute credits have been completely exhausted for the day! This software is developed at a steep discount to help people, but free compute isn't infinite. If you know of grant funding, partnerships, or ways to help us monetize, please reach out via our Contact Page. Otherwise, I'll be fully recharged and ready to help tomorrow!",
+        suggested_dataset_name: null
+      });
+    }
+
     // Fallback if LLM fails
     return NextResponse.json({
-      action: "fetch_public_data",
-      source_url: "https://data.cdc.gov/api/views/mock/rows.csv",
-      description: "I had trouble reaching my API, but I simulated finding a relevant public dataset for you to explore.",
-      suggested_dataset_name: "mock_public_data"
+      action: "chat_response",
+      source_url: null,
+      description: "I am having trouble securely connecting to the logic engine. Please ensure your API keys are valid and try again.",
+      suggested_dataset_name: null
     });
   }
 }

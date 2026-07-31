@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { Lock, ShieldCheck, AlertCircle } from 'lucide-react';
 
@@ -11,8 +12,13 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
   const { setupWorkspacePin } = useAuth();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +34,7 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
       <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden text-slate-900">
         <div className="p-6 bg-slate-50 border-b border-slate-200 flex flex-col items-center justify-center text-center">
@@ -82,6 +88,7 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

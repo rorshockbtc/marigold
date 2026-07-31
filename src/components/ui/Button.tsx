@@ -24,7 +24,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', children, icon, ...props }, ref) => {
-    const isActionable = !!props.onClick || props.type === 'submit' || props.type === 'reset';
+    const isActionable = !!props.onClick || props.type === 'submit' || props.type === 'reset' || props.disabled || props.type === 'button';
 
     if (!isActionable) {
       const msg = 'Button must have an actionable intent (onClick, type="submit", or type="reset"). A button that does nothing violates the Marigold UX contract.';

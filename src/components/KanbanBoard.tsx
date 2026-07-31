@@ -5,6 +5,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { AlertTriangle, Clock, FileText, CheckCircle2, X, Filter, Lock, Database, ArrowRightLeft, ShieldAlert, BarChart3 } from 'lucide-react';
 import { useKanban } from '@/lib/workspace/KanbanContext';
 import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { FilterControl } from '@/components/ui/FilterControl';
 
 export interface Note {
   id: string;
@@ -29,6 +32,7 @@ export interface CardData {
   meta: string;
   assignee: string;
   notes: Note[];
+  attachedRecordIds?: string[];
 }
 
 const INITIAL_CARDS: CardData[] = [
@@ -84,6 +88,7 @@ export function KanbanBoard() {
   const [assigneeFilter, setAssigneeFilter] = useState<string>("All");
   const [tagFilter, setTagFilter] = useState<string>("All");
   const [newNote, setNewNote] = useState("");
+  const [mountMode, setMountMode] = useState("active");
 
   useEffect(() => {
     setTimeout(() => {
@@ -176,27 +181,26 @@ export function KanbanBoard() {
           </div>
           
           <div className="flex gap-4">
-            <select 
-              className="bg-white border border-border-soft rounded-lg px-3 py-1.5 text-xs text-text-body font-bold outline-none"
-              defaultValue="active"
-            >
-              <option value="active">Mounted: {jurisdiction} (Active)</option>
-              <option value="global">Mounted: Global Analytics (Out of Sync)</option>
-            </select>
+            <FilterControl
+              value={mountMode}
+              onChange={(val) => setMountMode(val)}
+              options={[
+                { value: "active", label: `Mounted: ${jurisdiction} (Active)` },
+                { value: "global", label: "Mounted: Global Analytics (Out of Sync)" }
+              ]}
+            />
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <Filter className="w-4 h-4 text-text-body" />
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-text-header">Assignee:</span>
-            <select 
-              value={assigneeFilter} 
-              onChange={(e) => setAssigneeFilter(e.target.value)}
-              className="text-sm bg-white border border-border-soft rounded-md px-2 py-1 outline-none"
-            >
-              {uniqueAssignees.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
+            <FilterControl
+              label="Assignee:"
+              value={assigneeFilter}
+              onChange={(val) => setAssigneeFilter(val)}
+              options={uniqueAssignees.map(a => ({ value: a, label: a }))}
+            />
           </div>
           
           <div className="ml-auto flex items-center gap-2 text-xs font-bold text-[#528B65] bg-[#E3EEDC] px-3 py-1.5 rounded-full">
@@ -222,9 +226,13 @@ export function KanbanBoard() {
         <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-2xl border-l border-border-soft z-30 p-6 flex flex-col animate-in slide-in-from-right-8 overflow-y-auto">
           <div className="flex justify-between items-center mb-6 shrink-0">
             <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
-            <button onClick={() => setSelectedCardId(null)} className="p-2 hover:bg-surface rounded-full">
-              <X className="w-5 h-5 text-text-body" />
-            </button>
+            <IconButton 
+              onClick={() => setSelectedCardId(null)}
+              icon={<X className="w-5 h-5 text-text-body" />}
+              aria-label="Close record insights"
+              variant="ghost"
+              className="p-2 hover:bg-surface rounded-full"
+            />
           </div>
           
           <div className="bg-surface rounded-xl p-4 border border-border-soft mb-6 shrink-0">
@@ -284,12 +292,12 @@ export function KanbanBoard() {
                   <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200 text-center">
                     Note saving disabled. You are in Read-Only Mode until you mount the Group Manifest datasets.
                   </div>
-                  <button 
+                  <Button 
                     onClick={handlePublishDataStory}
                     className="w-full py-3 bg-blue-600 text-white rounded-[12px] font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
                   >
                     <BarChart3 className="w-4 h-4" /> Publish Data Story Snapshot
-                  </button>
+                  </Button>
                   <p className="text-[10px] text-center text-text-body">
                     You can still publish anonymized insight snapshots from your independent datasets.
                   </p>
@@ -302,13 +310,13 @@ export function KanbanBoard() {
                     placeholder="Type a note (PII tokenized locally)..."
                     className="w-full text-sm bg-surface border border-border-soft rounded-md p-3 outline-none resize-none h-24"
                   />
-                  <button 
+                  <Button 
                     onClick={handleSaveNote}
                     disabled={!newNote.trim()}
                     className="w-full py-3 bg-primary text-white rounded-[12px] font-bold shadow-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"
                   >
                     <Lock className="w-4 h-4" /> Save Encrypted Note
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
@@ -365,6 +373,13 @@ function DraggableCard({ card, onClick, isReadOnly }: { card: CardData, onClick:
       </div>
       <h4 className="font-serif text-text-header text-lg mb-1">{card.title}</h4>
       <p className="text-xs text-text-body mb-4">{card.subtitle}</p>
+      
+      {card.attachedRecordIds && card.attachedRecordIds.length > 0 && (
+        <div className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full w-fit border border-emerald-200 mt-2">
+          <Database className="w-3 h-3" />
+          <span className="font-bold">{card.attachedRecordIds.length} Clustered Records</span>
+        </div>
+      )}
     </div>
   );
 }

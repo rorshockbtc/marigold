@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
+import { Link } from "@/components/ui/Link";
+import { Button } from "@/components/ui/Button";
 import { 
   FileText, 
   Download, 
@@ -260,14 +261,14 @@ export default function ElectionIntegrityHub() {
               <Mail className="w-3.5 h-3.5" />
               <span>Sponsor / Partner With Us</span>
             </Link>
-            <a 
+            <Link 
               href="https://x.com/rorshockbtc" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-slate-700 hover:text-slate-950 transition-colors font-extrabold underline decoration-dotted"
             >
               @rorshockbtc
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -310,7 +311,7 @@ export default function ElectionIntegrityHub() {
               <Download className="w-4 h-4 text-slate-950" />
               <span>Download Unabridged Master PDF Text Corpus (.TXT)</span>
             </a>
-            <a
+            <Link
               href="https://www.whitehouse.gov/election-integrity/"
               target="_blank"
               rel="noopener noreferrer"
@@ -318,7 +319,7 @@ export default function ElectionIntegrityHub() {
             >
               <span>🏛️ White House Original PDF Archives</span>
               <ExternalLink className="w-4 h-4 text-amber-400" />
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -372,13 +373,14 @@ export default function ElectionIntegrityHub() {
                 desc: "Focuses on federal vs. state jurisdictional boundaries, IC assessment legal admissibility, and constitutional requirements for voter roll maintenance."
               }
             ].map((lens) => (
-              <button
+              <Button
                 key={lens.id}
                 onClick={() => {
                   setActiveLens(lens.id);
                   if (mariQuery) triggerMariAnalysis(mariQuery, lens.id);
                 }}
-                className={`text-left p-4 rounded-xl border-2 transition-all flex flex-col justify-between ${
+                variant="ghost"
+                className={`text-left p-4 rounded-xl border-2 transition-all flex flex-col justify-between h-auto ${
                   activeLens === lens.id
                     ? "bg-amber-50/80 border-amber-600 shadow-md text-slate-950 scale-[1.02] ring-2 ring-amber-400/30"
                     : "bg-slate-50/70 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100"
@@ -394,7 +396,7 @@ export default function ElectionIntegrityHub() {
                   <span className="text-[11px] font-bold text-slate-600 block font-mono">{lens.sub}</span>
                 </div>
                 <p className="text-xs leading-normal text-slate-700 font-medium">{lens.desc}</p>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -452,12 +454,13 @@ export default function ElectionIntegrityHub() {
               className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-900 focus:border-amber-600 focus:bg-white focus:outline-none placeholder:text-slate-600 shadow-inner transition-colors"
             />
             {searchQuery && (
-              <button
+              <Button
                 onClick={() => setSearchQuery("")}
+                variant="ghost"
                 className="absolute right-3 top-2.5 text-xs bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-2.5 py-1 rounded-lg transition-colors"
               >
                 Clear
-              </button>
+              </Button>
             )}
           </div>
 
@@ -468,12 +471,13 @@ export default function ElectionIntegrityHub() {
             </span>
             <div className="flex flex-wrap gap-2">
               {crawlerTopicPills.map((pill, idx) => (
-                <button
+                <Button
                   key={idx}
                   onClick={() => {
                     setSearchQuery(pill.query);
                     setActiveTagFilter(pill.label);
                   }}
+                  variant="ghost"
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 border shadow-2xs ${
                     searchQuery.toLowerCase() === pill.query.toLowerCase() || activeTagFilter === pill.label
                       ? "bg-slate-100 text-white border-slate-950 shadow-md scale-105"
@@ -482,7 +486,7 @@ export default function ElectionIntegrityHub() {
                 >
                   <span>{pill.icon}</span>
                   <span>{pill.label}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -518,13 +522,14 @@ export default function ElectionIntegrityHub() {
                         <span className="text-xs font-mono bg-slate-100 text-slate-800 px-3 py-1 rounded-lg border border-slate-300 whitespace-nowrap font-bold">
                           {item.pageRef}
                         </span>
-                        <button
+                        <Button
                           onClick={() => setReadingDocument(item)}
+                          variant="secondary"
                           className="bg-slate-100 hover:bg-slate-800 text-slate-900 font-black px-3 py-1 rounded-lg text-xs shadow transition-colors flex items-center gap-1.5"
                         >
                           <BookOpen className="w-3.5 h-3.5 text-amber-400" />
                           <span>Read Full PDF Text</span>
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -535,12 +540,13 @@ export default function ElectionIntegrityHub() {
                           <Bookmark className="w-3.5 h-3.5 text-amber-700" />
                           <span>Key Primary Excerpt from PDF Transcript:</span>
                         </div>
-                        <button
+                        <Button
                           onClick={() => setReadingDocument(item)}
+                          variant="ghost"
                           className="text-amber-800 hover:text-amber-950 underline font-bold lowercase text-xs"
                         >
                           view entire document ({item.fullTranscript.split("\n").length} lines) &rarr;
-                        </button>
+                        </Button>
                       </div>
                       <p className="italic font-serif text-slate-900 leading-relaxed">
                         &ldquo;{highlightText(item.excerptText, searchQuery)}&rdquo;
@@ -558,20 +564,21 @@ export default function ElectionIntegrityHub() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-center justify-end">
-                        <button
+                        <Button
                           onClick={() => setReadingDocument(item)}
+                          variant="outline"
                           className="bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold px-3.5 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-slate-300 shadow-2xs"
                         >
                           <BookOpen className="w-3.5 h-3.5 text-slate-700" />
                           <span>View Unabridged Transcript</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => handleExcerptAskMari(item)}
                           className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-lg text-xs shadow-md transition-transform hover:scale-105 flex items-center gap-1.5 whitespace-nowrap"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
                           <span>Ask Mari About This Document</span>
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -594,19 +601,21 @@ export default function ElectionIntegrityHub() {
                   <h3 className="text-lg font-bold leading-tight">{readingDocument.title}</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => copyToClipboard(readingDocument.fullTranscript)}
+                    variant="secondary"
                     className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors border border-slate-700"
                   >
                     {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
                     <span>{copiedText ? "Copied!" : "Copy Text"}</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setReadingDocument(null)}
+                    variant="ghost"
                     className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-700 hover:text-slate-900 transition-colors"
                   >
                     <X className="w-5 h-5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -628,7 +637,7 @@ export default function ElectionIntegrityHub() {
                   <strong>Analytical Note:</strong> {readingDocument.analyticalNote}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => {
                       const item = readingDocument;
                       setReadingDocument(null);
@@ -637,13 +646,14 @@ export default function ElectionIntegrityHub() {
                     className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-lg shadow-sm transition-colors"
                   >
                     💬 Synthesize with Mari AI
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setReadingDocument(null)}
+                    variant="secondary"
                     className="bg-slate-200 hover:bg-slate-300 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors"
                   >
                     Close Viewer
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -677,7 +687,7 @@ export default function ElectionIntegrityHub() {
                 if (e.key === "Enter" && mariQuery.trim()) triggerMariAnalysis(mariQuery, activeLens);
               }}
             />
-            <button
+            <Button
               onClick={() => {
                 if (mariQuery.trim()) triggerMariAnalysis(mariQuery, activeLens);
               }}
@@ -695,19 +705,20 @@ export default function ElectionIntegrityHub() {
                   <span>Synthesize</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
           {/* Quick Deep-Dive Buttons inside Chat */}
           <div className="flex flex-wrap gap-2 pt-1">
             {quickTopics.map((topic, idx) => (
-              <button
+              <Button
                 key={idx}
                 onClick={() => handleTopicClick(topic)}
+                variant="outline"
                 className="text-left text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-lg border border-slate-300 flex items-center gap-1.5 transition-colors shadow-2xs"
               >
                 <span>{topic.label}</span>
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -737,15 +748,16 @@ export default function ElectionIntegrityHub() {
             </div>
             <div className="flex bg-slate-200/80 p-1 rounded-xl border border-slate-300 self-start sm:self-center overflow-x-auto max-w-full">
               {pillars.map((p) => (
-                <button
+                <Button
                   key={p.id}
                   onClick={() => setActivePillar(p.id)}
+                  variant="ghost"
                   className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all whitespace-nowrap ${
                     activePillar === p.id ? "bg-slate-100 text-white shadow-md" : "text-slate-700 hover:text-slate-950 hover:bg-slate-300/50"
                   }`}
                 >
                   {p.badge}: {p.title.split(" ")[0]}...
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -767,7 +779,7 @@ export default function ElectionIntegrityHub() {
                     </div>
                   </div>
 
-                  <a
+                  <Link
                     href={p.downloadZip}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -775,7 +787,7 @@ export default function ElectionIntegrityHub() {
                   >
                     <Download className="w-4 h-4" />
                     <span>Download Pillar ZIP Archive</span>
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Full Details & Context */}
@@ -852,20 +864,20 @@ export default function ElectionIntegrityHub() {
                 <Mail className="w-4 h-4" />
                 <span>Contact Our Team</span>
               </Link>
-              <a
+              <Link
                 href="https://x.com/rorshockbtc"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-slate-800 hover:bg-slate-700 text-slate-900 font-extrabold px-6 py-3 rounded-xl text-xs sm:text-sm border border-slate-700 transition-colors flex items-center justify-center gap-2"
               >
                 <span>X @rorshockbtc ↗</span>
-              </a>
+              </Link>
             </div>
           </div>
 
           <div className="pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-600 font-mono">
             <div>
-              Direct Inquiry Email: <a href="mailto:cubby@colonhyphenbracket.pink" className="text-amber-400 hover:underline font-bold">cubby@colonhyphenbracket.pink</a>
+              Direct Inquiry Email: <Link href="mailto:cubby@colonhyphenbracket.pink" className="text-amber-400 hover:underline font-bold">cubby@colonhyphenbracket.pink</Link>
             </div>
             <div>
               Built by Colon Hyphen Bracket LLC · 100% Client-Side Local Verification

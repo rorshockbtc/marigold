@@ -133,4 +133,4 @@ export class DataProcessorWorker {
   }
 }
 
-Comlink.expose(DataProcessorWorker);
+Comlink.expose(new DataProcessorWorker());

@@ -9,7 +9,14 @@ interface WorkspaceContextType {
   totalRows: number;
   jurisdiction: string;
   stateCode: string;
+  selectedRecord: Record<string, any> | null;
+  setSelectedRecord: (record: Record<string, any> | null) => void;
+  isSideSheetOpen: boolean;
+  setIsSideSheetOpen: (open: boolean) => void;
+  openRecordSideSheet: (record: Record<string, any>) => void;
+  closeSideSheet: () => void;
   refreshWorkspaceState: () => Promise<void>;
+  switchGroup: (targetGroup: string) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
@@ -20,7 +27,18 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [totalRows, setTotalRows] = useState(0);
   const [jurisdiction, setJurisdiction] = useState("Loading...");
   const [stateCode, setStateCode] = useState("..");
+  const [selectedRecord, setSelectedRecord] = useState<Record<string, any> | null>(null);
+  const [isSideSheetOpen, setIsSideSheetOpen] = useState(false);
   const { query } = useDataQuery();
+
+  const openRecordSideSheet = (record: Record<string, any>) => {
+    setSelectedRecord(record);
+    setIsSideSheetOpen(true);
+  };
+
+  const closeSideSheet = () => {
+    setIsSideSheetOpen(false);
+  };
 
   const refreshWorkspaceState = async () => {
     if (typeof window === "undefined") return;
@@ -53,6 +71,49 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const switchGroup = (targetGroup: string) => {
+    if (typeof window === "undefined") return;
+    setActiveGroup(targetGroup);
+    localStorage.setItem("marigold_active_group", targetGroup);
+    
+    // Clear out stale column mapping when switching
+    localStorage.removeItem("marigold_file_mapping");
+    
+    const isDemo = targetGroup === "State of Roosevelt (Demo)" ||
+                   targetGroup === "ACME Civic Data Sandbox (Demo Environment)";
+    
+    if (isDemo) {
+      localStorage.setItem("marigold_user_role", "Verified Tester");
+      const currentFileName = localStorage.getItem("marigold_file_name") || "";
+      if (!currentFileName.toUpperCase().includes("DEMO")) {
+        localStorage.setItem("marigold_file_connected", "false");
+        localStorage.setItem("marigold_file_rows", "0");
+        localStorage.setItem("marigold_file_name", "Synthetic DEMO_ dataset required");
+      }
+    } else if (targetGroup === "Mississippi Fair Elections") {
+      localStorage.setItem("marigold_user_role", "Group Admin");
+      const currentFileName = localStorage.getItem("marigold_file_name") || "";
+      if (currentFileName === "Synthetic DEMO_ dataset required" || currentFileName.toUpperCase().includes("DEMO")) {
+        // Only inject Mississippi if it's currently demo data. Otherwise let the real file persist.
+        localStorage.setItem("marigold_file_connected", "true");
+        localStorage.setItem("marigold_file_rows", "2002923");
+        localStorage.setItem("marigold_file_name", "ms_voter_roll_2024.csv");
+      }
+    } else {
+      // General group transition (not MS or Demo explicitly). Let's clear connection if it was Demo.
+      const currentFileName = localStorage.getItem("marigold_file_name") || "";
+      if (currentFileName.toUpperCase().includes("DEMO") || currentFileName === "Synthetic DEMO_ dataset required") {
+         localStorage.setItem("marigold_file_connected", "false");
+         localStorage.setItem("marigold_file_rows", "0");
+         localStorage.setItem("marigold_file_name", "");
+      }
+    }
+
+    refreshWorkspaceState();
+    window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: targetGroup } }));
+    window.location.reload(); // Force full app reload to ensure IndexedDB disconnects cleanly
+  };
+
   useEffect(() => {
     refreshWorkspaceState();
     
@@ -70,7 +131,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       totalRows,
       jurisdiction,
       stateCode,
-      refreshWorkspaceState
+      selectedRecord,
+      setSelectedRecord,
+      isSideSheetOpen,
+      setIsSideSheetOpen,
+      openRecordSideSheet,
+      closeSideSheet,
+      refreshWorkspaceState,
+      switchGroup
     }}>
       {children}
     </WorkspaceContext.Provider>

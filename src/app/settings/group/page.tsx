@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/Button';
+import { FilterControl } from '@/components/ui/FilterControl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
@@ -211,12 +212,12 @@ export default function GroupSettingsPage() {
             If you are not part of an organization and just want to analyze your own local data, you can set your account to <strong>Independent Researcher</strong>. This bypasses the need to invite members or manage an organization roster.
           </p>
         </div>
-        <button 
+        <Button 
           onClick={setIndependentMode}
           className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-full shadow-md whitespace-nowrap transition-transform hover:-translate-y-0.5"
         >
           Work Independently
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -359,17 +360,16 @@ export default function GroupSettingsPage() {
                       onChange={(e) => setNewMemberEmail(e.target.value)}
                       required
                     />
-                    <div className="flex flex-col gap-1.5 w-full">
-                      <label className="text-xs font-bold text-muted-foreground tracking-wide uppercase">Role</label>
-                      <select
-                        value={newMemberRole}
-                        onChange={(e) => setNewMemberRole(e.target.value)}
-                        className="flex h-11 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                      >
-                        <option value="👤 Group Member">👤 Team Member</option>
-                        <option value="👑 Group Admin">👑 Team Admin</option>
-                      </select>
-                    </div>
+                    <FilterControl
+                      label="Role"
+                      value={newMemberRole}
+                      onChange={(val) => setNewMemberRole(val)}
+                      options={[
+                        { value: "👤 Group Member", label: "👤 Team Member" },
+                        { value: "👑 Group Admin", label: "👑 Team Admin" }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" onClick={() => setShowAddModal(false)} variant="secondary">Cancel</Button>

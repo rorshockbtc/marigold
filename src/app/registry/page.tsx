@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/components/ui/Link';
+import { FilterControl } from '@/components/ui/FilterControl';
 
 export default function StateRegistryPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -109,19 +110,19 @@ export default function StateRegistryPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-1.5 border border-border rounded text-xs font-bold text-primary outline-none focus:ring-2 focus:ring-accent"
           />
-          <select 
-            value={selectedRegion} 
-            onChange={(e) => setSelectedRegion(e.target.value)}
-            className="bg-slate-100 border border-border rounded px-3 py-1.5 text-xs font-bold text-primary outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="All">All Regions (51 Listed)</option>
-            <option value="Northeast">Northeast / Mid-Atlantic</option>
-            <option value="Southeast">Southeast / Gulf</option>
-            <option value="Midwest">Midwest / Plains</option>
-            <option value="Southwest">Southwest (AZ, NM, NV, OK, TX)</option>
-            <option value="Mountain">Mountain & Northwest (CO, ID, MT, UT, WY)</option>
-            <option value="West">West / Pacific (AK, CA, HI, OR, WA)</option>
-          </select>
+          <FilterControl
+            value={selectedRegion}
+            onChange={(val) => setSelectedRegion(val)}
+            options={[
+              { value: "All", label: "All Regions (51 Listed)" },
+              { value: "Northeast", label: "Northeast / Mid-Atlantic" },
+              { value: "Southeast", label: "Southeast / Gulf" },
+              { value: "Midwest", label: "Midwest / Plains" },
+              { value: "Southwest", label: "Southwest (AZ, NM, NV, OK, TX)" },
+              { value: "Mountain", label: "Mountain & Northwest (CO, ID, MT, UT, WY)" },
+              { value: "West", label: "West / Pacific (AK, CA, HI, OR, WA)" }
+            ]}
+          />
         </div>
       </div>
 
@@ -154,14 +155,14 @@ export default function StateRegistryPage() {
                   <td className="p-4 font-bold text-slate-800">{s.cost}</td>
                   <td className="p-4 text-slate-600 text-xs max-w-xs leading-relaxed">{s.notes}</td>
                   <td className="p-4 text-right whitespace-nowrap">
-                    <a 
+                    <Link 
                       href={s.link} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="text-accent hover:text-amber-700 font-bold underline text-xs"
                     >
                       Access Data →
-                    </a>
+                    </Link>
                   </td>
                 </tr>
               ))}

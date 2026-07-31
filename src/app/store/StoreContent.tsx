@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { FilterControl } from '@/components/ui/FilterControl';
 
 export function StoreContent() {
   const [cartridges, setCartridges] = useState<any[]>([]);
@@ -48,20 +50,20 @@ export function StoreContent() {
           </p>
         </div>
         
-        <div className="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-border shadow-sm">
-          <span className="text-xs font-bold text-slate-700 pl-2">Filter State:</span>
-          <select 
-            value={selectedState} 
-            onChange={(e) => setSelectedState(e.target.value)}
-            className="bg-slate-100 border border-border rounded px-3 py-1.5 text-xs font-bold text-primary outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="All">All Jurisdictions</option>
-            <option value="MN">Minnesota (MN)</option>
-            <option value="GA">Georgia (GA)</option>
-            <option value="NC">North Carolina (NC)</option>
-            <option value="TX">Texas (TX)</option>
-            <option value="MS">Mississippi (MS)</option>
-          </select>
+        <div>
+          <FilterControl
+            label="Filter State"
+            value={selectedState}
+            onChange={(val) => setSelectedState(val)}
+            options={[
+              { value: "All", label: "All Jurisdictions" },
+              { value: "MN", label: "Minnesota (MN)" },
+              { value: "GA", label: "Georgia (GA)" },
+              { value: "NC", label: "North Carolina (NC)" },
+              { value: "TX", label: "Texas (TX)" },
+              { value: "MS", label: "Mississippi (MS)" }
+            ]}
+          />
         </div>
       </div>
 
@@ -105,7 +107,7 @@ export function StoreContent() {
       ) : filteredCartridges.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-border">
           <p className="text-muted-foreground text-sm">No verification checklists found matching selected jurisdiction filter.</p>
-          <button onClick={() => setSelectedState('All')} className="text-accent underline font-bold mt-2 text-sm">Reset Filter</button>
+          <Button onClick={() => setSelectedState('All')} variant="ghost" className="text-accent underline font-bold mt-2 text-sm">Reset Filter</Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -138,7 +140,7 @@ export function StoreContent() {
                   <span className="text-xs font-mono text-slate-500 font-medium">
                     Rev 1.{i}
                   </span>
-                  <button 
+                  <Button 
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDownload(c);
@@ -147,7 +149,7 @@ export function StoreContent() {
                   >
                     <span>Use This Checklist</span>
                     <span>→</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
             );

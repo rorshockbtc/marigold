@@ -139,7 +139,7 @@ export function GlossaryTooltip({
 
       {/* Popover Card */}
       {isOpen && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-50 w-72 md:w-80 p-4 bg-[#2D3142] text-slate-900 rounded-xl shadow-2xl border border-slate-600 text-xs leading-relaxed animate-in fade-in zoom-in-95 duration-150 pointer-events-auto">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 z-[9999] w-72 md:w-80 p-4 bg-[#2D3142] text-slate-900 rounded-xl shadow-2xl border border-slate-600 text-xs leading-relaxed animate-in fade-in zoom-in-95 duration-150 pointer-events-auto">
           <div className="space-y-2 text-left">
             <div className="flex items-center justify-between border-b border-slate-700 pb-1.5">
               <span className="font-black text-amber-400 text-sm tracking-tight">{info.title}</span>
@@ -154,7 +154,7 @@ export function GlossaryTooltip({
               <span className="text-[10px] font-black text-amber-400/90 uppercase tracking-wider block">
                 Why It Matters &amp; How It Works in Marigold:
               </span>
-              <p className="text-[11px] text-slate-700 leading-relaxed">
+              <p className="text-[11px] text-slate-300 leading-relaxed">
                 {info.whyAndHow}
               </p>
             </div>
@@ -169,7 +169,7 @@ export function GlossaryTooltip({
               </Link>
             </div>
           </div>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#2D3142] border-r border-b border-slate-600 transform rotate-45 pointer-events-none"></div>
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#2D3142] border-l border-t border-slate-600 transform rotate-45 pointer-events-none"></div>
         </div>
       )}
     </span>

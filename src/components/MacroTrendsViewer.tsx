@@ -7,6 +7,8 @@ import {
 } from 'recharts';
 import { UploadCloud, Activity, AlertTriangle, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { parseMacroAggregateExcel, MacroTrendRecord } from '@/lib/macro-parser';
+import { Button } from '@/components/ui/Button';
+import { FilterControl } from '@/components/ui/FilterControl';
 
 export default function MacroTrendsViewer() {
   const [data, setData] = useState<MacroTrendRecord[]>([]);
@@ -138,26 +140,18 @@ export default function MacroTrendsViewer() {
       {data.length > 0 && (
         <div className="p-6">
           <div className="flex flex-wrap items-center gap-4 mb-8">
-            <div className="flex flex-col">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Target County</label>
-              <select 
-                className="bg-black border border-white/20 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
-                value={selectedCounty}
-                onChange={(e) => setSelectedCounty(e.target.value)}
-              >
-                {availableCounties.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tracked Metric</label>
-              <select 
-                className="bg-black border border-white/20 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
-                value={selectedMetric}
-                onChange={(e) => setSelectedMetric(e.target.value)}
-              >
-                {availableMetrics.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
+            <FilterControl
+              label="Target County"
+              value={selectedCounty}
+              onChange={(val) => setSelectedCounty(val)}
+              options={availableCounties.map(c => ({ value: c, label: c }))}
+            />
+            <FilterControl
+              label="Tracked Metric"
+              value={selectedMetric}
+              onChange={(val) => setSelectedMetric(val)}
+              options={availableMetrics.map(m => ({ value: m, label: m }))}
+            />
             
             <div className="ml-auto flex items-center gap-2">
                <span className="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded">Data Points: {chartData.length}</span>
@@ -209,9 +203,9 @@ export default function MacroTrendsViewer() {
                    Bay County exhibits a massive deviation in <strong>{selectedMetric}</strong> during October (Data point: 12,496 net decrease). This variance exceeds the historical moving average by 4,100%.
                  </p>
                </div>
-               <button className="ml-auto shrink-0 bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 px-3 py-1.5 rounded text-xs font-medium transition-colors">
+               <Button variant="secondary" className="ml-auto shrink-0 bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 px-3 py-1.5 rounded text-xs font-medium transition-colors">
                  Forward to Mari AI
-               </button>
+               </Button>
              </div>
           )}
         </div>

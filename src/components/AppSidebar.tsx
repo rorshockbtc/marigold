@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart } from 'lucide-react';
+import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -29,6 +30,8 @@ export default function AppSidebar() {
   const [isSwitcherOpen, setIsSwitcherOpen] = React.useState(false);
 
   const [isDataLoaded, setIsDataLoaded] = React.useState(false);
+
+  const { switchGroup } = useWorkspace();
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -55,40 +58,8 @@ export default function AppSidebar() {
   }, [isCollapsed]);
 
   const handleSwitchGroup = (targetGroup: string) => {
-    // ... (rest of handleSwitchGroup remains same)
-    setActiveGroup(targetGroup);
     setIsSwitcherOpen(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("marigold_active_group", targetGroup);
-      const lower = targetGroup.toLowerCase();
-      const isDemo = targetGroup === "State of Roosevelt (Demo)" ||
-                     targetGroup === "ACME Civic Data Sandbox (Demo Environment)" ||
-                     lower.includes("demo") ||
-                     lower.includes("roosevelt") ||
-                     lower.includes("acme") ||
-                     lower.includes("sandbox") ||
-                     lower.includes("synthetic");
-      if (isDemo) {
-        localStorage.setItem("marigold_user_role", "Verified Tester");
-        const currentFileName = localStorage.getItem("marigold_file_name") || "";
-        if (!currentFileName.toUpperCase().includes("DEMO")) {
-          localStorage.setItem("marigold_file_connected", "false");
-          localStorage.setItem("marigold_file_rows", "0");
-          localStorage.setItem("marigold_file_name", "Synthetic DEMO_ dataset required");
-        }
-      } else if (targetGroup === "Mississippi Fair Elections") {
-        localStorage.setItem("marigold_user_role", "Group Admin");
-        const currentFileName = localStorage.getItem("marigold_file_name") || "";
-        if (currentFileName === "Synthetic DEMO_ dataset required" || currentFileName.toUpperCase().includes("DEMO")) {
-          localStorage.setItem("marigold_file_connected", "true");
-          localStorage.setItem("marigold_file_rows", "2002923");
-          localStorage.setItem("marigold_file_name", "ms_voter_roll_2024.csv");
-        }
-      }
-      setIsDataLoaded(localStorage.getItem("marigold_file_connected") === "true");
-      window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: targetGroup } }));
-      window.location.reload();
-    }
+    switchGroup(targetGroup);
   };
 
   return (

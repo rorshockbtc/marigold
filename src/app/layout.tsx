@@ -69,8 +69,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={`${roboto.variable} ${lora.variable} ${inter.variable} ${fraunces.variable} font-sans antialiased min-h-screen flex flex-col`}>
+      <html lang="en" suppressHydrationWarning>
+        <body suppressHydrationWarning className={`${roboto.variable} ${lora.variable} ${inter.variable} ${fraunces.variable} font-sans antialiased min-h-screen flex flex-col`}>
           <AuthProvider>
             <WorkspaceProvider>
               <KanbanProvider>

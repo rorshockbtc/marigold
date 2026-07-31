@@ -22,6 +22,7 @@ const WORKSPACE_ROUTES = [
   '/settings',
   '/advanced-stats',
   '/comprehensive-audit',
+  '/data-prep',
 ];
 
 export default function AppNavigationWrapper({ children }: { children: React.ReactNode }) {
@@ -63,7 +64,7 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
     return (
       <ThreePaneLayout>
         {children}
-        <GlobalMariButton />
+        {pathname !== '/insights' && <GlobalMariButton />}
       </ThreePaneLayout>
     );
   }

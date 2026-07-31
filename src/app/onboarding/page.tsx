@@ -1,29 +1,46 @@
 "use client";
-import React, { useState } from "react";
-import { Folder, UploadCloud, ArrowRight, Lock, KeyRound, CheckCircle2, Play, Activity } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Folder, ArrowRight, Lock, KeyRound, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { generateWorkspaceKey, encryptKeyWithPIN } from "@/lib/crypto/LocalKeyManager";
-import { autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { storeDirectoryHandle } from "@/lib/fs/LocalFSManager";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { setupWorkspacePin } = useAuth();
   
   // Guided Interview State
-  const [step, setStep] = useState<"interview" | "technical" | "processing">("interview");
+  const [step, setStep] = useState<"interview" | "technical">("interview");
   const [comfortLevel, setComfortLevel] = useState<"new" | "pro" | "returning" | null>(null);
 
   // Technical State
   const [pin, setPin] = useState("");
   const [directoryHandle, setDirectoryHandle] = useState<any>(null);
   const [workspaceKey, setWorkspaceKey] = useState<CryptoKey | null>(null);
-  
-  // Processing State
-  const [progress, setProgress] = useState<{ status: "idle" | "parsing" | "encrypting" | "saving" | "complete" | "error", rowsProcessed: number, chunksSaved: number, message: string }>({ status: "idle", rowsProcessed: 0, chunksSaved: 0, message: "" });
 
   const handleSelectFolder = async () => {
-    // We simulate the Native File System API UX for consistency, but actually use IndexedDB for stability.
-    setDirectoryHandle(true);
+    try {
+      if (typeof window !== "undefined" && 'showDirectoryPicker' in window) {
+        const handle = await (window as any).showDirectoryPicker({
+          mode: 'readwrite',
+        });
+        setDirectoryHandle(handle);
+        
+        // Store handle in IndexedDB for the active group
+        const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+        await storeDirectoryHandle(activeGroup.toLowerCase(), handle);
+        
+      } else {
+        alert("Your browser does not support the File System Access API. Please use a recent version of Chrome, Edge, or Opera.");
+      }
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error("Error accessing directory:", err);
+        alert("Failed to access directory. Please ensure you grant permission.");
+      }
+    }
   };
 
   const handleGenerateKey = async () => {
@@ -31,66 +48,27 @@ export default function OnboardingPage() {
       alert("Please enter a PIN of at least 4 digits.");
       return;
     }
+    
     if (comfortLevel === 'returning') {
+      await setupWorkspacePin(pin);
       setWorkspaceKey({} as CryptoKey);
+      router.push("/data-prep");
       return;
     }
-    const rawKey = await generateWorkspaceKey();
-    const encryptedBlob = await encryptKeyWithPIN(rawKey, pin);
-    setWorkspaceKey(rawKey);
-    // In real app, we also save encryptedBlob via LocalAnchorAPI to workspace.key.enc
-  };
 
-  const startIngestion = async (isDemo: boolean) => {
-    if (!workspaceKey || !directoryHandle) return;
-    
-    setStep("processing");
     try {
-      if (isDemo) {
-        setProgress({ status: "parsing", rowsProcessed: 0, chunksSaved: 0, message: "Initializing IndexedDB Engine..." });
-        
-        await autoLoadSyntheticDemoDataset((msg) => {
-          setProgress(prev => ({ ...prev, message: msg, status: msg.includes("Complete") ? "complete" : "parsing" }));
-        });
-        
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1500);
-      } else {
-        alert("Custom upload utilizes data-processor.worker.ts (Not implemented in demo UI yet).");
-        setStep("technical");
-      }
+      const rawKey = await generateWorkspaceKey();
+      const encryptedBlob = await encryptKeyWithPIN(rawKey, pin);
+      setWorkspaceKey(rawKey);
+      
+      await setupWorkspacePin(pin);
+      
+      router.push("/data-prep");
     } catch (err) {
-      console.error(err);
-      setProgress({ status: "error", rowsProcessed: 0, chunksSaved: 0, message: "Engine Failure" });
+      console.error("Error generating/encrypting key:", err);
+      alert("Failed to secure workspace.");
     }
   };
-
-  if (step === "processing") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
-        <div className="w-full max-w-md bg-card-bg border border-border-soft p-12 rounded-[24px] shadow-sm text-center">
-          <Activity className={`w-12 h-12 mx-auto mb-6 ${progress.status === 'complete' ? 'text-[#528B65]' : 'text-primary animate-pulse'}`} />
-          <h2 className="text-2xl font-serif text-text-header mb-2">Engine Running</h2>
-          <p className="text-sm text-text-body mb-8 h-12 font-mono flex items-center justify-center">
-            {progress.message}
-          </p>
-          
-          <div className="w-full bg-surface border border-border-soft rounded-full h-3 mb-4 overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-500 ${progress.status === 'complete' ? 'bg-[#528B65]' : 'bg-primary'}`}
-              style={{ width: progress.status === 'complete' ? '100%' : `${Math.min(95, (progress.rowsProcessed / 1000) * 100)}%` }}
-            />
-          </div>
-          
-          <div className="flex justify-between text-xs text-text-body font-mono uppercase tracking-wider">
-            <span>Rows: {progress.rowsProcessed}</span>
-            <span>Chunks: {progress.chunksSaved}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (step === "interview") {
     return (
@@ -106,10 +84,10 @@ export default function OnboardingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Button 
+            <button 
+              type="button"
               onClick={() => setComfortLevel("new")}
-              variant="ghost"
-              className={`p-8 rounded-[24px] border-2 text-left transition-all h-auto ${comfortLevel === 'new' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
+              className={`p-8 rounded-[24px] border-2 text-left transition-all h-full ${comfortLevel === 'new' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
             >
               <div>
                 <h3 className="text-2xl font-serif text-text-header mb-3">I'm a Beginner</h3>
@@ -117,12 +95,12 @@ export default function OnboardingPage() {
                   I want Marigold to guide me step-by-step. Let's start with the Demo Sandbox to learn how it works.
                 </p>
               </div>
-            </Button>
+            </button>
 
-            <Button 
+            <button 
+              type="button"
               onClick={() => setComfortLevel("pro")}
-              variant="ghost"
-              className={`p-8 rounded-[24px] border-2 text-left transition-all h-auto ${comfortLevel === 'pro' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
+              className={`p-8 rounded-[24px] border-2 text-left transition-all h-full ${comfortLevel === 'pro' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
             >
               <div>
                 <h3 className="text-2xl font-serif text-text-header mb-3">I'm an Expert</h3>
@@ -130,12 +108,12 @@ export default function OnboardingPage() {
                   I know my way around a voter file. Skip the tutorials, I'm ready to upload my own state's CSV.
                 </p>
               </div>
-            </Button>
+            </button>
 
-            <Button 
+            <button 
+              type="button"
               onClick={() => setComfortLevel("returning")}
-              variant="ghost"
-              className={`p-8 rounded-[24px] border-2 text-left transition-all h-auto ${comfortLevel === 'returning' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
+              className={`p-8 rounded-[24px] border-2 text-left transition-all h-full ${comfortLevel === 'returning' ? 'border-primary bg-white shadow-md transform -translate-y-1' : 'border-border-soft bg-surface hover:border-primary/50 hover:bg-white'}`}
             >
               <div>
                 <div className="flex items-center gap-2 mb-3">
@@ -146,7 +124,7 @@ export default function OnboardingPage() {
                   I already have a Marigold Local folder on my computer. I just need to re-link it and unlock it to continue where I left off.
                 </p>
               </div>
-            </Button>
+            </button>
           </div>
 
           <div className="flex justify-end">
@@ -166,7 +144,7 @@ export default function OnboardingPage() {
 
   // Technical Step (step === "technical")
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] my-12">
       <div className="w-full max-w-2xl animate-in fade-in slide-in-from-right-8 duration-500">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-serif text-text-header mb-4">
@@ -174,9 +152,9 @@ export default function OnboardingPage() {
           </h2>
           <p className="text-lg text-text-body font-sans max-w-lg mx-auto">
             {comfortLevel === 'new' 
-              ? "We need a folder on your computer to safely store the Demo files. They will never touch the cloud."
+              ? "We need a dedicated folder on your computer to save your encrypted audit records. Please create or select an empty folder."
               : comfortLevel === 'pro'
-              ? "Let's secure your local workspace. We need a folder to store the data, and a PIN to lock it."
+              ? "Let's secure your local workspace. Create or select an empty folder on your machine where Marigold can store your data."
               : "Browsers intentionally forget folder permissions for your safety. Please re-select your existing Marigold Local folder and enter your PIN to unlock it."}
           </p>
         </div>
@@ -190,11 +168,20 @@ export default function OnboardingPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-serif text-text-header mb-2">{comfortLevel === 'returning' ? 'Re-link Marigold Local Folder' : 'Pick a Folder'}</h3>
+                
                 <p className="text-text-body font-sans text-sm mb-4">
                   {comfortLevel === 'returning' 
                     ? "Select your existing 'Marigold Local' folder from your Documents to grant the browser access again."
-                    : "Create a new, empty folder in your Documents to store your private workspace."}
+                    : "Create a new folder named 'Marigold Local' in your Documents to store your private workspace."}
                 </p>
+                
+                <div className="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-4 mb-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <strong>Critical Warning:</strong> Do not rename or move this folder, or the files inside it. Your browser binds securely to this exact file path. Moving it will break your workspace and require a full re-link.
+                  </div>
+                </div>
+
                 <Button 
                   onClick={handleSelectFolder}
                   variant="outline"
@@ -205,7 +192,7 @@ export default function OnboardingPage() {
                   }`}
                 >
                   <Folder className={`w-5 h-5 ${directoryHandle ? 'text-text-body' : 'text-primary'}`} />
-                  {directoryHandle ? 'Folder Locked In' : 'Select Local Folder'}
+                  {directoryHandle ? `Linked: ${directoryHandle.name}` : 'Select Local Folder'}
                 </Button>
               </div>
             </div>
@@ -224,7 +211,7 @@ export default function OnboardingPage() {
                 <p className="text-text-body font-sans text-sm mb-4">
                   {comfortLevel === 'returning' 
                     ? "Enter the PIN you previously created to decrypt your workspace. It is never sent to our servers."
-                    : "This PIN locks your folder so only you can access it. It is never sent to our servers."}
+                    : "This PIN locks your folder so only you can access it. It is never sent to our servers. We will proceed to Data Prep immediately after."}
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <div className="relative">
@@ -244,84 +231,13 @@ export default function OnboardingPage() {
                     variant="outline"
                     className={`flex items-center gap-2 px-6 py-3 rounded-[12px] text-sm font-bold transition-all ${
                       directoryHandle && !workspaceKey
-                        ? 'bg-white border border-border-soft text-text-header hover:bg-surface shadow-sm'
+                        ? 'bg-primary text-white border-transparent hover:opacity-90 shadow-sm'
                         : 'bg-surface text-text-body border border-border-soft cursor-not-allowed'
                     }`}
                   >
                     <KeyRound className="w-5 h-5" />
-                    {workspaceKey ? (comfortLevel === 'returning' ? 'Folder Unlocked' : 'Folder Locked') : (comfortLevel === 'returning' ? 'Unlock Workspace' : 'Set PIN')}
+                    {workspaceKey ? (comfortLevel === 'returning' ? 'Folder Unlocked' : 'Folder Locked') : (comfortLevel === 'returning' ? 'Unlock Workspace' : 'Set PIN & Continue')}
                   </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full h-px bg-border-soft ml-18" />
-
-            {/* Step 3 */}
-            <div className={`flex gap-6 transition-opacity duration-300 ${workspaceKey ? 'opacity-100' : 'opacity-40'}`}>
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-surface text-text-body flex items-center justify-center font-bold font-serif text-lg border border-border-soft">
-                3
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-serif text-text-header mb-2">{comfortLevel === 'returning' ? 'Resume Analysis' : 'Organize Your Records'}</h3>
-                <p className="text-text-body font-sans text-sm mb-6">
-                  {comfortLevel === 'new' 
-                    ? "We will pull a 500-row Demo dataset to safely show you how Marigold organizes and locks records."
-                    : comfortLevel === 'pro'
-                    ? "Select your real voter file CSV. The browser will securely save it into the folder you just created."
-                    : "Your local engine is unlocked and ready. Let's head to the dashboard."}
-                </p>
-                
-                <div className="flex flex-wrap gap-4">
-                  {comfortLevel === 'new' ? (
-                    <Button 
-                      disabled={!workspaceKey} 
-                      onClick={() => startIngestion(true)}
-                      className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${
-                        workspaceKey ? 'bg-primary text-white hover:opacity-90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5' : 'bg-surface text-text-body cursor-not-allowed'
-                      }`}
-                    >
-                      <Play className="w-5 h-5 fill-current" />
-                      Run Demo Sandbox Engine
-                    </Button>
-                  ) : comfortLevel === 'pro' ? (
-                    <div className="flex gap-3">
-                      <Button 
-                        disabled={!workspaceKey} 
-                        onClick={() => alert("File Picker would open here.")}
-                        className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${
-                          workspaceKey ? 'bg-primary text-white hover:opacity-90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5' : 'bg-surface text-text-body cursor-not-allowed'
-                        }`}
-                      >
-                        <UploadCloud className="w-5 h-5" />
-                        Select CSV File
-                      </Button>
-                      <Button 
-                        disabled={!workspaceKey} 
-                        onClick={() => startIngestion(true)}
-                        variant="outline"
-                        className={`flex items-center gap-2 px-6 py-4 rounded-full font-bold transition-all ${
-                          workspaceKey ? 'bg-white text-text-header border border-border-soft hover:bg-surface' : 'hidden'
-                        }`}
-                      >
-                        Or run Demo Sandbox
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button 
-                      disabled={!workspaceKey} 
-                      onClick={() => {
-                        localStorage.setItem("marigold_file_connected", "true");
-                        router.push("/dashboard");
-                      }}
-                      className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold transition-all ${
-                        workspaceKey ? 'bg-primary text-white hover:opacity-90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5' : 'bg-surface text-text-body cursor-not-allowed'
-                      }`}
-                    >
-                      <Play className="w-5 h-5 fill-current" />
-                      Go to Dashboard
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>

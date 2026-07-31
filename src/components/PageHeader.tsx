@@ -3,12 +3,14 @@ import React from 'react';
 interface PageHeaderProps {
   title: string;
   subtitle?: React.ReactNode;
+  description?: React.ReactNode;
   badge?: React.ReactNode;
   actions?: React.ReactNode;
   icon?: React.ReactNode;
 }
 
-export function PageHeader({ title, subtitle, badge, actions, icon }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, description, badge, actions, icon }: PageHeaderProps) {
+  const subContent = subtitle || description;
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-4 border-b border-border">
       <div className="space-y-1">
@@ -17,9 +19,9 @@ export function PageHeader({ title, subtitle, badge, actions, icon }: PageHeader
           {icon && <span className="text-primary">{icon}</span>}
           {title}
         </h1>
-        {subtitle && (
+        {subContent && (
           <div className="text-sm text-text-body mt-1">
-            {subtitle}
+            {subContent}
           </div>
         )}
       </div>

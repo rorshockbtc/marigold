@@ -1,3 +1,5 @@
+import { DecryptionEngine } from './DecryptionEngine';
+
 export class PIIRedactor {
   private static readonly SSN_REGEX = /\b\d{3}[-.]?\d{2}[-.]?\d{4}\b/g;
   private static readonly EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
@@ -26,6 +28,34 @@ export class PIIRedactor {
     // We don't apply the Name regex by default as it's too broad and destroys normal sentence structure
     // (e.g., "The Dog" would become [REDACTED_NAME]).
     // For voter rolls, preventing exact Addresses and SSN/Phones is the primary layer of air-gapping.
+    
+    return scrubbed;
+  }
+  /**
+   * Asynchronously scrubs a string, generates ENTITY_HASH placeholders,
+   * and saves the secure mapping to the local OPFS.
+   */
+  public static async scrubAsync(text: string): Promise<string> {
+    if (!text) return text;
+    
+    let scrubbed = text;
+    
+    const replaceAndMap = async (regex: RegExp, prefix: string) => {
+      const matches = text.match(regex);
+      if (matches) {
+        for (const match of matches) {
+          // Generate a deterministic but obfuscated hash id
+          const hashId = `ENTITY_HASH_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          await DecryptionEngine.savePIIMapping(hashId, match);
+          scrubbed = scrubbed.replace(match, `[${hashId}]`);
+        }
+      }
+    };
+
+    await replaceAndMap(this.SSN_REGEX, 'SSN');
+    await replaceAndMap(this.EMAIL_REGEX, 'EMAIL');
+    await replaceAndMap(this.PHONE_REGEX, 'PHONE');
+    await replaceAndMap(this.ADDRESS_REGEX, 'ADDRESS');
     
     return scrubbed;
   }
