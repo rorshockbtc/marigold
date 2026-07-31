@@ -58,6 +58,19 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     }
   }, [query]);
 
+  // Auto-submit initial query if provided (e.g. from Insights landing page)
+  const hasAutoSubmitted = useRef(false);
+  useEffect(() => {
+    if (initialQuery && !hasAutoSubmitted.current) {
+      hasAutoSubmitted.current = true;
+      // Use setTimeout to allow state to settle before firing
+      setTimeout(() => {
+        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+        handleSubmit(fakeEvent);
+      }, 100);
+    }
+  }, [initialQuery]);
+
   // Ethel Auto-scroll logic
   const activeSessionCheck = sessions.find(s => s.id === activeSessionId);
   useEffect(() => {

@@ -353,7 +353,7 @@ export async function POST(req: NextRequest) {
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-flash-lite-latest",
+      model: "gemini-2.5-flash",
       systemInstruction: systemInstruction,
       tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration] }]
     });
