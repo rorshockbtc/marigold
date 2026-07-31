@@ -318,8 +318,11 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
 
       let loopResponseData = data;
       let finalReply = loopResponseData.reply;
+      let loopMessages = newMessages;
 
-      if (response.ok && loopResponseData.action === 'run_tool') {
+      let loopCount = 0;
+      while (response.ok && loopResponseData.action === 'run_tool' && loopCount < 5) {
+        loopCount++;
         const t = loopResponseData.tool;
         const args = loopResponseData.args;
 
@@ -327,7 +330,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           const localEngineResponse = await executeLocalEngine(t, args);
           
           const toolMessage: ChatMessage = { role: "user", content: `[LOCAL ENGINE RESPONSE]: ${JSON.stringify(localEngineResponse)}` };
-          const loopMessages = [...newMessages, toolMessage];
+          loopMessages = [...loopMessages, toolMessage];
           
           const loopResponse = await fetch("/api/chat", {
             method: "POST",
@@ -337,21 +340,24 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               history: loopMessages,
               userApiKey,
               isFriendlyMode,
-              pageContext: getPageContext()
+              pageContext: getPageContext(),
+              articleState: updatedArticle
             }),
           });
           loopResponseData = await loopResponse.json();
-          finalReply = loopResponseData.reply;
+          finalReply = loopResponseData.reply || finalReply;
         } else if (t === 'update_title') {
           updatedArticle.title = args.title;
           hiddenContext = `[SYSTEM: Title updated to "${args.title}"]`;
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           finalReply = "I've updated the title of our Data Story. What should we look at next?";
+          break;
         } else if (t === 'append_section') {
           updatedArticle.sections.push({ id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart });
           hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           finalReply = "I've added a new section to the Data Story. Please review it in the center pane.";
+          break;
         } else if (t === 'update_section') {
           const idx = updatedArticle.sections.findIndex(s => s.id === args.id);
           if (idx >= 0) {
@@ -362,6 +368,9 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           }
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           finalReply = "I've revised that section of our Data Story.";
+          break;
+        } else {
+          break;
         }
       }
 
