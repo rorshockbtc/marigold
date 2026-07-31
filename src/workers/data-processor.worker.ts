@@ -91,9 +91,26 @@ export class DataProcessorWorker {
   // IndexedDB Helpers
   private openDatabase(dbName: string): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(dbName, 1);
+      const request = indexedDB.open(dbName);
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('rows')) {
+          const currentVersion = db.version;
+          db.close();
+          const upgradeReq = indexedDB.open(dbName, currentVersion + 1);
+          upgradeReq.onupgradeneeded = (e) => {
+            const upDb = (e.target as IDBOpenDBRequest).result;
+            if (!upDb.objectStoreNames.contains('rows')) {
+              upDb.createObjectStore('rows', { autoIncrement: true });
+            }
+          };
+          upgradeReq.onsuccess = () => resolve(upgradeReq.result);
+          upgradeReq.onerror = () => reject(upgradeReq.error);
+        } else {
+          resolve(db);
+        }
+      };
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains('rows')) {

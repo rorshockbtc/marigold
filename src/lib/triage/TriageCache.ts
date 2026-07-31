@@ -87,7 +87,11 @@ export class TriageCache {
       const cache = this.getLocalCache();
       if (cache.length === 0) return null;
 
-      const queryEmbedding = await this.getEmbedding(query);
+      // Add a 2.5 second timeout to prevent hanging if Xenova fails to load or hangs
+      const queryEmbedding = await Promise.race([
+        this.getEmbedding(query),
+        new Promise<number[]>((_, reject) => setTimeout(() => reject(new Error("Triage timeout")), 2500))
+      ]);
       
       let bestMatch: CachedQA | null = null;
       let highestSimilarity = 0;
@@ -106,7 +110,7 @@ export class TriageCache {
 
       return null;
     } catch (e) {
-      console.warn("Triage cache check failed:", e);
+      console.warn("Triage cache check failed or timed out:", e);
       return null;
     }
   }

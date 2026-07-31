@@ -47,15 +47,32 @@ self.onmessage = async (e: MessageEvent<{ action: string; config: HydrateConfig;
 
       // 2. Open IndexedDB
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const request = indexedDB.open(config.dbName, 1);
+        const request = indexedDB.open(config.dbName);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains('rows')) {
+            const currentVersion = db.version;
+            db.close();
+            const upgradeReq = indexedDB.open(config.dbName, currentVersion + 1);
+            upgradeReq.onupgradeneeded = (e) => {
+              const upDb = (e.target as IDBOpenDBRequest).result;
+              if (!upDb.objectStoreNames.contains('rows')) {
+                upDb.createObjectStore('rows', { autoIncrement: true });
+              }
+            };
+            upgradeReq.onsuccess = () => resolve(upgradeReq.result);
+            upgradeReq.onerror = () => reject(upgradeReq.error);
+          } else {
+            resolve(db);
+          }
+        };
         request.onupgradeneeded = (e) => {
           const db = (e.target as IDBOpenDBRequest).result;
           if (!db.objectStoreNames.contains("rows")) {
             db.createObjectStore("rows", { autoIncrement: true });
           }
         };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
       });
 
       // Clear existing rows before hydrating

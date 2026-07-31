@@ -320,7 +320,8 @@ export async function POST(req: NextRequest) {
       
       SUGGESTING MISSIONS / PLAYBOOKS & EXPLORING DATA:
       - Whenever a user asks how to find something or asks for query suggestions, you MUST call 'suggest_mission_playbook'.
-      - IMPORTANT: When a user asks a broad analytical question (e.g., 'What are the demographic trends?' or 'Show me historical party affiliation'), DO NOT stonewall them or simply suggest a playbook. You MUST proactively use the 'query_dataset' tool to fetch the real aggregations. After getting the data, use 'append_section' to build the Data Story. You have full clearance to query the local engine for these exploratory requests.
+      - IMPORTANT: If a dataset IS connected, and a user asks a broad analytical question (e.g., 'What are the demographic trends?' or 'Show me historical party affiliation'), DO NOT stonewall them. You MUST proactively use the 'query_dataset' tool to fetch the real aggregations, then use 'append_section' to build the Data Story.
+      - If NO dataset is connected, and the user asks a general knowledge or definition question (e.g., 'What is Benford's Law?' or 'How do people use P.O. boxes?'), answer it directly based on your knowledge. Do NOT attempt to use 'query_dataset', as it will fail without data.
       
       ${articleState ? `CURRENT ARTICLE STATE:\n${JSON.stringify(articleState, null, 2)}` : ''}
 

@@ -49,6 +49,13 @@ npm run dev -- -p 3001
 ```
 Open `http://localhost:3001` to launch the suite. Ensure all AI assistant interactions utilize free-tier endpoints (`gemini-2.5-flash`) to prevent billing exhaustion.
 
+### Production Deployment
+To easily deploy updates to production without wrestling with Vercel CLI aliases, use the automated deployment script:
+```bash
+npm run deploy
+```
+This will automatically verify linting, run tests, bundle the build, and push your branch to GitHub, triggering a live Vercel rollout without manual Vercel aliasing.
+
 ---
 
 ## 💰 Commercial & Open Source Licensing

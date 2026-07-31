@@ -34,6 +34,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const pathname = usePathname() || '';
   const { saveDataStory, isSaving, error: saveError } = useDataStoryFS();
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [storageLimitReached, setStorageLimitReached] = useState(false);
 
   const getPageContext = () => {
     if (typeof window === 'undefined') return null;
@@ -197,7 +198,13 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
 
   // Save sessions whenever they change
   useEffect(() => {
-    localStorage.setItem("elly_chat_sessions", JSON.stringify(sessions));
+    try {
+      localStorage.setItem("elly_chat_sessions", JSON.stringify(sessions));
+      setStorageLimitReached(false);
+    } catch (e) {
+      console.warn("Failed to save sessions, likely quota exceeded.", e);
+      setStorageLimitReached(true);
+    }
   }, [sessions]);
 
   // Save local recipes whenever they change
@@ -434,6 +441,17 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       )}
 
       <div className={`flex-1 min-h-0 flex flex-col bg-background overflow-hidden relative ${isDrawer ? 'border-0 rounded-none shadow-none h-full' : 'rounded-2xl shadow-sm border border-border'}`}>
+        {storageLimitReached && (
+          <div className="bg-rose-50 border-b border-rose-200 px-5 py-3 text-sm text-rose-800 flex justify-between items-center">
+            <span>
+              <strong>Browser Storage Limit Reached:</strong> We couldn't save your last message to your browser history. Please clear out old conversations or save your work to Marigold Local.
+            </span>
+            <div className="flex gap-2">
+               <Button onClick={() => setSessions(sessions.slice(0, 1))} variant="outline" className="h-8 text-xs bg-white text-rose-700 hover:bg-rose-100 border-rose-200">Clear Old</Button>
+               <Button onClick={handleSaveToDisk} variant="primary" className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white border-0">Save to Local</Button>
+            </div>
+          </div>
+        )}
         <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex justify-between items-center">
           <div>
             <h2 className="text-lg font-serif font-black text-text-header">{activeSession ? activeSession.title : "Data Investigator"}</h2>
