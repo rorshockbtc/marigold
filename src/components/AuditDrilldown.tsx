@@ -23,14 +23,16 @@ export function AuditDrilldown({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  if (!selectedDrilldown) return null;
-  const records = anomalyRecords[selectedDrilldown.id] || [];
+  const records = selectedDrilldown ? (anomalyRecords[selectedDrilldown.id] || []) : [];
 
   const totalPages = Math.ceil(records.length / rowsPerPage);
   const paginatedRecords = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return records.slice(startIndex, startIndex + rowsPerPage);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [records, currentPage, rowsPerPage]);
+
+  if (!selectedDrilldown) return null;
 
   const toggleSelection = (id: string) => {
     const next = new Set(selectedIds);

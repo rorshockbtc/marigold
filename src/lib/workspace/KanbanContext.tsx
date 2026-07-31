@@ -21,6 +21,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("marigold_kanban_cards");
     if (stored) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCards(JSON.parse(stored));
       } catch (e) {
         console.error("Failed to parse kanban cards", e);

@@ -44,7 +44,6 @@ vi.stubGlobal('Worker', class {
     this.postMessage = mockWorkerInstance.postMessage;
     this.terminate = mockWorkerInstance.terminate;
     // Proxy onmessage assignment to the mock
-    const self = this;
     Object.defineProperty(this, 'onmessage', {
       get: () => mockWorkerInstance.onmessage,
       set: (fn) => { mockWorkerInstance.onmessage = fn; },

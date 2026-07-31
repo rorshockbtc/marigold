@@ -169,7 +169,9 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     if (savedSessions) {
       try {
         const parsed = JSON.parse(savedSessions);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSessions(parsed);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (parsed.length > 0) setActiveSessionId(parsed[0].id);
       } catch (e) {
         console.error("Failed to parse sessions", e);
@@ -206,15 +208,6 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const messages = activeSession ? activeSession.messages : [];
 
-  useEffect(() => {
-    // If the component mounts with an initial query (e.g. from the Gemini landing page handoff), submit it automatically.
-    if (initialQuery.trim()) {
-      // Small timeout to allow state to settle
-      setTimeout(() => {
-        handleSubmit(new Event('submit') as any);
-      }, 100);
-    }
-  }, []);
 
   const handleNewSession = () => {
     setActiveSessionId(null);

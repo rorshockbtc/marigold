@@ -115,6 +115,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshWorkspaceState();
     
     // Listen for connection events to auto-refresh
