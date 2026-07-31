@@ -8,6 +8,7 @@ import { KanbanProvider } from "@/lib/workspace/KanbanContext";
 import AppNavigationWrapper from "@/components/AppNavigationWrapper";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { DuckDBProvider } from "@/lib/data/DuckDBProvider";
 
 const lora = Lora({
   variable: "--font-serif",
@@ -74,9 +75,11 @@ export default function RootLayout({
           <AuthProvider>
             <WorkspaceProvider>
               <KanbanProvider>
-                <AppNavigationWrapper>
-                  {children}
-                </AppNavigationWrapper>
+                <DuckDBProvider>
+                  <AppNavigationWrapper>
+                    {children}
+                  </AppNavigationWrapper>
+                </DuckDBProvider>
               </KanbanProvider>
             </WorkspaceProvider>
           </AuthProvider>

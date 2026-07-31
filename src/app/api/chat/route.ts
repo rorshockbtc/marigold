@@ -180,9 +180,25 @@ const queryDatasetDeclaration: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       metric: { type: SchemaType.STRING, description: "What you are measuring (e.g. 'Party Affiliation', 'Age Group')" },
-      group_by: { type: SchemaType.STRING, description: "Optional field to group by (e.g. 'Race', 'Year')" }
+      group_by: { type: SchemaType.STRING, description: "Optional field to group by (e.g. 'Race', 'Year')" },
+      dataset_url: { type: SchemaType.STRING, description: "Optional URL of a public dataset to query instead of the local workspace." }
     },
     required: ["metric"]
+  }
+};
+
+const triageAndFetchDatasetDeclaration: FunctionDeclaration = {
+  name: "triage_and_fetch_dataset",
+  description: "Hunts for a public dataset URL online when the user's analytical query cannot be answered by the currently active local dataset. Use this to find external data.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      search_query: { type: SchemaType.STRING, description: "The exact search query to find the data online (e.g., 'CDC BRFSS obesity by state CSV')." },
+      found_url: { type: SchemaType.STRING, description: "A realistic public URL to the dataset (e.g., a data.gov or census.gov CSV endpoint)." },
+      suggested_name: { type: SchemaType.STRING, description: "A short variable name for this dataset (e.g., 'cdc_obesity_2023')." },
+      description: { type: SchemaType.STRING, description: "A conversational explanation of what you found." }
+    },
+    required: ["search_query", "found_url", "suggested_name", "description"]
   }
 };
 
@@ -320,7 +336,9 @@ export async function POST(req: NextRequest) {
       
       SUGGESTING MISSIONS / PLAYBOOKS & EXPLORING DATA:
       - Whenever a user asks how to find something or asks for query suggestions, you MUST call 'suggest_mission_playbook'.
-      - IMPORTANT: If a dataset IS connected, and a user asks a broad analytical question (e.g., 'What are the demographic trends?' or 'Show me historical party affiliation'), DO NOT stonewall them. You MUST proactively use the 'query_dataset' tool to fetch the real aggregations, then use 'append_section' to build the Data Story.
+      - IMPORTANT: If a user asks a broad analytical question (e.g., 'What are the demographic trends?'), you must evaluate if the currently linked dataset (shown in REAL-TIME PAGE CONTEXT) can answer it. 
+        - If YES, you MUST proactively use the 'query_dataset' tool to fetch the real aggregations, then use 'append_section' to build the Data Story.
+        - If NO (the active dataset is irrelevant, or no dataset is connected), you MUST use the 'triage_and_fetch_dataset' tool to hunt for a public data URL.
       - If NO dataset is connected, and the user asks a general knowledge or definition question (e.g., 'What is Benford's Law?' or 'How do people use P.O. boxes?'), answer it directly based on your knowledge. Do NOT attempt to use 'query_dataset', as it will fail without data.
       
       ${articleState ? `CURRENT ARTICLE STATE:\n${JSON.stringify(articleState, null, 2)}` : ''}
@@ -355,7 +373,7 @@ export async function POST(req: NextRequest) {
     const model = genAI.getGenerativeModel({
       model: "gemini-flash-lite-latest",
       systemInstruction: systemInstruction,
-      tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration] }]
+      tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration, triageAndFetchDatasetDeclaration] }]
     });
 
     const chat = model.startChat({
@@ -387,6 +405,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ action: 'run_tool', tool: 'update_title', args: call.args });
       } else if (call.name === "query_dataset") {
         return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args });
+      } else if (call.name === "triage_and_fetch_dataset") {
+        return NextResponse.json({ action: 'run_tool', tool: 'triage_and_fetch_dataset', args: call.args });
       }
     }
 

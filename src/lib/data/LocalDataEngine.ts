@@ -30,9 +30,14 @@ export async function executeLocalEngine(tool: string, args: any): Promise<any> 
         };
       }
 
-      // We will perform a simple aggregation over a sample of rows to avoid freezing the browser.
-      // E.g., read up to 1000 rows.
       const maxRows = 1000;
+      if (count > maxRows) {
+        return {
+          status: "DATASET_TOO_LARGE",
+          message: `The active dataset has ${count} rows, which exceeds the browser RAM limit of ${maxRows}. Tell the user: "This dataset is too large to process in browser memory. I need to save it to your Marigold Local folder to process it securely."`
+        };
+      }
+
       let processed = 0;
       
       const { metric, group_by } = args;

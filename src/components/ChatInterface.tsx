@@ -14,6 +14,7 @@ import { PIIRedactor } from '@/lib/security/PIIRedactor';
 import { useDataStoryFS } from '@/hooks/useDataStoryFS';
 import { TriageCache } from '@/lib/triage/TriageCache';
 import { executeLocalEngine } from '@/lib/data/LocalDataEngine';
+import { useDuckDB } from '@/lib/data/DuckDBProvider';
 
 import { ChatMessage, ChatSession, Playbook, ArticleState } from '@/lib/types';
 
@@ -35,6 +36,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const { saveDataStory, isSaving, error: saveError } = useDataStoryFS();
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [storageLimitReached, setStorageLimitReached] = useState(false);
+  const { isReady: isDuckDBReady, query: queryDuckDB } = useDuckDB();
 
   const getPageContext = () => {
     if (typeof window === 'undefined') return null;
@@ -327,7 +329,32 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         const args = loopResponseData.args;
 
         if (t === 'query_dataset' || t.startsWith('run_')) {
-          const localEngineResponse = await executeLocalEngine(t, args);
+          let localEngineResponse: any = null;
+          
+          if (t === 'query_dataset' && args.dataset_url && isDuckDBReady) {
+             try {
+                // Determine a valid grouping column if group_by is absent
+                const groupByCol = args.group_by ? `"${args.group_by}"` : 'column0';
+                
+                // Directly stream and aggregate from the remote public CSV using DuckDB!
+                const sql = `SELECT ${groupByCol}::VARCHAR as x, COUNT(*)::INTEGER as y FROM read_csv_auto('${args.dataset_url}', header=True) GROUP BY x ORDER BY y DESC LIMIT 10`;
+                const res = await queryDuckDB(sql);
+                
+                localEngineResponse = {
+                  status: "success",
+                  metric: args.metric,
+                  group_by: args.group_by,
+                  sample_size_used: "All available via HTTP Range Requests",
+                  total_dataset_size: "Unknown (Streamed)",
+                  aggregated_data: res, // [{x, y}]
+                  instruction: "Use this real data from the public URL to generate your narrative. Never hallucinate."
+                };
+             } catch(e: any) {
+                localEngineResponse = { status: "error", message: `DuckDB WASM failed to read ${args.dataset_url}: ${e.message}` };
+             }
+          } else {
+             localEngineResponse = await executeLocalEngine(t, args);
+          }
           
           const toolMessage: ChatMessage = { role: "user", content: `[LOCAL ENGINE RESPONSE]: ${JSON.stringify(localEngineResponse)}` };
           loopMessages = [...loopMessages, toolMessage];
