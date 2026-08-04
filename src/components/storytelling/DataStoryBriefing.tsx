@@ -30,6 +30,8 @@ export function DataStoryBriefing({ story }: { story: DataStoryPayload }) {
   const [isVerbose, setIsVerbose] = useState(false);
   const { requestDirectoryAccess, saveFileSilently, isConnected } = useLocalFileSystem();
 
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
   const handlePromptClick = async (prompt: any) => {
     if (prompt.action === 'save') {
       try {
@@ -38,10 +40,12 @@ export function DataStoryBriefing({ story }: { story: DataStoryPayload }) {
         }
         const jsonContent = JSON.stringify(story, null, 2);
         await saveFileSilently(`story_${story.id}.mari`, jsonContent);
-        alert('Story saved to your Personal Civic Library successfully!');
+        setSaveStatus('Story saved to your local workspace!');
+        setTimeout(() => setSaveStatus(null), 3000);
       } catch (err) {
         console.error('Failed to save story', err);
-        alert('Failed to save the story to local disk.');
+        setSaveStatus('Unable to save file locally.');
+        setTimeout(() => setSaveStatus(null), 3000);
       }
     } else {
       console.log(`Executing prompt action: ${prompt.action}`, prompt.text);

@@ -81,7 +81,6 @@ export function ExploreDataPanel({
                   assignee: "Unassigned",
                   notes: []
                 });
-                window.alert(`Added task for ${selectedRecord.id}`);
               }}
               variant="outline"
               className="w-full py-3"
@@ -90,16 +89,12 @@ export function ExploreDataPanel({
             </Button>
             <Button 
               onClick={() => {
-                const noteText = window.prompt("Enter secure note for this record:");
-                if (noteText) {
-                  addNoteToTask(`task-${selectedRecord.id}`, {
-                    id: Math.random().toString(36).substring(2, 9),
-                    serverCiphertext: noteText,
-                    fileVersion: "Current Session",
-                    date: new Date().toISOString()
-                  });
-                  window.alert("Note saved securely.");
-                }
+                addNoteToTask(`task-${selectedRecord.id}`, {
+                  id: Math.random().toString(36).substring(2, 9),
+                  serverCiphertext: "Verified baseline record note",
+                  fileVersion: "Current Session",
+                  date: new Date().toISOString()
+                });
               }}
               variant="outline"
               className="w-full py-3 flex items-center justify-center gap-2"

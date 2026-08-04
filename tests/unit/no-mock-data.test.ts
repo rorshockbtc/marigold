@@ -28,7 +28,9 @@ function runMockCheck() {
     /dataPoints:\s*\[\s*\{\s*label:\s*['"]Region A/,
     /const\s+seeded\s*:\s*DataStory\[\]\s*=\s*\[/,
     /isSavedLocally:\s*false,\s*dataPoints:\s*\[/,
-    /createStoryFromQuery.*?label:\s*['"]Region A/s
+    /createStoryFromQuery.*?label:\s*['"]Region A/s,
+    /globalRelayStore\s*:\s*Record/,
+    /localStorage\.setItem\(["']marigold_user_role["']/
   ];
 
   const filesWithMocks: string[] = [];

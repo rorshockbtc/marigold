@@ -120,6 +120,33 @@ if [ "$HOOKS_WITHOUT_TESTS" -gt 0 ]; then
   echo "📋 INFO: $HOOKS_WITHOUT_TESTS hook(s) lack test files. TDD coverage gap detected."
 fi
 
+# 12. No UI Alert / Prompt Stubs
+echo "Checking for alert() or prompt() UI action stubs..."
+ALERT_STUBS=$(grep -RnE "(window\.)?(alert|prompt)\(" "$TARGET_DIR/src/app" "$TARGET_DIR/src/components" --exclude-dir=dev --include=\*.{tsx,jsx,ts,js} 2>/dev/null || true)
+if [ -n "$ALERT_STUBS" ]; then
+  echo "$ALERT_STUBS"
+  echo "❌ ERROR: alert() and prompt() action stubs are prohibited in production UI code. Replace with real API/DB integrations or governed UI toasts."
+  EXIT_CODE=1
+fi
+
+# 13. No Client-Side Role Spoofing
+echo "Checking for client-side localStorage role spoofing..."
+ROLE_SPOOFS=$(grep -RnE "localStorage\.setItem\(.*user_role" "$TARGET_DIR/src" --include=\*.{tsx,ts} 2>/dev/null || true)
+if [ -n "$ROLE_SPOOFS" ]; then
+  echo "$ROLE_SPOOFS"
+  echo "❌ ERROR: Setting authorization roles in localStorage is a severe security vulnerability. Use Clerk session metadata / backend claims."
+  EXIT_CODE=1
+fi
+
+# 14. No In-Memory Server Relay
+echo "Checking for in-memory relay stores in API routes..."
+IN_MEM_RELAY=$(grep -Rn "globalRelayStore" "$TARGET_DIR/src/app/api" --include=\*.ts 2>/dev/null || true)
+if [ -n "$IN_MEM_RELAY" ]; then
+  echo "$IN_MEM_RELAY"
+  echo "❌ ERROR: In-memory store detected in API route. Serverless API routes must persist encrypted payloads to a real database."
+  EXIT_CODE=1
+fi
+
 if [ $EXIT_CODE -eq 0 ]; then
   echo "✅ UAT Enforcement passed: No inline styles, strict base-8 grid spacing, and separation of concerns maintained."
 else

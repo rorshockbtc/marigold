@@ -29,13 +29,11 @@ export function AuditDataPanel() {
       assignee: "Unassigned",
       notes: []
     });
-    alert(`Record "${selectedRecord.name || selectedRecord.id}" has been added to your Kanban review list.`);
   };
 
   const handleConfirmDismiss = () => {
     setIsDismissed(true);
     setShowConfirmDismiss(false);
-    alert("Alert dismissed. Record has been logged as verified baseline.");
     setTimeout(() => {
       closeSideSheet();
       setIsDismissed(false);
@@ -145,16 +143,12 @@ export function AuditDataPanel() {
           <Button 
             type="button"
             onClick={() => {
-              const noteText = window.prompt("Enter secure note for this citizen record:");
-              if (noteText) {
-                addNoteToTask(`task-${selectedRecord.id}`, {
-                  id: Math.random().toString(36).substring(2, 9),
-                  serverCiphertext: noteText,
-                  fileVersion: "Current Session",
-                  date: new Date().toISOString()
-                });
-                alert("Note saved to local session.");
-              }
+              addNoteToTask(`task-${selectedRecord.id}`, {
+                id: Math.random().toString(36).substring(2, 9),
+                serverCiphertext: "Verified baseline record note",
+                fileVersion: "Current Session",
+                date: new Date().toISOString()
+              });
             }}
             variant="ghost"
             className="w-full py-2.5 text-xs text-text-body flex items-center justify-center gap-2"

@@ -1,8 +1,37 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { collection, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase/client";
 
-// In a real database, this would be a Postgres table or Redis store.
-// For this Phase 2 mock, we hold it in memory.
-const globalRelayStore: Record<string, any[]> = {};
+const IS_FIREBASE_CONNECTED = !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+// Fallback Persistent Disk Store
+const DATA_DIR = process.env.RELAY_STORAGE_DIR || path.join(process.cwd(), ".data");
+
+function getStoragePath(groupId: string): string {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+  const safeGroupId = groupId.replace(/[^a-zA-Z0-9_-]/g, "_");
+  return path.join(DATA_DIR, `relay_${safeGroupId}.json`);
+}
+
+function readDiskBlobs(groupId: string): any[] {
+  try {
+    const filePath = getStoragePath(groupId);
+    if (!fs.existsSync(filePath)) return [];
+    const content = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(content);
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveDiskBlobs(groupId: string, blobs: any[]): void {
+  const filePath = getStoragePath(groupId);
+  fs.writeFileSync(filePath, JSON.stringify(blobs, null, 2), "utf-8");
+}
 
 export async function POST(req: Request) {
   try {
@@ -12,17 +41,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing groupId or blob" }, { status: 400 });
     }
 
-    if (!globalRelayStore[groupId]) {
-      globalRelayStore[groupId] = [];
+    // Zero-Knowledge Validation: Payload must contain ciphertext
+    if (typeof blob !== "object" || (!blob.ciphertext && !blob.encryptedPayload)) {
+      return NextResponse.json({ error: "Zero-Knowledge Violation: Payload must be encrypted before transmission." }, { status: 422 });
     }
 
-    // We blindly store the ciphertext. We literally cannot read it.
-    globalRelayStore[groupId].push({
+    const newEntry = {
+      groupId,
       ...blob,
       timestamp: Date.now()
-    });
+    };
 
-    return NextResponse.json({ success: true, count: globalRelayStore[groupId].length });
+    if (IS_FIREBASE_CONNECTED) {
+      try {
+        await addDoc(collection(db as any, "relay_blobs"), newEntry);
+      } catch (err) {
+        console.warn("Firebase relay write failed, writing to fallback disk store", err);
+        const blobs = readDiskBlobs(groupId);
+        blobs.push(newEntry);
+        saveDiskBlobs(groupId, blobs);
+      }
+    } else {
+      const blobs = readDiskBlobs(groupId);
+      blobs.push(newEntry);
+      saveDiskBlobs(groupId, blobs);
+    }
+
+    return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
@@ -36,6 +81,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing groupId" }, { status: 400 });
   }
 
-  const blobs = globalRelayStore[groupId] || [];
+  if (IS_FIREBASE_CONNECTED) {
+    try {
+      const q = query(
+        collection(db as any, "relay_blobs"),
+        where("groupId", "==", groupId),
+        orderBy("timestamp", "asc")
+      );
+      const snapshot = await getDocs(q);
+      const blobs = snapshot.docs.map(doc => doc.data());
+      return NextResponse.json({ blobs });
+    } catch (err) {
+      console.warn("Firebase query failed, using disk store fallback", err);
+      const blobs = readDiskBlobs(groupId);
+      return NextResponse.json({ blobs });
+    }
+  }
+
+  const blobs = readDiskBlobs(groupId);
   return NextResponse.json({ blobs });
 }

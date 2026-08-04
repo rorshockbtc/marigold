@@ -118,3 +118,30 @@ export async function signChallenge(workspaceKey: CryptoKey, challengeStr: strin
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 }
+
+// Encrypt arbitrary text payload with WebCrypto AES-GCM
+export async function encryptPayload(text: string, key: CryptoKey): Promise<{ ciphertextHex: string; ivHex: string }> {
+  const enc = new TextEncoder();
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await window.crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv as BufferSource },
+    key,
+    enc.encode(text)
+  );
+  const ciphertextHex = Array.from(new Uint8Array(ciphertext)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('');
+  return { ciphertextHex, ivHex };
+}
+
+// Decrypt arbitrary text payload with WebCrypto AES-GCM
+export async function decryptPayload(ciphertextHex: string, ivHex: string, key: CryptoKey): Promise<string> {
+  const dec = new TextDecoder();
+  const ciphertextBytes = new Uint8Array(ciphertextHex.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []);
+  const ivBytes = new Uint8Array(ivHex.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []);
+  const decrypted = await window.crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: ivBytes as BufferSource },
+    key,
+    ciphertextBytes
+  );
+  return dec.decode(decrypted);
+}

@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isLoaded, clerkUser]);
 
   const login = () => {
-    alert("Please use the Clerk login buttons for Identity.");
+    // Identity handled via Clerk UI buttons
   };
 
   const logout = async () => {
@@ -103,7 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const transferAdmin = (newAdminEmail: string) => {
     if (!user || user.role !== 'admin') return;
-    alert(`Admin rights successfully transferred to ${newAdminEmail}. You are now a Standard Member.`);
     setUser({ ...user, role: 'member' });
   };
 

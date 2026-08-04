@@ -33,19 +33,21 @@ export default function OnboardingPage() {
         await storeDirectoryHandle(activeGroup.toLowerCase(), handle);
         
       } else {
-        alert("Your browser does not support the File System Access API. Please use a recent version of Chrome, Edge, or Opera.");
+        setErrorStatus("File System Access API is not supported in this browser. Please use Chrome, Edge, or Opera.");
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error("Error accessing directory:", err);
-        alert("Failed to access directory. Please ensure you grant permission.");
+        setErrorStatus("Directory access denied. Please grant permission.");
       }
     }
   };
 
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+
   const handleGenerateKey = async () => {
     if (pin.length < 4) {
-      alert("Please enter a PIN of at least 4 digits.");
+      setErrorStatus("Please enter a PIN of at least 4 digits.");
       return;
     }
     
@@ -66,7 +68,7 @@ export default function OnboardingPage() {
       router.push("/data-prep");
     } catch (err) {
       console.error("Error generating/encrypting key:", err);
-      alert("Failed to secure workspace.");
+      setErrorStatus("Failed to secure workspace.");
     }
   };
 
@@ -239,6 +241,7 @@ export default function OnboardingPage() {
                     {workspaceKey ? (comfortLevel === 'returning' ? 'Folder Unlocked' : 'Folder Locked') : (comfortLevel === 'returning' ? 'Unlock Workspace' : 'Set PIN & Continue')}
                   </Button>
                 </div>
+                {errorStatus && <p className="text-xs text-red-600 font-bold mt-3">{errorStatus}</p>}
               </div>
             </div>
 

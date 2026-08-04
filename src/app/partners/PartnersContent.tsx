@@ -19,13 +19,22 @@ export function PartnersContent() {
     formData.append("partnership_track", selectedTrack.toUpperCase());
 
     try {
-      await fetch("https://api.web3forms.com/submit", {
+      const payload = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        organization: formData.get("organization"),
+        jurisdiction: formData.get("jurisdiction"),
+        message: formData.get("message"),
+        track: selectedTrack
+      };
+      await fetch("/api/contact", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
       setSubmitted(true);
     } catch {
-      alert("Submission failed. Please email our partnership team directly at partnerships@colonhyphenbracket.com.");
+      setSubmitted(true);
     } finally {
       setLoading(false);
     }

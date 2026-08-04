@@ -14,6 +14,8 @@ export default function SettingsPanel() {
     setGeminiKey(localStorage.getItem("marigold_gemini_key") || "");
   }, []);
 
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -22,9 +24,10 @@ export default function SettingsPanel() {
     if (geminiKey) localStorage.setItem("marigold_gemini_key", geminiKey);
     else localStorage.removeItem("marigold_gemini_key");
 
-    alert("Settings saved securely to your browser!");
     document.documentElement.style.fontSize = `${textSize}px`;
     setIsSaving(false);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
   };
 
   return (
@@ -97,7 +100,8 @@ export default function SettingsPanel() {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-end gap-3">
+          {savedSuccess && <span className="text-xs font-bold text-emerald-600">✓ Settings Saved</span>}
           <Button type="submit" variant="primary">
             Save Settings
           </Button>

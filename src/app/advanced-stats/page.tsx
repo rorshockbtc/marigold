@@ -252,18 +252,15 @@ export default function AdvancedStatsPage() {
         {/* Actionable Handles */}
         <div className="flex flex-wrap gap-4 pt-4 border-t border-border-soft">
           <button 
-            onClick={() => alert("Custom playbooks will be saved to your local engine in the next release.")}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                localStorage.setItem("marigold_custom_playbook", JSON.stringify(result));
+              }
+            }}
             className="flex items-center gap-2 px-6 py-3 rounded-full bg-white border border-border-soft hover:border-primary text-text-header font-bold text-sm shadow-sm transition-all group"
           >
             <Save className="w-4 h-4 text-[#646A7A] group-hover:text-primary transition-colors" />
             Save as Custom Playbook
-          </button>
-          <button 
-            onClick={() => alert("Glad you're having fun! 🧪")}
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#FAF8F5] text-[#646A7A] hover:bg-[#EAE5DC] hover:text-text-header font-bold text-sm transition-colors"
-          >
-            <Smile className="w-4 h-4" />
-            I'm just having fun!
           </button>
         </div>
       </div>

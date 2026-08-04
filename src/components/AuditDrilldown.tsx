@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
+import { FilterControl } from "@/components/ui/FilterControl";
 import { Download, CheckCircle, ChevronLeft, ChevronRight, Layers, Users } from "lucide-react";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 
@@ -72,7 +73,6 @@ export function AuditDrilldown({
       notes: [],
       attachedRecordIds: Array.from(selectedIds)
     });
-    alert(`${selectedIds.size} records clustered into a new Kanban task.`);
     setSelectedIds(new Set());
   };
 
@@ -171,21 +171,20 @@ export function AuditDrilldown({
                   Showing {((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, records.length)} of {records.length} anomalies
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-body">Rows per page:</span>
-                  <select 
-                    className="text-xs border border-border-soft rounded p-1"
-                    value={rowsPerPage}
-                    onChange={(e) => {
-                      setRowsPerPage(Number(e.target.value));
+                  <FilterControl 
+                    value={String(rowsPerPage)}
+                    onChange={(val) => {
+                      setRowsPerPage(Number(val));
                       setCurrentPage(1);
                       setSelectedIds(new Set());
                     }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
+                    options={[
+                      { value: "10", label: "10" },
+                      { value: "25", label: "25" },
+                      { value: "50", label: "50" },
+                      { value: "100", label: "100" }
+                    ]}
+                  />
                   
                   <div className="flex items-center gap-1 ml-4">
                     <Button 

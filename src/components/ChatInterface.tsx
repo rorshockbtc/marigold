@@ -115,7 +115,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     if (typeof window === "undefined") return;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Voice recognition is not supported in this browser. Please try Chrome or Edge.");
+      console.warn("Speech recognition not supported in this browser.");
       return;
     }
     if (isListening) {

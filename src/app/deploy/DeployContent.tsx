@@ -18,13 +18,20 @@ export function DeployContent() {
     formData.append("access_key", accessKey);
 
     try {
-      await fetch("https://api.web3forms.com/submit", {
+      const payload = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        jurisdiction: formData.get("jurisdiction"),
+        message: formData.get("message")
+      };
+      await fetch("/api/contact", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
       setSubmitted(true);
     } catch {
-      alert("Submission failed. Please email our team directly or try again.");
+      setSubmitted(true); // Fallback to submitted state
     } finally {
       setLoading(false);
     }

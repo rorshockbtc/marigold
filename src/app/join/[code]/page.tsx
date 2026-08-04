@@ -65,7 +65,6 @@ export default function GroupInviteGatewayPage() {
     setTimeout(() => {
       // Set active workspace
       localStorage.setItem("marigold_active_group", targetGroup.name);
-      localStorage.setItem("marigold_user_role", "Verified Auditor");
       localStorage.setItem("marigold_onboarding_done", "true");
       localStorage.setItem("marigold_active_jurisdiction", targetGroup.jurisdiction);
       if (targetGroup.website) {

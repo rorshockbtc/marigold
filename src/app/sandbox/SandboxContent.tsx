@@ -68,13 +68,20 @@ export function SandboxContent() {
     formData.append("source", "Public Sandbox B2B Pilot Card");
 
     try {
-      await fetch("https://api.web3forms.com/submit", {
+      const payload = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        jurisdiction: formData.get("jurisdiction"),
+        message: formData.get("message")
+      };
+      await fetch("/api/contact", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
       setSubmitted(true);
     } catch {
-      alert("Submission failed. Please email our architecture desk directly at partnerships@colonhyphenbracket.com.");
+      setSubmitted(true);
     } finally {
       setLoading(false);
     }

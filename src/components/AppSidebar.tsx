@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
+import { GroupSwitcherModal } from '@/components/GroupSwitcherModal';
 import { LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart } from 'lucide-react';
 import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
 
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = React.useState(false);
   const [activeGroup, setActiveGroup] = React.useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
@@ -145,8 +147,8 @@ export default function AppSidebar() {
               <button
                 type="button"
                 onClick={() => {
-                  const custom = window.prompt("Enter Organization or Group Name:", activeGroup);
-                  if (custom && custom.trim()) handleSwitchGroup(custom.trim());
+                  setIsSwitcherOpen(false);
+                  setIsGroupModalOpen(true);
                 }}
                 className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#D96B27] hover:bg-[#FAF8F5] transition-colors"
               >
@@ -156,6 +158,13 @@ export default function AppSidebar() {
           </div>
         )}
       </div>
+
+      <GroupSwitcherModal
+        isOpen={isGroupModalOpen}
+        onClose={() => setIsGroupModalOpen(false)}
+        onSwitchGroup={handleSwitchGroup}
+        currentGroup={activeGroup}
+      />
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5">

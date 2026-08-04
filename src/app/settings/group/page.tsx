@@ -110,7 +110,7 @@ export default function GroupSettingsPage() {
     localStorage.setItem("marigold_active_jurisdiction", "Local / Independent");
     setGroupName("Independent Researcher");
     setJurisdiction("Local / Independent");
-    alert("You are now set up as an Independent Researcher!");
+    window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: "Independent Researcher" } }));
     router.push("/dashboard");
   };
 

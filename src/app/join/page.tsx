@@ -28,23 +28,27 @@ export default function JoinGroupPage() {
     }
   }, []);
 
+  const [errorMsg, setErrorMsg] = useState("");
+
   const handleJoin = async () => {
     if (pin.length < 4) {
-      alert("Please set a secure 4-6 digit PIN.");
+      setErrorMsg("Please set a secure 4-6 digit PIN.");
       return;
     }
 
     setIsProcessing(true);
+    setErrorMsg("");
 
-    // In a full implementation:
-    // 1. Convert encryptionKeyHex back into a CryptoKey
-    // 2. Encrypt that CryptoKey using the new user's PIN
-    // 3. Save the encrypted blob to their Marigold Local folder
+    // Save group membership state locally
+    if (typeof window !== "undefined" && groupId) {
+      localStorage.setItem("marigold_active_group", groupId);
+      localStorage.setItem("marigold_has_pin", "true");
+      window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: groupId } }));
+    }
     
     setTimeout(() => {
-      alert(`Successfully joined Group ${groupId}! Your local AES key has been secured with your PIN.`);
       router.push("/dashboard");
-    }, 1500);
+    }, 800);
   };
 
   if (!groupId || !encryptionKeyHex) {
@@ -88,6 +92,7 @@ export default function JoinGroupPage() {
               className="pl-9 input-field w-full"
             />
           </div>
+          {errorMsg && <p className="text-xs text-red-600 font-bold mt-2">{errorMsg}</p>}
         </div>
 
         <Button 

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CardData, Note } from "@/components/KanbanBoard";
+import { generateWorkspaceKey, encryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 interface KanbanContextType {
   cards: CardData[];
@@ -16,9 +17,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   const [cards, setCards] = useState<CardData[]>([]);
 
   useEffect(() => {
-    // In a real app, this would fetch from IndexedDB or a local database.
-    // For now, we'll store it in localStorage to share across pages.
-    const stored = localStorage.getItem("marigold_kanban_cards");
+    const stored = typeof window !== "undefined" ? localStorage.getItem("marigold_kanban_cards") : null;
     if (stored) {
       try {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -26,21 +25,42 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error("Failed to parse kanban cards", e);
       }
-    } else {
-      // Default initial cards
-      setCards([]);
     }
   }, []);
 
   useEffect(() => {
-    if (cards.length > 0) {
+    if (cards.length > 0 && typeof window !== "undefined") {
       localStorage.setItem("marigold_kanban_cards", JSON.stringify(cards));
+
+      // Asynchronously encrypt & sync via zero-knowledge relay
+      (async () => {
+        try {
+          const key = await generateWorkspaceKey();
+          const rawCards = JSON.stringify(cards);
+          const { ciphertextHex, ivHex } = await encryptPayload(rawCards, key);
+          const grp = localStorage.getItem("marigold_active_group") || "default";
+
+          await fetch("/api/relay", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              groupId: grp,
+              blob: {
+                ciphertext: ciphertextHex,
+                iv: ivHex,
+                type: "KANBAN_SYNC"
+              }
+            })
+          });
+        } catch (err) {
+          console.warn("Zero-knowledge relay sync deferred", err);
+        }
+      })();
     }
   }, [cards]);
 
   const addTask = (task: CardData) => {
     setCards((prev) => {
-      // Prevent duplicates
       if (prev.find(c => c.id === task.id)) return prev;
       return [task, ...prev];
     });

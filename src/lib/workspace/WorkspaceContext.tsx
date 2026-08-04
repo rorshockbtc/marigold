@@ -83,7 +83,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
                    targetGroup === "ACME Civic Data Sandbox (Demo Environment)";
     
     if (isDemo) {
-      localStorage.setItem("marigold_user_role", "Verified Tester");
       const currentFileName = localStorage.getItem("marigold_file_name") || "";
       if (!currentFileName.toUpperCase().includes("DEMO")) {
         localStorage.setItem("marigold_file_connected", "false");
@@ -91,7 +90,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("marigold_file_name", "Synthetic DEMO_ dataset required");
       }
     } else if (targetGroup === "Mississippi Fair Elections") {
-      localStorage.setItem("marigold_user_role", "Group Admin");
       const currentFileName = localStorage.getItem("marigold_file_name") || "";
       if (currentFileName === "Synthetic DEMO_ dataset required" || currentFileName.toUpperCase().includes("DEMO")) {
         // Only inject Mississippi if it's currently demo data. Otherwise let the real file persist.

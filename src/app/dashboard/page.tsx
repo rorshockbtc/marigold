@@ -11,6 +11,7 @@ import { DataRequiredState } from "@/components/DataRequiredState";
 import { useVoterRollConnection } from "@/hooks/useVoterRollConnection";
 import { useDataStats } from "@/hooks/useDataStats";
 import { useGroupSync } from "@/hooks/useGroupSync";
+import { DeviceSecurityNotice } from "@/components/DeviceSecurityNotice";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -40,13 +41,14 @@ export default function DashboardPage() {
 
   if (!isDataLoaded) {
     return (
-      <>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6 font-sans">
+        <DeviceSecurityNotice />
         <DataRequiredState 
           title="Welcome to Marigold" 
           subtitle="Your private workspace is empty. Complete these steps to start your first verification mission." 
         />
         <LocalFolderGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
-      </>
+      </div>
     );
   }
 
@@ -80,7 +82,7 @@ export default function DashboardPage() {
               Re-link Folder
             </Button>
             <Button 
-              onClick={() => { alert("Filter Board: Active scope set to statewide roll"); }}
+              onClick={() => setActiveTab('kanban')}
               variant="secondary"
               className="flex items-center gap-2"
             >

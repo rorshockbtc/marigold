@@ -44,7 +44,7 @@ export default function DataPrepPage() {
       window.location.href = "/explore";
     } catch (err) {
       setIsLoadingDemo(false);
-      alert("Failed to auto-load demo dataset: " + err);
+      setDemoStatusMsg("Failed to auto-load demo dataset.");
     }
   };
   const handle1ClickLoadDemo = () => requirePin(execute1ClickLoadDemo);
@@ -98,7 +98,7 @@ export default function DataPrepPage() {
     if (typeof window !== "undefined") {
       const activeGroup = localStorage.getItem("marigold_active_group");
       if (isDemoGroupActive(activeGroup) && !file.name.toUpperCase().includes("DEMO")) {
-        alert("⚠️ Demo Environment Protection: To prevent commingling or exposing real PII during demonstrations, you cannot ingest non-demo voter rolls (" + file.name + ") while in a demo or sandbox group. Please use a DEMO_ file or switch to your real jurisdiction in the sidebar.");
+        setDemoStatusMsg("Demo Environment Protection: Please switch from Demo Mode before uploading real files.");
         return false;
       }
     }
