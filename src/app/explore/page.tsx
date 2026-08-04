@@ -151,28 +151,45 @@ export default function ExplorePage() {
   const handlePublishDataStory = async () => {
     try {
       const { generateWorkspaceKey, encryptPayload } = await import("@/lib/crypto/LocalKeyManager");
+      const { getDirectoryHandle, writeStructuredFile } = await import("@/lib/fs/LocalFSManager");
+      
       const key = await generateWorkspaceKey();
+      const now = new Date();
+      const dateStr = now.toISOString().replace(/T/, '_').replace(/:/g, '').split('.')[0];
+      const filename = `data-story-${dateStr}.json`;
+
       const rawStory = JSON.stringify({
         activePlaybook,
         resultsCount: filteredResults.length,
         timestamp: Date.now()
-      });
+      }, null, 2);
+      
       const { ciphertextHex, ivHex } = await encryptPayload(rawStory, key);
 
       const payload = {
         ciphertext: ciphertextHex,
         iv: ivHex,
         type: "DATA_STORY_SNAPSHOT",
+        filename,
         piiRemoved: true
       };
+      
       const grp = localStorage.getItem("marigold_active_group") || "default";
+
+      // Direct write to linked Marigold Local folder if handle is available
+      const dirHandle = await getDirectoryHandle(grp.toLowerCase());
+      if (dirHandle) {
+        await writeStructuredFile(dirHandle, "Data_Stories", filename, JSON.stringify(payload, null, 2));
+      }
+
       await fetch("/api/relay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ groupId: grp, blob: payload })
       });
-      setPublishStatus("Data Story Snapshot zero-knowledge encrypted & published!");
-      setTimeout(() => setPublishStatus(null), 4000);
+      
+      setPublishStatus(`Data Story saved to Marigold_Local/Data_Stories/${filename}!`);
+      setTimeout(() => setPublishStatus(null), 4500);
     } catch (e) {
       setPublishStatus("Published to local session.");
       setTimeout(() => setPublishStatus(null), 4000);

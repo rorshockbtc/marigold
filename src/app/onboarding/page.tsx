@@ -28,9 +28,12 @@ export default function OnboardingPage() {
         });
         setDirectoryHandle(handle);
         
-        // Store handle in IndexedDB for the active group
         const activeGroup = localStorage.getItem("marigold_active_group") || "default";
         await storeDirectoryHandle(activeGroup.toLowerCase(), handle);
+        
+        // Auto-initialize standard subfolders & root README.md
+        const { initStructuredWorkspace } = await import("@/lib/fs/LocalFSManager");
+        await initStructuredWorkspace(handle);
         
       } else {
         setErrorStatus("File System Access API is not supported in this browser. Please use Chrome, Edge, or Opera.");

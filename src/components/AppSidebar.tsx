@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { GroupSwitcherModal } from '@/components/GroupSwitcherModal';
-import { LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart } from 'lucide-react';
+import { LocalFolderStatusModal } from '@/components/LocalFolderStatusModal';
+import { Folder, LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart } from 'lucide-react';
 import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
 
 const NAV_ITEMS = [
@@ -23,6 +24,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = React.useState(false);
+  const [isFolderModalOpen, setIsFolderModalOpen] = React.useState(false);
   const [activeGroup, setActiveGroup] = React.useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
@@ -198,8 +200,17 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      {/* Bottom User Controls & Return Link */}
-      <div className="p-4 border-t border-border bg-[#EAE5DC]/60 space-y-4">
+      {/* Bottom User Controls & Local Folder Status */}
+      <div className="p-4 border-t border-border bg-[#EAE5DC]/60 space-y-2">
+        <button
+          type="button"
+          onClick={() => setIsFolderModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 py-2 px-3 rounded-xl shadow-sm transition-all"
+        >
+          <Folder className="w-4 h-4 text-primary" />
+          {!isCollapsed && <span>📁 Marigold Local Folder</span>}
+        </button>
+
         <Link 
           href="/" 
           title={isCollapsed ? "Back to Marketing Site" : undefined}
@@ -208,16 +219,12 @@ export default function AppSidebar() {
           <ArrowLeft className="w-3.5 h-3.5" />
           {!isCollapsed && <span>Back to Marketing Site</span>}
         </Link>
-
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} pt-2 border-t border-border px-2`}>
-          {!isCollapsed && (
-            <div className="text-xs text-[#4A5060] font-medium truncate max-w-[140px]">
-              Active Account
-            </div>
-          )}
-          <UserButton />
-        </div>
       </div>
+
+      <LocalFolderStatusModal
+        isOpen={isFolderModalOpen}
+        onClose={() => setIsFolderModalOpen(false)}
+      />
     </aside>
   );
 }
