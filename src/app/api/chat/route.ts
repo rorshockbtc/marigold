@@ -319,16 +319,19 @@ export async function POST(req: NextRequest) {
     ` : "";
 
     const systemInstruction = `
-      You are Mari, the highly-qualified Data Investigator for Marigold Insights (J.A.R.V.I.S for data explorers).
+      You are Mari, the highly-qualified Universal Data Investigator & Storyteller for Marigold Insights (J.A.R.V.I.S for independent researchers, academics, healthcare analysts, legal auditors, data journalists, and cypherpunks).
       ${modePrompt}
       ${pageContextPrompt}
       
+      UNIVERSAL DATA ENGINE SCOPE:
+      Marigold is a zero-knowledge, air-gapped local data platform. While civic & voter rolls are a key use case, Marigold processes raw CSV, TSV, JSON, and dataset files across ALL domains (public health, economic trends, legal case files, academic research, bitcoin/cypherpunk ledger statistics, and civic integrity). Always honor the domain of the active dataset!
+      
       CORE DIRECTIVES:
-      1. ABSOLUTE OPSEC (The Porcupine Defense): You are a "Blind LLM". You are structurally isolated from the user's raw data. You will receive encrypted metadata, mathematical geometry (e.g., standard deviations, Z-scores), and cryptographic placeholders (e.g., [ENTITY_HASH_123]) from the local engine. You must NEVER invent names or mock data. You must weave your narrative around these placeholders, knowing the user's secure browser will instantly decrypt and hydrate them before rendering.
-      2. PERSONA (EMPATHY FIRST): You are deferential, patient, and precise. You respect that "privacy takes time." Many users are elderly or non-technical volunteers. If a user signs their name or shares personal details (like 'Ethel (widow)'), you MUST acknowledge them warmly, validate that they are doing good work, and gently guide them. Never use overwhelming jargon. Make them feel respected and safe.
-      3. CONCISENESS: Answer in 2-3 short sentences maximum unless explicitly asked for a deep dive. Do not write long essays.
-      4. SUBSTACK ARTICLE BUILDER (CRITICAL): The center pane is a 'Data Story'—an article you are co-authoring with the user. You have delta-editing tools: 'append_section', 'update_section', and 'update_title'. Do NOT try to rewrite the whole article at once. Use 'append_section' to add a new paragraph and chart. Use 'query_dataset' to fetch real aggregations instead of hallucinating chart values.
-      5. ZERO HALLUCINATION: You do not simulate. You do not generate mock statistics. If you don't know the answer, tell the user you lack the data and provide actionable next steps to acquire it.
+      1. ABSOLUTE OPSEC (The Porcupine Defense): You are a "Blind LLM". You are structurally isolated from the user's raw data. You receive encrypted metadata, mathematical geometry (e.g., standard deviations, Z-scores), and cryptographic placeholders. You must NEVER invent names or mock data. You weave your narrative around these placeholders, knowing the user's secure browser will instantly decrypt and hydrate them locally.
+      2. PERSONA (EMPATHY FIRST): You are deferential, patient, and precise. You respect that "privacy takes time." You serve diverse users—from elderly citizen volunteers to academic researchers and cypherpunks. Validate their work and guide them clearly.
+      3. DEEP NARRATIVES & RICH CHARTS: When co-authoring a Data Story, provide thorough, highly informative narrative paragraphs. Explain the real-world implications of variance, distribution curves, and trendlines in plain, engaging English.
+      4. SUBSTACK ARTICLE BUILDER (CRITICAL): The center pane is a 'Data Story'—an article you are co-authoring with the user. Use delta-editing tools: 'append_section', 'update_section', and 'update_title'. Use 'query_dataset' to fetch real aggregations instead of hallucinating chart values.
+      5. ZERO HALLUCINATION: You do not simulate. You do not generate mock statistics. If you don't know the answer, state that data is missing and provide actionable steps to acquire it.
       
       CONVERSATIONAL PATTERN FOR STATS:
       - Always bridge the gap between rigorous math and plain English.
@@ -370,48 +373,70 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-flash-lite-latest",
-      systemInstruction: systemInstruction,
-      tools: [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration, triageAndFetchDatasetDeclaration] }]
-    });
+    // Candidate model fallback chain: try best models first, falling back on 429 / 404
+    const CANDIDATE_MODELS = [
+      "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-2.0-flash",
+      "gemini-flash-lite-latest"
+    ];
 
-    const chat = model.startChat({
-      history: formattedHistory,
-      generationConfig: { temperature: 0.7 }
-    });
+    const tools = [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration, triageAndFetchDatasetDeclaration] }];
 
-    let result = await chat.sendMessage(query);
-    let response = result.response;
+    let responseText = "";
+    let functionCalls: any[] | undefined = undefined;
 
-    const functionCalls = typeof response.functionCalls === 'function' ? response.functionCalls() : undefined;
+    for (const modelName of CANDIDATE_MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemInstruction,
+          tools
+        });
+
+        const chat = model.startChat({
+          history: formattedHistory,
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+        });
+
+        const result = await chat.sendMessage(query);
+        const res = result.response;
+        functionCalls = typeof res.functionCalls === 'function' ? res.functionCalls() : undefined;
+        responseText = res.text() || "";
+        break; // Successfully generated response!
+      } catch (err: any) {
+        console.warn(`Model ${modelName} call failed, trying next candidate in fallback chain:`, err?.message || err);
+        // Continue loop to try next model in fallback list
+      }
+    }
+
     if (functionCalls && functionCalls.length > 0) {
       const call = functionCalls[0];
-      if (!call) return NextResponse.json({ reply: response.text() || "" });
+      if (!call) return NextResponse.json({ reply: responseText });
       
       if (call.name === "run_robust_statistics") {
         const { metric, county } = call.args as { metric: string; county?: string };
-        return NextResponse.json({ action: 'run_tool', tool: 'run_robust_statistics', args: { metric, county }, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'run_robust_statistics', args: { metric, county }, reply: responseText || undefined });
       } else if (call.name === "run_benfords_law") {
         const { county } = call.args as { county?: string };
-        return NextResponse.json({ action: 'run_tool', tool: 'run_benfords_law', args: { county }, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'run_benfords_law', args: { county }, reply: responseText || undefined });
       } else if (call.name === "suggest_mission_playbook") {
-        return NextResponse.json({ action: 'suggest_playbook', playbook: call.args, reply: response.text() || "I've drafted a Playbook based on your request. You can save it with 1-click." });
+        return NextResponse.json({ action: 'suggest_playbook', playbook: call.args, reply: responseText || "I've drafted a Playbook based on your request. You can save it with 1-click." });
       } else if (call.name === "append_section") {
-        return NextResponse.json({ action: 'run_tool', tool: 'append_section', args: call.args, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'append_section', args: call.args, reply: responseText || undefined });
       } else if (call.name === "update_section") {
-        return NextResponse.json({ action: 'run_tool', tool: 'update_section', args: call.args, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'update_section', args: call.args, reply: responseText || undefined });
       } else if (call.name === "update_title") {
-        return NextResponse.json({ action: 'run_tool', tool: 'update_title', args: call.args, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'update_title', args: call.args, reply: responseText || undefined });
       } else if (call.name === "query_dataset") {
-        return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args, reply: responseText || undefined });
       } else if (call.name === "triage_and_fetch_dataset") {
-        return NextResponse.json({ action: 'run_tool', tool: 'triage_and_fetch_dataset', args: call.args, reply: response.text() || undefined });
+        return NextResponse.json({ action: 'run_tool', tool: 'triage_and_fetch_dataset', args: call.args, reply: responseText || undefined });
       }
     }
 
     return NextResponse.json({ 
-      reply: response.text()
+      reply: responseText
     });
 
   } catch (error: unknown) {
