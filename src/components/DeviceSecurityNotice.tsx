@@ -26,23 +26,23 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
     }
 
     setIsHydrating(true);
-    setStatusMsg("⚡ Rapidly auto-hydrating local dataset shards...");
+    setStatusMsg("⚡ Loading your saved voter files into memory...");
     try {
       const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle, (msg) => setStatusMsg(msg));
       if (rows > 0) {
-        setStatusMsg(`✅ Successfully hydrated ${rows.toLocaleString()} records! Opening Explore...`);
+        setStatusMsg(`✅ Successfully loaded ${rows.toLocaleString()} records! Opening Workspace...`);
         setTimeout(() => {
           window.location.href = "/explore";
         }, 1000);
       } else {
-        setStatusMsg("No dataset shards found in Uploaded_Data. Redirecting to Stream File...");
+        setStatusMsg("No saved files found in Uploaded_Data. Redirecting to Stream File...");
         setTimeout(() => {
           window.location.href = "/data-prep";
         }, 1200);
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg("Auto-hydration failed. Please select your Marigold_Local folder.");
+      setStatusMsg("Could not load saved files. Please select your Marigold_Local folder.");
     } finally {
       setIsHydrating(false);
     }
@@ -60,7 +60,7 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
               Welcome Back to Your Local Workspace
             </h3>
             <p className="text-sm text-emerald-900 mt-1 leading-relaxed">
-              Your browser memory clears on restart for privacy. Click <strong>Auto-Hydrate Dataset</strong> below to load your pre-chunked dataset shards into workspace memory in &lt; 2 seconds without re-uploading raw files.
+              Your local files are safely stored on your computer inside your <strong>Marigold_Local</strong> folder. Click <strong>Load Saved Files</strong> below to load your voter records into memory in &lt; 2 seconds without re-uploading raw files.
             </p>
           </div>
 
@@ -71,7 +71,7 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            {/* Option 1: Auto-Hydrate */}
+            {/* Option 1: Load Saved Files */}
             <button
               type="button"
               onClick={handleAutoHydrate}
@@ -81,13 +81,13 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 mb-1">
                   <RefreshCw className={`w-4 h-4 text-emerald-700 ${isHydrating ? 'animate-spin' : ''}`} />
-                  Auto-Hydrate Dataset
+                  Load Saved Files
                 </div>
                 <p className="text-xs text-emerald-800">
-                  Load pre-chunked shards from Marigold_Local in &lt; 2 seconds.
+                  Load saved voter records from your PC in &lt; 2 seconds.
                 </p>
               </div>
-              <span className="text-xs font-bold text-emerald-800 underline mt-3 block">⚡ Auto-Hydrate →</span>
+              <span className="text-xs font-bold text-emerald-800 underline mt-3 block">⚡ Load Saved Files →</span>
             </button>
 
             {/* Option 2: Link / Upload */}

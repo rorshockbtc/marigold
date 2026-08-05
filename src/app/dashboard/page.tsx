@@ -26,7 +26,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    if (typeof window !== "undefined" && !isConnected) {
+      import("@/lib/fs/LocalFSManager").then(({ getDirectoryHandle }) => {
+        const grp = localStorage.getItem("marigold_active_group") || "default";
+        getDirectoryHandle(grp.toLowerCase()).then((dirHandle) => {
+          if (dirHandle) {
+            import("@/lib/fs/LocalFSHydrator").then(({ LocalFSHydrator }) => {
+              LocalFSHydrator.hydrateFromLocalFolder(dirHandle).then((rows) => {
+                if (rows > 0) {
+                  window.dispatchEvent(new CustomEvent("marigold-data-connected"));
+                }
+              }).catch(() => {});
+            });
+          }
+        });
+      });
+    }
+  }, [isConnected]);
 
   if (!isMounted) {
     return (

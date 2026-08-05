@@ -75,16 +75,16 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
     if (!dirHandle) return;
 
     setIsHydrating(true);
-    setStatusMsg("⚡ Rapidly auto-hydrating dataset shards from local disk...");
+    setStatusMsg("⚡ Loading your saved voter files into memory...");
     try {
       const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle, (msg) => setStatusMsg(msg));
-      setStatusMsg(`✅ Successfully hydrated ${rows.toLocaleString()} rows into workspace!`);
+      setStatusMsg(`✅ Loaded ${rows.toLocaleString()} records!`);
       setTimeout(() => {
-        window.location.href = "/explore";
-      }, 1200);
+        window.location.href = "/dashboard";
+      }, 1000);
     } catch (e) {
-      console.error("Auto-hydration failed:", e);
-      setStatusMsg("Auto-hydration failed. Try re-selecting folder.");
+      console.error("File loading failed:", e);
+      setStatusMsg("Failed to load saved files. Try re-linking your folder.");
     } finally {
       setIsHydrating(false);
     }
@@ -92,7 +92,7 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
 
   const handleExportZip = async () => {
     setIsExporting(true);
-    setStatusMsg("Building structured .ZIP package...");
+    setStatusMsg("Building backup ZIP package...");
     try {
       const kanbanRaw = localStorage.getItem("marigold_kanban_cards");
       const zipBlob = await exportWorkspaceZip({
@@ -112,7 +112,7 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
       a.click();
       document.body.removeChild(a);
 
-      setStatusMsg(`Exported ${filename} cleanly!`);
+      setStatusMsg(`Saved backup ${filename}!`);
       setTimeout(() => setStatusMsg(""), 3000);
     } catch (e) {
       console.error(e);
@@ -125,18 +125,18 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
   const handleImportZip = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setStatusMsg(`Unpacking ${file.name}...`);
+      setStatusMsg(`Opening ${file.name}...`);
       try {
         const payload = await importWorkspaceZip(file);
         if (payload.kanbanTasks && payload.kanbanTasks.length > 0) {
           localStorage.setItem("marigold_kanban_cards", payload.kanbanTasks[0].content);
         }
-        setStatusMsg("Restored workspace from ZIP successfully!");
+        setStatusMsg("Restored workspace successfully!");
         loadFolderStats();
         setTimeout(() => setStatusMsg(""), 3000);
       } catch (err) {
         console.error(err);
-        setStatusMsg("Failed to unpack ZIP file.");
+        setStatusMsg("Failed to open ZIP file.");
       }
     }
   };
@@ -158,18 +158,18 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
         <div className="bg-surface p-5 rounded-2xl border border-border-soft space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-xs font-mono uppercase tracking-wider text-text-body font-bold">
-              Active Hard Drive Connection
+              Computer Folder Connection
             </span>
             <span className={`text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1 ${folderName ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`}>
               <CheckCircle2 className="w-3.5 h-3.5" />
-              {folderName ? `Linked: ${folderName}` : "No Local Folder Linked"}
+              {folderName ? `Connected: ${folderName}` : "No Local Folder Connected"}
             </span>
           </div>
 
           <p className="text-xs text-text-body leading-relaxed">
             {folderName 
-              ? "Your browser is linked directly to your hard drive folder. Local dataset shards auto-hydrate into memory in seconds."
-              : "No hard drive folder is currently linked. You can link a local folder or download a structured .ZIP backup package."}
+              ? "Marigold is connected directly to your computer's Marigold_Local folder. Your saved files load automatically in seconds."
+              : "No folder is currently connected. Click below to select your Marigold_Local folder or restore a backup."}
           </p>
         </div>
 
@@ -184,12 +184,12 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
           </div>
         )}
 
-        {/* Discovered Pre-Chunked Local Datasets */}
+        {/* Discovered Saved Files */}
         {discoveredDatasets.length > 0 && (
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-emerald-900">
-                📁 Discovered Pre-Chunked Local Dataset
+                📁 Saved Voter File Ready on Your PC
               </span>
               <span className="text-xs font-mono font-bold text-emerald-700">
                 {discoveredDatasets[0].datasetName}
@@ -199,10 +199,10 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
               onClick={handleAutoHydrate}
               disabled={isHydrating}
               variant="primary"
-              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 text-xs flex items-center justify-center gap-2 shadow-md"
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 text-sm flex items-center justify-center gap-2 shadow-md"
             >
               <RefreshCw className={`w-4 h-4 ${isHydrating ? 'animate-spin' : ''}`} />
-              <span>🚀 Rapid Auto-Hydrate &amp; Open Explore</span>
+              <span>🚀 Load Saved File &amp; Open Dashboard</span>
             </Button>
           </div>
         )}
@@ -211,7 +211,7 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
         {folderName && (
           <div className="space-y-2">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-              Structured Subdirectory Status
+              Folder Contents Status
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
@@ -249,14 +249,14 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
             className="flex-1 flex items-center justify-center gap-2 text-xs py-3"
           >
             <Download className="w-4 h-4" />
-            <span>Export Structured ZIP Backup</span>
+            <span>Save Backup ZIP File</span>
           </Button>
 
           <label className="flex-1">
             <input type="file" accept=".zip" className="hidden" onChange={handleImportZip} />
             <span className="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold px-4 py-3 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm">
               <Upload className="w-4 h-4 text-slate-500" />
-              <span>Restore From ZIP</span>
+              <span>Restore Backup ZIP</span>
             </span>
           </label>
         </div>
