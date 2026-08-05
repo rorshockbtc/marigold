@@ -92,25 +92,41 @@ export class DataProcessorWorker {
   private openDatabase(dbName: string): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(dbName);
+
+      request.onblocked = () => {
+        console.warn(`Worker IndexedDB open for ${dbName} blocked by open tabs`);
+      };
+
       request.onerror = () => reject(request.error);
+
       request.onsuccess = () => {
         const db = request.result;
+        db.onversionchange = () => db.close();
+
         if (!db.objectStoreNames.contains('rows')) {
           const currentVersion = db.version;
           db.close();
           const upgradeReq = indexedDB.open(dbName, currentVersion + 1);
+          upgradeReq.onblocked = () => {
+            console.warn(`Worker IndexedDB upgrade for ${dbName} blocked`);
+          };
           upgradeReq.onupgradeneeded = (e) => {
             const upDb = (e.target as IDBOpenDBRequest).result;
             if (!upDb.objectStoreNames.contains('rows')) {
               upDb.createObjectStore('rows', { autoIncrement: true });
             }
           };
-          upgradeReq.onsuccess = () => resolve(upgradeReq.result);
+          upgradeReq.onsuccess = () => {
+            const upgradedDb = upgradeReq.result;
+            upgradedDb.onversionchange = () => upgradedDb.close();
+            resolve(upgradedDb);
+          };
           upgradeReq.onerror = () => reject(upgradeReq.error);
-        } else {
-          resolve(db);
+          return;
         }
+        resolve(db);
       };
+
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains('rows')) {
