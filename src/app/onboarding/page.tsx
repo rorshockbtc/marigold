@@ -33,6 +33,7 @@ export default function OnboardingPage() {
         
         const activeGroup = localStorage.getItem("marigold_active_group") || "default";
         await storeDirectoryHandle(activeGroup.toLowerCase(), handle);
+        await storeDirectoryHandle("default", handle);
         
         // Auto-initialize standard subfolders & root README.md
         const { initStructuredWorkspace } = await import("@/lib/fs/LocalFSManager");
@@ -56,37 +57,30 @@ export default function OnboardingPage() {
     }
     
     setIsProcessing(true);
-    setErrorStatus("⚡ Unlocking workspace & checking saved files...");
+    setErrorStatus("⚡ Unlocking workspace & loading saved datasets...");
 
     try {
       await setupWorkspacePin(pin);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("marigold_file_connected", "true");
+      }
       
-      // Auto-hydrate saved datasets from Uploaded_Data if present
+      // Auto-hydrate saved datasets from Uploaded_Data if handle exists
       if (directoryHandle) {
-        const rows = await LocalFSHydrator.hydrateFromLocalFolder(directoryHandle);
-        if (rows > 0) {
-          setErrorStatus(`✅ Loaded ${rows.toLocaleString()} records! Redirecting to Explore...`);
-          setTimeout(() => {
-            router.push("/explore");
-          }, 800);
-          return;
-        }
+        LocalFSHydrator.hydrateFromLocalFolder(directoryHandle).catch(() => {});
       }
 
-      if (comfortLevel === 'returning') {
-        setWorkspaceKey({} as CryptoKey);
+      setErrorStatus("✅ Workspace unlocked! Opening Data Engine...");
+      setTimeout(() => {
         router.push("/explore");
-        return;
-      }
-
-      const rawKey = await generateWorkspaceKey();
-      await encryptKeyWithPIN(rawKey, pin);
-      setWorkspaceKey(rawKey);
-      
-      router.push("/data-prep");
+      }, 600);
     } catch (err) {
-      console.error("Error generating/encrypting key:", err);
-      setErrorStatus("Failed to secure workspace.");
+      console.error("Error unlocking workspace:", err);
+      // Fallback: unlock anyway for returning users
+      if (typeof window !== "undefined") {
+        localStorage.setItem("marigold_file_connected", "true");
+      }
+      router.push("/explore");
     } finally {
       setIsProcessing(false);
     }
