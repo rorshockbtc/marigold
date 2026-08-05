@@ -91,23 +91,23 @@ export class LocalFSHydrator {
   }
 
   /**
-   * Auto-hydrates IndexedDB from discovered local CSV shards safely
+   * Auto-hydrates IndexedDB from discovered local CSV shards in high-speed streaming chunks
    */
   static async hydrateFromLocalFolder(
     rootHandle: FileSystemDirectoryHandle,
     onProgress?: (msg: string) => void
   ): Promise<number> {
     try {
-      if (onProgress) onProgress("🔍 Scanning Marigold_Local/Uploaded_Data for pre-chunked datasets...");
+      if (onProgress) onProgress("🔍 Scanning Marigold_Local/Uploaded_Data for saved datasets...");
       const datasets = await this.discoverLocalDatasets(rootHandle);
 
       if (datasets.length === 0) {
-        if (onProgress) onProgress("ℹ️ No pre-chunked datasets found in Uploaded_Data.");
+        if (onProgress) onProgress("ℹ️ No saved datasets found in Uploaded_Data.");
         return 0;
       }
 
       const targetDataset = datasets[0];
-      if (onProgress) onProgress(`⚡ Hydrating '${targetDataset.datasetName}' into isolated RAM...`);
+      if (onProgress) onProgress(`⚡ Hydrating '${targetDataset.datasetName}' into isolated memory...`);
 
       const uploadedDataHandle = await rootHandle.getDirectoryHandle("Uploaded_Data", { create: false });
       let targetHandle: FileSystemDirectoryHandle = uploadedDataHandle;
@@ -116,16 +116,21 @@ export class LocalFSHydrator {
         try {
           targetHandle = await uploadedDataHandle.getDirectoryHandle(targetDataset.folderName, { create: false });
         } catch (dirErr) {
-          console.warn(`Could not open subfolder ${targetDataset.folderName}, falling back to Uploaded_Data:`, dirErr);
+          console.warn(`Could not open subfolder ${targetDataset.folderName}, falling back:`, dirErr);
           targetHandle = uploadedDataHandle;
         }
       }
 
       const dbName = getActiveDatabaseName();
       const db = await openActiveDatabase(dbName);
-      const transaction = db.transaction(['rows'], 'readwrite');
-      const store = transaction.objectStore('rows');
-      store.clear();
+      
+      // Clear old rows
+      await new Promise<void>((res, rej) => {
+        const tx = db.transaction(['rows'], 'readwrite');
+        tx.objectStore('rows').clear();
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+      });
 
       let totalRowsHydrated = 0;
 
@@ -133,45 +138,71 @@ export class LocalFSHydrator {
         try {
           const fileHandle = await targetHandle.getFileHandle(fileName);
           const file = await fileHandle.getFile();
-          const text = await file.text();
 
-          const parseResult = Papa.parse(text, {
-            header: true,
-            skipEmptyLines: true,
+          // Use streaming chunks to prevent main UI thread lockup
+          await new Promise<void>((resolveChunk) => {
+            let pendingTransaction: IDBTransaction | null = null;
+            let currentStore: IDBObjectStore | null = null;
+
+            Papa.parse(file, {
+              header: true,
+              skipEmptyLines: true,
+              chunkSize: 1024 * 1024 * 5, // 5MB streaming chunks
+              chunk: (results, parser) => {
+                parser.pause();
+                const chunkRows = results.data as Array<Record<string, any>>;
+                
+                try {
+                  pendingTransaction = db.transaction(['rows'], 'readwrite');
+                  currentStore = pendingTransaction.objectStore('rows');
+                  
+                  for (let i = 0; i < chunkRows.length; i++) {
+                    currentStore.add(chunkRows[i]);
+                  }
+
+                  totalRowsHydrated += chunkRows.length;
+                  if (onProgress) {
+                    onProgress(`⚡ Loaded ${totalRowsHydrated.toLocaleString()} records into memory...`);
+                  }
+
+                  pendingTransaction.oncomplete = () => {
+                    parser.resume();
+                  };
+                  pendingTransaction.onerror = () => {
+                    console.warn("Chunk batch write warning, resuming...");
+                    parser.resume();
+                  };
+                } catch (e) {
+                  console.warn("Chunk error:", e);
+                  parser.resume();
+                }
+              },
+              complete: () => {
+                resolveChunk();
+              },
+              error: () => {
+                resolveChunk();
+              }
+            });
           });
 
-          const rows = parseResult.data as Array<Record<string, any>>;
-          for (let i = 0; i < rows.length; i++) {
-            store.add(rows[i]);
-          }
-          totalRowsHydrated += rows.length;
         } catch (fileErr) {
           console.warn(`Failed parsing file ${fileName}:`, fileErr);
         }
       }
 
-      return new Promise((resolve) => {
-        transaction.oncomplete = () => {
-          db.close();
-          if (typeof window !== "undefined") {
-            localStorage.setItem("marigold_file_connected", "true");
-            localStorage.setItem("marigold_file_name", targetDataset.datasetName);
-            localStorage.setItem("marigold_file_rows", String(totalRowsHydrated));
-            window.dispatchEvent(new CustomEvent("marigold-data-connected"));
-          }
-          if (onProgress) onProgress(`✅ Rapid Auto-Hydration Complete! (${totalRowsHydrated.toLocaleString()} rows ready)`);
-          resolve(totalRowsHydrated);
-        };
-        transaction.onerror = () => {
-          db.close();
-          // Fallback: resolve with partial rows hydrated instead of rejecting/crashing
-          if (typeof window !== "undefined" && totalRowsHydrated > 0) {
-            localStorage.setItem("marigold_file_connected", "true");
-            localStorage.setItem("marigold_file_rows", String(totalRowsHydrated));
-          }
-          resolve(totalRowsHydrated);
-        };
-      });
+      db.close();
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("marigold_file_connected", "true");
+        localStorage.setItem("marigold_file_name", targetDataset.datasetName);
+        localStorage.setItem("marigold_file_rows", String(totalRowsHydrated));
+        window.dispatchEvent(new CustomEvent("marigold-data-connected"));
+      }
+
+      if (onProgress) onProgress(`✅ Loaded ${totalRowsHydrated.toLocaleString()} records! Opening Workspace...`);
+      return totalRowsHydrated;
+
     } catch (globalErr) {
       console.warn("Hydration failed gracefully:", globalErr);
       return 0;

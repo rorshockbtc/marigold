@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShieldCheck, RefreshCw, Folder, Database } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Folder, CheckCircle2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { getDirectoryHandle, storeDirectoryHandle, verifyPermission } from '@/lib/fs/LocalFSManager';
 import { LocalFSHydrator } from '@/lib/fs/LocalFSHydrator';
@@ -49,7 +49,7 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
         return;
       }
 
-      setStatusMsg("⚡ Loading your saved voter files into memory...");
+      setStatusMsg("⚡ Streaming saved voter files into memory...");
       const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle, (msg) => setStatusMsg(msg));
       
       if (rows > 0) {
@@ -65,98 +65,76 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
       }
     } catch (err) {
       console.error("Auto-hydration error:", err);
-      setStatusMsg("Could not access folder. Click 'Re-Link Local Folder' to re-select your Marigold_Local directory.");
+      setStatusMsg("Could not access folder. Click 'Re-Link Local Folder' below.");
     } finally {
       setIsHydrating(false);
     }
   };
 
   return (
-    <div className="bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl p-6 shadow-sm my-6 font-sans">
+    <div className="bg-emerald-50/90 border-2 border-emerald-300 rounded-3xl p-6 sm:p-8 shadow-sm my-6 font-sans space-y-6">
       <div className="flex items-start gap-4">
-        <div className="p-3 bg-emerald-100 rounded-xl text-emerald-800 shrink-0">
-          <ShieldCheck className="w-6 h-6" />
+        <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-800 shrink-0">
+          <ShieldCheck className="w-7 h-7" />
         </div>
-        <div className="space-y-4 flex-1">
+        <div className="space-y-1 flex-1">
+          <h3 className="text-xl font-serif font-black text-emerald-950">
+            Welcome Back to Your Local Workspace
+          </h3>
+          <p className="text-xs text-emerald-900 leading-relaxed">
+            Your local files are safely stored in your <strong>Marigold_Local</strong> folder. Follow these 2 simple steps to open your data engine:
+          </p>
+        </div>
+      </div>
+
+      {/* Step-by-Step Guidance */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Step 1 */}
+        <div className="bg-white p-5 rounded-2xl border border-emerald-200 shadow-xs space-y-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Step 1: Local Folder Connected</span>
+          </div>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Marigold is connected to your local hard drive folder (<code>Marigold_Local</code>).
+          </p>
+          <div className="pt-2">
+            <Link href="/onboarding" className="text-xs font-bold text-slate-500 hover:text-slate-800 underline flex items-center gap-1">
+              <Folder className="w-3.5 h-3.5" /> Re-Link Different Folder →
+            </Link>
+          </div>
+        </div>
+
+        {/* Step 2 */}
+        <div className="bg-white p-5 rounded-2xl border border-emerald-300 shadow-sm space-y-3 flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-serif font-bold text-emerald-950">
-              Welcome Back to Your Local Workspace
-            </h3>
-            <p className="text-sm text-emerald-900 mt-1 leading-relaxed">
-              Your local files are safely stored on your computer inside your <strong>Marigold_Local</strong> folder. Click <strong>Load Saved Files</strong> below to load your voter records into memory in &lt; 2 seconds without re-uploading raw files.
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">
+              <RefreshCw className={`w-4 h-4 text-emerald-700 ${isHydrating ? 'animate-spin' : ''}`} />
+              <span>Step 2: Load Saved Voter Roll</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Load your saved datasets into browser memory in high-speed streaming chunks.
             </p>
           </div>
 
-          {statusMsg && (
-            <div className="p-3 bg-white border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold animate-in fade-in">
-              {statusMsg}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            {/* Option 1: Load Saved Files */}
-            <button
-              type="button"
-              onClick={handleAutoHydrate}
-              disabled={isHydrating}
-              className="text-left bg-white border border-emerald-300 hover:border-emerald-500 p-4 rounded-xl shadow-sm transition-all flex flex-col justify-between cursor-pointer"
-            >
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 mb-1">
-                  <RefreshCw className={`w-4 h-4 text-emerald-700 ${isHydrating ? 'animate-spin' : ''}`} />
-                  Load Saved Files
-                </div>
-                <p className="text-xs text-emerald-800">
-                  Load saved voter records from your PC in &lt; 2 seconds.
-                </p>
-              </div>
-              <span className="text-xs font-bold text-emerald-800 underline mt-3 block">⚡ Load Saved Files →</span>
-            </button>
-
-            {/* Option 2: Link / Upload */}
-            <Link href="/onboarding" className="block">
-              <div className="bg-white border border-slate-200 hover:border-slate-400 p-4 rounded-xl shadow-xs transition-all h-full flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-900 mb-1">
-                    <Folder className="w-4 h-4 text-slate-700" />
-                    Re-Link Local Folder
-                  </div>
-                  <p className="text-xs text-slate-600">
-                    Confirm Marigold_Local folder location or update directory.
-                  </p>
-                </div>
-                <span className="text-xs font-bold text-slate-800 underline mt-3 block">Link Folder →</span>
-              </div>
-            </Link>
-
-            {/* Option 3: Switch to Roosevelt Demo */}
-            <button
-              type="button"
-              onClick={() => {
-                if (onSwitchToDemo) {
-                  onSwitchToDemo();
-                } else if (typeof window !== "undefined") {
-                  localStorage.setItem("marigold_active_group", "State of Roosevelt (Demo)");
-                  window.dispatchEvent(new CustomEvent("marigold-group-change", { detail: { group: "State of Roosevelt (Demo)" } }));
-                  window.location.reload();
-                }
-              }}
-              className="text-left bg-white border border-slate-200 hover:border-slate-400 p-4 rounded-xl shadow-xs transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 mb-1">
-                  <Database className="w-4 h-4 text-slate-700" />
-                  Use Demo Mode
-                </div>
-                <p className="text-xs text-slate-600">
-                  Switch to the synthetic State of Roosevelt demonstration dataset.
-                </p>
-              </div>
-              <span className="text-xs font-bold text-slate-800 underline mt-3 block">Load Demo →</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleAutoHydrate}
+            disabled={isHydrating}
+            className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white font-black py-3 px-5 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <RefreshCw className={`w-4 h-4 ${isHydrating ? 'animate-spin' : ''}`} />
+            <span>{isHydrating ? "Loading Dataset..." : "⚡ Load Saved Files & Open Workspace →"}</span>
+          </button>
         </div>
       </div>
+
+      {statusMsg && (
+        <div className="p-4 bg-white border border-emerald-300 text-emerald-950 rounded-2xl text-xs font-bold animate-in fade-in flex items-center gap-2 shadow-xs">
+          <RefreshCw className={`w-4 h-4 text-emerald-700 ${isHydrating ? 'animate-spin' : ''}`} />
+          <span>{statusMsg}</span>
+        </div>
+      )}
     </div>
   );
 }

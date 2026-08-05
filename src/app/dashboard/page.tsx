@@ -59,10 +59,6 @@ export default function DashboardPage() {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6 font-sans">
         <DeviceSecurityNotice />
-        <DataRequiredState 
-          title="Welcome to Marigold" 
-          subtitle="Your private workspace is empty. Complete these steps to start your first verification mission." 
-        />
         <LocalFolderGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       </div>
     );
