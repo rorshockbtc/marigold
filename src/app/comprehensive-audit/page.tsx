@@ -40,6 +40,7 @@ export default function ComprehensiveAuditPage() {
   const [isAuditComplete, setIsAuditComplete] = useState(false);
   const [selectedDrilldown, setSelectedDrilldown] = useState<PlaybookAuditSummary | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [selectedCounty, setSelectedCounty] = useState<string>("");
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
   const { addTask, addNoteToTask } = useKanban();
 
@@ -66,20 +67,31 @@ export default function ComprehensiveAuditPage() {
     const safeName = playbook.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
     if (realRows.length > 0) {
-      downloadCSV(realRows, `${safeName}_all_${realRows.length}_findings.csv`);
+      const formattedRows = realRows.map(r => ({
+        County: r.county || jurisdiction,
+        Voter_ID: r.id || r.voter_id,
+        Name: r.name,
+        Address: r.address,
+        City: r.city,
+        State: r.state || stateCode,
+        Zip: r.zip,
+        Occupant_Count: r.occupant_count || 1,
+        Risk_Level: r.risk_level || "HIGH",
+        Flag_Details: r.details
+      }));
+      downloadCSV(formattedRows, `${safeName}_${selectedCounty ? selectedCounty + '_' : ''}findings.csv`);
     } else {
-      // Fallback preview
       const rows = [{
-        voter_id: "MS-104920",
-        name: "Audit Passed",
-        address: "No Anomalies Flagged",
-        city: "Jackson",
-        state: stateCode || "MS",
-        zip: "39201",
-        playbook_rule: playbook.name,
-        audit_category: playbook.audit_type,
-        flag_reason: "0 records flagged by this audit rule",
-        jurisdiction: jurisdiction
+        County: jurisdiction,
+        Voter_ID: "MS-104920",
+        Name: "Audit Passed",
+        Address: "No Anomalies Flagged",
+        City: "Jackson",
+        State: stateCode || "MS",
+        Zip: "39201",
+        Occupant_Count: 0,
+        Risk_Level: "LOW",
+        Flag_Details: "0 records flagged by this audit rule"
       }];
       downloadCSV(rows, `${safeName}_summary.csv`);
     }
@@ -89,39 +101,40 @@ export default function ComprehensiveAuditPage() {
     const activeGroup = localStorage.getItem("marigold_active_group") || "default";
     const dateStr = new Date().toISOString().split("T")[0];
     
-    // Export complete master CSV containing all playbooks unclipped
+    // Export complete master CSV containing all playbooks unclipped with explicit County column
     const allExportRows: any[] = [];
     playbooks.forEach(p => {
       const pRows = anomalyRecords[p.id] || [];
       pRows.forEach(r => {
         allExportRows.push({
-          playbook: p.name,
-          risk_level: r.risk_level || "HIGH",
-          voter_id: r.id || r.voter_id,
-          name: r.name,
-          address: r.address,
-          city: r.city,
-          state: r.state || stateCode,
-          zip: r.zip,
-          county: r.county || jurisdiction,
-          details: r.details
+          County: r.county || jurisdiction,
+          Playbook_Rule: p.name,
+          Risk_Level: r.risk_level || "HIGH",
+          Voter_ID: r.id || r.voter_id,
+          Name: r.name,
+          Address: r.address,
+          City: r.city,
+          State: r.state || stateCode,
+          Zip: r.zip,
+          Occupants: r.occupant_count || 1,
+          Details: r.details
         });
       });
     });
 
     if (allExportRows.length > 0) {
-      downloadCSV(allExportRows, `Marigold_Complete_360_Audit_${activeGroup.replace(/[^a-z0-9]/gi, '_')}_${dateStr}.csv`);
+      downloadCSV(allExportRows, `Marigold_360_Audit_${selectedCounty ? selectedCounty + '_' : ''}${activeGroup.replace(/[^a-z0-9]/gi, '_')}_${dateStr}.csv`);
     }
 
-    // Try saving summary report into Marigold_Local/Data_Stories/
     const reportContent = `# Marigold 360° Forensic Audit Summary Report
 
 JURISDICTION GROUP: ${activeGroup}
+COUNTY FILTER: ${selectedCounty || "All Counties (Statewide)"}
 AUDIT DATE: ${new Date().toLocaleDateString()}
 TOTAL RECORDS SCANNED: ${totalRows.toLocaleString()}
 
 ----------------------------------------------------------------------
-EXECUTIVE SUMMARY OF FINDINGS:
+EXECUTIVE SUMMARY OF FINDINGS BY PLAYBOOK:
 ----------------------------------------------------------------------
 ${playbooks.map(p => `- ${p.name}: ${(anomalyRecords[p.id] || []).length.toLocaleString()} flagged records`).join("\n")}
 
@@ -130,8 +143,9 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
 ----------------------------------------------------------------------
 1. Open Marigold Insights (https://marigoldinsights.org/comprehensive-audit).
 2. Select your local voter roll file for ${activeGroup}.
-3. Click "Run 360° Audit".
-4. Compare the resulting counts against the exported findings CSV files.
+3. Filter by County: "${selectedCounty || 'Statewide'}".
+4. Click "Run 360° Audit".
+5. Compare the resulting counts against the exported CSV files.
 `;
 
     try {
@@ -256,34 +270,57 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
         description={`Active Jurisdiction: ${jurisdiction} (${totalRows.toLocaleString()} total citizen records locked in RAM)`}
       />
 
-      {/* Audit Action Banner */}
-      <Card className="bg-white p-6 rounded-2xl border border-border-soft shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-serif font-bold text-text-header mb-1">Automated Forensic Audit</h2>
-          <p className="text-xs text-text-body">
-            Execute all 7 civic verification playbooks simultaneously against {totalRows.toLocaleString()} citizen records.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            onClick={downloadFullAuditPackage}
-            variant="outline"
-            className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-emerald-700 shadow-sm cursor-pointer"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export Complete Unclipped Audit Package</span>
-          </Button>
+      {/* Audit Action Banner & County Filter */}
+      <Card className="bg-white p-6 rounded-2xl border border-border-soft shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 className="text-xl font-serif font-bold text-text-header mb-1">Automated Forensic Audit</h2>
+            <p className="text-xs text-text-body">
+              Execute all 7 civic verification playbooks simultaneously against {totalRows.toLocaleString()} citizen records.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              onClick={downloadFullAuditPackage}
+              variant="outline"
+              className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-emerald-700 shadow-sm cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Complete Unclipped Audit Package</span>
+            </Button>
 
-          <Button
-            type="button"
-            onClick={runSweep}
-            disabled={isRunningSweep}
-            className="flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRunningSweep ? 'animate-spin' : ''}`} />
-            <span>{isRunningSweep ? "Scanning All Rules..." : "Run 360º Audit Sweep"}</span>
-          </Button>
+            <Button
+              type="button"
+              onClick={runSweep}
+              disabled={isRunningSweep}
+              className="flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRunningSweep ? 'animate-spin' : ''}`} />
+              <span>{isRunningSweep ? "Scanning All Rules..." : "Run 360º Audit Sweep"}</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* County Filter Control */}
+        <div className="pt-3 border-t border-border-soft flex items-center gap-3">
+          <span className="text-xs font-bold text-text-header shrink-0">Filter Audit by County:</span>
+          <input
+            type="text"
+            placeholder="Type county name (e.g. Hinds, Harrison, DeSoto)..."
+            value={selectedCounty}
+            onChange={(e) => setSelectedCounty(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-border-soft bg-surface text-xs text-text-header outline-none focus:border-primary w-64"
+          />
+          {selectedCounty && (
+            <button
+              type="button"
+              onClick={() => setSelectedCounty("")}
+              className="text-xs font-bold text-primary underline cursor-pointer"
+            >
+              Clear Filter
+            </button>
+          )}
         </div>
       </Card>
 
