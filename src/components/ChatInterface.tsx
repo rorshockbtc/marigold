@@ -585,6 +585,23 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                     </button>
                   </div>
                 )}
+
+                {msg.role === 'assistant' && (msg.content.toLowerCase().includes("connect the dataset") || msg.content.toLowerCase().includes("upload")) && (
+                  <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-border-soft">
+                    <a
+                      href="/onboarding"
+                      className="bg-primary hover:bg-primary/90 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                      🚀 Set Up Local Folder
+                    </a>
+                    <a
+                      href="/data-prep"
+                      className="bg-surface border border-border-soft text-text-header hover:bg-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                      📂 Upload or Stream File
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           ))}

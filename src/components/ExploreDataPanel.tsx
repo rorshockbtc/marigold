@@ -49,60 +49,52 @@ export function ExploreDataPanel({
       </div>
       
       <div className="space-y-3 mb-8 pt-4 border-t border-border-soft">
-        {!isGroupSynced ? (
-          <>
-            <div className="text-sm text-blue-800 bg-blue-50 p-3 rounded-md border border-blue-200 text-center mb-3">
-              <AlertCircle className="w-4 h-4 inline mr-2 -mt-0.5" />
-              You are in Personal Mode. Notes are disabled to ensure they are not accidentally shared with the group.
-            </div>
-            <Button 
-              onClick={handlePublishDataStory}
-              className="w-full py-3 bg-blue-600 text-white rounded-[12px] font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" /> Share Anonymous Insight
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button 
-              onClick={() => {
-                addTask({
-                  id: `task-${selectedRecord.id}`,
-                  status: "Needs Triage",
-                  title: selectedRecord.name || selectedRecord.id,
-                  subtitle: selectedRecord.details || "Requires further review",
-                  tag: activePlaybook ? playbooks.find(p => p.id === activePlaybook)?.name || "Anomaly" : "Anomaly",
-                  tagColor: "text-blue-700",
-                  tagBg: "bg-blue-50",
-                  icon: <AlertCircle className="w-4 h-4 text-blue-600" />,
-                  iconColor: "text-blue-600",
-                  borderColor: "border-l-blue-500",
-                  meta: "Just now",
-                  assignee: "Unassigned",
-                  notes: []
-                });
-              }}
-              variant="outline"
-              className="w-full py-3"
-            >
-              Create Task
-            </Button>
-            <Button 
-              onClick={() => {
-                addNoteToTask(`task-${selectedRecord.id}`, {
-                  id: Math.random().toString(36).substring(2, 9),
-                  serverCiphertext: "Verified baseline record note",
-                  fileVersion: "Current Session",
-                  date: new Date().toISOString()
-                });
-              }}
-              variant="outline"
-              className="w-full py-3 flex items-center justify-center gap-2"
-            >
-              <Lock className="w-4 h-4" /> Enter Secure Note
-            </Button>
-          </>
-        )}
+        <Button 
+          onClick={() => {
+            addTask({
+              id: `task-${selectedRecord.id || Math.random().toString(36).substring(2, 7)}`,
+              status: "Needs Triage",
+              title: selectedRecord.name || selectedRecord.id || "Audit Record",
+              subtitle: selectedRecord.details || `${selectedRecord.address || 'Anomaly'} requires review`,
+              tag: activePlaybook ? playbooks.find(p => p.id === activePlaybook)?.name || "Anomaly" : "Anomaly",
+              tagColor: "text-blue-700",
+              tagBg: "bg-blue-50",
+              icon: <AlertCircle className="w-4 h-4 text-blue-600" />,
+              iconColor: "text-blue-600",
+              borderColor: "border-l-blue-500",
+              meta: "Just now",
+              assignee: "Unassigned",
+              notes: []
+            });
+          }}
+          variant="primary"
+          className="w-full py-3 flex items-center justify-center gap-2"
+        >
+          <BarChart3 className="w-4 h-4" /> Create Investigation Task Card
+        </Button>
+
+        <Button 
+          onClick={() => {
+            addNoteToTask(`task-${selectedRecord.id || 'record'}`, {
+              id: Math.random().toString(36).substring(2, 9),
+              serverCiphertext: "Verified baseline record note",
+              fileVersion: "Current Session",
+              date: new Date().toISOString()
+            });
+          }}
+          variant="outline"
+          className="w-full py-3 flex items-center justify-center gap-2"
+        >
+          <Lock className="w-4 h-4" /> Enter Secure Note
+        </Button>
+
+        <Button 
+          onClick={handlePublishDataStory}
+          variant="outline"
+          className="w-full py-3 border-blue-200 text-blue-800 hover:bg-blue-50 flex items-center justify-center gap-2 font-bold"
+        >
+          <BarChart3 className="w-4 h-4 text-blue-600" /> Share Anonymous Insight Snapshot
+        </Button>
       </div>
       
       {verboseMode && (
