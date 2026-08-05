@@ -67,19 +67,41 @@ export default function ComprehensiveAuditPage() {
     const safeName = playbook.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
     if (realRows.length > 0) {
-      const formattedRows = realRows.map(r => ({
-        County: r.county || jurisdiction,
-        Voter_ID: r.id || r.voter_id,
-        Name: r.name,
-        Address: r.address,
-        City: r.city,
-        State: r.state || stateCode,
-        Zip: r.zip,
-        Occupant_Count: r.occupant_count || 1,
-        Risk_Level: r.risk_level || "HIGH",
-        Flag_Details: r.details
-      }));
-      downloadCSV(formattedRows, `${safeName}_${selectedCounty ? selectedCounty + '_' : ''}findings.csv`);
+      const formattedRows: any[] = [];
+      
+      realRows.forEach(r => {
+        if (r.residentCluster && r.residentCluster.length > 0) {
+          r.residentCluster.forEach((resident: any) => {
+            formattedRows.push({
+              County: r.county || jurisdiction,
+              Voter_ID: resident.id || r.id || r.voter_id,
+              Name: resident.name || r.name,
+              Address: r.address,
+              City: resident.city || r.city,
+              State: resident.state || r.state || stateCode,
+              Zip: resident.zip || r.zip,
+              Total_Occupants_At_Address: r.occupant_count || 1,
+              Risk_Level: r.risk_level || "HIGH",
+              Flag_Details: r.details
+            });
+          });
+        } else {
+          formattedRows.push({
+            County: r.county || jurisdiction,
+            Voter_ID: r.id || r.voter_id,
+            Name: r.name,
+            Address: r.address,
+            City: r.city,
+            State: r.state || stateCode,
+            Zip: r.zip,
+            Total_Occupants_At_Address: r.occupant_count || 1,
+            Risk_Level: r.risk_level || "HIGH",
+            Flag_Details: r.details
+          });
+        }
+      });
+
+      downloadCSV(formattedRows, `${safeName}_${selectedCounty ? selectedCounty + '_' : ''}${formattedRows.length}_voter_records.csv`);
     } else {
       const rows = [{
         County: jurisdiction,
@@ -89,7 +111,7 @@ export default function ComprehensiveAuditPage() {
         City: "Jackson",
         State: stateCode || "MS",
         Zip: "39201",
-        Occupant_Count: 0,
+        Total_Occupants_At_Address: 0,
         Risk_Level: "LOW",
         Flag_Details: "0 records flagged by this audit rule"
       }];
@@ -101,24 +123,42 @@ export default function ComprehensiveAuditPage() {
     const activeGroup = localStorage.getItem("marigold_active_group") || "default";
     const dateStr = new Date().toISOString().split("T")[0];
     
-    // Export complete master CSV containing all playbooks unclipped with explicit County column
+    // Export complete master CSV containing all playbooks unclipped
     const allExportRows: any[] = [];
     playbooks.forEach(p => {
       const pRows = anomalyRecords[p.id] || [];
       pRows.forEach(r => {
-        allExportRows.push({
-          County: r.county || jurisdiction,
-          Playbook_Rule: p.name,
-          Risk_Level: r.risk_level || "HIGH",
-          Voter_ID: r.id || r.voter_id,
-          Name: r.name,
-          Address: r.address,
-          City: r.city,
-          State: r.state || stateCode,
-          Zip: r.zip,
-          Occupants: r.occupant_count || 1,
-          Details: r.details
-        });
+        if (r.residentCluster && r.residentCluster.length > 0) {
+          r.residentCluster.forEach((resident: any) => {
+            allExportRows.push({
+              County: r.county || jurisdiction,
+              Playbook_Rule: p.name,
+              Risk_Level: r.risk_level || "HIGH",
+              Voter_ID: resident.id || r.id || r.voter_id,
+              Name: resident.name || r.name,
+              Address: r.address,
+              City: resident.city || r.city,
+              State: resident.state || r.state || stateCode,
+              Zip: resident.zip || r.zip,
+              Occupants_At_Address: r.occupant_count || 1,
+              Details: r.details
+            });
+          });
+        } else {
+          allExportRows.push({
+            County: r.county || jurisdiction,
+            Playbook_Rule: p.name,
+            Risk_Level: r.risk_level || "HIGH",
+            Voter_ID: r.id || r.voter_id,
+            Name: r.name,
+            Address: r.address,
+            City: r.city,
+            State: r.state || stateCode,
+            Zip: r.zip,
+            Occupants_At_Address: r.occupant_count || 1,
+            Details: r.details
+          });
+        }
       });
     });
 

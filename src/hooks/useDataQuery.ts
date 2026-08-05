@@ -153,8 +153,8 @@ export function useDataQuery() {
                   const existing = addressCounts.get(addr);
                   if (existing) {
                     existing.count++;
-                    if (existing.residents && existing.residents.length < 10) {
-                      existing.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered });
+                    if (existing.residents) {
+                      existing.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered, city: std.city, state: std.state, zip: std.zip });
                     }
                   } else {
                     addressCounts.set(addr, {
