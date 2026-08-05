@@ -174,11 +174,14 @@ export default function OnboardingPage() {
               <div className="flex-1">
                 <h3 className="text-xl font-serif text-text-header mb-2">{comfortLevel === 'returning' ? 'Re-link Marigold Local Folder' : 'Pick a Folder'}</h3>
                 
-                <p className="text-text-body font-sans text-sm mb-4">
-                  {comfortLevel === 'returning' 
-                    ? "Select your existing 'Marigold Local' folder from your Documents to grant the browser access again."
-                    : "Create a new folder named 'Marigold Local' in your Documents to store your private workspace."}
-                </p>
+                <div className="text-text-body font-sans text-sm mb-4 space-y-2 bg-surface p-4 rounded-xl border border-border-soft">
+                  <div className="font-bold text-text-header">How to set up your folder:</div>
+                  <ol className="list-decimal list-inside space-y-1.5 text-xs text-text-body leading-relaxed">
+                    <li>Open <strong>File Explorer</strong> (Windows) or <strong>Finder</strong> (Mac) on your computer.</li>
+                    <li>Go to your <strong>Documents</strong> folder and create a new folder named <strong>Marigold_Local</strong>.</li>
+                    <li>Click the <strong>Select Local Folder</strong> button below and choose that <strong>Marigold_Local</strong> folder.</li>
+                  </ol>
+                </div>
                 
                 <div className="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-4 mb-4 flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />

@@ -58,10 +58,19 @@ export default function ExplorePage() {
       
       const searchParams = new URLSearchParams(window.location.search);
       const pbParam = searchParams.get('playbook');
+      const autoRun = searchParams.get('autoRun') === 'true';
+
       if (pbParam) {
         setVerboseMode(true);
         setTimeout(() => {
           runPlaybook(pbParam);
+          document.getElementById('audit-results-panel')?.scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+      } else if (autoRun) {
+        setVerboseMode(true);
+        setTimeout(() => {
+          runPlaybook("density");
+          document.getElementById('audit-results-panel')?.scrollIntoView({ behavior: 'smooth' });
         }, 500);
       }
     }
@@ -339,7 +348,7 @@ export default function ExplorePage() {
         </div>
 
         {/* Results Area */}
-        <Card className="bg-white border border-border-soft rounded-2xl shadow-sm overflow-hidden min-h-[400px]">
+        <Card id="audit-results-panel" className="bg-white border border-border-soft rounded-2xl shadow-sm overflow-hidden min-h-[400px]">
           {isQuerying ? (
             <div className="flex flex-col items-center justify-center h-[400px]">
               <Activity className="w-8 h-8 text-primary animate-pulse mb-4" />

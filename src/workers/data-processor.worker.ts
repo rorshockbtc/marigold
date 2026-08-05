@@ -131,11 +131,13 @@ export class DataProcessorWorker {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['rows'], 'readwrite');
       const store = transaction.objectStore('rows');
-      data.forEach((row, idx) => {
-        store.put({ index: startIndex + idx, data: row });
-      });
+      const len = data.length;
+      for (let i = 0; i < len; i++) {
+        store.put({ index: startIndex + i, data: data[i] });
+      }
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(new Error("Transaction aborted"));
     });
   }
 

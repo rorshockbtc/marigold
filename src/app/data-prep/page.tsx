@@ -213,14 +213,25 @@ export default function DataPrepPage() {
               href="/explore"
               className="bg-primary hover:bg-primary/90 text-white font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
             >
-              <span>🚀 Resume Session with Existing Shard →</span>
+              <span>🚀 Open Data Story &amp; Audit Engine (/explore) →</span>
             </Link>
+            <Button
+              onClick={() => {
+                // Initialize default columns for chunking if not set
+                executeExport();
+              }}
+              variant="primary"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>📦 Chunk &amp; Save to Marigold_Local Folder</span>
+            </Button>
             <Button
               onClick={() => setExistingShardCount(null)}
               variant="outline"
               className="border-border-soft text-text-body hover:text-text-header bg-white hover:bg-surface"
             >
-              🔄 Replace &amp; Stream New File Instead
+              🔄 Upload New File Instead
             </Button>
           </div>
         </div>
