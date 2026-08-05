@@ -230,6 +230,38 @@ export default function ComprehensiveAuditPage() {
         </Button>
       </Card>
 
+      {/* Live Audit Progress Visibility Banner */}
+      {isRunningSweep && (
+        <Card className="bg-emerald-50 border-2 border-emerald-300 p-6 rounded-2xl shadow-sm space-y-4 animate-in fade-in">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-2">
+              <RefreshCw className="w-3.5 h-3.5 text-emerald-700 animate-spin" />
+              <span>Executing Playbook {currentStepIndex + 1} of {playbooks.length}</span>
+            </span>
+            <span className="text-xs font-mono font-bold text-emerald-950">
+              {Math.round(((currentStepIndex + 1) / playbooks.length) * 100)}% Complete
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            <h3 className="text-lg font-serif font-black text-emerald-950">
+              Scanning: {playbooks[currentStepIndex]?.name || "Initializing audit rules..."}
+            </h3>
+            <p className="text-xs text-emerald-800 leading-relaxed">
+              Evaluating {totalRows.toLocaleString()} citizen records locally in browser memory. Please keep this tab open.
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-emerald-200/80 h-3 rounded-full overflow-hidden">
+            <div 
+              className="bg-emerald-600 h-full transition-all duration-300 rounded-full"
+              style={{ width: `${Math.max(5, Math.round(((currentStepIndex + 1) / playbooks.length) * 100))}%` }}
+            />
+          </div>
+        </Card>
+      )}
+
       {/* 360º Visual Health Dashboard & Executive Export Header */}
       <ExecutiveBriefingExport
         jurisdictionName={jurisdiction}

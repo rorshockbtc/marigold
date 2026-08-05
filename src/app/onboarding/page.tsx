@@ -1,11 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Folder, ArrowRight, Lock, KeyRound, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { generateWorkspaceKey, encryptKeyWithPIN } from "@/lib/crypto/LocalKeyManager";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { storeDirectoryHandle } from "@/lib/fs/LocalFSManager";
+import { LocalFSHydrator } from "@/lib/fs/LocalFSHydrator";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function OnboardingPage() {
   const [pin, setPin] = useState("");
   const [directoryHandle, setDirectoryHandle] = useState<any>(null);
   const [workspaceKey, setWorkspaceKey] = useState<CryptoKey | null>(null);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSelectFolder = async () => {
     try {
@@ -46,38 +49,52 @@ export default function OnboardingPage() {
     }
   };
 
-  const [errorStatus, setErrorStatus] = useState<string | null>(null);
-
   const handleGenerateKey = async () => {
     if (pin.length < 4) {
       setErrorStatus("Please enter a PIN of at least 4 digits.");
       return;
     }
     
-    if (comfortLevel === 'returning') {
-      await setupWorkspacePin(pin);
-      setWorkspaceKey({} as CryptoKey);
-      router.push("/data-prep");
-      return;
-    }
+    setIsProcessing(true);
+    setErrorStatus("⚡ Unlocking workspace & checking saved files...");
 
     try {
-      const rawKey = await generateWorkspaceKey();
-      const encryptedBlob = await encryptKeyWithPIN(rawKey, pin);
-      setWorkspaceKey(rawKey);
-      
       await setupWorkspacePin(pin);
+      
+      // Auto-hydrate saved datasets from Uploaded_Data if present
+      if (directoryHandle) {
+        const rows = await LocalFSHydrator.hydrateFromLocalFolder(directoryHandle);
+        if (rows > 0) {
+          setErrorStatus(`✅ Loaded ${rows.toLocaleString()} records! Redirecting to Explore...`);
+          setTimeout(() => {
+            router.push("/explore");
+          }, 800);
+          return;
+        }
+      }
+
+      if (comfortLevel === 'returning') {
+        setWorkspaceKey({} as CryptoKey);
+        router.push("/explore");
+        return;
+      }
+
+      const rawKey = await generateWorkspaceKey();
+      await encryptKeyWithPIN(rawKey, pin);
+      setWorkspaceKey(rawKey);
       
       router.push("/data-prep");
     } catch (err) {
       console.error("Error generating/encrypting key:", err);
       setErrorStatus("Failed to secure workspace.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   if (step === "interview") {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+      <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] font-sans">
         <div className="w-full max-w-2xl text-center space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif text-text-header mb-4">
@@ -147,9 +164,8 @@ export default function OnboardingPage() {
     );
   }
 
-  // Technical Step (step === "technical")
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] my-12">
+    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] my-12 font-sans">
       <div className="w-full max-w-2xl animate-in fade-in slide-in-from-right-8 duration-500">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-serif text-text-header mb-4">
@@ -178,15 +194,15 @@ export default function OnboardingPage() {
                   <div className="font-bold text-text-header">How to set up your folder:</div>
                   <ol className="list-decimal list-inside space-y-1.5 text-xs text-text-body leading-relaxed">
                     <li>Open <strong>File Explorer</strong> (Windows) or <strong>Finder</strong> (Mac) on your computer.</li>
-                    <li>Go to your <strong>Documents</strong> folder and create a new folder named <strong>Marigold_Local</strong>.</li>
-                    <li>Click the <strong>Select Local Folder</strong> button below and choose that <strong>Marigold_Local</strong> folder.</li>
+                    <li>Go to your <strong>Documents</strong> folder and select your <strong>Marigold_Local</strong> folder.</li>
+                    <li>Click the <strong>Select Local Folder</strong> button below and confirm permission.</li>
                   </ol>
                 </div>
                 
                 <div className="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-4 mb-4 flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <strong>Critical Warning:</strong> Do not rename or move this folder, or the files inside it. Your browser binds securely to this exact file path. Moving it will break your workspace and require a full re-link.
+                  <div className="text-sm leading-relaxed">
+                    <strong>Critical Warning:</strong> Do not rename or move this folder. Your browser binds securely to this exact folder.
                   </div>
                 </div>
 
@@ -218,8 +234,8 @@ export default function OnboardingPage() {
                 <h3 className="text-xl font-serif text-text-header mb-2">{comfortLevel === 'returning' ? 'Unlock with PIN' : 'Set a PIN'}</h3>
                 <p className="text-text-body font-sans text-sm mb-4">
                   {comfortLevel === 'returning' 
-                    ? "Enter the PIN you previously created to decrypt your workspace. It is never sent to our servers."
-                    : "This PIN locks your folder so only you can access it. It is never sent to our servers. We will proceed to Data Prep immediately after."}
+                    ? "Enter your PIN to decrypt your workspace and load saved datasets."
+                    : "This PIN locks your local workspace memory."}
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <div className="relative">
@@ -229,25 +245,25 @@ export default function OnboardingPage() {
                       placeholder="Enter 4-6 digit PIN" 
                       value={pin}
                       onChange={(e) => setPin(e.target.value)}
-                      disabled={!directoryHandle || !!workspaceKey}
+                      disabled={!directoryHandle || isProcessing}
                       className="pl-12 pr-4 py-3 rounded-[12px] border border-border-soft bg-white text-text-header w-56 font-mono tracking-widest outline-none focus:border-primary transition-colors"
                     />
                   </div>
                   <Button 
                     onClick={handleGenerateKey}
-                    disabled={!directoryHandle || !!workspaceKey} 
+                    disabled={!directoryHandle || isProcessing || pin.length < 4} 
                     variant="outline"
                     className={`flex items-center gap-2 px-6 py-3 rounded-[12px] text-sm font-bold transition-all ${
-                      directoryHandle && !workspaceKey
+                      directoryHandle && pin.length >= 4 && !isProcessing
                         ? 'bg-primary text-white border-transparent hover:opacity-90 shadow-sm'
                         : 'bg-surface text-text-body border border-border-soft cursor-not-allowed'
                     }`}
                   >
                     <KeyRound className="w-5 h-5" />
-                    {workspaceKey ? (comfortLevel === 'returning' ? 'Folder Unlocked' : 'Folder Locked') : (comfortLevel === 'returning' ? 'Unlock Workspace' : 'Set PIN & Continue')}
+                    {isProcessing ? 'Unlocking...' : (comfortLevel === 'returning' ? 'Unlock Workspace' : 'Set PIN & Continue')}
                   </Button>
                 </div>
-                {errorStatus && <p className="text-xs text-red-600 font-bold mt-3">{errorStatus}</p>}
+                {errorStatus && <p className="text-xs text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-200 font-bold mt-3">{errorStatus}</p>}
               </div>
             </div>
 

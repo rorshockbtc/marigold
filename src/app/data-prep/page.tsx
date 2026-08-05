@@ -242,6 +242,47 @@ export default function DataPrepPage() {
         </div>
       )}
 
+      {/* Saved Disk Shard Auto-Hydrate Banner */}
+      {!parseState.isProcessing && parseState.totalRows === 0 && (
+        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 text-emerald-950 shadow-sm space-y-3 animate-in fade-in">
+          <div className="flex justify-between items-center">
+            <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+              📁 Saved Local File Detected
+            </span>
+            <span className="text-xs text-emerald-800 font-mono font-bold">
+              Ready in Marigold_Local/Uploaded_Data/
+            </span>
+          </div>
+          <div>
+            <h3 className="text-xl font-serif font-black text-emerald-950">Load Saved Dataset Without Re-Uploading</h3>
+            <p className="text-xs text-emerald-800 leading-relaxed mt-1">
+              Your computer already has saved voter file shards in your <strong>Marigold_Local</strong> folder. Click below to load them into workspace memory in &lt; 2 seconds.
+            </p>
+          </div>
+          <div className="pt-1">
+            <Button
+              onClick={async () => {
+                const { getDirectoryHandleWithPermission, getDirectoryHandle } = await import("@/lib/fs/LocalFSManager");
+                const grp = localStorage.getItem("marigold_active_group") || "default";
+                let dirHandle = await getDirectoryHandleWithPermission(grp.toLowerCase());
+                if (!dirHandle) dirHandle = await getDirectoryHandle(grp.toLowerCase());
+                if (dirHandle) {
+                  const { LocalFSHydrator } = await import("@/lib/fs/LocalFSHydrator");
+                  const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle);
+                  if (rows > 0) {
+                    window.location.href = "/explore";
+                  }
+                }
+              }}
+              variant="primary"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-black px-6 py-3.5 rounded-xl shadow-md transition-all text-xs flex items-center gap-2"
+            >
+              <span>⚡ Load Saved File &amp; Open Workspace (/explore) →</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Upload Zone */}
       {!parseState.isProcessing && parseState.totalRows === 0 && (!existingShardCount || existingShardCount === 0) && (
         <div 

@@ -21,9 +21,10 @@ export async function storeDirectoryHandle(workspaceId: string, handle: any): Pr
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    const request = store.put(handle, workspaceId);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    store.put(handle, workspaceId);
+    const defaultReq = store.put(handle, "default");
+    defaultReq.onsuccess = () => resolve();
+    defaultReq.onerror = () => reject(defaultReq.error);
   });
 }
 
@@ -35,21 +36,29 @@ export async function getDirectoryHandle(workspaceId: string): Promise<any | nul
     const store = tx.objectStore(STORE_NAME);
     const request = store.get(workspaceId);
     request.onsuccess = () => {
-      if (request.result) resolve(request.result);
-      else resolve(null);
+      if (request.result) {
+        resolve(request.result);
+      } else {
+        // Fallback: check "default" key if specific workspaceId key is missing
+        const defaultReq = store.get("default");
+        defaultReq.onsuccess = () => resolve(defaultReq.result || null);
+        defaultReq.onerror = () => resolve(null);
+      }
     };
     request.onerror = () => reject(request.error);
   });
 }
 
-export async function verifyPermission(fileHandle: any, readWrite: boolean): Promise<boolean> {
+export async function verifyPermission(fileHandle: any, readWrite: boolean = false): Promise<boolean> {
   if (!fileHandle) return false;
   const options = { mode: readWrite ? 'readwrite' : 'read' };
   try {
-    if ((await fileHandle.queryPermission(options)) === 'granted') {
+    const queryRes = await fileHandle.queryPermission(options);
+    if (queryRes === 'granted') {
       return true;
     }
-    if ((await fileHandle.requestPermission(options)) === 'granted') {
+    const reqRes = await fileHandle.requestPermission(options);
+    if (reqRes === 'granted') {
       return true;
     }
   } catch (err) {
@@ -58,108 +67,77 @@ export async function verifyPermission(fileHandle: any, readWrite: boolean): Pro
   return false;
 }
 
-const REQUIRED_SUBDIRECTORIES = [
-  "Data_Stories",
-  "Groups",
-  "Uploaded_Data",
-  "Kanban_Boards",
-  "Custom_Playbooks",
-  ".marigold"
-];
+export async function getDirectoryHandleWithPermission(workspaceId: string, readWrite: boolean = false): Promise<any | null> {
+  const handle = await getDirectoryHandle(workspaceId);
+  if (!handle) return null;
 
-const ROOT_README_CONTENT = `# Marigold Local Workspace & Storage Engine
-Welcome to your private **Marigold Local** workspace directory!
+  const hasPerm = await verifyPermission(handle, readWrite);
+  if (hasPerm) return handle;
+  return handle; // Return handle even if permission prompt requires click gesture
+}
 
-## Directory Structure
-- \`Data_Stories/\`: Contains your saved Data Insights, Substack-style articles, and interactive chart snapshots.
-- \`Groups/\`: Team mission snapshots and jurisdiction workspace settings.
-- \`Uploaded_Data/\`: Ingested data file manifests and chunked records.
-- \`Kanban_Boards/\`: Task cards, investigation notes, and audit workflows.
-- \`Custom_Playbooks/\`: User-defined forensic algorithms and threshold filters.
-- \`.marigold/\`: Encrypted workspace key signatures (\`workspace_keysig.enc\`).
-
-## 🔒 3-Factor Zero-Knowledge Security & Cloud Drive Safety
-If you move or sync this folder to Google Drive, Dropbox, Box, or an external USB drive, your files remain strictly encrypted using **AES-256-GCM**.
-
-To decrypt and view any file in Marigold Insights, the application requires **three factors simultaneously inside browser RAM**:
-1. This local directory file structure.
-2. An active, authenticated Clerk user session.
-3. The user PIN entered into the Marigold UI to derive the Key Encryption Key (KEK) via PBKDF2 (100,000 SHA-256 iterations).
-
-Zero raw data rows or unencrypted PII ever leave your machine or hit external servers.
-`;
-
-export async function initStructuredWorkspace(dirHandle: any): Promise<void> {
-  if (!dirHandle) return;
-  const isPermitted = await verifyPermission(dirHandle, true);
-  if (!isPermitted) return;
-
-  // Create required subdirectories
-  for (const subDir of REQUIRED_SUBDIRECTORIES) {
-    try {
-      await dirHandle.getDirectoryHandle(subDir, { create: true });
-    } catch (e) {
-      console.warn(`Could not create subdirectory ${subDir}:`, e);
-    }
+export async function initStructuredWorkspace(rootHandle: any): Promise<void> {
+  if (!rootHandle) return;
+  const subfolders = ["Data_Stories", "Groups", "Uploaded_Data", "Kanban_Boards", "Custom_Playbooks", ".marigold"];
+  for (const sub of subfolders) {
+    await rootHandle.getDirectoryHandle(sub, { create: true });
   }
 
-  // Create root README.md
   try {
-    const readmeFile = await dirHandle.getFileHandle("README.md", { create: true });
-    const writable = await readmeFile.createWritable();
-    await writable.write(ROOT_README_CONTENT);
+    const fileHandle = await rootHandle.getFileHandle("README.md", { create: true });
+    const writable = await fileHandle.createWritable();
+    const content = `# Marigold Local Workspace Directory
+
+This folder is your local, private Marigold workspace.
+All voter rolls, data stories, playbooks, and Kanban tasks are stored directly on your computer.
+
+SUBDIRECTORIES:
+- Data_Stories/: Anonymized query findings and audit reports
+- Groups/: Group collaboration settings
+- Uploaded_Data/: Local dataset files & shards
+- Kanban_Boards/: Offline task tracking
+- Custom_Playbooks/: User-defined audit playbooks
+- .marigold/: Encryption keys and Data Map signatures
+
+WARNING: Do not rename or delete this folder.
+`;
+    await writable.write(content);
     await writable.close();
   } catch (e) {
-    console.warn("Could not write README.md to local directory:", e);
+    console.warn("Could not write root README.md:", e);
   }
 }
 
 export async function writeStructuredFile(
-  dirHandle: any,
-  subfolder: string,
-  filename: string,
-  content: string | Blob
+  rootHandle: any,
+  subfolderName: string,
+  fileName: string,
+  content: string
 ): Promise<boolean> {
   try {
-    if (!dirHandle) return false;
-    const isPermitted = await verifyPermission(dirHandle, true);
-    if (!isPermitted) return false;
-
-    const subDirHandle = await dirHandle.getDirectoryHandle(subfolder, { create: true });
-    const fileHandle = await subDirHandle.getFileHandle(filename, { create: true });
+    const subDir = await rootHandle.getDirectoryHandle(subfolderName, { create: true });
+    const fileHandle = await subDir.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     await writable.write(content);
     await writable.close();
     return true;
   } catch (err) {
-    console.error(`Failed to write file ${subfolder}/${filename} directly to disk:`, err);
+    console.warn(`Could not write ${fileName} to ${subfolderName}:`, err);
     return false;
   }
 }
 
-export async function listStructuredSubfolderFiles(
-  dirHandle: any,
-  subfolder: string
-): Promise<{ name: string; size: number; lastModified: number }[]> {
-  const results: { name: string; size: number; lastModified: number }[] = [];
+export async function listStructuredSubfolderFiles(rootHandle: any, subfolderName: string): Promise<string[]> {
+  const files: string[] = [];
   try {
-    if (!dirHandle) return [];
-    const isPermitted = await verifyPermission(dirHandle, false);
-    if (!isPermitted) return [];
-
-    const subDirHandle = await dirHandle.getDirectoryHandle(subfolder, { create: false });
-    for await (const entry of subDirHandle.values()) {
-      if (entry.kind === "file") {
-        const file = await entry.getFile();
-        results.push({
-          name: file.name,
-          size: file.size,
-          lastModified: file.lastModified
-        });
+    const subDir = await rootHandle.getDirectoryHandle(subfolderName, { create: false });
+    for await (const [name, handle] of (subDir as any).entries()) {
+      if (handle.kind === "file") {
+        files.push(name);
       }
     }
-  } catch (err) {
+  } catch (e) {
     // Directory might not exist yet
   }
-  return results;
+  return files;
 }

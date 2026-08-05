@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShieldCheck, RefreshCw, Sparkles, Database, Folder } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { ShieldCheck, RefreshCw, Folder, Database } from 'lucide-react';
 import Link from 'next/link';
-import { getDirectoryHandle } from '@/lib/fs/LocalFSManager';
+import { getDirectoryHandle, storeDirectoryHandle, verifyPermission } from '@/lib/fs/LocalFSManager';
 import { LocalFSHydrator } from '@/lib/fs/LocalFSHydrator';
 
 interface DeviceSecurityNoticeProps {
@@ -18,31 +17,55 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
   const handleAutoHydrate = async () => {
     if (typeof window === "undefined") return;
     const grp = localStorage.getItem("marigold_active_group") || "default";
-    const dirHandle = await getDirectoryHandle(grp.toLowerCase());
-
-    if (!dirHandle) {
-      window.location.href = "/onboarding";
-      return;
-    }
 
     setIsHydrating(true);
-    setStatusMsg("⚡ Loading your saved voter files into memory...");
+    setStatusMsg("⚡ Accessing Marigold_Local folder...");
+
     try {
+      let dirHandle = await getDirectoryHandle(grp.toLowerCase());
+
+      // If no stored handle exists or permission is needed, trigger folder picker directly
+      if (!dirHandle || !(await verifyPermission(dirHandle, false))) {
+        if ('showDirectoryPicker' in window) {
+          try {
+            dirHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+            if (dirHandle) {
+              await storeDirectoryHandle(grp.toLowerCase(), dirHandle);
+              await storeDirectoryHandle("default", dirHandle);
+            }
+          } catch (pickerErr: any) {
+            if (pickerErr.name === 'AbortError') {
+              setIsHydrating(false);
+              setStatusMsg("");
+              return;
+            }
+          }
+        }
+      }
+
+      if (!dirHandle) {
+        setStatusMsg("Please select your Marigold_Local folder to continue.");
+        setIsHydrating(false);
+        return;
+      }
+
+      setStatusMsg("⚡ Loading your saved voter files into memory...");
       const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle, (msg) => setStatusMsg(msg));
+      
       if (rows > 0) {
         setStatusMsg(`✅ Successfully loaded ${rows.toLocaleString()} records! Opening Workspace...`);
         setTimeout(() => {
           window.location.href = "/explore";
-        }, 1000);
+        }, 800);
       } else {
-        setStatusMsg("No saved files found in Uploaded_Data. Redirecting to Stream File...");
+        setStatusMsg("No saved datasets found in Uploaded_Data. Opening Data Prep...");
         setTimeout(() => {
           window.location.href = "/data-prep";
         }, 1200);
       }
     } catch (err) {
-      console.error(err);
-      setStatusMsg("Could not load saved files. Please select your Marigold_Local folder.");
+      console.error("Auto-hydration error:", err);
+      setStatusMsg("Could not access folder. Click 'Re-Link Local Folder' to re-select your Marigold_Local directory.");
     } finally {
       setIsHydrating(false);
     }
@@ -76,7 +99,7 @@ export function DeviceSecurityNotice({ onSwitchToDemo }: DeviceSecurityNoticePro
               type="button"
               onClick={handleAutoHydrate}
               disabled={isHydrating}
-              className="text-left bg-white border border-emerald-300 hover:border-emerald-500 p-4 rounded-xl shadow-sm transition-all flex flex-col justify-between"
+              className="text-left bg-white border border-emerald-300 hover:border-emerald-500 p-4 rounded-xl shadow-sm transition-all flex flex-col justify-between cursor-pointer"
             >
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 mb-1">
