@@ -40,7 +40,7 @@ export default function ComprehensiveAuditPage() {
   const [isAuditComplete, setIsAuditComplete] = useState(false);
   const [selectedDrilldown, setSelectedDrilldown] = useState<PlaybookAuditSummary | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const { runLocalAudit, query: runQuery, isQuerying } = useDataQuery();
+  const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
   const { addTask, addNoteToTask } = useKanban();
 
   const downloadCSV = (data: any[], filename: string) => {
@@ -152,34 +152,23 @@ export default function ComprehensiveAuditPage() {
       setTotalRows(res.totalMatches);
     }
 
-    let updatedPlaybooks = [...playbooks].map(p => ({ ...p, status: "pending" as any, flaggedCount: 0 }));
-    setPlaybooks(updatedPlaybooks);
-
-    for (let i = 0; i < updatedPlaybooks.length; i++) {
-      setCurrentStepIndex(i);
-      updatedPlaybooks[i].status = "running";
-      setPlaybooks([...updatedPlaybooks]);
+    try {
+      const sweepMap = await runAllPlaybooksSweep();
       
-      try {
-        const data = await runLocalAudit(updatedPlaybooks[i].id);
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
+      const updatedPlaybooks = playbooks.map(pb => ({
+        ...pb,
+        status: "complete" as const,
+        flaggedCount: (sweepMap[pb.id] || []).length
+      }));
 
-        updatedPlaybooks[i].status = "complete";
-        updatedPlaybooks[i].flaggedCount = data.length;
-        setAnomalyRecords(prev => ({ ...prev, [updatedPlaybooks[i].id]: data }));
-      } catch (err) {
-        console.error(err);
-        updatedPlaybooks[i].status = "complete";
-        updatedPlaybooks[i].flaggedCount = 0;
-      }
-      
-      setPlaybooks([...updatedPlaybooks]);
+      setPlaybooks(updatedPlaybooks);
+      setAnomalyRecords(sweepMap);
+    } catch (err) {
+      console.error("360 Sweep failed:", err);
+    } finally {
+      setIsRunningSweep(false);
+      setIsAuditComplete(true);
     }
-    
-    setCurrentStepIndex(-1);
-    setIsRunningSweep(false);
-    setIsAuditComplete(true);
   };
 
   // renderDataPanel and renderDrilldown extracted to standalone components
@@ -236,16 +225,16 @@ export default function ComprehensiveAuditPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-2">
               <RefreshCw className="w-3.5 h-3.5 text-emerald-700 animate-spin" />
-              <span>Executing Playbook {currentStepIndex + 1} of {playbooks.length}</span>
+              <span>Executing Single-Pass 360° Forensic Audit</span>
             </span>
             <span className="text-xs font-mono font-bold text-emerald-950">
-              {Math.round(((currentStepIndex + 1) / playbooks.length) * 100)}% Complete
+              {queryProgress}% Complete
             </span>
           </div>
 
           <div className="space-y-1">
             <h3 className="text-lg font-serif font-black text-emerald-950">
-              Scanning: {playbooks[currentStepIndex]?.name || "Initializing audit rules..."}
+              Scanning: All 7 Forensic Playbooks Simultaneously...
             </h3>
             <p className="text-xs text-emerald-800 leading-relaxed">
               Evaluating {totalRows.toLocaleString()} citizen records locally in browser memory. Please keep this tab open.
@@ -256,7 +245,7 @@ export default function ComprehensiveAuditPage() {
           <div className="w-full bg-emerald-200/80 h-3 rounded-full overflow-hidden">
             <div 
               className="bg-emerald-600 h-full transition-all duration-300 rounded-full"
-              style={{ width: `${Math.max(5, Math.round(((currentStepIndex + 1) / playbooks.length) * 100))}%` }}
+              style={{ width: `${Math.max(5, queryProgress)}%` }}
             />
           </div>
         </Card>
