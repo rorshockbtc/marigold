@@ -225,11 +225,17 @@ export default function DataPrepPage() {
               <span>📦 Chunk &amp; Save to Marigold_Local Folder</span>
             </Button>
             <Button
-              onClick={() => setExistingShardCount(null)}
+              onClick={async () => {
+                await clearData();
+                setExistingShardCount(null);
+                localStorage.setItem("marigold_file_connected", "false");
+                localStorage.setItem("marigold_file_rows", "0");
+                localStorage.setItem("marigold_file_name", "");
+              }}
               variant="outline"
-              className="border-border-soft text-text-body hover:text-text-header bg-white hover:bg-surface"
+              className="border-red-200 text-red-700 hover:bg-red-50 bg-white"
             >
-              🔄 Upload New File Instead
+              🗑️ Clear RAM Database &amp; Flush Duplicates
             </Button>
           </div>
         </div>

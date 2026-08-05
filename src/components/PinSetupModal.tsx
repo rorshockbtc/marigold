@@ -9,7 +9,7 @@ interface PinSetupModalProps {
 }
 
 export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
-  const { setupWorkspacePin } = useAuth();
+  const { setupWorkspacePin, hasPinSet } = useAuth();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -30,20 +30,24 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
     if (success) {
       onSuccess();
     } else {
-      setError("Failed to setup workspace PIN.");
+      setError("Failed to verify workspace PIN.");
     }
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
+    <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in font-sans">
       <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden text-slate-900">
         <div className="p-6 bg-slate-50 border-b border-slate-200 flex flex-col items-center justify-center text-center">
           <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm mb-4">
             <Lock className="w-7 h-7" />
           </div>
-          <h3 className="font-black text-slate-900 text-xl">Secure Your Local Vault</h3>
+          <h3 className="font-black text-slate-900 text-xl">
+            {hasPinSet ? "Enter Security PIN" : "Secure Your Local Vault"}
+          </h3>
           <p className="text-sm font-semibold text-slate-600 mt-2">
-            Set a 4-digit PIN to securely encrypt your datasets directly in this browser.
+            {hasPinSet 
+              ? "Enter your 4-digit PIN to unlock your encrypted local workspace." 
+              : "Create a 4-digit PIN to securely encrypt your datasets directly in this browser."}
           </p>
         </div>
 
@@ -52,13 +56,13 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
             <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <p className="text-xs font-semibold text-amber-800 leading-relaxed">
-                <strong>Zero-Cloud Protection:</strong> We never upload your data. This PIN derives a mathematically secure AES-GCM key to lock your local browser memory. Don&apos;t forget it!
+                <strong>Zero-Cloud Protection:</strong> We never upload your data. This PIN derives a mathematically secure AES-GCM key to lock your local browser memory.
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-bold text-slate-900 mb-2 text-center">
-                Create a 4-Digit Security PIN
+                {hasPinSet ? "Enter Your 4-Digit Security PIN" : "Create a 4-Digit Security PIN"}
               </label>
               <input
                 type="password"
@@ -83,7 +87,7 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
               className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white font-black px-6 py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
             >
               <ShieldCheck className="w-5 h-5" />
-              <span>Lock Vault & Continue</span>
+              <span>{hasPinSet ? "Unlock Workspace" : "Lock Vault & Continue"}</span>
             </button>
           </div>
         </form>
