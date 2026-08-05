@@ -10,7 +10,7 @@ import { Download, Sparkles, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
+import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset, openActiveDatabase } from "@/lib/db/dbName";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { PinSetupModal } from "@/components/PinSetupModal";
 
@@ -57,9 +57,7 @@ export default function DataPrepPage() {
     const demoActive = isDemoGroupActive(activeGroup);
     setIsDemo(demoActive);
     try {
-      const request = indexedDB.open(dbName, 1);
-      request.onsuccess = (e) => {
-        const db = (e.target as IDBOpenDBRequest).result;
+      openActiveDatabase(dbName).then((db) => {
         if (db && db.objectStoreNames.contains("rows")) {
           const tx = db.transaction(["rows"], "readonly");
           const store = tx.objectStore("rows");
@@ -75,7 +73,7 @@ export default function DataPrepPage() {
             }
           };
         }
-      };
+      }).catch(err => console.warn("Could not check IndexedDB shard status:", err));
     } catch (err) {
       console.warn("Could not check IndexedDB shard status:", err);
     }
