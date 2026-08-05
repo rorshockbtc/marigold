@@ -339,10 +339,10 @@ export async function POST(req: NextRequest) {
       
       SUGGESTING MISSIONS / PLAYBOOKS & EXPLORING DATA:
       - Whenever a user asks how to find something or asks for query suggestions, you MUST call 'suggest_mission_playbook'.
-      - IMPORTANT: If a user asks a broad analytical question (e.g., 'What are the demographic trends?'), you must evaluate if the currently linked dataset (shown in REAL-TIME PAGE CONTEXT) can answer it. 
-        - If YES, you MUST proactively use the 'query_dataset' tool to fetch the real aggregations, then use 'append_section' to build the Data Story.
-        - If NO (the active dataset is irrelevant, or no dataset is connected), you MUST use the 'triage_and_fetch_dataset' tool to hunt for a public data URL.
-      - If NO dataset is connected, and the user asks a general knowledge or definition question (e.g., 'What is Benford's Law?' or 'How do people use P.O. boxes?'), answer it directly based on your knowledge. Do NOT attempt to use 'query_dataset', as it will fail without data.
+      - IMPORTANT: If a user asks a broad analytical or historical question (e.g., 'What are national demographic trends from 1960 to today?'), evaluate if the currently linked dataset can answer it.
+        - If YES (the dataset contains relevant local columns/years), use 'query_dataset' to fetch real aggregations.
+        - If NO or UNCERTAIN (the user is asking for national historical data, general knowledge, or data not in the local voter roll), DO NOT run 'query_dataset' against the local file! Instead, use your broad knowledge to construct full, labeled multi-series charts (e.g. X: years/categories, Y: percentages/values) and use 'append_section' to update the Data Story canvas.
+      - CONVERSATIONAL REPLY REQUIREMENT: Whenever you call 'append_section', 'update_section', or 'update_title', you MUST ALSO emit a warm, informative textual reply explaining what chart or analysis you just added to the canvas so the user is never left in silence!
       
       ${articleState ? `CURRENT ARTICLE STATE:\n${JSON.stringify(articleState, null, 2)}` : ''}
 

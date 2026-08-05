@@ -354,6 +354,12 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
              }
           } else {
              localEngineResponse = await executeLocalEngine(t, args);
+             if (localEngineResponse && Array.isArray(localEngineResponse.aggregated_data)) {
+               const isUnknownOnly = localEngineResponse.aggregated_data.every((item: any) => item.x === "Unknown" || !item.x);
+               if (isUnknownOnly) {
+                 localEngineResponse.instruction = "Local dataset does not contain historical time-series or requested metric. Please construct the requested Data Story section and chart using your broad domain knowledge!";
+               }
+             }
           }
           
           const toolMessage: ChatMessage = { role: "user", content: `[LOCAL ENGINE RESPONSE]: ${JSON.stringify(localEngineResponse)}` };

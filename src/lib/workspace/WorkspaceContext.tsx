@@ -90,15 +90,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("marigold_file_name", "Synthetic DEMO_ dataset required");
       }
     } else if (targetGroup === "Mississippi Fair Elections") {
-      const currentFileName = localStorage.getItem("marigold_file_name") || "";
-      if (currentFileName === "Synthetic DEMO_ dataset required" || currentFileName.toUpperCase().includes("DEMO")) {
-        // Only inject Mississippi if it's currently demo data. Otherwise let the real file persist.
-        localStorage.setItem("marigold_file_connected", "true");
-        localStorage.setItem("marigold_file_rows", "2002923");
-        localStorage.setItem("marigold_file_name", "ms_voter_roll_2024.csv");
-      }
+      // Do not inject fake connection state. Require user to link/upload their local folder.
     } else {
-      // General group transition (not MS or Demo explicitly). Let's clear connection if it was Demo.
+      // General group transition. Clear connection if it was Demo.
       const currentFileName = localStorage.getItem("marigold_file_name") || "";
       if (currentFileName.toUpperCase().includes("DEMO") || currentFileName === "Synthetic DEMO_ dataset required") {
          localStorage.setItem("marigold_file_connected", "false");

@@ -25,9 +25,14 @@ export function DataRequiredState({
         <p className="text-lg text-text-body max-w-lg mx-auto">{subtitle}</p>
       </div>
       
-      <a href="/dashboard" className="bg-primary text-white hover:bg-primary/90 font-bold px-8 py-4 rounded-xl shadow-lg transition-all flex items-center gap-2">
-        <span>Return to Dashboard to Link Data</span>
-      </a>
+      <div className="flex flex-wrap gap-4 justify-center">
+        <a href="/onboarding" className="bg-primary text-white hover:bg-primary/90 font-bold px-8 py-4 rounded-xl shadow-lg transition-all flex items-center gap-2">
+          <span>🚀 Set Up Marigold Local Folder (/onboarding)</span>
+        </a>
+        <a href="/data-prep" className="bg-surface border border-border-soft text-text-header hover:bg-white font-bold px-8 py-4 rounded-xl shadow-sm transition-all flex items-center gap-2">
+          <span>📂 Stream or Upload File (/data-prep)</span>
+        </a>
+      </div>
     </div>
   );
 }
