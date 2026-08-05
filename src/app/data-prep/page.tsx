@@ -215,7 +215,6 @@ export default function DataPrepPage() {
             </Link>
             <Button
               onClick={() => {
-                // Initialize default columns for chunking if not set
                 executeExport();
               }}
               variant="primary"
@@ -226,6 +225,8 @@ export default function DataPrepPage() {
             </Button>
             <Button
               onClick={async () => {
+                const { purgeActiveDatabase, getActiveDatabaseName } = await import("@/lib/db/dbName");
+                await purgeActiveDatabase(getActiveDatabaseName());
                 await clearData();
                 setExistingShardCount(null);
                 localStorage.setItem("marigold_file_connected", "false");
@@ -233,7 +234,7 @@ export default function DataPrepPage() {
                 localStorage.setItem("marigold_file_name", "");
               }}
               variant="outline"
-              className="border-red-200 text-red-700 hover:bg-red-50 bg-white"
+              className="border-red-500 text-red-700 hover:bg-red-50 bg-white font-bold"
             >
               🗑️ Clear RAM Database &amp; Flush Duplicates
             </Button>

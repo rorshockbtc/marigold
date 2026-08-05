@@ -135,10 +135,17 @@ export function useCSVParser() {
   }, []);
 
   const clearData = useCallback(async () => {
+    const { getActiveDatabaseName, purgeActiveDatabase } = await import('@/lib/db/dbName');
     const dbName = getActiveDatabaseName();
-    const db = await openActiveDatabase(dbName);
-    const transaction = db.transaction(['rows'], 'readwrite');
-    transaction.objectStore('rows').clear();
+    await purgeActiveDatabase(dbName);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("marigold_file_connected", "false");
+      localStorage.setItem("marigold_file_rows", "0");
+      localStorage.removeItem("marigold_file_name");
+      localStorage.removeItem("marigold_dataset_signature");
+    }
+
     setState({
       isProcessing: false,
       progress: 0,

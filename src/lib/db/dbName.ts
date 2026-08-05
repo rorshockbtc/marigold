@@ -72,6 +72,26 @@ export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> 
   });
 }
 
+export async function purgeActiveDatabase(customDbName?: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  const dbName = customDbName || getActiveDatabaseName();
+
+  try {
+    const db = await openActiveDatabase(dbName);
+    db.close();
+  } catch (e) {}
+
+  return new Promise((resolve) => {
+    const req = indexedDB.deleteDatabase(dbName);
+    req.onsuccess = () => resolve();
+    req.onerror = () => resolve();
+    req.onblocked = () => {
+      console.warn(`IndexedDB purge for ${dbName} blocked by open connection, proceeding...`);
+      resolve();
+    };
+  });
+}
+
 export async function autoLoadSyntheticDemoDataset(onProgress?: (msg: string) => void): Promise<number> {
   if (onProgress) onProgress("⚡ Fetching synthetic Roosevelt dataset (~200 KB)...");
   const res = await fetch('/api/demo-dataset');
