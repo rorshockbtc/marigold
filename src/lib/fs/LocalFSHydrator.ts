@@ -7,28 +7,31 @@ export interface DiscoveredDataset {
   rowCount: number;
   totalBytes: number;
   shardFiles: string[];
+  isSubfolder: boolean;
   lastModified?: string;
 }
 
 export class LocalFSHydrator {
   /**
-   * Scans Marigold_Local/Uploaded_Data/ for pre-chunked dataset shards
+   * Scans Marigold_Local/Uploaded_Data/ for pre-chunked dataset shards or direct CSV files
    */
   static async discoverLocalDatasets(rootHandle: FileSystemDirectoryHandle): Promise<DiscoveredDataset[]> {
     const datasets: DiscoveredDataset[] = [];
     try {
       const uploadedDataHandle = await rootHandle.getDirectoryHandle("Uploaded_Data", { create: false });
-      
-      // Iterate through subfolders in Uploaded_Data
+      const directCsvFiles: string[] = [];
+      let directTotalBytes = 0;
+
+      // Iterate through entries in Uploaded_Data
       // @ts-expect-error FileSystemDirectoryHandle async iterator
-      for await (const [folderName, handle] of uploadedDataHandle.entries()) {
+      for await (const [entryName, handle] of uploadedDataHandle.entries()) {
         if (handle.kind === "directory") {
           const subDir = handle as FileSystemDirectoryHandle;
           let manifestData: any = null;
           const csvFiles: string[] = [];
           let totalBytes = 0;
 
-          // Search for manifest.json or shard CSV files
+          // Search for manifest.json or shard CSV files inside subfolder
           // @ts-expect-error FileSystemDirectoryHandle async iterator
           for await (const [fileName, fileHandle] of subDir.entries()) {
             if (fileHandle.kind === "file") {
@@ -50,15 +53,32 @@ export class LocalFSHydrator {
 
           if (manifestData || csvFiles.length > 0) {
             datasets.push({
-              folderName,
-              datasetName: manifestData?.datasetName || folderName.replace(/_/g, " "),
+              folderName: entryName,
+              datasetName: manifestData?.datasetName || entryName.replace(/_/g, " "),
               rowCount: manifestData?.rowCount || 0,
               totalBytes: manifestData?.totalBytes || totalBytes,
               shardFiles: csvFiles,
+              isSubfolder: true,
               lastModified: manifestData?.createdDate || new Date().toISOString()
             });
           }
+        } else if (handle.kind === "file" && entryName.endsWith(".csv")) {
+          directCsvFiles.push(entryName);
+          const file = await (handle as FileSystemFileHandle).getFile();
+          directTotalBytes += file.size;
         }
+      }
+
+      if (directCsvFiles.length > 0) {
+        datasets.push({
+          folderName: "",
+          datasetName: "Uploaded Local Dataset",
+          rowCount: 0,
+          totalBytes: directTotalBytes,
+          shardFiles: directCsvFiles,
+          isSubfolder: false,
+          lastModified: new Date().toISOString()
+        });
       }
     } catch (err) {
       console.warn("No Uploaded_Data directory found or access prompt needed:", err);
@@ -85,7 +105,9 @@ export class LocalFSHydrator {
     if (onProgress) onProgress(`⚡ Hydrating '${targetDataset.datasetName}' into isolated RAM...`);
 
     const uploadedDataHandle = await rootHandle.getDirectoryHandle("Uploaded_Data", { create: false });
-    const subDir = await uploadedDataHandle.getDirectoryHandle(targetDataset.folderName, { create: false });
+    const targetHandle = targetDataset.isSubfolder 
+      ? await uploadedDataHandle.getDirectoryHandle(targetDataset.folderName, { create: false })
+      : uploadedDataHandle;
 
     const dbName = getActiveDatabaseName();
     const db = await openActiveDatabase(dbName);
@@ -96,7 +118,7 @@ export class LocalFSHydrator {
     let totalRowsHydrated = 0;
 
     for (const fileName of targetDataset.shardFiles) {
-      const fileHandle = await subDir.getFileHandle(fileName);
+      const fileHandle = await targetHandle.getFileHandle(fileName);
       const file = await fileHandle.getFile();
       const text = await file.text();
 
