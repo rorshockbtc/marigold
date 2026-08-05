@@ -47,7 +47,7 @@ export async function queryDuckDBSQL(sql: string): Promise<Array<Record<string, 
 }
 
 /**
- * Instant Single-Pass 360° Forensic Audit Engine running inside DuckDB WASM
+ * Instant Single-Pass 360° Forensic Audit Engine running inside DuckDB WASM (Unclipped)
  */
 export async function runDuckDBAuditSweep(tableName: string = 'voter_roll'): Promise<Record<string, Array<Record<string, any>>>> {
   const { conn } = await getDuckDB();
@@ -60,7 +60,6 @@ export async function runDuckDBAuditSweep(tableName: string = 'voter_roll'): Pro
     GROUP BY address, city, state, zip, county
     HAVING COUNT(*) >= 8
     ORDER BY occupant_count DESC
-    LIMIT 100
   `);
 
   // Commercial P.O. Box Disguises
@@ -72,7 +71,6 @@ export async function runDuckDBAuditSweep(tableName: string = 'voter_roll'): Pro
        OR UPPER(address) LIKE '%P O BOX%'
        OR UPPER(address) LIKE '%UPS STORE%'
        OR UPPER(address) LIKE '%PMB%'
-    LIMIT 100
   `);
 
   // Out-of-state mailings
@@ -81,7 +79,6 @@ export async function runDuckDBAuditSweep(tableName: string = 'voter_roll'): Pro
     FROM ${tableName}
     WHERE (mail_state IS NOT NULL AND TRIM(mail_state) != '' AND UPPER(mail_state) != UPPER(state))
        OR ncoa_flag = 'Y'
-    LIMIT 100
   `);
 
   // Intra-county duplicates
@@ -91,7 +88,6 @@ export async function runDuckDBAuditSweep(tableName: string = 'voter_roll'): Pro
     WHERE name IS NOT NULL AND zip IS NOT NULL
     GROUP BY name, zip
     HAVING COUNT(*) > 1 AND COUNT(DISTINCT address) > 1
-    LIMIT 100
   `);
 
   return {

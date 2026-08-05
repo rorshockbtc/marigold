@@ -62,21 +62,87 @@ export default function ComprehensiveAuditPage() {
   };
 
   const downloadPlaybookCSV = (playbook: any) => {
-    const count = Math.max(1, Math.min(playbook.flaggedCount || 5, 25));
-    const rows = Array.from({ length: count }).map((_, idx) => ({
-      voter_id: `MS-${104920 + idx * 7}`,
-      name: idx === 0 ? "Robert Smith Jr" : idx === 1 ? "Mary E Johnson" : "David L Miller",
-      address: `${1400 + idx * 12} PROMENADE PKWY, APT #${100 + idx}`,
-      city: "Madison",
-      state: stateCode || "MS",
-      zip: "39110",
-      playbook_rule: playbook.name,
-      audit_category: playbook.audit_type,
-      flag_reason: playbook.description,
-      jurisdiction: jurisdiction
-    }));
+    const realRows = anomalyRecords[playbook.id] || [];
     const safeName = playbook.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
-    downloadCSV(rows, `${safeName}_flagged_records.csv`);
+
+    if (realRows.length > 0) {
+      downloadCSV(realRows, `${safeName}_all_${realRows.length}_findings.csv`);
+    } else {
+      // Fallback preview
+      const rows = [{
+        voter_id: "MS-104920",
+        name: "Audit Passed",
+        address: "No Anomalies Flagged",
+        city: "Jackson",
+        state: stateCode || "MS",
+        zip: "39201",
+        playbook_rule: playbook.name,
+        audit_category: playbook.audit_type,
+        flag_reason: "0 records flagged by this audit rule",
+        jurisdiction: jurisdiction
+      }];
+      downloadCSV(rows, `${safeName}_summary.csv`);
+    }
+  };
+
+  const downloadFullAuditPackage = async () => {
+    const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+    const dateStr = new Date().toISOString().split("T")[0];
+    
+    // Export complete master CSV containing all playbooks unclipped
+    const allExportRows: any[] = [];
+    playbooks.forEach(p => {
+      const pRows = anomalyRecords[p.id] || [];
+      pRows.forEach(r => {
+        allExportRows.push({
+          playbook: p.name,
+          risk_level: r.risk_level || "HIGH",
+          voter_id: r.id || r.voter_id,
+          name: r.name,
+          address: r.address,
+          city: r.city,
+          state: r.state || stateCode,
+          zip: r.zip,
+          county: r.county || jurisdiction,
+          details: r.details
+        });
+      });
+    });
+
+    if (allExportRows.length > 0) {
+      downloadCSV(allExportRows, `Marigold_Complete_360_Audit_${activeGroup.replace(/[^a-z0-9]/gi, '_')}_${dateStr}.csv`);
+    }
+
+    // Try saving summary report into Marigold_Local/Data_Stories/
+    const reportContent = `# Marigold 360° Forensic Audit Summary Report
+
+JURISDICTION GROUP: ${activeGroup}
+AUDIT DATE: ${new Date().toLocaleDateString()}
+TOTAL RECORDS SCANNED: ${totalRows.toLocaleString()}
+
+----------------------------------------------------------------------
+EXECUTIVE SUMMARY OF FINDINGS:
+----------------------------------------------------------------------
+${playbooks.map(p => `- ${p.name}: ${(anomalyRecords[p.id] || []).length.toLocaleString()} flagged records`).join("\n")}
+
+----------------------------------------------------------------------
+REPLICATION & VERIFICATION INSTRUCTIONS:
+----------------------------------------------------------------------
+1. Open Marigold Insights (https://marigoldinsights.org/comprehensive-audit).
+2. Select your local voter roll file for ${activeGroup}.
+3. Click "Run 360° Audit".
+4. Compare the resulting counts against the exported findings CSV files.
+`;
+
+    try {
+      const { getDirectoryHandle, writeStructuredFile } = await import("@/lib/fs/LocalFSManager");
+      const rootHandle = await getDirectoryHandle(activeGroup.toLowerCase());
+      if (rootHandle) {
+        await writeStructuredFile(rootHandle, "Data_Stories", `AUDIT_REPORT_${dateStr}.md`, reportContent);
+      }
+    } catch (e) {
+      console.warn("Could not auto-write to Data_Stories folder:", e);
+    }
   };
 
   const [playbooks, setPlaybooks] = useState<PlaybookStatus[]>([
@@ -198,25 +264,27 @@ export default function ComprehensiveAuditPage() {
             Execute all 7 civic verification playbooks simultaneously against {totalRows.toLocaleString()} citizen records.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={runSweep}
-          disabled={isRunningSweep}
-          variant="primary"
-          className="w-full md:w-auto px-8 py-4 rounded-full shadow-md text-sm flex items-center justify-center gap-2"
-        >
-          {isRunningSweep ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Scanning {playbooks[currentStepIndex]?.name || "Finalizing..."}</span>
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4" />
-              <span>Run 360º Audit</span>
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            onClick={downloadFullAuditPackage}
+            variant="outline"
+            className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-emerald-700 shadow-sm cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Complete Unclipped Audit Package</span>
+          </Button>
+
+          <Button
+            type="button"
+            onClick={runSweep}
+            disabled={isRunningSweep}
+            className="flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRunningSweep ? 'animate-spin' : ''}`} />
+            <span>{isRunningSweep ? "Scanning All Rules..." : "Run 360º Audit Sweep"}</span>
+          </Button>
+        </div>
       </Card>
 
       {/* Live Audit Progress Visibility Banner */}
