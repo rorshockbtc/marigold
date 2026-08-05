@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Folder, Download, Upload, CheckCircle2, Shield, X, RefreshCw, FileText } from "lucide-react";
+import { Folder, Download, Upload, CheckCircle2, Shield, X, RefreshCw, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getDirectoryHandle, listStructuredSubfolderFiles } from "@/lib/fs/LocalFSManager";
 import { exportWorkspaceZip, importWorkspaceZip } from "@/lib/fs/ZipWorkspaceManager";
+import { LocalFSHydrator, DiscoveredDataset } from "@/lib/fs/LocalFSHydrator";
+import { DatasetIntegrityChecker, IntegrityAnomaly } from "@/lib/data/DatasetIntegrityChecker";
 
 interface LocalFolderStatusModalProps {
   isOpen: boolean;
@@ -14,7 +16,10 @@ interface LocalFolderStatusModalProps {
 export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusModalProps) {
   const [folderName, setFolderName] = useState<string | null>(null);
   const [subfolderCounts, setSubfolderCounts] = useState<{ [key: string]: number }>({});
+  const [discoveredDatasets, setDiscoveredDatasets] = useState<DiscoveredDataset[]>([]);
+  const [integrityAlert, setIntegrityAlert] = useState<IntegrityAnomaly | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
 
   const loadFolderStats = async () => {
@@ -37,8 +42,22 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
         Kanban_Boards: kanban.length,
         Custom_Playbooks: playbooks.length
       });
+
+      const discovered = await LocalFSHydrator.discoverLocalDatasets(dirHandle);
+      setDiscoveredDatasets(discovered);
+
+      if (discovered.length > 0) {
+        const anomaly = DatasetIntegrityChecker.checkDatasetIntegrity(
+          discovered[0].totalBytes,
+          discovered[0].rowCount
+        );
+        if (anomaly.hasAnomaly) {
+          setIntegrityAlert(anomaly);
+        }
+      }
     } else {
       setFolderName(null);
+      setDiscoveredDatasets([]);
     }
   };
 
@@ -49,6 +68,27 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleAutoHydrate = async () => {
+    const grp = localStorage.getItem("marigold_active_group") || "default";
+    const dirHandle = await getDirectoryHandle(grp.toLowerCase());
+    if (!dirHandle) return;
+
+    setIsHydrating(true);
+    setStatusMsg("⚡ Rapidly auto-hydrating dataset shards from local disk...");
+    try {
+      const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle, (msg) => setStatusMsg(msg));
+      setStatusMsg(`✅ Successfully hydrated ${rows.toLocaleString()} rows into workspace!`);
+      setTimeout(() => {
+        window.location.href = "/explore";
+      }, 1200);
+    } catch (e) {
+      console.error("Auto-hydration failed:", e);
+      setStatusMsg("Auto-hydration failed. Try re-selecting folder.");
+    } finally {
+      setIsHydrating(false);
+    }
+  };
 
   const handleExportZip = async () => {
     setIsExporting(true);
@@ -128,10 +168,44 @@ export function LocalFolderStatusModal({ isOpen, onClose }: LocalFolderStatusMod
 
           <p className="text-xs text-text-body leading-relaxed">
             {folderName 
-              ? "Your browser is linked directly to your hard drive folder. Files are saved into standard subdirectories with zero duplicate prompt popups."
+              ? "Your browser is linked directly to your hard drive folder. Local dataset shards auto-hydrate into memory in seconds."
               : "No hard drive folder is currently linked. You can link a local folder or download a structured .ZIP backup package."}
           </p>
         </div>
+
+        {/* Integrity Alert Warning Banner */}
+        {integrityAlert && (
+          <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-1 text-xs text-amber-900">
+              <h5 className="font-bold">{integrityAlert.warningTitle}</h5>
+              <p className="leading-relaxed">{integrityAlert.warningMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Discovered Pre-Chunked Local Datasets */}
+        {discoveredDatasets.length > 0 && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-emerald-900">
+                📁 Discovered Pre-Chunked Local Dataset
+              </span>
+              <span className="text-xs font-mono font-bold text-emerald-700">
+                {discoveredDatasets[0].datasetName}
+              </span>
+            </div>
+            <Button
+              onClick={handleAutoHydrate}
+              disabled={isHydrating}
+              variant="primary"
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 text-xs flex items-center justify-center gap-2 shadow-md"
+            >
+              <RefreshCw className={`w-4 h-4 ${isHydrating ? 'animate-spin' : ''}`} />
+              <span>🚀 Rapid Auto-Hydrate &amp; Open Explore</span>
+            </Button>
+          </div>
+        )}
 
         {/* Subfolder Breakdown */}
         {folderName && (
