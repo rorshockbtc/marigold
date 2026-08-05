@@ -65,3 +65,4 @@ clipboard.txt
 !playwright.config.js
 keyManagementPolicy.md
 QA_PIPELINE.md
+.marigold/
