@@ -191,10 +191,13 @@ export function useDataQuery() {
                 }
 
                 const homeState = (std.state || 'MS').trim().toUpperCase();
-                const mailState = String(std.raw?.mail_state || std.raw?.MAIL_ST || std.raw?.mailing_state || '').trim().toUpperCase();
-                if ((std.ncoa_flag && String(std.ncoa_flag).trim() !== '') || (mailState !== '' && mailState !== homeState && mailState !== 'NONE' && mailState !== 'SAME')) {
+                const mailState = String(std.raw?.mail_state || std.raw?.MAIL_ST || std.raw?.mailing_state || std.raw?.MAIL_STATE || '').trim().toUpperCase();
+                const ncoaFlagStr = String(std.ncoa_flag || '').trim().toUpperCase();
+                const isExplicitNcoa = ncoaFlagStr === 'Y' || ncoaFlagStr === 'YES' || ncoaFlagStr === 'TRUE';
+                const isOutStateMail = mailState.length === 2 && mailState !== homeState && mailState !== 'MS' && mailState !== 'NO' && mailState !== 'NA';
+                if (isExplicitNcoa || isOutStateMail) {
                   ncoaList.push({
-                    id: std.voter_id, name: std.name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: `Out-of-state mailing state: ${mailState}`, raw: std.raw
+                    id: std.voter_id, name: std.name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: `Out-of-state relocation/mailing detected: ${mailState || 'NCOA Flagged'}`, raw: std.raw
                   });
                 }
 
