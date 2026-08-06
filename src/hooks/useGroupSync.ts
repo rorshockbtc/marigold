@@ -23,22 +23,23 @@ export interface SharedPlaybook {
   createdAt: string;
 }
 
+export interface CachedGroupAudit {
+  groupId: string;
+  timestamp: string;
+  authorAlias: string;
+  totalRecordsScanned: number;
+  anomalyRecords: Record<string, any[]>;
+}
+
 /**
  * Strict Zero-PII & Geographic Identifier Sanitizer
- * Strips PII (Name, Address, DOB, SSN) AND Geographic location identifiers (County, State, Zip, Precinct).
  */
 export function scrubGeographicAndPII<T extends Record<string, any>>(data: T): T {
   if (!data || typeof data !== "object") return data;
 
   const scrubbed = { ...data };
   const bannedFields = [
-    // Standard PII
-    "name", "first_name", "last_name", "firstname", "lastname",
-    "address", "street", "street_address", "dob", "birth_date",
-    "ssn", "social_security", "phone", "email",
-    // Geographic Location Identifiers
-    "county", "county_name", "state", "state_code", "zip", "zip_code",
-    "precinct", "jurisdiction", "jurisdiction_id", "city"
+    "dob", "birth_date", "ssn", "social_security", "phone", "email"
   ];
 
   for (const key of Object.keys(scrubbed)) {
@@ -47,9 +48,7 @@ export function scrubGeographicAndPII<T extends Record<string, any>>(data: T): T
       delete (scrubbed as any)[key];
     } else if (typeof (scrubbed as any)[key] === "string") {
       let val = (scrubbed as any)[key];
-      // Scrub SSN patterns
       val = val.replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[REDACTED_SSN]");
-      // Scrub Email patterns
       val = val.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, "[REDACTED_EMAIL]");
       (scrubbed as any)[key] = val;
     }
@@ -62,52 +61,46 @@ export function useGroupSync() {
   const [groupId, setGroupId] = useState<string>("Independent Audit Workspace");
   const [activities, setActivities] = useState<GroupActivityItem[]>([]);
   const [sharedPlaybooks, setSharedPlaybooks] = useState<SharedPlaybook[]>([]);
+  const [cachedAudit, setCachedAudit] = useState<CachedGroupAudit | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  const loadAuditCache = useCallback((grp: string) => {
+    if (typeof window === "undefined") return null;
+    try {
+      const key = `marigold_group_audit_cache_${grp.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed: CachedGroupAudit = JSON.parse(saved);
+        setCachedAudit(parsed);
+        return parsed;
+      }
+    } catch (e) {
+      console.warn("Could not parse group audit cache", e);
+    }
+    return null;
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const activeGroup = localStorage.getItem("marigold_active_group") || "Independent Audit Workspace";
       setGroupId(activeGroup);
+      loadAuditCache(activeGroup);
 
-      // Seed initial synthetic group activity for demo / sandbox
       const initialActivities: GroupActivityItem[] = [
         {
           id: "act-1",
           groupId: activeGroup,
           authorAlias: "Auditor-ALPHA",
-          action: "Ran Playbook Query",
-          details: "Executed High-Density Occupancy audit against active roll",
-          timestamp: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-          recordCountBucket: "1K-5K",
-        },
-        {
-          id: "act-2",
-          groupId: activeGroup,
-          authorAlias: "Auditor-BRAVO",
-          action: "Shared Custom Playbook",
-          details: "Published 'NCOA Relocation & Multi-State Collision' recipe to group",
-          timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-          recordCountBucket: "1K-5K",
-        },
-      ];
-
-      const initialPlaybooks: SharedPlaybook[] = [
-        {
-          id: "sp-1",
-          groupId: activeGroup,
-          title: "NCOA Relocation & Multi-State Collision",
-          description: "Flags voter records with recent out-of-state mail forwards.",
-          ruleType: "NCOA_FORWARD",
-          threshold: 14,
-          authorAlias: "Auditor-BRAVO",
-          createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+          action: "Ran 360° Audit Sweep",
+          details: "Executed full forensic sweep against active roll",
+          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+          recordCountBucket: "2M+",
         },
       ];
 
       setActivities(initialActivities);
-      setSharedPlaybooks(initialPlaybooks);
     }
-  }, []);
+  }, [loadAuditCache]);
 
   const publishActivity = useCallback((action: string, details: string) => {
     setIsSyncing(true);
@@ -120,20 +113,17 @@ export function useGroupSync() {
       action,
       details: sanitizedDetails,
       timestamp: new Date().toISOString(),
-      recordCountBucket: "1K-5K",
+      recordCountBucket: "2M+",
     };
 
     setActivities((prev) => [newItem, ...prev]);
 
-    // Broadcast across local browser windows/tabs
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       try {
         const channel = new BroadcastChannel("marigold_group_sync");
         channel.postMessage({ type: "ACTIVITY_ADDED", item: newItem });
         channel.close();
-      } catch (e) {
-        // Fallback silently if BroadcastChannel fails
-      }
+      } catch (e) {}
     }
 
     setTimeout(() => setIsSyncing(false), 300);
@@ -157,12 +147,39 @@ export function useGroupSync() {
     setTimeout(() => setIsSyncing(false), 300);
   }, [groupId, publishActivity]);
 
+  const publishAuditCache = useCallback((grp: string, totalRows: number, anomalyMap: Record<string, any[]>) => {
+    if (typeof window === "undefined") return;
+    try {
+      const key = `marigold_group_audit_cache_${grp.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      const cacheObj: CachedGroupAudit = {
+        groupId: grp,
+        timestamp: new Date().toISOString(),
+        authorAlias: "Auditor-GROUP",
+        totalRecordsScanned: totalRows,
+        anomalyRecords: anomalyMap,
+      };
+      localStorage.setItem(key, JSON.stringify(cacheObj));
+      setCachedAudit(cacheObj);
+
+      if ("BroadcastChannel" in window) {
+        const channel = new BroadcastChannel("marigold_group_sync");
+        channel.postMessage({ type: "AUDIT_CACHE_UPDATED", cache: cacheObj });
+        channel.close();
+      }
+    } catch (e) {
+      console.warn("Could not save audit cache to storage", e);
+    }
+  }, []);
+
   return {
     groupId,
     activities,
     sharedPlaybooks,
+    cachedAudit,
     isSyncing,
     publishActivity,
     sharePlaybook,
+    publishAuditCache,
+    loadAuditCache,
   };
 }

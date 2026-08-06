@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DataRequiredState } from "@/components/DataRequiredState";
 import { useDataQuery } from "@/hooks/useDataQuery";
+import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
 import { extractActualCountyName } from "@/lib/csv/universalMapper";
@@ -36,6 +37,7 @@ export default function ComprehensiveAuditPage() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState<string>("");
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
+  const { publishAuditCache, loadAuditCache } = useGroupSync();
   const { addTask, addNoteToTask } = useKanban();
 
   const getRowCounty = (r: any) => {
@@ -229,6 +231,18 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
     setIsDataLoaded(isLoaded);
 
     if (isLoaded) {
+      const activeGrp = localStorage.getItem("marigold_active_group") || "default";
+      const cached = loadAuditCache(activeGrp);
+      if (cached && cached.anomalyRecords) {
+        setAnomalyRecords(cached.anomalyRecords);
+        setIsAuditComplete(true);
+        setPlaybooks(prev => prev.map(pb => ({
+          ...pb,
+          status: "complete" as const,
+          flaggedCount: (cached.anomalyRecords[pb.id] || []).length
+        })));
+      }
+
       const loadInitialStats = async () => {
         try {
           let res = await runQuery("", [], 1);
@@ -252,7 +266,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
       };
       loadInitialStats();
     }
-  }, [runQuery]);
+  }, [runQuery, loadAuditCache]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -289,6 +303,9 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
 
       setPlaybooks(updatedPlaybooks);
       setAnomalyRecords(sweepMap);
+
+      const activeGrp = localStorage.getItem("marigold_active_group") || "default";
+      publishAuditCache(activeGrp, totalRows, sweepMap);
     } catch (err) {
       console.error("360 Sweep failed:", err);
     } finally {
