@@ -39,6 +39,7 @@ export default function ComprehensiveAuditPage() {
   const [selectedDrilldown, setSelectedDrilldown] = useState<DrilldownState | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState<string>("");
+  const [lastAuditTime, setLastAuditTime] = useState<string | null>(null);
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
   const { publishAuditCache, loadAuditCache } = useGroupSync();
   const { addTask, addNoteToTask } = useKanban();
@@ -257,6 +258,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
           if (cached && cached.anomalyRecords) {
             setAnomalyRecords(cached.anomalyRecords);
             setIsAuditComplete(true);
+            setLastAuditTime(cached.timestamp);
             setPlaybooks(prev => prev.map(pb => ({
               ...pb,
               status: "complete" as const,
@@ -333,6 +335,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
 
       setPlaybooks(updatedPlaybooks);
       setAnomalyRecords(sweepMap);
+      setLastAuditTime(new Date().toISOString());
 
     } catch (err) {
       console.error("360 Sweep failed:", err);
@@ -366,6 +369,11 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
             <h2 className="text-xl font-serif font-bold text-text-header mb-1">Automated Forensic Audit</h2>
             <p className="text-xs text-text-body">
               Execute all 7 civic verification playbooks simultaneously against {totalRows.toLocaleString()} citizen records.
+              {lastAuditTime && (
+                <span className="block mt-1.5 font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 inline-block">
+                  ✓ Group Audit Cache available from {new Date(lastAuditTime).toLocaleString()}
+                </span>
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -386,7 +394,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
               className="flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${isRunningSweep ? 'animate-spin' : ''}`} />
-              <span>{isRunningSweep ? "Scanning All Rules..." : "Run 360º Audit Sweep"}</span>
+              <span>{isRunningSweep ? "Scanning All Rules..." : "Force Fresh Sweep (~30s)"}</span>
             </Button>
           </div>
         </div>
