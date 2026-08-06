@@ -209,51 +209,29 @@ export class DataProcessorWorker {
       }
     };
 
-    let processed = 0;
-    let lastKey: IDBValidKey | undefined = undefined;
-    let done = false;
-    const BATCH_SIZE = 100_000;
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(['rows'], 'readonly');
+      const store = tx.objectStore('rows');
+      const req = store.openCursor();
+      let processed = 0;
 
-    while (!done) {
-      const batchRecords: any[] = await new Promise((resolve, reject) => {
-        const tx = db.transaction(['rows'], 'readonly');
-        const store = tx.objectStore('rows');
-        const range = lastKey !== undefined ? IDBKeyRange.lowerBound(lastKey, true) : undefined;
-        const req = store.getAll(range, BATCH_SIZE);
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => reject(req.error);
-      });
-
-      if (batchRecords.length === 0) {
-        done = true;
-        break;
-      }
-
-      const batchKeys: IDBValidKey[] = await new Promise((resolve, reject) => {
-        const tx = db.transaction(['rows'], 'readonly');
-        const store = tx.objectStore('rows');
-        const range = lastKey !== undefined ? IDBKeyRange.lowerBound(lastKey, true) : undefined;
-        const req = store.getAllKeys(range, BATCH_SIZE);
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => reject(req.error);
-      });
-      const batchLastKey = batchKeys.length > 0 ? batchKeys[batchKeys.length - 1] : undefined;
-
-      for (let i = 0; i < batchRecords.length; i++) {
-        processRecord(batchRecords[i]);
-      }
-
-      processed += batchRecords.length;
-      lastKey = batchLastKey;
-
-      if (totalCount > 0) {
-        onProgress(Math.min(95, Math.floor((processed / totalCount) * 100)));
-      }
-
-      if (batchRecords.length < BATCH_SIZE) {
-        done = true;
-      }
-    }
+      req.onsuccess = (e) => {
+        const cursor = (e.target as IDBRequest).result;
+        if (cursor) {
+          processRecord(cursor.value);
+          processed++;
+          
+          if (processed % 50_000 === 0 && totalCount > 0) {
+            onProgress(Math.min(95, Math.floor((processed / totalCount) * 100)));
+          }
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+      
+      req.onerror = () => reject(req.error);
+    });
 
     db.close();
 
