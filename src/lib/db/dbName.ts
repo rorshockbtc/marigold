@@ -46,7 +46,10 @@ export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> 
         db.close();
       };
 
-      if (!db.objectStoreNames.contains('rows')) {
+      const hasRows = db.objectStoreNames.contains('rows');
+      const hasCache = db.objectStoreNames.contains('AuditCacheStore');
+
+      if (!hasRows || !hasCache) {
         const currentVersion = db.version;
         db.close();
         const upgradeReq = indexedDB.open(dbName, currentVersion + 1);
@@ -57,6 +60,9 @@ export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> 
           const upDb = (event.target as IDBOpenDBRequest).result;
           if (!upDb.objectStoreNames.contains('rows')) {
             upDb.createObjectStore('rows', { autoIncrement: true });
+          }
+          if (!upDb.objectStoreNames.contains('AuditCacheStore')) {
+            upDb.createObjectStore('AuditCacheStore');
           }
         };
         upgradeReq.onsuccess = () => {
@@ -75,6 +81,9 @@ export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> 
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains('rows')) {
         db.createObjectStore('rows', { autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains('AuditCacheStore')) {
+        db.createObjectStore('AuditCacheStore');
       }
     };
   });

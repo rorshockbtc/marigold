@@ -112,7 +112,8 @@ export function useCSVExport() {
             if (directoryHandle && message.blob) {
               try {
                 const uploadedDataFolder = await directoryHandle.getDirectoryHandle("Uploaded_Data", { create: true });
-                const subDirHandle = await uploadedDataFolder.getDirectoryHandle(prefix, { create: true });
+                const targetSubDir = prefix || "Exports";
+                const subDirHandle = await uploadedDataFolder.getDirectoryHandle(targetSubDir, { create: true });
                 const fileHandle = await subDirHandle.getFileHandle(message.filename, { create: true });
                 const writable = await fileHandle.createWritable();
                 await writable.write(message.blob);

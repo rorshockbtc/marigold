@@ -1,82 +1,67 @@
-const DB_NAME = 'MarigoldFSConfigDB';
-const STORE_NAME = 'handles';
+import { openDB } from "idb";
 
-function openFSDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
+const DB_NAME = "MarigoldFSConfigDB";
+const STORE_NAME = "handles";
+
+async function getDB() {
+  return openDB(DB_NAME, 1, {
+    upgrade(db) {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
       }
-    };
+    },
   });
 }
 
-export async function storeDirectoryHandle(workspaceId: string, handle: any): Promise<void> {
-  if (typeof window === "undefined") return;
-  const db = await openFSDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.put(handle, workspaceId);
-    const defaultReq = store.put(handle, "default");
-    defaultReq.onsuccess = () => resolve();
-    defaultReq.onerror = () => reject(defaultReq.error);
-  });
+export async function storeDirectoryHandle(groupName: string, handle: FileSystemDirectoryHandle): Promise<void> {
+  const db = await getDB();
+  const key = groupName.toLowerCase().trim();
+  await db.put(STORE_NAME, handle, key);
+  await db.put(STORE_NAME, handle, "default");
 }
 
-export async function getDirectoryHandle(workspaceId: string): Promise<any | null> {
-  if (typeof window === "undefined") return null;
-  const db = await openFSDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get(workspaceId);
-    request.onsuccess = () => {
-      if (request.result) {
-        resolve(request.result);
-      } else {
-        // Fallback: check "default" key if specific workspaceId key is missing
-        const defaultReq = store.get("default");
-        defaultReq.onsuccess = () => resolve(defaultReq.result || null);
-        defaultReq.onerror = () => resolve(null);
-      }
-    };
-    request.onerror = () => reject(request.error);
-  });
-}
-
-export async function verifyPermission(fileHandle: any, readWrite: boolean = false): Promise<boolean> {
-  if (!fileHandle) return false;
-  const options = { mode: readWrite ? 'readwrite' : 'read' };
+export async function getDirectoryHandle(groupName: string): Promise<FileSystemDirectoryHandle | null> {
   try {
-    const queryRes = await fileHandle.queryPermission(options);
-    if (queryRes === 'granted') {
-      return true;
-    }
-    const reqRes = await fileHandle.requestPermission(options);
-    if (reqRes === 'granted') {
-      return true;
-    }
-  } catch (err) {
-    console.warn("Permission check failed:", err);
+    const db = await getDB();
+    const key = groupName.toLowerCase().trim();
+    const handle = await db.get(STORE_NAME, key);
+    if (handle) return handle;
+    return await db.get(STORE_NAME, "default");
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function removeDirectoryHandle(groupName: string): Promise<void> {
+  const db = await getDB();
+  const key = groupName.toLowerCase().trim();
+  await db.delete(STORE_NAME, key);
+}
+
+export async function verifyPermission(fileHandle: any, readWrite: boolean): Promise<boolean> {
+  const options: any = {};
+  if (readWrite) {
+    options.mode = "readwrite";
+  }
+  if ((await fileHandle.queryPermission(options)) === "granted") {
+    return true;
+  }
+  if ((await fileHandle.requestPermission(options)) === "granted") {
+    return true;
   }
   return false;
 }
 
-export async function getDirectoryHandleWithPermission(workspaceId: string, readWrite: boolean = false): Promise<any | null> {
-  const handle = await getDirectoryHandle(workspaceId);
-  if (!handle) return null;
-
-  const hasPerm = await verifyPermission(handle, readWrite);
-  if (hasPerm) return handle;
-  return handle; // Return handle even if permission prompt requires click gesture
+export async function getDirectoryHandleWithPermission(groupName: string): Promise<FileSystemDirectoryHandle | null> {
+  const handle = await getDirectoryHandle(groupName);
+  if (handle) {
+    const hasPermission = await verifyPermission(handle, true);
+    if (hasPermission) return handle;
+  }
+  return null;
 }
 
-export async function initStructuredWorkspace(rootHandle: any): Promise<void> {
+export async function initializeMarigoldDirectoryStructure(rootHandle: FileSystemDirectoryHandle): Promise<void> {
   if (!rootHandle) return;
   const subfolders = ["Data_Stories", "Groups", "Uploaded_Data", "Kanban_Boards", "Custom_Playbooks", ".marigold"];
   for (const sub of subfolders) {
@@ -108,6 +93,10 @@ WARNING: Do not rename or delete this folder.
   }
 }
 
+export async function initStructuredWorkspace(rootHandle: FileSystemDirectoryHandle): Promise<void> {
+  return initializeMarigoldDirectoryStructure(rootHandle);
+}
+
 export async function writeStructuredFile(
   rootHandle: any,
   subfolderName: string,
@@ -124,6 +113,21 @@ export async function writeStructuredFile(
   } catch (err) {
     console.warn(`Could not write ${fileName} to ${subfolderName}:`, err);
     return false;
+  }
+}
+
+export async function readStructuredFile(
+  rootHandle: any,
+  subfolderName: string,
+  fileName: string
+): Promise<string | null> {
+  try {
+    const subDir = await rootHandle.getDirectoryHandle(subfolderName, { create: false });
+    const fileHandle = await subDir.getFileHandle(fileName, { create: false });
+    const file = await fileHandle.getFile();
+    return await file.text();
+  } catch (err) {
+    return null;
   }
 }
 

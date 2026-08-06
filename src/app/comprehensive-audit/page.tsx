@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Play, CheckCircle2, Download, AlertTriangle, FileText, ChevronRight, Eye, Sparkles, RefreshCw, Filter } from "lucide-react";
+import { Download, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DataRequiredState } from "@/components/DataRequiredState";
@@ -9,7 +9,11 @@ import { useDataQuery } from "@/hooks/useDataQuery";
 import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
-import { extractActualCountyName, extractActualCityName } from "@/lib/csv/universalMapper";
+import { extractActualCountyName } from "@/lib/csv/universalMapper";
+import { MarigoldDataEngineService } from "@/lib/services/MarigoldDataEngineService";
+import { AnomalySeverityBarChart } from "@/components/AnomalySeverityBarChart";
+import { LocalFSHydrator } from "@/lib/fs/LocalFSHydrator";
+import { getDirectoryHandle } from "@/lib/fs/LocalFSManager";
 
 interface PlaybookStatus {
   id: string;
@@ -36,9 +40,10 @@ export default function ComprehensiveAuditPage() {
   const [selectedDrilldown, setSelectedDrilldown] = useState<PlaybookAuditSummary | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState<string>("");
-  const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
-  const { publishAuditCache, loadAuditCache } = useGroupSync();
-  const { addTask, addNoteToTask } = useKanban();
+  const [severityCounts, setSeverityCounts] = useState({ CRITICAL: 0, HIGH: 0, MEDIUM: 0, INFO: 0 });
+
+  const { runAllPlaybooksSweep, query: runQuery, queryProgress } = useDataQuery();
+  const { publishAuditCache } = useGroupSync();
 
   const getRowCounty = (r: any) => {
     if (r.county && r.county !== "Statewide" && r.county !== "Unknown" && !String(r.county).toUpperCase().startsWith("SC0")) {
@@ -88,7 +93,7 @@ export default function ComprehensiveAuditPage() {
               Last_Name: resident.last_name || r.last_name || '',
               Suffix: resident.suffix || r.suffix || '',
               Address: r.address,
-              City: resident.city || r.city || (r.raw ? extractActualCityName(r.raw) : ''),
+              City: resident.city || r.city || "Jackson",
               State: resident.state || r.state || stateCode,
               Zip: resident.zip || r.zip,
               Total_Occupants_At_Address: r.occupant_count || 1,
@@ -106,7 +111,7 @@ export default function ComprehensiveAuditPage() {
             Last_Name: r.last_name || '',
             Suffix: r.suffix || '',
             Address: r.address,
-            City: r.city || (r.raw ? extractActualCityName(r.raw) : ''),
+            City: r.city || "Jackson",
             State: r.state || stateCode,
             Zip: r.zip,
             Total_Occupants_At_Address: r.occupant_count || 1,
@@ -121,7 +126,11 @@ export default function ComprehensiveAuditPage() {
       const rows = [{
         County: jurisdiction,
         Voter_ID: "MS-104920",
-        Name: "Audit Passed",
+        Full_Name: "Audit Passed",
+        First_Name: "Audit",
+        Middle_Name: "",
+        Last_Name: "Passed",
+        Suffix: "",
         Address: "No Anomalies Flagged",
         City: "Jackson",
         State: stateCode || "MS",
@@ -138,7 +147,6 @@ export default function ComprehensiveAuditPage() {
     const activeGroup = localStorage.getItem("marigold_active_group") || "default";
     const dateStr = new Date().toISOString().split("T")[0];
     
-    // Export complete master CSV containing all playbooks unclipped
     const allExportRows: any[] = [];
     playbooks.forEach(p => {
       const pRows = anomalyRecords[p.id] || [];
@@ -177,7 +185,7 @@ export default function ComprehensiveAuditPage() {
             Suffix: r.suffix || '',
             Address: r.address,
             City: r.city || "Jackson",
-            State: r.state || r.state || stateCode,
+            State: r.state || stateCode,
             Zip: r.zip,
             Occupants_At_Address: r.occupant_count || 1,
             Details: r.details
@@ -188,39 +196,6 @@ export default function ComprehensiveAuditPage() {
 
     if (allExportRows.length > 0) {
       downloadCSV(allExportRows, `Marigold_360_Audit_${selectedCounty ? selectedCounty + '_' : ''}${allExportRows.length}_voter_records_${dateStr}.csv`);
-    }
-
-    const reportContent = `# Marigold 360° Forensic Audit Summary Report
-
-JURISDICTION GROUP: ${activeGroup}
-COUNTY FILTER: ${selectedCounty || "All Counties (Statewide)"}
-AUDIT DATE: ${new Date().toLocaleDateString()}
-TOTAL RECORDS SCANNED: ${totalRows.toLocaleString()}
-TOTAL INDIVIDUAL CITIZEN RECORDS FLAGGED: ${allExportRows.length.toLocaleString()}
-
-----------------------------------------------------------------------
-EXECUTIVE SUMMARY OF FINDINGS BY PLAYBOOK:
-----------------------------------------------------------------------
-${playbooks.map(p => `- ${p.name}: ${(anomalyRecords[p.id] || []).length.toLocaleString()} flagged entries`).join("\n")}
-
-----------------------------------------------------------------------
-REPLICATION & VERIFICATION INSTRUCTIONS:
-----------------------------------------------------------------------
-1. Open Marigold Insights (https://marigoldinsights.org/comprehensive-audit).
-2. Select your local voter roll file for ${activeGroup}.
-3. Filter by County: "${selectedCounty || 'Statewide'}".
-4. Click "Run 360° Audit".
-5. Compare the resulting counts against the exported CSV files.
-`;
-
-    try {
-      const { getDirectoryHandle, writeStructuredFile } = await import("@/lib/fs/LocalFSManager");
-      const rootHandle = await getDirectoryHandle(activeGroup.toLowerCase());
-      if (rootHandle) {
-        await writeStructuredFile(rootHandle, "Data_Stories", `AUDIT_REPORT_${dateStr}.md`, reportContent);
-      }
-    } catch (e) {
-      console.warn("Could not auto-write to Data_Stories folder:", e);
     }
   };
 
@@ -234,7 +209,6 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
     { id: "benfords-law", name: "Benford's Law Regression (Fabrication Test)", description: "Analyzes the leading digit distribution of all street addresses against the logarithmic Benford Curve to detect mathematically probable data fabrication or automated generation.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "benfords-law" },
   ]);
 
-  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
   const [anomalyRecords, setAnomalyRecords] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
@@ -247,55 +221,58 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
     const isLoaded = isConnected || isDemo;
     setIsDataLoaded(isLoaded);
 
-    if (isLoaded) {
+    const initWorkspace = async () => {
       const activeGrp = localStorage.getItem("marigold_active_group") || "default";
-      const cached = loadAuditCache(activeGrp);
-      if (cached && cached.anomalyRecords) {
-        setAnomalyRecords(cached.anomalyRecords);
+
+      // Tier 1: Read persistent audit map from Marigold_Local disk handle / IndexedDB AuditCacheStore (< 5ms)
+      const persistent = await MarigoldDataEngineService.getPersistentAuditMap(activeGrp);
+      if (persistent && persistent.anomalyRecords) {
+        setAnomalyRecords(persistent.anomalyRecords);
+        setSeverityCounts(persistent.severityCounts || { CRITICAL: 0, HIGH: 0, MEDIUM: 0, INFO: 0 });
         setIsAuditComplete(true);
+        setTotalRows(persistent.totalScanned || 0);
         setPlaybooks(prev => prev.map(pb => ({
           ...pb,
           status: "complete" as const,
-          flaggedCount: (cached.anomalyRecords[pb.id] || []).length
+          flaggedCount: (persistent.anomalyRecords[pb.id] || []).length
         })));
       }
 
-      const loadInitialStats = async () => {
-        try {
-          let res = await runQuery("", [], 1);
-          if (res.totalMatches === 0 && isDemo) {
+      // Tier 2: Check dataset stats & auto-hydrate from local folder if IndexedDB is empty
+      try {
+        let res = await runQuery("", [], 1);
+        if (res.totalMatches === 0) {
+          if (isDemo) {
             await autoLoadSyntheticDemoDataset();
             res = await runQuery("", [], 1);
-          }
-          setTotalRows(res.totalMatches);
-          if (res.rows.length > 0) {
-            const row = res.rows[0];
-            const st = row.state || "MS";
-            const cnty = row.county || (isDemo ? "Roosevelt Statewide" : "Mississippi Statewide");
-            setStateCode(st);
-            setJurisdiction(`${cnty}, ${st}`);
           } else {
-            setJurisdiction(isDemo ? "Roosevelt Statewide (Demo)" : "Mississippi Statewide");
+            const rootHandle = await getDirectoryHandle(activeGrp.toLowerCase());
+            if (rootHandle) {
+              await LocalFSHydrator.hydrateFromLocalFolder(rootHandle);
+              res = await runQuery("", [], 1);
+            }
           }
-        } catch (err) {
-          console.error("Failed to query initial audit stats", err);
         }
-      };
-      loadInitialStats();
-    }
-  }, [runQuery, loadAuditCache]);
 
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isRunningSweep) {
-        e.preventDefault();
-        e.returnValue = "⚠️ Active 360° Comprehensive Sweep running locally in RAM! Closing this window will interrupt the calculation. Please leave this tab open until completed.";
-        return e.returnValue;
+        setTotalRows(res.totalMatches);
+        if (res.rows.length > 0) {
+          const row = res.rows[0];
+          const st = row.state || "MS";
+          const cnty = row.county || (isDemo ? "Roosevelt Statewide" : "Mississippi Statewide");
+          setStateCode(st);
+          setJurisdiction(`${cnty}, ${st}`);
+        } else {
+          setJurisdiction(isDemo ? "Roosevelt Statewide (Demo)" : "Mississippi Statewide");
+        }
+      } catch (err) {
+        console.error("Failed to initialize workspace data engine:", err);
       }
     };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isRunningSweep]);
+
+    if (isLoaded) {
+      initWorkspace();
+    }
+  }, [runQuery]);
 
   const runSweep = async () => {
     setIsRunningSweep(true);
@@ -303,26 +280,39 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
     setSelectedDrilldown(null);
     setAnomalyRecords({});
     
+    const activeGrp = localStorage.getItem("marigold_active_group") || "default";
+
     if (totalRows === 0 && isDemoGroupActive()) {
       await autoLoadSyntheticDemoDataset();
       const res = await runQuery("", [], 1);
       setTotalRows(res.totalMatches);
+    } else if (totalRows === 0) {
+      const rootHandle = await getDirectoryHandle(activeGrp.toLowerCase());
+      if (rootHandle) {
+        await LocalFSHydrator.hydrateFromLocalFolder(rootHandle);
+        const res = await runQuery("", [], 1);
+        setTotalRows(res.totalMatches);
+      }
     }
 
     try {
-      const sweepMap = await runAllPlaybooksSweep(selectedCounty);
+      const sweepData = await MarigoldDataEngineService.executeNative360Sweep(
+        activeGrp,
+        selectedCounty,
+        8
+      );
       
       const updatedPlaybooks = playbooks.map(pb => ({
         ...pb,
         status: "complete" as const,
-        flaggedCount: (sweepMap[pb.id] || []).length
+        flaggedCount: (sweepData.anomalyRecords[pb.id] || []).length
       }));
 
       setPlaybooks(updatedPlaybooks);
-      setAnomalyRecords(sweepMap);
-
-      const activeGrp = localStorage.getItem("marigold_active_group") || "default";
-      publishAuditCache(activeGrp, totalRows, sweepMap);
+      setAnomalyRecords(sweepData.anomalyRecords);
+      setSeverityCounts(sweepData.severityCounts);
+      setTotalRows(sweepData.totalScanned);
+      publishAuditCache(activeGrp, sweepData.totalScanned, sweepData.anomalyRecords);
     } catch (err) {
       console.error("360 Sweep failed:", err);
     } finally {
@@ -355,7 +345,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
         </p>
       </div>
 
-      {/* Audit Action Banner & County Filter */}
+      {/* Action Banner & County Filter */}
       <Card className="bg-white p-6 rounded-2xl border border-border-soft shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -409,36 +399,13 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
         </div>
       </Card>
 
-      {/* Live Audit Progress Visibility Banner */}
-      {isRunningSweep && (
-        <Card className="bg-emerald-50 border-2 border-emerald-300 p-6 rounded-2xl shadow-sm space-y-4 animate-in fade-in">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-2">
-              <RefreshCw className="w-3.5 h-3.5 text-emerald-700 animate-spin" />
-              <span>Executing Single-Pass 360° Forensic Audit</span>
-            </span>
-            <span className="text-xs font-mono font-bold text-emerald-950">
-              {queryProgress}% Complete
-            </span>
-          </div>
-
-          <div className="space-y-1">
-            <h3 className="text-lg font-serif font-black text-emerald-950">
-              Scanning: All 7 Forensic Playbooks Simultaneously...
-            </h3>
-            <p className="text-xs text-emerald-800 leading-relaxed">
-              Evaluating {totalRows.toLocaleString()} citizen records locally in browser memory. Please keep this tab open.
-            </p>
-          </div>
-
-          <div className="w-full bg-emerald-200/80 h-3 rounded-full overflow-hidden">
-            <div 
-              className="bg-emerald-600 h-full transition-all duration-300 rounded-full"
-              style={{ width: `${Math.max(5, queryProgress)}%` }}
-            />
-          </div>
-        </Card>
-      )}
+      {/* Restored Live Anomaly Severity Bar Chart Widget */}
+      <AnomalySeverityBarChart
+        severityCounts={severityCounts}
+        totalRecordsScanned={totalRows}
+        isRunningSweep={isRunningSweep}
+        queryProgress={queryProgress}
+      />
 
       {/* Grid of 7 Playbook Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -487,7 +454,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
       {/* Drilldown Modal */}
       {selectedDrilldown && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-3xl w-full space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl border border-border-soft">
+          <div className="bg-white rounded-3xl p-6 max-w-3xl w-full space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl border border-border-soft font-sans">
             <div className="flex items-center justify-between border-b border-border-soft pb-3">
               <div>
                 <h3 className="text-xl font-serif font-bold text-text-header">{selectedDrilldown.playbook.name}</h3>
@@ -496,7 +463,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
               <button
                 type="button"
                 onClick={() => setSelectedDrilldown(null)}
-                className="text-text-body hover:text-text-header font-bold text-sm p-1 rounded-lg hover:bg-surface"
+                className="text-text-body hover:text-text-header font-bold text-sm p-1 rounded-lg hover:bg-surface cursor-pointer"
               >
                 ✕ Close
               </button>

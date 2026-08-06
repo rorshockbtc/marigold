@@ -48,7 +48,7 @@ export function useCSVHydrate() {
       let latestSubDir: any = null;
       let latestName = "";
       
-      for await (const entry of rootDirHandle.values()) {
+      for await (const entry of (rootDirHandle as any).values()) {
         if (entry.kind === 'directory' && !entry.name.startsWith('.')) {
           if (entry.name > latestName) {
             latestName = entry.name;
