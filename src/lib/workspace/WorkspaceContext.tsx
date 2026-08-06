@@ -103,6 +103,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
     refreshWorkspaceState();
     window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: targetGroup } }));
+
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        const channel = new BroadcastChannel("marigold_group_sync");
+        channel.postMessage({ type: "GROUP_CHANGED", group: targetGroup });
+        channel.close();
+      } catch (e) {}
+    }
+
     window.location.reload(); // Force full app reload to ensure IndexedDB disconnects cleanly
   };
 

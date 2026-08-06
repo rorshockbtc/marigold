@@ -4,6 +4,14 @@ import { useState, useCallback } from "react";
 import { getActiveDatabaseName, isDemoGroupActive } from "@/lib/db/dbName";
 import { normalizeRowWithMapping, interpretColumnMappings } from "@/lib/csv/universalMapper";
 
+function getValidStoreName(db: IDBDatabase): string | null {
+  if (db.objectStoreNames.contains("rows")) return "rows";
+  if (db.objectStoreNames.contains("records")) return "records";
+  if (db.objectStoreNames.contains("VoterRolls")) return "VoterRolls";
+  if (db.objectStoreNames.length > 0) return db.objectStoreNames[0];
+  return null;
+}
+
 export function useDataQuery() {
   const [isQuerying, setIsQuerying] = useState<boolean>(false);
   const [queryProgress, setQueryProgress] = useState<number>(0);
@@ -11,10 +19,7 @@ export function useDataQuery() {
   const query = useCallback(
     async (searchTerm: string = "", filters: any[] = [], limit: number = 100): Promise<{ totalMatches: number; rows: any[] }> => {
       setIsQuerying(true);
-
-      const isDemo = isDemoGroupActive();
       const dbName = getActiveDatabaseName();
-      const storeName = isDemo ? "VoterRolls" : "records";
 
       return new Promise((resolve, reject) => {
         const req = indexedDB.open(dbName);
@@ -26,7 +31,9 @@ export function useDataQuery() {
 
         req.onsuccess = (e) => {
           const db = (e.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains(storeName)) {
+          const storeName = getValidStoreName(db);
+
+          if (!storeName) {
             setIsQuerying(false);
             db.close();
             return resolve({ totalMatches: 0, rows: [] });
@@ -90,9 +97,7 @@ export function useDataQuery() {
       setIsQuerying(true);
       setQueryProgress(5);
 
-      const isDemo = isDemoGroupActive();
       const dbName = getActiveDatabaseName();
-      const storeName = isDemo ? "VoterRolls" : "records";
 
       return new Promise((resolve, reject) => {
         const req = indexedDB.open(dbName);
@@ -104,9 +109,12 @@ export function useDataQuery() {
 
         req.onsuccess = async (e) => {
           const db = (e.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains(storeName)) {
+          const storeName = getValidStoreName(db);
+
+          if (!storeName) {
             setIsQuerying(false);
             db.close();
+            setQueryProgress(100);
             return resolve({});
           }
 
@@ -129,7 +137,6 @@ export function useDataQuery() {
             if (savedMap) activeMapping = JSON.parse(savedMap);
           } catch (err) {}
 
-          // ULTRA FAST C++ BATCH DESERIALIZATION VIA store.getAll()
           setQueryProgress(20);
           const getAllReq = store.getAll();
 
@@ -153,7 +160,6 @@ export function useDataQuery() {
 
             const filterCounty = (countyFilter || '').toLowerCase();
 
-            // FAST SINGLE-PASS SYNCHRONOUS ARRAY LOOP (No async IPC overhead!)
             for (let i = 0; i < totalCount; i++) {
               if (i % 200000 === 0) {
                 setQueryProgress(50 + Math.floor((i / totalCount) * 45));
@@ -249,7 +255,6 @@ export function useDataQuery() {
               }
             }
 
-            // Aggregate all 7 playbook results
             const resultMap: Record<string, Array<Record<string, any>>> = {};
 
             // 1. Density
@@ -269,7 +274,7 @@ export function useDataQuery() {
             for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
               const upper = addr.toUpperCase();
               if (upper.includes('PO BOX') || upper.includes('P O BOX') || upper.includes('P.O. BOX') || upper.includes('UPS STORE') || upper.includes('PMB') || upper.includes('FEDEX')) {
-                poBoxResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, suffix: sample.suffix, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
+                poBoxResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, suffix: sample.suffix, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
               }
             }
             resultMap['po-box'] = poBoxResults;

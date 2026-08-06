@@ -38,28 +38,15 @@ export function useVoterRollConnection(groupName?: string): VoterRollConnectionS
       const isLocalStorageConn = localStorage.getItem("marigold_file_connected") === "true";
       const localRows = Number(localStorage.getItem("marigold_file_rows") || "0");
 
-      // Startup Data Purge: Wipe the old XOR-encrypted database if it hasn't been done yet
-      if (!localStorage.getItem("marigold_crypto_purged")) {
-        console.warn("Purging old insecure database...");
-        const deleteReq = indexedDB.deleteDatabase(dbName);
-        deleteReq.onsuccess = () => {
-          console.log(`Successfully purged old insecure database: ${dbName}`);
-          localStorage.setItem("marigold_crypto_purged", "true");
-          checkDataConnection(); // Re-run the connection check
-        };
-        deleteReq.onerror = () => {
-          console.error(`Failed to purge old insecure database: ${dbName}`);
-        };
-        return; // Wait for the delete to finish before checking connection
-      }
-
       try {
-        const request = indexedDB.open(dbName, 1);
+        const request = indexedDB.open(dbName);
         request.onsuccess = (e) => {
           const db = (e.target as IDBOpenDBRequest).result;
-          if (db && db.objectStoreNames.contains("rows")) {
-            const tx = db.transaction(["rows"], "readonly");
-            const store = tx.objectStore("rows");
+          const storeName = db.objectStoreNames.contains("rows") ? "rows" : (db.objectStoreNames.contains("records") ? "records" : (db.objectStoreNames.contains("VoterRolls") ? "VoterRolls" : null));
+          
+          if (db && storeName) {
+            const tx = db.transaction([storeName], "readonly");
+            const store = tx.objectStore(storeName);
             const countReq = store.count();
             countReq.onsuccess = () => {
               const count = countReq.result || localRows;
@@ -81,7 +68,7 @@ export function useVoterRollConnection(groupName?: string): VoterRollConnectionS
               isConnected: hasData,
               loadedRowCount: localRows,
               totalRows: localRows,
-              loadedFileName: isDemoMode ? "Synthetic DEMO_ dataset required" : "",
+              loadedFileName: isDemoMode ? "DEMO_roosevelt_statewide_voter_roll.csv" : "",
               activeGroup: grp,
               isDemo: isDemoMode,
             });
@@ -93,6 +80,26 @@ export function useVoterRollConnection(groupName?: string): VoterRollConnectionS
     };
 
     checkDataConnection();
+
+    // Listen to storage events and BroadcastChannel to sync workspace switching instantly across all tabs
+    window.addEventListener("storage", checkDataConnection);
+
+    let channel: BroadcastChannel | null = null;
+    if ("BroadcastChannel" in window) {
+      try {
+        channel = new BroadcastChannel("marigold_group_sync");
+        channel.onmessage = (msg) => {
+          if (msg.data?.type === "GROUP_CHANGED" || msg.data?.type === "AUDIT_CACHE_UPDATED") {
+            checkDataConnection();
+          }
+        };
+      } catch (e) {}
+    }
+
+    return () => {
+      window.removeEventListener("storage", checkDataConnection);
+      if (channel) channel.close();
+    };
   }, [groupName]);
 
   return state;

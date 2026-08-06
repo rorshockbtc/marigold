@@ -9,14 +9,23 @@ export function getActiveDatabaseName(overrideGroup?: string | null): string {
                       grpLower.includes("acme") ||
                       grpLower.includes("sandbox") ||
                       grpLower.includes("synthetic");
-  return isDemoGroup ? "DemoVoterDataDB" : "VoterDataDB";
+  if (isDemoGroup) return "DemoVoterDataDB";
+  if (!activeGroup || activeGroup === "default" || activeGroup === "Independent Audit Workspace") return "VoterDataDB";
+  const safeSlug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+  return `MarigoldDB_${safeSlug}`;
 }
 
 export function isDemoGroupActive(overrideGroup?: string | null): boolean {
   if (typeof window === "undefined") return false;
   const activeGroup = (overrideGroup || localStorage.getItem("marigold_active_group") || "").trim();
+  const grpLower = activeGroup.toLowerCase();
   return activeGroup === "State of Roosevelt (Demo)" ||
-         activeGroup === "ACME Civic Data Sandbox (Demo Environment)";
+         activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ||
+         grpLower.includes("demo") ||
+         grpLower.includes("roosevelt") ||
+         grpLower.includes("acme") ||
+         grpLower.includes("sandbox") ||
+         grpLower.includes("synthetic");
 }
 
 export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> {
@@ -34,7 +43,6 @@ export function openActiveDatabase(customDbName?: string): Promise<IDBDatabase> 
       const db = request.result;
 
       db.onversionchange = () => {
-        // Auto-close handle if another worker needs to reset/upgrade schema
         db.close();
       };
 
@@ -99,42 +107,31 @@ export async function autoLoadSyntheticDemoDataset(onProgress?: (msg: string) =>
   if (onProgress) onProgress("⏳ Parsing ~1,800 training records into isolated RAM...");
   
   return new Promise((resolve, reject) => {
-    import("papaparse").then(({ default: Papa }) => {
-      Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async (results) => {
-          if (onProgress) onProgress("🔒 Storing into secure air-gapped DemoVoterDataDB...");
-          try {
-            const dbName = getActiveDatabaseName();
-            const db = await openActiveDatabase(dbName);
-            const transaction = db.transaction(['rows'], 'readwrite');
-            const store = transaction.objectStore('rows');
-            store.clear();
-            
-            const rows = results.data as Array<Record<string, any>>;
-            for (let i = 0; i < rows.length; i++) {
-              store.add(rows[i]);
-            }
-            
-            transaction.oncomplete = () => {
-              db.close();
-              if (typeof window !== "undefined") {
-                localStorage.setItem("marigold_file_connected", "true");
-                localStorage.setItem("marigold_file_name", "DEMO_roosevelt_statewide_voter_roll.csv");
-                localStorage.setItem("marigold_file_rows", String(rows.length));
-                localStorage.setItem("marigold_demo_loaded", "true");
-              }
-              if (onProgress) onProgress("✅ Auto-Load Complete!");
-              resolve(rows.length);
-            };
-            transaction.onerror = () => reject(transaction.error);
-          } catch (err) {
-            reject(err);
-          }
-        },
-        error: (err: any) => reject(err)
-      });
+    const Papa = require('papaparse');
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results: any) => {
+        const rows = results.data;
+        const dbName = "DemoVoterDataDB";
+        const db = await openActiveDatabase(dbName);
+        const tx = db.transaction(['rows'], 'readwrite');
+        const store = tx.objectStore('rows');
+        store.clear();
+
+        for (let i = 0; i < rows.length; i++) {
+          store.add(rows[i]);
+        }
+
+        tx.oncomplete = () => {
+          db.close();
+          resolve(rows.length);
+        };
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error);
+        };
+      }
     });
   });
 }
