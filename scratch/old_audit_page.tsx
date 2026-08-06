@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Play, CheckCircle2, Download, AlertTriangle, FileText, ChevronRight, Eye, Sparkles, RefreshCw, Filter, ArrowRight, X } from "lucide-react";
+import { ShieldCheck, Play, CheckCircle2, Download, AlertTriangle, FileText, ChevronRight, Eye, Sparkles, RefreshCw, Filter } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DataRequiredState } from "@/components/DataRequiredState";
@@ -10,9 +10,6 @@ import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
 import { extractActualCountyName, extractActualCityName } from "@/lib/csv/universalMapper";
-import { PageHeader } from "@/components/PageHeader";
-import { ExecutiveBriefingExport } from "@/components/ExecutiveBriefingExport";
-import { useWorkspace } from "@/lib/workspace/WorkspaceContext";
 
 interface PlaybookStatus {
   id: string;
@@ -24,7 +21,7 @@ interface PlaybookStatus {
   audit_type: string;
 }
 
-interface DrilldownState {
+interface PlaybookAuditSummary {
   playbook: PlaybookStatus;
   records: any[];
 }
@@ -36,7 +33,7 @@ export default function ComprehensiveAuditPage() {
   const [jurisdiction, setJurisdiction] = useState("Statewide, MS");
   const [isRunningSweep, setIsRunningSweep] = useState(false);
   const [isAuditComplete, setIsAuditComplete] = useState(false);
-  const [selectedDrilldown, setSelectedDrilldown] = useState<DrilldownState | null>(null);
+  const [selectedDrilldown, setSelectedDrilldown] = useState<PlaybookAuditSummary | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState<string>("");
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
@@ -252,34 +249,25 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
 
     if (isLoaded) {
       const activeGrp = localStorage.getItem("marigold_active_group") || "default";
-      import('@/lib/services/MarigoldDataEngineService').then(({ MarigoldDataEngineService }) => {
-        MarigoldDataEngineService.getPersistentAuditMap(activeGrp).then(cached => {
-          if (cached && cached.anomalyRecords) {
-            setAnomalyRecords(cached.anomalyRecords);
-            setIsAuditComplete(true);
-            setPlaybooks(prev => prev.map(pb => ({
-              ...pb,
-              status: "complete" as const,
-              flaggedCount: (cached.anomalyRecords[pb.id] || []).length
-            })));
-          }
-        });
-      });
+      const cached = loadAuditCache(activeGrp);
+      if (cached && cached.anomalyRecords) {
+        setAnomalyRecords(cached.anomalyRecords);
+        setIsAuditComplete(true);
+        setPlaybooks(prev => prev.map(pb => ({
+          ...pb,
+          status: "complete" as const,
+          flaggedCount: (cached.anomalyRecords[pb.id] || []).length
+        })));
+      }
 
       const loadInitialStats = async () => {
         try {
-          // USE DIRECT TOTAL ROW COUNT TO FIX MISMATCH
-          const { MarigoldDataEngineService } = await import('@/lib/services/MarigoldDataEngineService');
-          let directCount = await MarigoldDataEngineService.getTotalRowCount(activeGrp);
-          
-          if (directCount === 0 && isDemo) {
-            await autoLoadSyntheticDemoDataset();
-            directCount = await MarigoldDataEngineService.getTotalRowCount(activeGrp);
-          }
-          setTotalRows(directCount);
-          
-          // Fallback just for state code mapping
           let res = await runQuery("", [], 1);
+          if (res.totalMatches === 0 && isDemo) {
+            await autoLoadSyntheticDemoDataset();
+            res = await runQuery("", [], 1);
+          }
+          setTotalRows(res.totalMatches);
           if (res.rows.length > 0) {
             const row = res.rows[0];
             const st = row.state || "MS";
@@ -317,9 +305,8 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
     
     if (totalRows === 0 && isDemoGroupActive()) {
       await autoLoadSyntheticDemoDataset();
-      const { MarigoldDataEngineService } = await import('@/lib/services/MarigoldDataEngineService');
-      const directCount = await MarigoldDataEngineService.getTotalRowCount();
-      setTotalRows(directCount);
+      const res = await runQuery("", [], 1);
+      setTotalRows(res.totalMatches);
     }
 
     try {
@@ -334,6 +321,8 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
       setPlaybooks(updatedPlaybooks);
       setAnomalyRecords(sweepMap);
 
+      const activeGrp = localStorage.getItem("marigold_active_group") || "default";
+      publishAuditCache(activeGrp, totalRows, sweepMap);
     } catch (err) {
       console.error("360 Sweep failed:", err);
     } finally {
@@ -353,11 +342,18 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 pt-4 px-4 font-sans">
-      <PageHeader
-        badge="360º Comprehensive Audit"
-        title="Jurisdiction Forensic Sweep"
-        description={`Active Jurisdiction: ${jurisdiction} (${totalRows.toLocaleString()} total citizen records locked in RAM)`}
-      />
+      {/* Page Header */}
+      <div className="space-y-2">
+        <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+          360º Comprehensive Audit
+        </span>
+        <h1 className="text-3xl md:text-4xl font-serif font-black text-text-header">
+          Jurisdiction Forensic Sweep
+        </h1>
+        <p className="text-xs text-text-body">
+          Active Jurisdiction: <strong>{jurisdiction}</strong> ({totalRows.toLocaleString()} total citizen records locked in RAM)
+        </p>
+      </div>
 
       {/* Audit Action Banner & County Filter */}
       <Card className="bg-white p-6 rounded-2xl border border-border-soft shadow-sm space-y-4">
@@ -444,67 +440,48 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
         </Card>
       )}
 
-      {/* 360º Visual Health Dashboard & Executive Export Header */}
-      <ExecutiveBriefingExport
-        jurisdictionName={jurisdiction}
-        stateCode={stateCode}
-        totalRecordsScanned={totalRows}
-        cleanlinessPercentage={totalRows > 0 ? Number((Math.max(0, totalRows - playbooks.reduce((acc, pb) => acc + pb.flaggedCount, 0)) / totalRows * 100).toFixed(1)) : 100}
-        executionTimestamp={new Date().toISOString()}
-        auditorName={auditorName}
-        isAuditComplete={isAuditComplete}
-        playbookResults={playbooks.map(pb => ({ 
-          ...pb, 
-          status: pb.flaggedCount > 0 ? "Action Recommended" : "Clean" 
-        })) as any}
-      />
-
-      {/* Forensic Playbooks List */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-serif text-text-header font-bold">Forensic Playbooks</h2>
-
-        <Card className="bg-white rounded-2xl border border-border-soft shadow-sm overflow-hidden">
-          <div className="divide-y divide-border-soft">
-            {playbooks.map((pb) => {
-              const recs = anomalyRecords[pb.id] || [];
-              const statusLabel = pb.flaggedCount > 0 ? "Action Recommended" : "Clean";
-              return (
-                <div 
-                  key={pb.id} 
-                  className={`flex flex-col lg:flex-row lg:items-center justify-between p-6 hover:bg-surface transition-colors cursor-pointer ${pb.status === 'running' ? 'bg-surface' : ''}`}
-                  onClick={() => setSelectedDrilldown({ playbook: pb, records: recs })}
-                >
-                  <div className="flex-1 pr-8 mb-4 lg:mb-0">
-                    <h3 className="font-bold text-base text-text-header">{pb.name}</h3>
-                    <p className="text-sm text-text-body leading-relaxed">{pb.description}</p>
-                  </div>
-
-                  <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-end shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-border-soft">
-                    <div className="text-right">
-                      <div className="text-xs font-bold text-text-body uppercase tracking-wider mb-1">Status</div>
-                      <span className={`px-2.5 py-1 rounded text-xs font-bold ${pb.status === 'complete' ? 'bg-emerald-100 text-emerald-900' : pb.status === 'running' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'}`}>
-                        {pb.flaggedCount > 0 ? `${pb.flaggedCount.toLocaleString()} Anomalies` : pb.status === 'complete' ? 'Clean' : 'Ready'}
-                      </span>
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDrilldown({ playbook: pb, records: recs });
-                      }}
-                      variant="outline"
-                      className="px-5 py-2.5 rounded-full shadow-sm text-sm flex items-center gap-2 shrink-0"
-                    >
-                      <span>Explore Playbook</span>
-                      <ArrowRight className="w-4 h-4 text-primary" />
-                    </Button>
-                  </div>
+      {/* Grid of 7 Playbook Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {playbooks.map((pb) => {
+          const recs = anomalyRecords[pb.id] || [];
+          return (
+            <Card key={pb.id} className="p-6 bg-white border border-border-soft rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider">{pb.audit_type}</span>
+                  {pb.flaggedCount > 0 ? (
+                    <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-black px-2.5 py-1 rounded-full">
+                      {pb.flaggedCount.toLocaleString()} Anomalies
+                    </span>
+                  ) : (
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-1 rounded-full">
+                      0 Flagged
+                    </span>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        </Card>
+                <h3 className="text-lg font-serif font-bold text-text-header">{pb.name}</h3>
+                <p className="text-xs text-text-body leading-relaxed">{pb.description}</p>
+              </div>
+
+              <div className="pt-4 border-t border-border-soft flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDrilldown({ playbook: pb, records: recs })}
+                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5" /> View Results →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadPlaybookCSV(pb)}
+                  className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> Export CSV
+                </button>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Drilldown Modal */}
@@ -543,7 +520,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
               {selectedDrilldown.records.slice(0, 100).map((r, idx) => (
                 <div key={idx} className="p-3 bg-white border border-border-soft rounded-xl text-xs space-y-1">
                   <div className="flex items-center justify-between font-bold text-text-header">
-                    <span>{r.name || r.Full_Name || "Resident"} ({r.id || r.voter_id || "VOTER-ID"})</span>
+                    <span>{r.name || "Resident"} ({r.id || r.voter_id || "VOTER-ID"})</span>
                     <span className="text-primary font-mono">{getRowCounty(r)}</span>
                   </div>
                   <p className="text-text-body">{r.address}, {r.city || "Jackson"}, {r.state || stateCode} {r.zip}</p>
