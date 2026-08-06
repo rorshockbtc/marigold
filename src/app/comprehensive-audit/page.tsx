@@ -9,7 +9,7 @@ import { useDataQuery } from "@/hooks/useDataQuery";
 import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
-import { extractActualCountyName } from "@/lib/csv/universalMapper";
+import { extractActualCountyName, extractActualCityName } from "@/lib/csv/universalMapper";
 
 interface PlaybookStatus {
   id: string;
@@ -88,7 +88,7 @@ export default function ComprehensiveAuditPage() {
               Last_Name: resident.last_name || r.last_name || '',
               Suffix: resident.suffix || r.suffix || '',
               Address: r.address,
-              City: resident.city || r.city || "Jackson",
+              City: resident.city || r.city || (r.raw ? extractActualCityName(r.raw) : ''),
               State: resident.state || r.state || stateCode,
               Zip: resident.zip || r.zip,
               Total_Occupants_At_Address: r.occupant_count || 1,
@@ -106,7 +106,7 @@ export default function ComprehensiveAuditPage() {
             Last_Name: r.last_name || '',
             Suffix: r.suffix || '',
             Address: r.address,
-            City: r.city || "Jackson",
+            City: r.city || (r.raw ? extractActualCityName(r.raw) : ''),
             State: r.state || stateCode,
             Zip: r.zip,
             Total_Occupants_At_Address: r.occupant_count || 1,

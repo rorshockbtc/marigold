@@ -77,7 +77,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   ],
   city: [
     'residentialcity', 'residencecity', 'rescity', 'cityname', 'city',
-    'municipality', 'physcity'
+    'municipality', 'physcity', 'town', 'residentialcityname'
   ],
   state: [
     'residentialstate', 'residencestate', 'resstate', 'statename', 'st',
@@ -133,7 +133,6 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
 
   const mappedCols = new Set<string>();
 
-  // 1. Exact clean matches first
   for (const [fieldKey, synonyms] of Object.entries(FIELD_SYNONYMS)) {
     const key = fieldKey as keyof ColumnMappingSchema;
     for (const syn of synonyms) {
@@ -146,7 +145,6 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
     }
   }
 
-  // 2. Substring matches for unassigned fields
   for (const [fieldKey, synonyms] of Object.entries(FIELD_SYNONYMS)) {
     const key = fieldKey as keyof ColumnMappingSchema;
     if (mapping[key]) continue;
@@ -198,6 +196,36 @@ export function extractActualCountyName(rawRow: Record<string, any>): string {
   return 'Hinds County';
 }
 
+export function extractActualCityName(rawRow: Record<string, any>): string {
+  if (!rawRow || typeof rawRow !== 'object') return '';
+
+  // Prefer residential city over mailing city
+  for (const [key, val] of Object.entries(rawRow)) {
+    const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanKey.includes('res') && cleanKey.includes('city')) {
+      if (val !== undefined && val !== null) {
+        const strVal = String(val).trim();
+        if (strVal !== '' && strVal !== 'NULL') return strVal;
+      }
+    }
+  }
+
+  // General city fallback search
+  for (const [key, val] of Object.entries(rawRow)) {
+    const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanKey.includes('city') || cleanKey.includes('town') || cleanKey.includes('municipality')) {
+      if (!cleanKey.includes('mail')) {
+        if (val !== undefined && val !== null) {
+          const strVal = String(val).trim();
+          if (strVal !== '' && strVal !== 'NULL') return strVal;
+        }
+      }
+    }
+  }
+
+  return '';
+}
+
 export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: ColumnMappingSchema): StandardizedVoterRow {
   if (!rawRow || typeof rawRow !== 'object') {
     return {
@@ -208,7 +236,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       last_name: '',
       suffix: '',
       address: '',
-      city: 'Unknown City',
+      city: '',
       state: 'MS',
       zip: '',
       county: 'Hinds County',
@@ -247,7 +275,6 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   let suffix = getValue(activeMapping.suffix, ['suffix', 'generation', 'nametitle'], '');
   let fullName = getValue(activeMapping.full_name, ['fullname', 'votername', 'name', 'voterfullname', 'displayname'], '');
 
-  // Extract from raw row dynamically if unmapped
   if (!first || !last) {
     for (const [k, v] of Object.entries(rawRow)) {
       const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -272,6 +299,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   if (!fullName) fullName = 'Unlisted Resident';
 
   const exactCounty = extractActualCountyName(rawRow);
+  const exactCity = getValue(activeMapping.city, ['city', 'residentialcity', 'rescity', 'cityname'], extractActualCityName(rawRow));
 
   return {
     voter_id: getValue(activeMapping.voter_id, ['voterid', 'sosvoterid', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
@@ -281,7 +309,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     last_name: last,
     suffix: suffix,
     address: getValue(activeMapping.address, ['address', 'streetaddress', 'residentialaddress', 'address1'], ''),
-    city: getValue(activeMapping.city, ['city', 'residentialcity'], 'Jackson'),
+    city: exactCity,
     state: getValue(activeMapping.state, ['state', 'st'], 'MS'),
     zip: getValue(activeMapping.zip, ['zip', 'zipcode'], ''),
     county: exactCounty,
