@@ -82,7 +82,11 @@ export default function ComprehensiveAuditPage() {
             formattedRows.push({
               County: countyName,
               Voter_ID: resident.id || r.id || r.voter_id,
-              Name: resident.name || r.name,
+              Full_Name: resident.name || r.name,
+              First_Name: resident.first_name || r.first_name || '',
+              Middle_Name: resident.middle_name || r.middle_name || '',
+              Last_Name: resident.last_name || r.last_name || '',
+              Suffix: resident.suffix || r.suffix || '',
               Address: r.address,
               City: resident.city || r.city || "Jackson",
               State: resident.state || r.state || stateCode,
@@ -96,7 +100,11 @@ export default function ComprehensiveAuditPage() {
           formattedRows.push({
             County: countyName,
             Voter_ID: r.id || r.voter_id,
-            Name: r.name,
+            Full_Name: r.name,
+            First_Name: r.first_name || '',
+            Middle_Name: r.middle_name || '',
+            Last_Name: r.last_name || '',
+            Suffix: r.suffix || '',
             Address: r.address,
             City: r.city || "Jackson",
             State: r.state || stateCode,
@@ -130,6 +138,7 @@ export default function ComprehensiveAuditPage() {
     const activeGroup = localStorage.getItem("marigold_active_group") || "default";
     const dateStr = new Date().toISOString().split("T")[0];
     
+    // Export complete master CSV containing all playbooks unclipped
     const allExportRows: any[] = [];
     playbooks.forEach(p => {
       const pRows = anomalyRecords[p.id] || [];
@@ -142,7 +151,11 @@ export default function ComprehensiveAuditPage() {
               Playbook_Rule: p.name,
               Risk_Level: r.risk_level || "HIGH",
               Voter_ID: resident.id || r.id || r.voter_id,
-              Name: resident.name || r.name,
+              Full_Name: resident.name || r.name,
+              First_Name: resident.first_name || r.first_name || '',
+              Middle_Name: resident.middle_name || r.middle_name || '',
+              Last_Name: resident.last_name || r.last_name || '',
+              Suffix: resident.suffix || r.suffix || '',
               Address: r.address,
               City: resident.city || r.city || "Jackson",
               State: resident.state || r.state || stateCode,
@@ -157,10 +170,14 @@ export default function ComprehensiveAuditPage() {
             Playbook_Rule: p.name,
             Risk_Level: r.risk_level || "HIGH",
             Voter_ID: r.id || r.voter_id,
-            Name: r.name,
+            Full_Name: r.name,
+            First_Name: r.first_name || '',
+            Middle_Name: r.middle_name || '',
+            Last_Name: r.last_name || '',
+            Suffix: r.suffix || '',
             Address: r.address,
             City: r.city || "Jackson",
-            State: r.state || stateCode,
+            State: r.state || r.state || stateCode,
             Zip: r.zip,
             Occupants_At_Address: r.occupant_count || 1,
             Details: r.details

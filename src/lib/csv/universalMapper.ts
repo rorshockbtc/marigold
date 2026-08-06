@@ -1,7 +1,9 @@
 export interface ColumnMappingSchema {
   voter_id: string;
   first_name: string;
+  middle_name: string;
   last_name: string;
+  suffix: string;
   full_name: string;
   address: string;
   city: string;
@@ -18,7 +20,9 @@ export interface StandardizedVoterRow {
   voter_id: string;
   name: string;
   first_name: string;
+  middle_name: string;
   last_name: string;
+  suffix: string;
   address: string;
   city: string;
   state: string;
@@ -54,8 +58,14 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   first_name: [
     'firstname', 'voterfirstname', 'fname', 'first', 'namefirst', 'givenname'
   ],
+  middle_name: [
+    'middlename', 'middle', 'mname', 'midname', 'votermiddlename'
+  ],
   last_name: [
     'lastname', 'voterlastname', 'lname', 'last', 'namelast', 'surname'
+  ],
+  suffix: [
+    'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix'
   ],
   full_name: [
     'fullname', 'votername', 'name', 'voterfullname', 'displayname'
@@ -101,7 +111,9 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
   const mapping: ColumnMappingSchema = {
     voter_id: '',
     first_name: '',
+    middle_name: '',
     last_name: '',
+    suffix: '',
     full_name: '',
     address: '',
     city: '',
@@ -156,11 +168,9 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
 export function extractActualCountyName(rawRow: Record<string, any>): string {
   if (!rawRow || typeof rawRow !== 'object') return 'Hinds County';
 
-  // 1. Scan for explicit Mississippi 82 county matches across raw values
   for (const [key, val] of Object.entries(rawRow)) {
     if (val !== undefined && val !== null) {
       const strVal = String(val).trim().toUpperCase();
-      // Ignore Supreme Court / Congressional / House District codes (e.g. SC01, SC02, CD01, SD01)
       if (strVal.startsWith('SC0') || strVal.startsWith('SC1') || strVal.startsWith('CD0') || strVal.startsWith('SD0') || strVal.startsWith('HD0')) {
         continue;
       }
@@ -172,7 +182,6 @@ export function extractActualCountyName(rawRow: Record<string, any>): string {
     }
   }
 
-  // 2. Scan raw keys containing 'county' or 'cnty'
   for (const [key, val] of Object.entries(rawRow)) {
     const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (cleanKey.includes('county') || cleanKey.includes('cnty')) {
@@ -195,7 +204,9 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       voter_id: 'UNKNOWN',
       name: 'Unlisted Resident',
       first_name: '',
+      middle_name: '',
       last_name: '',
+      suffix: '',
       address: '',
       city: 'Unknown City',
       state: 'MS',
@@ -231,8 +242,21 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   };
 
   let first = getValue(activeMapping.first_name, ['firstname', 'first', 'voterfirstname', 'fname', 'givenname'], '');
+  let middle = getValue(activeMapping.middle_name, ['middlename', 'middle', 'mname', 'midname'], '');
   let last = getValue(activeMapping.last_name, ['lastname', 'last', 'voterlastname', 'lname', 'surname'], '');
+  let suffix = getValue(activeMapping.suffix, ['suffix', 'generation', 'nametitle'], '');
   let fullName = getValue(activeMapping.full_name, ['fullname', 'votername', 'name', 'voterfullname', 'displayname'], '');
+
+  // Extract from raw row dynamically if unmapped
+  if (!first || !last) {
+    for (const [k, v] of Object.entries(rawRow)) {
+      const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!first && (cleanK === 'first' || cleanK === 'firstname' || cleanK === 'voterfirstname')) first = String(v).trim();
+      if (!middle && (cleanK === 'middle' || cleanK === 'middlename' || cleanK === 'midname')) middle = String(v).trim();
+      if (!last && (cleanK === 'last' || cleanK === 'lastname' || cleanK === 'voterlastname')) last = String(v).trim();
+      if (!suffix && (cleanK === 'suffix' || cleanK === 'generation')) suffix = String(v).trim();
+    }
+  }
 
   if ((!first || !last) && fullName) {
     const parts = fullName.trim().split(/\s+/);
@@ -242,8 +266,8 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     }
   }
 
-  if (!fullName && (first || last)) {
-    fullName = [first, last].filter(Boolean).join(' ');
+  if (!fullName || fullName === 'Unlisted Resident' || fullName === first) {
+    fullName = [first, middle, last, suffix].filter(Boolean).join(' ');
   }
   if (!fullName) fullName = 'Unlisted Resident';
 
@@ -253,7 +277,9 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     voter_id: getValue(activeMapping.voter_id, ['voterid', 'sosvoterid', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
     name: fullName,
     first_name: first,
+    middle_name: middle,
     last_name: last,
+    suffix: suffix,
     address: getValue(activeMapping.address, ['address', 'streetaddress', 'residentialaddress', 'address1'], ''),
     city: getValue(activeMapping.city, ['city', 'residentialcity'], 'Jackson'),
     state: getValue(activeMapping.state, ['state', 'st'], 'MS'),
