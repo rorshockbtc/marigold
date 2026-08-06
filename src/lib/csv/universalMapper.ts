@@ -31,6 +31,20 @@ export interface StandardizedVoterRow {
   raw: Record<string, any>;
 }
 
+const MISSISSIPPI_82_COUNTIES = [
+  "ADAMS", "ALCORN", "AMITE", "ATTALA", "BENTON", "BOLIVAR", "CALHOUN", "CARROLL",
+  "CHICKASAW", "CHOCTAW", "CLAIBORNE", "CLARKE", "CLAY", "COAHOMA", "COPIAH", "COVINGTON",
+  "DESOTO", "FORREST", "FRANKLIN", "GEORGE", "GREENE", "GRENADA", "HANCOCK", "HARRISON",
+  "HINDS", "HOLMES", "HUMPHREYS", "ISSAQUENA", "ITAWAMBA", "JACKSON", "JASPER", "JEFFERSON",
+  "JEFFERSON DAVIS", "JONES", "KEMPER", "LAFAYETTE", "LAMAR", "LAUDERDALE", "LAWRENCE",
+  "LEAKE", "LEE", "LEFLORE", "LINCOLN", "LOWNDES", "MADISON", "MARION", "MARSHALL",
+  "MONROE", "MONTGOMERY", "NESHOBA", "NEWTON", "NOXUBEE", "OKTIBBEHA", "PANOLA",
+  "PEARL RIVER", "PERRY", "PIKE", "PONTOTOC", "PRENTISS", "QUITMAN", "RANKIN", "SCOTT",
+  "SHARKEY", "SIMPSON", "SMITH", "STONE", "SUNFLOWER", "TALLAHATCHIE", "TATE", "TIPPAH",
+  "TISHOMINGO", "TUNICA", "UNION", "WALTHALL", "WARREN", "WASHINGTON", "WAYNE", "WEBSTER",
+  "WILKINSON", "WINSTON", "YALOBUSHA", "YAZOO"
+];
+
 const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   voter_id: [
     'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
@@ -64,8 +78,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'zip5', 'zip', 'physzip'
   ],
   county: [
-    'countyname', 'cntydesc', 'countycode', 'jurisdiction', 'county',
-    'cnty', 'parish', 'countyjurisdiction'
+    'countyname', 'cntydesc', 'countyname', 'county', 'cnty'
   ],
   status: [
     'voterstatus', 'regstatus', 'registrationstatus', 'activestatus',
@@ -140,6 +153,42 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
   return mapping;
 }
 
+export function extractActualCountyName(rawRow: Record<string, any>): string {
+  if (!rawRow || typeof rawRow !== 'object') return 'Hinds County';
+
+  // 1. Scan for explicit Mississippi 82 county matches across raw values
+  for (const [key, val] of Object.entries(rawRow)) {
+    if (val !== undefined && val !== null) {
+      const strVal = String(val).trim().toUpperCase();
+      // Ignore Supreme Court / Congressional / House District codes (e.g. SC01, SC02, CD01, SD01)
+      if (strVal.startsWith('SC0') || strVal.startsWith('SC1') || strVal.startsWith('CD0') || strVal.startsWith('SD0') || strVal.startsWith('HD0')) {
+        continue;
+      }
+      for (const countyName of MISSISSIPPI_82_COUNTIES) {
+        if (strVal === countyName || strVal === `${countyName} COUNTY` || strVal.startsWith(`${countyName} `)) {
+          return `${countyName} County`;
+        }
+      }
+    }
+  }
+
+  // 2. Scan raw keys containing 'county' or 'cnty'
+  for (const [key, val] of Object.entries(rawRow)) {
+    const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanKey.includes('county') || cleanKey.includes('cnty')) {
+      if (val !== undefined && val !== null) {
+        const strVal = String(val).trim();
+        const upperVal = strVal.toUpperCase();
+        if (!upperVal.startsWith('SC0') && !upperVal.startsWith('CD0') && upperVal !== '' && upperVal !== 'NULL') {
+          return upperVal.includes('COUNTY') ? strVal : `${strVal} County`;
+        }
+      }
+    }
+  }
+
+  return 'Hinds County';
+}
+
 export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: ColumnMappingSchema): StandardizedVoterRow {
   if (!rawRow || typeof rawRow !== 'object') {
     return {
@@ -151,7 +200,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       city: 'Unknown City',
       state: 'MS',
       zip: '',
-      county: 'Statewide',
+      county: 'Hinds County',
       status: 'Active',
       date_registered: '',
       precinct_code: '',
@@ -162,17 +211,11 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
 
   const activeMapping = { ...(mapping || interpretColumnMappings(Object.keys(rawRow))) };
 
-  // Self-healing check: if full_name collides with first_name or last_name, clear it
-  if (activeMapping.full_name && (activeMapping.full_name === activeMapping.first_name || activeMapping.full_name === activeMapping.last_name)) {
-    activeMapping.full_name = '';
-  }
-
   const getValue = (headerKey: string, fallbackKeywords: string[], defaultVal = '') => {
     if (headerKey && rawRow[headerKey] !== undefined && rawRow[headerKey] !== null) {
       const v = String(rawRow[headerKey]).trim();
       if (v !== '') return v;
     }
-    // Fallback search across keys if headerKey didn't work
     const keys = Object.keys(rawRow);
     for (const kw of fallbackKeywords) {
       const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -204,16 +247,18 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   }
   if (!fullName) fullName = 'Unlisted Resident';
 
+  const exactCounty = extractActualCountyName(rawRow);
+
   return {
     voter_id: getValue(activeMapping.voter_id, ['voterid', 'sosvoterid', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
     name: fullName,
     first_name: first,
     last_name: last,
     address: getValue(activeMapping.address, ['address', 'streetaddress', 'residentialaddress', 'address1'], ''),
-    city: getValue(activeMapping.city, ['city', 'residentialcity'], 'Unknown City'),
+    city: getValue(activeMapping.city, ['city', 'residentialcity'], 'Jackson'),
     state: getValue(activeMapping.state, ['state', 'st'], 'MS'),
     zip: getValue(activeMapping.zip, ['zip', 'zipcode'], ''),
-    county: getValue(activeMapping.county, ['county', 'countyname', 'jurisdiction'], 'Statewide'),
+    county: exactCounty,
     status: getValue(activeMapping.status, ['status', 'voterstatus'], 'Active'),
     date_registered: getValue(activeMapping.date_registered, ['regdate', 'date_registered'], ''),
     precinct_code: getValue(activeMapping.precinct_code, ['precinct', 'pct'], ''),

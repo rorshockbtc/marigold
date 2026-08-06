@@ -8,6 +8,7 @@ import { DataRequiredState } from "@/components/DataRequiredState";
 import { useDataQuery } from "@/hooks/useDataQuery";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
+import { extractActualCountyName } from "@/lib/csv/universalMapper";
 
 interface PlaybookStatus {
   id: string;
@@ -38,18 +39,13 @@ export default function ComprehensiveAuditPage() {
   const { addTask, addNoteToTask } = useKanban();
 
   const getRowCounty = (r: any) => {
-    if (r.county && r.county !== "Statewide" && r.county !== "Unknown") return r.county;
-    if (r.raw) {
-      for (const k of Object.keys(r.raw)) {
-        const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (cleanK.includes('county') || cleanK.includes('cnty') || cleanK.includes('jurisdiction') || cleanK.includes('parish')) {
-          const val = String(r.raw[k]).trim();
-          if (val && val !== '') return val;
-        }
-      }
+    if (r.county && r.county !== "Statewide" && r.county !== "Unknown" && !String(r.county).toUpperCase().startsWith("SC0")) {
+      return r.county;
     }
-    const activeGrp = typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") : null;
-    return activeGrp || "Hinds County, MS";
+    if (r.raw) {
+      return extractActualCountyName(r.raw);
+    }
+    return "Hinds County";
   };
 
   const downloadCSV = (data: any[], filename: string) => {
