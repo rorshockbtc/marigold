@@ -38,48 +38,11 @@ export function useDataQuery() {
     setIsQuerying(true);
     const wakeLock = await requestScreenWakeLock();
     try {
-      const dbName = await getActiveDatabaseNameWithFallback();
-      const db = await openActiveDatabase(dbName);
-      const transaction = db.transaction(['rows'], 'readonly');
-      const store = transaction.objectStore('rows');
-      const allRows: Array<Record<string, any>> = [];
-      let matchCount = 0;
-      let activeMapping: any = null;
-
-      return new Promise((resolve, reject) => {
-        const request = store.openCursor();
-        request.onsuccess = (event) => {
-          const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
-          if (cursor) {
-            const val = cursor.value;
-            const rowData = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
-            if (!activeMapping) {
-              try {
-                const activeGroup = (typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") : "") || "default";
-                const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                const savedMap = typeof window !== 'undefined' ? localStorage.getItem(`marigold_file_mapping_${slug}`) : null;
-                if (savedMap) activeMapping = JSON.parse(savedMap);
-              } catch (e) {}
-              if (!activeMapping) {
-                activeMapping = interpretColumnMappings(Object.keys(rowData));
-              }
-            }
-            const matches = !searchTerm || columns.some(col =>
-              String(rowData[col] || '').toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            if (matches) {
-              matchCount++;
-              if (matchCount > offset && allRows.length < limit) allRows.push(normalizeRowWithMapping(rowData, activeMapping));
-            }
-            cursor.continue();
-          } else {
-            setIsQuerying(false);
-            releaseScreenWakeLock(wakeLock);
-            resolve({ rows: allRows, totalMatches: matchCount });
-          }
-        };
-        request.onerror = () => { setIsQuerying(false); releaseScreenWakeLock(wakeLock); reject(request.error); };
-      });
+      const { MarigoldDataEngineService } = await import('@/lib/services/MarigoldDataEngineService');
+      const res = await MarigoldDataEngineService.queryData(searchTerm, columns, limit, offset);
+      setIsQuerying(false);
+      releaseScreenWakeLock(wakeLock);
+      return res;
     } catch (error) {
       setIsQuerying(false);
       releaseScreenWakeLock(wakeLock);

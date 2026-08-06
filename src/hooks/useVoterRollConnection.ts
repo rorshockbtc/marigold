@@ -31,51 +31,29 @@ export function useVoterRollConnection(groupName?: string): VoterRollConnectionS
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const checkDataConnection = () => {
+    const checkDataConnection = async () => {
       const grp = groupName || localStorage.getItem("marigold_active_group") || "State of Roosevelt (Demo)";
       const isDemoMode = isDemoGroupActive(grp);
-      const dbName = getActiveDatabaseName(grp);
       const isLocalStorageConn = localStorage.getItem("marigold_file_connected") === "true";
       const localRows = Number(localStorage.getItem("marigold_file_rows") || "0");
 
       try {
-        const request = indexedDB.open(dbName);
-        request.onsuccess = (e) => {
-          const db = (e.target as IDBOpenDBRequest).result;
-          const storeName = db.objectStoreNames.contains("rows") ? "rows" : (db.objectStoreNames.contains("records") ? "records" : (db.objectStoreNames.contains("VoterRolls") ? "VoterRolls" : null));
-          
-          if (db && storeName) {
-            const tx = db.transaction([storeName], "readonly");
-            const store = tx.objectStore(storeName);
-            const countReq = store.count();
-            countReq.onsuccess = () => {
-              const count = countReq.result || localRows;
-              const hasData = count > 0 || isLocalStorageConn;
-              setState({
-                isDataConnected: hasData,
-                isConnected: hasData,
-                loadedRowCount: count,
-                totalRows: count,
-                loadedFileName: localStorage.getItem("marigold_file_name") || (isDemoMode ? "DEMO_roosevelt_statewide_voter_roll.csv" : ""),
-                activeGroup: grp,
-                isDemo: isDemoMode,
-              });
-            };
-          } else {
-            const hasData = isLocalStorageConn;
-            setState({
-              isDataConnected: hasData,
-              isConnected: hasData,
-              loadedRowCount: localRows,
-              totalRows: localRows,
-              loadedFileName: isDemoMode ? "DEMO_roosevelt_statewide_voter_roll.csv" : "",
-              activeGroup: grp,
-              isDemo: isDemoMode,
-            });
-          }
-        };
+        const { MarigoldDataEngineService } = await import('@/lib/services/MarigoldDataEngineService');
+        const count = await MarigoldDataEngineService.getTotalRowCount(grp);
+        const actualCount = count || localRows;
+        const hasData = actualCount > 0 || isLocalStorageConn;
+        
+        setState({
+          isDataConnected: hasData,
+          isConnected: hasData,
+          loadedRowCount: actualCount,
+          totalRows: actualCount,
+          loadedFileName: localStorage.getItem("marigold_file_name") || (isDemoMode ? "DEMO_roosevelt_statewide_voter_roll.csv" : ""),
+          activeGroup: grp,
+          isDemo: isDemoMode,
+        });
       } catch (err) {
-        console.error("IndexedDB connection check failed:", err);
+        console.error("Centralized connection check failed:", err);
       }
     };
 
