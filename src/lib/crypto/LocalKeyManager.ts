@@ -145,3 +145,28 @@ export async function decryptPayload(ciphertextHex: string, ivHex: string, key: 
   );
   return dec.decode(decrypted);
 }
+
+// Derive a symmetric key from the group name so any group member can decrypt the shared cache
+export async function deriveGroupKey(groupName: string): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  const keyMaterial = await window.crypto.subtle.importKey(
+    "raw",
+    enc.encode(groupName.trim().toLowerCase()),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+
+  return await window.crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: enc.encode("marigold_group_shared_salt"),
+      iterations: 1000, // Faster for UI responsiveness, still acts as deterministic derivation
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+}

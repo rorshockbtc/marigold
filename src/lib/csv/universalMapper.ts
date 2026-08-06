@@ -256,6 +256,18 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       if (v !== '') return v;
     }
     const keys = Object.keys(rawRow);
+
+    // Fuzzy match for headerKey to bypass hidden \uFEFF BOM characters in raw CSV keys
+    if (headerKey) {
+      const cleanHeader = headerKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const k of keys) {
+        if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanHeader) {
+          const v = String(rawRow[k]).trim();
+          if (v !== '') return v;
+        }
+      }
+    }
+
     for (const kw of fallbackKeywords) {
       const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, '');
       for (const k of keys) {

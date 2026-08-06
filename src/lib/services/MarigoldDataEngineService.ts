@@ -1,6 +1,7 @@
 import { getActiveDatabaseName, isDemoGroupActive, openActiveDatabase, getActiveDatabaseNameWithFallback } from "@/lib/db/dbName";
 import { normalizeRowWithMapping, interpretColumnMappings } from "@/lib/csv/universalMapper";
 import { getDirectoryHandle, writeStructuredFile, readStructuredFile } from "@/lib/fs/LocalFSManager";
+import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 export interface AuditSweepResults {
   groupId: string;
@@ -297,13 +298,39 @@ export class MarigoldDataEngineService {
       console.warn("Could not read audit map from IndexedDB AuditCacheStore:", e);
     }
 
+    // Tier 4: Zero-Knowledge Fetch from Firebase Relay
+    try {
+      if (typeof window !== 'undefined') {
+        const relayReq = await fetch(`/api/relay?groupId=${slug}`);
+        if (relayReq.ok) {
+          const { blobs } = await relayReq.json();
+          if (blobs && blobs.length > 0) {
+            // Find the latest AUDIT_CACHE_SNAPSHOT
+            const latestAudit = blobs.filter((b: any) => b.type === "AUDIT_CACHE_SNAPSHOT").pop();
+            if (latestAudit && latestAudit.ciphertext) {
+              const groupKey = await deriveGroupKey(slug);
+              const rawJson = await decryptPayload(latestAudit.ciphertext, latestAudit.iv, groupKey);
+              const parsed: AuditSweepResults = JSON.parse(rawJson);
+              this.memoryCache.set(slug, parsed);
+              
+              // Optimistically cache locally so we don't have to fetch again
+              this.savePersistentAuditMap(groupId, parsed, true); 
+              return parsed;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Could not pull audit cache from Zero-Knowledge relay:", e);
+    }
+
     return null;
   }
 
   /**
    * Saves audit topology permanently to Marigold_Local disk handle AND IndexedDB AuditCacheStore
    */
-  public static async savePersistentAuditMap(groupId: string, sweepData: AuditSweepResults): Promise<void> {
+  public static async savePersistentAuditMap(groupId: string, sweepData: AuditSweepResults, skipRelay: boolean = false): Promise<void> {
     const slug = groupId.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
     // Tier 1: Update Memory Singleton Cache
@@ -351,6 +378,30 @@ export class MarigoldDataEngineService {
       }
     } catch (e) {
       console.warn("Could not write audit map to Marigold_Local disk handle:", e);
+    }
+
+    // Tier 4: Broadcast encrypted snapshot to Firebase Relay
+    if (!skipRelay && typeof window !== 'undefined') {
+      try {
+        const groupKey = await deriveGroupKey(slug);
+        const { ciphertextHex, ivHex } = await encryptPayload(JSON.stringify(sweepData), groupKey);
+        await fetch("/api/relay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify({ 
+            groupId: slug, 
+            blob: { 
+              ciphertext: ciphertextHex, 
+              iv: ivHex, 
+              type: "AUDIT_CACHE_SNAPSHOT",
+              timestamp: Date.now()
+            } 
+          })
+        });
+      } catch (e) {
+        console.warn("Could not push audit cache to Zero-Knowledge relay:", e);
+      }
     }
   }
 

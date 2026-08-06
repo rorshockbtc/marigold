@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 import Papa from 'papaparse';
-import { interpretColumnMappings } from '@/lib/csv/universalMapper';
+import { interpretColumnMappings, normalizeRowWithMapping } from '@/lib/csv/universalMapper';
 
 export class DataProcessorWorker {
   
@@ -86,6 +86,225 @@ export class DataProcessorWorker {
     const stdDev = Math.sqrt(variance);
 
     return { mean, stdDev };
+  }
+
+  async runComprehensiveAudit(
+    dbName: string,
+    countyFilter: string,
+    threshold: number,
+    activeMapping: any,
+    onProgress: (percent: number) => void
+  ): Promise<{ resultMap: Record<string, Array<Record<string, any>>>, totalCount: number }> {
+    const db = await this.openDatabase(dbName);
+
+    const totalCount: number = await new Promise((resolve) => {
+      const tx = db.transaction(['rows'], 'readonly');
+      const countReq = tx.objectStore('rows').count();
+      countReq.onsuccess = () => resolve(countReq.result || 0);
+      countReq.onerror = () => resolve(0);
+    });
+
+    if (totalCount === 0) {
+      db.close();
+      return { resultMap: {}, totalCount: 0 };
+    }
+
+    const addressCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
+    const dateCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
+    const phantomList: Array<Record<string, any>> = [];
+    const ncoaList: Array<Record<string, any>> = [];
+    const dupMap: Map<string, { count: number; sample: Record<string, any>; addrs: Set<string> }> = new Map();
+    const typoList: Array<Record<string, any>> = [];
+    const benfordsLawCounts: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0 };
+    let benfordsTotal = 0;
+    const filterCounty = (countyFilter || '').toLowerCase();
+
+    const processRecord = (val: any) => {
+      const raw = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
+      if (!activeMapping) {
+        activeMapping = interpretColumnMappings(Object.keys(raw));
+      }
+      const std = normalizeRowWithMapping(raw, activeMapping);
+      const rCounty = std.county || 'Statewide';
+      const statusStr = String(std.status || '').trim().toUpperCase();
+      const isInactive = statusStr === 'I' || statusStr === 'INACTIVE' || statusStr === 'C' || statusStr === 'CANCELLED' || statusStr === 'PURGED' || statusStr === 'DECEASED';
+
+      if (filterCounty && !rCounty.toLowerCase().includes(filterCounty)) return;
+      if (isInactive) return;
+
+      const addr = std.address;
+      if (addr) {
+        const existing = addressCounts.get(addr);
+        if (existing) {
+          existing.count++;
+          existing.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered, city: std.city, state: std.state, zip: std.zip });
+        } else {
+          addressCounts.set(addr, {
+            count: 1,
+            sample: { voter_id: std.voter_id, name: std.name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+            residents: [{ name: std.name, id: std.voter_id, date: std.date_registered }]
+          });
+        }
+
+        const match = addr.match(/^[^\d]*([1-9])/);
+        if (match) {
+          benfordsLawCounts[match[1]]++;
+          benfordsTotal++;
+        }
+      }
+
+      if (std.date_registered) {
+        const dExisting = dateCounts.get(std.date_registered);
+        if (dExisting) {
+          dExisting.count++;
+        } else {
+          dateCounts.set(std.date_registered, {
+            count: 1,
+            sample: { voter_id: std.voter_id, name: `Surge Cohort (${std.date_registered})`, address: `Registered on ${std.date_registered}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+            residents: [{ name: std.name, id: std.voter_id }]
+          });
+        }
+      }
+
+      if (!std.precinct_code || std.precinct_code === '0' || std.precinct_code.toUpperCase() === 'UNASSIGNED') {
+        phantomList.push({
+          id: std.voter_id, name: std.name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: 'Missing mandatory precinct assignment.', raw: std.raw
+        });
+      }
+
+      const homeState = (std.state || 'MS').trim().toUpperCase();
+      const mailState = String(std.raw?.mail_state || std.raw?.MAIL_ST || std.raw?.mailing_state || std.raw?.MAIL_STATE || '').trim().toUpperCase();
+      const ncoaFlagStr = String(std.ncoa_flag || '').trim().toUpperCase();
+      const isExplicitNcoa = ncoaFlagStr === 'Y' || ncoaFlagStr === 'YES' || ncoaFlagStr === 'TRUE';
+      const isOutStateMail = mailState.length === 2 && mailState !== homeState && mailState !== 'MS' && mailState !== 'NO' && mailState !== 'NA';
+      if (isExplicitNcoa || isOutStateMail) {
+        ncoaList.push({
+          id: std.voter_id, name: std.name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: `Out-of-state relocation/mailing detected: ${mailState || 'NCOA Flagged'}`, raw: std.raw
+        });
+      }
+
+      const dupFirst = std.first_name || (std.name ? std.name.trim().split(/\s+/)[0] : '');
+      const dupLast = std.last_name || (std.name ? std.name.trim().split(/\s+/).pop() : '');
+      if (dupFirst && dupLast && std.zip) {
+        const dupKey = `${dupFirst.toLowerCase()}|${dupLast.toLowerCase()}|${std.zip}`;
+        const dExisting = dupMap.get(dupKey);
+        if (dExisting) {
+          dExisting.count++;
+          if (std.address) dExisting.addrs.add(std.address);
+        } else {
+          dupMap.set(dupKey, {
+            count: 1,
+            sample: { voter_id: std.voter_id, name: std.name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+            addrs: new Set(std.address ? [std.address] : [])
+          });
+        }
+      }
+
+      const fname = std.first_name || '';
+      const lname = std.last_name || '';
+      if ((fname.length === 1 || lname.length === 1) && (fname.length > 0 || lname.length > 0)) {
+        typoList.push({
+          id: std.voter_id, name: std.name || `${fname} ${lname}`, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'MEDIUM', details: 'Clerical 1-character name typo.', raw: std.raw
+        });
+      }
+    };
+
+    let processed = 0;
+    let lastKey: IDBValidKey | undefined = undefined;
+    let done = false;
+    const BATCH_SIZE = 100_000;
+
+    while (!done) {
+      const batchRecords: any[] = await new Promise((resolve, reject) => {
+        const tx = db.transaction(['rows'], 'readonly');
+        const store = tx.objectStore('rows');
+        const range = lastKey !== undefined ? IDBKeyRange.lowerBound(lastKey, true) : undefined;
+        const req = store.getAll(range, BATCH_SIZE);
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+
+      if (batchRecords.length === 0) {
+        done = true;
+        break;
+      }
+
+      const batchKeys: IDBValidKey[] = await new Promise((resolve, reject) => {
+        const tx = db.transaction(['rows'], 'readonly');
+        const store = tx.objectStore('rows');
+        const range = lastKey !== undefined ? IDBKeyRange.lowerBound(lastKey, true) : undefined;
+        const req = store.getAllKeys(range, BATCH_SIZE);
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+      const batchLastKey = batchKeys.length > 0 ? batchKeys[batchKeys.length - 1] : undefined;
+
+      for (let i = 0; i < batchRecords.length; i++) {
+        processRecord(batchRecords[i]);
+      }
+
+      processed += batchRecords.length;
+      lastKey = batchLastKey;
+
+      if (totalCount > 0) {
+        onProgress(Math.min(95, Math.floor((processed / totalCount) * 100)));
+      }
+
+      if (batchRecords.length < BATCH_SIZE) {
+        done = true;
+      }
+    }
+
+    db.close();
+
+    const resultMap: Record<string, Array<Record<string, any>>> = {};
+
+    const densityResults: Array<Record<string, any>> = [];
+    for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
+      if (count >= threshold) {
+        densityResults.push({ id: sample.voter_id, name: sample.name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: count > 20 ? 'CRITICAL' : 'HIGH', details: `${count} voters registered at this address.`, raw: sample.raw, residentCluster: residents });
+      }
+    }
+    resultMap['density'] = densityResults.sort((a, b) => b.occupant_count - a.occupant_count);
+    resultMap['out-of-state-mailing'] = ncoaList;
+
+    const poBoxResults: Array<Record<string, any>> = [];
+    for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
+      const upper = addr.toUpperCase();
+      if (upper.includes('PO BOX') || upper.includes('P O BOX') || upper.includes('P.O. BOX') || upper.includes('UPS STORE') || upper.includes('PMB') || upper.includes('FEDEX')) {
+        poBoxResults.push({ id: sample.voter_id, name: sample.name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
+      }
+    }
+    resultMap['po-box'] = poBoxResults;
+
+    const dupResults: Array<Record<string, any>> = [];
+    for (const [key, { count, sample, addrs }] of dupMap.entries()) {
+      if (count > 1 && addrs.size > 1) {
+        dupResults.push({ id: sample.voter_id, name: sample.name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Intra-county duplicate name/zip across ${addrs.size} addresses.`, raw: sample.raw });
+      }
+    }
+    resultMap['duplicates'] = dupResults;
+
+    const spikeResults: Array<Record<string, any>> = [];
+    for (const [regDate, { count, sample, residents }] of dateCounts.entries()) {
+      if (count >= 50) {
+        spikeResults.push({ id: sample.voter_id, name: sample.name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Single-day registration surge: ${count} voters registered on ${regDate}.`, raw: sample.raw });
+      }
+    }
+    resultMap['spikes'] = spikeResults;
+    resultMap['phantom-precincts'] = phantomList;
+
+    const benfordResults: Array<Record<string, any>> = [];
+    for (let i = 1; i <= 9; i++) {
+      const digit = i.toString();
+      const actualCount = benfordsLawCounts[digit];
+      const actualPercentage = benfordsTotal > 0 ? (actualCount / benfordsTotal) * 100 : 0;
+      benfordResults.push({ id: `BENFORD-${digit}`, name: `Leading Digit ${digit}`, address: `Actual: ${actualPercentage.toFixed(1)}%`, city: '', state: '', zip: '', county: '', occupant_count: actualCount, risk_level: 'LOW', details: `Digit ${digit} count: ${actualCount}` });
+    }
+    resultMap['benfords-law'] = benfordResults;
+
+    onProgress(100);
+    return { resultMap, totalCount };
   }
 
   // IndexedDB Helpers
