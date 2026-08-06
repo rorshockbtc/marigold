@@ -215,31 +215,16 @@ export function useDataQuery() {
           break;
         }
 
-        // We need the key of the last record to paginate. Read it from a cursor on the same range.
-        const batchLastKey: IDBValidKey | undefined = await new Promise((resolve) => {
+        // Resolve the last key natively using getAllKeys to avoid blocking the main thread with cursor.continue()
+        const batchKeys: IDBValidKey[] = await new Promise((resolve, reject) => {
           const tx = db.transaction(['rows'], 'readonly');
           const store = tx.objectStore('rows');
           const range = lastKey !== undefined ? IDBKeyRange.lowerBound(lastKey, true) : undefined;
-          // Open a cursor at the end of our batch to find the last key
-          let keyCount = 0;
-          let foundKey: IDBValidKey | undefined = undefined;
-          const cursorReq = store.openKeyCursor(range);
-          cursorReq.onsuccess = (event) => {
-            const cursor = (event.target as IDBRequest<IDBCursor | null>).result;
-            if (cursor) {
-              keyCount++;
-              foundKey = cursor.key;
-              if (keyCount < batchRecords.length) {
-                cursor.continue();
-              } else {
-                resolve(foundKey);
-              }
-            } else {
-              resolve(foundKey);
-            }
-          };
-          cursorReq.onerror = () => resolve(undefined);
+          const req = store.getAllKeys(range, BATCH_SIZE);
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
         });
+        const batchLastKey = batchKeys.length > 0 ? batchKeys[batchKeys.length - 1] : undefined;
 
         // Process this batch synchronously (fast — pure JS computation)
         for (let i = 0; i < batchRecords.length; i++) {
