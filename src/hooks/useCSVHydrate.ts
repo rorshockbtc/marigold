@@ -84,7 +84,9 @@ export function useCSVHydrate() {
             localStorage.setItem("marigold_dataset_signature", message.signature);
             const firebaseMap = await getMapBySignature(message.signature);
             if (firebaseMap) {
-              localStorage.setItem("marigold_file_mapping", JSON.stringify(firebaseMap));
+              const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+              const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+              localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(firebaseMap));
               console.log("✓ Server-Side Map Applied from Firebase during hydration");
             }
           }

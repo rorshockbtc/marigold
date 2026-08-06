@@ -90,7 +90,9 @@ export function useCSVParser() {
         } else {
           // 2. Fallback to LocalStorage / Heuristics
           try {
-            const oldMapStr = localStorage.getItem("marigold_file_mapping");
+            const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+            const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            const oldMapStr = localStorage.getItem(`marigold_file_mapping_${slug}`);
             if (oldMapStr && result.columns && result.columns.length > 0) {
               const oldMap = JSON.parse(oldMapStr);
               const mappedValues = Object.values(oldMap).filter(Boolean) as string[];
@@ -110,7 +112,9 @@ export function useCSVParser() {
         }
 
         if (finalMapping) {
-          localStorage.setItem("marigold_file_mapping", JSON.stringify(finalMapping));
+          const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+          const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+          localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(finalMapping));
         }
       }
       

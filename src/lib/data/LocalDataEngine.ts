@@ -54,7 +54,9 @@ export async function executeLocalEngine(tool: string, args: any): Promise<any> 
             
             if (!activeMapping) {
               try {
-                const savedMap = typeof window !== 'undefined' ? localStorage.getItem("marigold_file_mapping") : null;
+                const activeGroup = (typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") : "") || "default";
+                const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                const savedMap = typeof window !== 'undefined' ? localStorage.getItem(`marigold_file_mapping_${slug}`) : null;
                 if (savedMap) activeMapping = JSON.parse(savedMap);
               } catch (e) {}
               if (!activeMapping) {

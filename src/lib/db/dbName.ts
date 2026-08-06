@@ -15,6 +15,52 @@ export function getActiveDatabaseName(overrideGroup?: string | null): string {
   return `MarigoldDB_${safeSlug}`;
 }
 
+/**
+ * One-time migration: if the new per-group DB is empty but the legacy VoterDataDB has data,
+ * transparently use VoterDataDB until the user re-processes their file.
+ * Returns the DB name that actually has data.
+ */
+export async function getActiveDatabaseNameWithFallback(overrideGroup?: string | null): Promise<string> {
+  if (typeof window === "undefined") return "VoterDataDB";
+  const targetName = getActiveDatabaseName(overrideGroup);
+  
+  // If the target IS VoterDataDB or DemoVoterDataDB, no fallback needed
+  if (targetName === "VoterDataDB" || targetName === "DemoVoterDataDB") return targetName;
+  
+  // Check if target DB has any rows
+  try {
+    const targetDb = await openActiveDatabase(targetName);
+    const tx = targetDb.transaction(['rows'], 'readonly');
+    const countReq = tx.objectStore('rows').count();
+    const targetCount: number = await new Promise(resolve => {
+      countReq.onsuccess = () => resolve(countReq.result || 0);
+      countReq.onerror = () => resolve(0);
+    });
+    targetDb.close();
+    
+    if (targetCount > 0) return targetName; // New DB has data, use it
+    
+    // Check legacy VoterDataDB
+    const legacyDb = await openActiveDatabase("VoterDataDB");
+    const ltx = legacyDb.transaction(['rows'], 'readonly');
+    const lCountReq = ltx.objectStore('rows').count();
+    const legacyCount: number = await new Promise(resolve => {
+      lCountReq.onsuccess = () => resolve(lCountReq.result || 0);
+      lCountReq.onerror = () => resolve(0);
+    });
+    legacyDb.close();
+    
+    if (legacyCount > 0) {
+      console.log(`📦 Migration: Using legacy VoterDataDB (${legacyCount} records) — new DB "${targetName}" is empty. Data will migrate when re-linked.`);
+      return "VoterDataDB";
+    }
+  } catch (e) {
+    console.warn("DB fallback check failed:", e);
+  }
+  
+  return targetName;
+}
+
 export function isDemoGroupActive(overrideGroup?: string | null): boolean {
   if (typeof window === "undefined") return false;
   const activeGroup = (overrideGroup || localStorage.getItem("marigold_active_group") || "").trim();

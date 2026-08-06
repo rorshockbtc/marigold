@@ -76,8 +76,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     setActiveGroup(targetGroup);
     localStorage.setItem("marigold_active_group", targetGroup);
     
-    // Clear out stale column mapping when switching
-    localStorage.removeItem("marigold_file_mapping");
+    // Ensure we are namespacing column mappings by group so multi-tab works
+    const slug = targetGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    localStorage.removeItem(`marigold_file_mapping_${slug}`);
     
     const isDemo = targetGroup === "State of Roosevelt (Demo)" ||
                    targetGroup === "ACME Civic Data Sandbox (Demo Environment)";
@@ -121,8 +122,26 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     
     // Listen for connection events to auto-refresh
     window.addEventListener("marigold-data-connected", refreshWorkspaceState);
+
+    // Multi-tab BroadcastChannel listener
+    let channel: BroadcastChannel | null = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        channel = new BroadcastChannel("marigold_group_sync");
+        channel.onmessage = (event) => {
+          if (event.data && event.data.type === "GROUP_CHANGED") {
+            const currentGroup = localStorage.getItem("marigold_active_group");
+            if (currentGroup !== event.data.group) {
+              window.location.reload();
+            }
+          }
+        };
+      } catch (e) {}
+    }
+
     return () => {
       window.removeEventListener("marigold-data-connected", refreshWorkspaceState);
+      if (channel) channel.close();
     };
   }, [query]);
 
