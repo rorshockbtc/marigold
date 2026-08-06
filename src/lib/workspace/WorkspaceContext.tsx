@@ -73,6 +73,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const switchGroup = (targetGroup: string) => {
     if (typeof window === "undefined") return;
+    const currentGroup = localStorage.getItem("marigold_active_group") || "";
+    
+    if (currentGroup && currentGroup !== targetGroup) {
+      const confirmed = window.confirm(
+        `Security Notice: Switching your active workspace to "${targetGroup}" will update it across all of your active browser tabs. Do you wish to continue?`
+      );
+      if (!confirmed) return;
+    }
+
     setActiveGroup(targetGroup);
     localStorage.setItem("marigold_active_group", targetGroup);
     
