@@ -7,6 +7,7 @@ export interface AuditSweepResults {
   groupId: string;
   timestamp: string;
   totalScanned: number;
+  datasetSignature?: string;
   anomalyRecords: Record<string, Array<Record<string, any>>>;
   severityCounts: {
     CRITICAL: number;

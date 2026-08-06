@@ -40,6 +40,7 @@ export default function ComprehensiveAuditPage() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState<string>("");
   const [lastAuditTime, setLastAuditTime] = useState<string | null>(null);
+  const [isUpToDate, setIsUpToDate] = useState(false);
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress } = useDataQuery();
   const { publishAuditCache, loadAuditCache } = useGroupSync();
   const { addTask, addNoteToTask } = useKanban();
@@ -259,6 +260,14 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
             setAnomalyRecords(cached.anomalyRecords);
             setIsAuditComplete(true);
             setLastAuditTime(cached.timestamp);
+            
+            const currentSignature = localStorage.getItem("marigold_dataset_signature");
+            if (currentSignature && cached.datasetSignature === currentSignature) {
+              setIsUpToDate(true);
+            } else {
+              setIsUpToDate(false);
+            }
+
             setPlaybooks(prev => prev.map(pb => ({
               ...pb,
               status: "complete" as const,
@@ -336,6 +345,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
       setPlaybooks(updatedPlaybooks);
       setAnomalyRecords(sweepMap);
       setLastAuditTime(new Date().toISOString());
+      setIsUpToDate(true); // Since we just ran it, it's definitely up to date
 
     } catch (err) {
       console.error("360 Sweep failed:", err);
@@ -384,18 +394,25 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
               className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-emerald-700 shadow-sm cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>Export Complete Unclipped Audit Package</span>
+              <span>Export Full Audit</span>
             </Button>
 
-            <Button
-              type="button"
-              onClick={runSweep}
-              disabled={isRunningSweep}
-              className="flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRunningSweep ? 'animate-spin' : ''}`} />
-              <span>{isRunningSweep ? "Scanning All Rules..." : "Force Fresh Sweep (~30s)"}</span>
-            </Button>
+            {!isUpToDate ? (
+              <Button
+                type="button"
+                onClick={runSweep}
+                disabled={isRunningSweep}
+                className="flex items-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md cursor-pointer"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRunningSweep ? 'animate-spin' : ''}`} />
+                <span>{isRunningSweep ? "Scanning All Rules..." : "Force Fresh Sweep (~30s)"}</span>
+              </Button>
+            ) : (
+              <span className="flex items-center gap-2 text-emerald-800 font-bold text-xs px-3 py-2 bg-emerald-50 rounded-xl border border-emerald-200">
+                <CheckCircle2 className="w-4 h-4" />
+                Everything is up to date with the most current version.
+              </span>
+            )}
           </div>
         </div>
 
@@ -543,7 +560,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
                 variant="outline"
                 className="text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 px-4 py-2 rounded-lg flex items-center gap-1 cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" /> Export All Unclipped CSV
+                <Download className="w-3.5 h-3.5" /> Export Playbook
               </Button>
             </div>
 
@@ -560,7 +577,7 @@ REPLICATION & VERIFICATION INSTRUCTIONS:
               ))}
               {selectedDrilldown.records.length > 100 && (
                 <p className="text-xs text-center text-text-body pt-2 italic">
-                  Showing first 100 preview entries on screen. Click 'Export All Unclipped CSV' to download all {selectedDrilldown.records.length.toLocaleString()} voter records.
+                  Showing first 100 preview entries on screen. Click 'Export Playbook' to download all {selectedDrilldown.records.length.toLocaleString()} voter records.
                 </p>
               )}
             </div>

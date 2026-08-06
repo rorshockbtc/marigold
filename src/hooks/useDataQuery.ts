@@ -110,10 +110,12 @@ export function useDataQuery() {
           });
         });
 
+        const datasetSig = typeof window !== "undefined" ? localStorage.getItem("marigold_dataset_signature") || "" : "";
         MarigoldDataEngineService.savePersistentAuditMap(activeGroup, {
           groupId: activeGroup,
           timestamp: new Date().toISOString(),
           totalScanned: totalCount,
+          datasetSignature: datasetSig,
           anomalyRecords: resultMap,
           severityCounts: { CRITICAL: critical, HIGH: high, MEDIUM: medium, INFO: info }
         }).catch(e => console.warn("Failed to cache sweep", e));
