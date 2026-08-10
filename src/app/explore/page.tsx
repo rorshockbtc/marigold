@@ -250,7 +250,9 @@ export default function ExplorePage() {
       description: `Exporting matches for playbook: ${activePlaybookInfo?.name || activePlaybook}. Contains ${filteredResults.length} flagged records.`,
       data: filteredResults.map(r => ({
         "Voter ID": r.id || r.voter_id,
-        "Name": r.name,
+        "First Name": r.first_name || "",
+        "Middle Name": r.middle_name || "",
+        "Last Name": r.last_name || "",
         "Address": r.address,
         "City": r.city,
         "State": r.state,
@@ -273,7 +275,9 @@ export default function ExplorePage() {
       description: `Complete export of all anomalies detected in the ${jurisdiction} sweep.`,
       data: Object.values(anomalyRecords).flat().map(r => ({
         "Voter ID": r.id || r.voter_id,
-        "Name": r.name,
+        "First Name": r.first_name || "",
+        "Middle Name": r.middle_name || "",
+        "Last Name": r.last_name || "",
         "Address": r.address,
         "City": r.city,
         "State": r.state,

@@ -55,21 +55,6 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'sosid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voteridnum',
     'id', 'voterkey', 'stateid', 'voterregid'
   ],
-  first_name: [
-    'firstname', 'voterfirstname', 'fname', 'first', 'namefirst', 'givenname'
-  ],
-  middle_name: [
-    'middlename', 'middle', 'mname', 'midname', 'votermiddlename'
-  ],
-  last_name: [
-    'lastname', 'voterlastname', 'lname', 'last', 'namelast', 'surname'
-  ],
-  suffix: [
-    'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix'
-  ],
-  full_name: [
-    'fullname', 'votername', 'name', 'voterfullname', 'displayname'
-  ],
   address: [
     'residentialaddress', 'residenceaddress', 'streetaddress', 'resstreet',
     'resaddr', 'resaddress', 'physicaladdress', 'addressline1', 'address1',
@@ -89,6 +74,21 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   ],
   county: [
     'countyname', 'cntydesc', 'countyname', 'county', 'cnty'
+  ],
+  first_name: [
+    'firstname', 'voterfirstname', 'fname', 'first', 'namefirst', 'givenname'
+  ],
+  middle_name: [
+    'middlename', 'middle', 'mname', 'midname', 'votermiddlename'
+  ],
+  last_name: [
+    'lastname', 'voterlastname', 'lname', 'last', 'namelast', 'surname'
+  ],
+  suffix: [
+    'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix'
+  ],
+  full_name: [
+    'fullname', 'votername', 'name', 'voterfullname', 'displayname'
   ],
   status: [
     'voterstatus', 'regstatus', 'registrationstatus', 'activestatus',

@@ -141,7 +141,7 @@ export class DataProcessorWorker {
         } else {
           addressCounts.set(addr, {
             count: 1,
-            sample: { voter_id: std.voter_id, name: std.name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+            sample: { voter_id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
             residents: [{ name: std.name, id: std.voter_id, date: std.date_registered }]
           });
         }
@@ -160,7 +160,7 @@ export class DataProcessorWorker {
         } else {
           dateCounts.set(std.date_registered, {
             count: 1,
-            sample: { voter_id: std.voter_id, name: `Surge Cohort (${std.date_registered})`, address: `Registered on ${std.date_registered}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+            sample: { voter_id: std.voter_id, name: `Surge Cohort (${std.date_registered})`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: `Registered on ${std.date_registered}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
             residents: [{ name: std.name, id: std.voter_id }]
           });
         }
@@ -168,7 +168,7 @@ export class DataProcessorWorker {
 
       if (!std.precinct_code || std.precinct_code === '0' || std.precinct_code.toUpperCase() === 'UNASSIGNED') {
         phantomList.push({
-          id: std.voter_id, name: std.name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: 'Missing mandatory precinct assignment.', raw: std.raw
+          id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: 'Missing mandatory precinct assignment.', raw: std.raw
         });
       }
 
@@ -179,7 +179,7 @@ export class DataProcessorWorker {
       const isOutStateMail = mailState.length === 2 && mailState !== homeState && mailState !== 'MS' && mailState !== 'NO' && mailState !== 'NA';
       if (isExplicitNcoa || isOutStateMail) {
         ncoaList.push({
-          id: std.voter_id, name: std.name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: `Out-of-state relocation/mailing detected: ${mailState || 'NCOA Flagged'}`, raw: std.raw
+          id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'CRITICAL', details: `Flagged for NCOA/Out of State move. Mailing state is ${mailState}.`, raw: std.raw
         });
       }
 
@@ -194,7 +194,7 @@ export class DataProcessorWorker {
         } else {
           dupMap.set(dupKey, {
             count: 1,
-            sample: { voter_id: std.voter_id, name: std.name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+            sample: { voter_id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
             addrs: new Set(std.address ? [std.address] : [])
           });
         }
@@ -204,7 +204,7 @@ export class DataProcessorWorker {
       const lname = std.last_name || '';
       if ((fname.length === 1 || lname.length === 1) && (fname.length > 0 || lname.length > 0)) {
         typoList.push({
-          id: std.voter_id, name: std.name || `${fname} ${lname}`, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'MEDIUM', details: 'Clerical 1-character name typo.', raw: std.raw
+          id: std.voter_id, name: std.name || `${fname} ${lname}`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'MEDIUM', details: 'Potential physical address truncation or malformed record.', raw: std.raw
         });
       }
     };
@@ -240,7 +240,7 @@ export class DataProcessorWorker {
     const densityResults: Array<Record<string, any>> = [];
     for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
       if (count >= threshold) {
-        densityResults.push({ id: sample.voter_id, name: sample.name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: count > 20 ? 'CRITICAL' : 'HIGH', details: `${count} voters registered at this address.`, raw: sample.raw, residentCluster: residents });
+        densityResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: count > 20 ? 'CRITICAL' : 'HIGH', details: `${count} voters registered at this address.`, raw: sample.raw, residentCluster: residents });
       }
     }
     resultMap['density'] = densityResults.sort((a, b) => b.occupant_count - a.occupant_count);
@@ -250,7 +250,7 @@ export class DataProcessorWorker {
     for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
       const upper = addr.toUpperCase();
       if (upper.includes('PO BOX') || upper.includes('P O BOX') || upper.includes('P.O. BOX') || upper.includes('UPS STORE') || upper.includes('PMB') || upper.includes('FEDEX')) {
-        poBoxResults.push({ id: sample.voter_id, name: sample.name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
+        poBoxResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
       }
     }
     resultMap['po-box'] = poBoxResults;
@@ -258,7 +258,7 @@ export class DataProcessorWorker {
     const dupResults: Array<Record<string, any>> = [];
     for (const [key, { count, sample, addrs }] of dupMap.entries()) {
       if (count > 1 && addrs.size > 1) {
-        dupResults.push({ id: sample.voter_id, name: sample.name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Intra-county duplicate name/zip across ${addrs.size} addresses.`, raw: sample.raw });
+        dupResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Intra-county duplicate name/zip across ${addrs.size} addresses.`, raw: sample.raw });
       }
     }
     resultMap['duplicates'] = dupResults;
@@ -266,7 +266,7 @@ export class DataProcessorWorker {
     const spikeResults: Array<Record<string, any>> = [];
     for (const [regDate, { count, sample, residents }] of dateCounts.entries()) {
       if (count >= 50) {
-        spikeResults.push({ id: sample.voter_id, name: sample.name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Single-day registration surge: ${count} voters registered on ${regDate}.`, raw: sample.raw });
+        spikeResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Single-day registration surge: ${count} voters registered on ${regDate}.`, raw: sample.raw });
       }
     }
     resultMap['spikes'] = spikeResults;
