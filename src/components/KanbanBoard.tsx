@@ -79,7 +79,7 @@ export const INITIAL_CARDS: CardData[] = [
 const COLUMNS = ["Needs Triage", "In Review", "Ready to Submit", "Resolved"];
 
 export function KanbanBoard() {
-  const { cards, setCards, setSelectedTicketId } = useKanban();
+  const { cards, setCards, setSelectedTicketId, isLiveSyncing } = useKanban();
   const { isDataLoaded, activeGroup, jurisdiction } = useWorkspace();
 
   // Group synchronization logic using the real workspace context
@@ -90,6 +90,19 @@ export function KanbanBoard() {
   const [assigneeFilter, setAssigneeFilter] = useState("All");
   const [tagFilter, setTagFilter] = useState("All");
   const [mountMode, setMountMode] = useState("active");
+
+  useEffect(() => {
+    const rawRoster = localStorage.getItem("marigold_roster");
+    if (rawRoster) {
+      try {
+        const parsed = JSON.parse(rawRoster);
+        const members = parsed.map((m: any) => m.name);
+        setGroupMembers(["Unassigned", ...members]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const sensors = useSensors(
@@ -109,8 +122,6 @@ export function KanbanBoard() {
       }));
     }
   };
-
-
 
   const uniqueTags = ["All", ...Array.from(new Set(cards.map(c => c.tag)))];
   const uniqueAssignees = ["All", ...groupMembers];
@@ -168,9 +179,17 @@ export function KanbanBoard() {
             />
           </div>
           
-          <div className="ml-auto flex items-center gap-2 text-xs font-bold text-[#528B65] bg-[#E3EEDC] px-3 py-1.5 rounded-full">
-            <Lock className="w-3 h-3" />
-            <span>Contextual E2EE Active</span>
+          <div className="ml-auto flex items-center gap-2">
+            {isLiveSyncing && (
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-full border border-emerald-200">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                Live Sync
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-xs font-bold text-[#528B65] bg-[#E3EEDC] px-3 py-1.5 rounded-full">
+              <Lock className="w-3 h-3" />
+              <span>Contextual E2EE Active</span>
+            </div>
           </div>
         </div>
       </div>

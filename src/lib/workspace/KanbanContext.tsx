@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { CardData, Note, INITIAL_CARDS } from "@/components/KanbanBoard";
-import { generateWorkspaceKey, encryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 interface KanbanContextType {
   cards: CardData[];
@@ -11,6 +11,7 @@ interface KanbanContextType {
   addNoteToTask: (taskId: string, note: Note) => void;
   selectedTicketId: string | null;
   setSelectedTicketId: (id: string | null) => void;
+  isLiveSyncing: boolean;
 }
 
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
@@ -18,6 +19,9 @@ const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
 export function KanbanProvider({ children }: { children: React.ReactNode }) {
   const [cards, setCards] = useState<CardData[]>([]);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [isLiveSyncing, setIsLiveSyncing] = useState(false);
+  const localRevRef = useRef(0);
+  const lastPushedRevRef = useRef(-1);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("marigold_kanban_cards") : null;
@@ -38,42 +42,124 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Poll for remote changes
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const pollRelay = async () => {
+      try {
+        const grp = localStorage.getItem("marigold_active_group") || "default";
+        const key = await deriveGroupKey(grp);
+        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        
+        if (res.ok) {
+          const { blobs } = await res.json();
+          const kanbanBlobs = blobs.filter((b: any) => b.type === "KANBAN_SYNC");
+          if (kanbanBlobs.length > 0) {
+            const latest = kanbanBlobs[kanbanBlobs.length - 1];
+            if (latest.ciphertext && latest.iv) {
+              const decryptedRaw = await decryptPayload(latest.ciphertext, latest.iv, key);
+              const remoteCards = JSON.parse(decryptedRaw);
+              
+              setCards(prev => {
+                let changed = false;
+                const newCards = [...prev];
+                
+                remoteCards.forEach((rc: CardData) => {
+                  const existingIdx = newCards.findIndex(c => c.id === rc.id);
+                  if (existingIdx >= 0) {
+                    const existing = newCards[existingIdx];
+                    if (existing.status !== rc.status || existing.assignee !== rc.assignee) {
+                      newCards[existingIdx] = { ...existing, status: rc.status, assignee: rc.assignee };
+                      changed = true;
+                    }
+                    // Merge notes
+                    const allNotes = [...newCards[existingIdx].notes];
+                    let notesAdded = false;
+                    rc.notes.forEach((rn: Note) => {
+                      if (!allNotes.find(n => n.id === rn.id)) {
+                        allNotes.push(rn);
+                        notesAdded = true;
+                      }
+                    });
+                    if (notesAdded) {
+                      allNotes.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                      newCards[existingIdx].notes = allNotes;
+                      newCards[existingIdx].meta = `${allNotes.length} Note(s)`;
+                      changed = true;
+                    }
+                  } else {
+                    newCards.push(rc);
+                    changed = true;
+                  }
+                });
+
+                if (changed) {
+                  // Increment local rev so it doesn't immediately push back what it just merged
+                  localRevRef.current += 1;
+                  lastPushedRevRef.current = localRevRef.current;
+                  return newCards;
+                }
+                return prev;
+              });
+              setIsLiveSyncing(true);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Polling relay failed", err);
+        setIsLiveSyncing(false);
+      }
+    };
+
+    interval = setInterval(pollRelay, 5000);
+    // Initial fetch
+    pollRelay();
+    return () => clearInterval(interval);
+  }, []);
+
+  // Push local changes
   useEffect(() => {
     if (cards.length > 0 && typeof window !== "undefined") {
       localStorage.setItem("marigold_kanban_cards", JSON.stringify(cards));
 
-      // Asynchronously encrypt & sync via zero-knowledge relay
-      (async () => {
-        try {
-          const key = await generateWorkspaceKey();
-          const syncableCards = cards.map(c => ({
-            ...c,
-            notes: c.notes.filter(n => !n.isPrivate)
-          }));
-          const rawCards = JSON.stringify(syncableCards);
-          const { ciphertextHex, ivHex } = await encryptPayload(rawCards, key);
-          const grp = localStorage.getItem("marigold_active_group") || "default";
+      // Check if we need to push
+      if (localRevRef.current > lastPushedRevRef.current) {
+        lastPushedRevRef.current = localRevRef.current;
+        (async () => {
+          try {
+            const grp = localStorage.getItem("marigold_active_group") || "default";
+            const key = await deriveGroupKey(grp);
+            const syncableCards = cards.map(c => ({
+              ...c,
+              notes: c.notes.filter(n => !n.isPrivate)
+            }));
+            const rawCards = JSON.stringify(syncableCards);
+            const { ciphertextHex, ivHex } = await encryptPayload(rawCards, key);
 
-          await fetch("/api/relay", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              groupId: grp,
-              blob: {
-                ciphertext: ciphertextHex,
-                iv: ivHex,
-                type: "KANBAN_SYNC"
-              }
-            })
-          });
-        } catch (err) {
-          console.warn("Zero-knowledge relay sync deferred", err);
-        }
-      })();
+            await fetch("/api/relay", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                groupId: grp,
+                blob: {
+                  id: crypto.randomUUID(),
+                  ciphertext: ciphertextHex,
+                  iv: ivHex,
+                  type: "KANBAN_SYNC"
+                }
+              })
+            });
+          } catch (err) {
+            console.warn("Zero-knowledge relay sync deferred", err);
+          }
+        })();
+      }
     }
   }, [cards]);
 
   const addTask = (task: CardData) => {
+    localRevRef.current += 1;
     setCards((prev) => {
       if (prev.find(c => c.id === task.id)) return prev;
       return [task, ...prev];
@@ -82,6 +168,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
 
   const addNoteToTask = (taskId: string, note: Note) => {
     console.info(`[Telemetry] Kanban: Adding ${note.isPrivate ? "PRIVATE" : "GROUP"} note to ticket ${taskId}`);
+    localRevRef.current += 1;
     setCards((prev) => prev.map(c => {
       if (c.id === taskId) {
         return { ...c, notes: [note, ...c.notes], meta: `${c.notes.length + 1} Note(s)` };
@@ -90,8 +177,16 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  // We also need a way to track drags (status changes).
+  // React beautiful dnd updates the `cards` state directly from KanbanBoard.tsx.
+  // So we intercept `setCards` directly via wrapping if we want, or just let components increment the rev.
+  const setCardsWithRev = (action: React.SetStateAction<CardData[]>) => {
+    localRevRef.current += 1;
+    setCards(action);
+  };
+
   return (
-    <KanbanContext.Provider value={{ cards, setCards, addTask, addNoteToTask, selectedTicketId, setSelectedTicketId }}>
+    <KanbanContext.Provider value={{ cards, setCards: setCardsWithRev, addTask, addNoteToTask, selectedTicketId, setSelectedTicketId, isLiveSyncing }}>
       {children}
     </KanbanContext.Provider>
   );

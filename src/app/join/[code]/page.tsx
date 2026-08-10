@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
+import { deriveGroupKey, encryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 export default function GroupInviteGatewayPage() {
   const router = useRouter();
@@ -58,11 +59,40 @@ export default function GroupInviteGatewayPage() {
   const userEmail = user?.primaryEmailAddress?.emailAddress || "";
   const displayName = user?.fullName || userEmail.split('@')[0] || "Civic Volunteer";
 
-  const handleAcceptInvite = () => {
+  const handleAcceptInvite = async () => {
     setIsAccepting(true);
     setErrorMsg("");
 
-    setTimeout(() => {
+    try {
+      const key = await deriveGroupKey(targetGroup.name);
+      
+      const applicationData = {
+        id: crypto.randomUUID(),
+        name: displayName,
+        email: userEmail,
+        phone: "Not provided",
+        note: "Automatically generated application via invite link.",
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        status: 'pending'
+      };
+
+      const rawApp = JSON.stringify(applicationData);
+      const { ciphertextHex, ivHex } = await encryptPayload(rawApp, key);
+
+      await fetch("/api/relay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId: targetGroup.name,
+          blob: {
+            id: applicationData.id,
+            ciphertext: ciphertextHex,
+            iv: ivHex,
+            type: "APPLICATION"
+          }
+        })
+      });
+
       // Set active workspace
       localStorage.setItem("marigold_active_group", targetGroup.name);
       localStorage.setItem("marigold_onboarding_done", "true");
@@ -78,7 +108,10 @@ export default function GroupInviteGatewayPage() {
       }
 
       router.push('/dashboard');
-    }, 600);
+    } catch (e) {
+      setErrorMsg("Failed to send application securely.");
+      setIsAccepting(false);
+    }
   };
 
   if (!isLoaded) {
