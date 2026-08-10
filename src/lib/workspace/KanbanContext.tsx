@@ -9,6 +9,7 @@ interface KanbanContextType {
   setCards: React.Dispatch<React.SetStateAction<CardData[]>>;
   addTask: (task: CardData) => void;
   addNoteToTask: (taskId: string, note: Note) => void;
+  updateCardDetails: (taskId: string, updates: Partial<CardData>) => void;
   selectedTicketId: string | null;
   setSelectedTicketId: (id: string | null) => void;
   isLiveSyncing: boolean;
@@ -72,6 +73,31 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
                     if (existing.status !== rc.status || existing.assignee !== rc.assignee) {
                       newCards[existingIdx] = { ...existing, status: rc.status, assignee: rc.assignee };
                       changed = true;
+                    }
+                    if (rc.evidenceUrl && existing.evidenceUrl !== rc.evidenceUrl) {
+                      newCards[existingIdx].evidenceUrl = rc.evidenceUrl;
+                      changed = true;
+                    }
+                    if (rc.checklists) {
+                      const existingChecklists = newCards[existingIdx].checklists || [];
+                      let checklistChanged = false;
+                      const mergedChecklists = [...existingChecklists];
+                      rc.checklists.forEach(rcl => {
+                        const lclIdx = mergedChecklists.findIndex(c => c.id === rcl.id);
+                        if (lclIdx >= 0) {
+                          if (mergedChecklists[lclIdx].completed !== rcl.completed || mergedChecklists[lclIdx].text !== rcl.text) {
+                            mergedChecklists[lclIdx] = rcl;
+                            checklistChanged = true;
+                          }
+                        } else {
+                          mergedChecklists.push(rcl);
+                          checklistChanged = true;
+                        }
+                      });
+                      if (checklistChanged) {
+                        newCards[existingIdx].checklists = mergedChecklists;
+                        changed = true;
+                      }
                     }
                     // Merge notes
                     const allNotes = [...newCards[existingIdx].notes];
@@ -177,6 +203,16 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const updateCardDetails = (taskId: string, updates: Partial<CardData>) => {
+    localRevRef.current += 1;
+    setCards((prev) => prev.map(c => {
+      if (c.id === taskId) {
+        return { ...c, ...updates };
+      }
+      return c;
+    }));
+  };
+
   // We also need a way to track drags (status changes).
   // React beautiful dnd updates the `cards` state directly from KanbanBoard.tsx.
   // So we intercept `setCards` directly via wrapping if we want, or just let components increment the rev.
@@ -186,7 +222,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <KanbanContext.Provider value={{ cards, setCards: setCardsWithRev, addTask, addNoteToTask, selectedTicketId, setSelectedTicketId, isLiveSyncing }}>
+    <KanbanContext.Provider value={{ cards, setCards: setCardsWithRev, addTask, addNoteToTask, updateCardDetails, selectedTicketId, setSelectedTicketId, isLiveSyncing }}>
       {children}
     </KanbanContext.Provider>
   );

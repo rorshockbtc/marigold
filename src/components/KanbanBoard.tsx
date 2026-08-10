@@ -36,6 +36,8 @@ export interface CardData {
   attachedRecordIds?: string[];
   playbookId?: string;
   countyFilter?: string;
+  evidenceUrl?: string;
+  checklists?: { id: string, text: string, completed: boolean }[];
 }
 
 export const INITIAL_CARDS: CardData[] = [
