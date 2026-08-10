@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Download, Printer, ShieldCheck, CheckCircle, AlertTriangle, FileText } from "lucide-react";
 import { ExecutiveReportPDFTemplate } from "@/components/ExecutiveReportPDFTemplate";
-import { useCSVExport } from "@/hooks/useCSVExport";
+import { Button } from "@/components/ui/Button";
+import { useExportManager } from "@/hooks/useExportManager";
 
 export interface PlaybookAuditSummary {
   id: string;
@@ -22,6 +23,7 @@ export interface ExecutiveBriefingProps {
   playbookResults: PlaybookAuditSummary[];
   auditorName: string;
   isAuditComplete: boolean;
+  anomalyRecords: Record<string, any[]>;
 }
 
 export function ExecutiveBriefingExport({
@@ -33,86 +35,44 @@ export function ExecutiveBriefingExport({
   playbookResults,
   auditorName,
   isAuditComplete,
+  anomalyRecords,
 }: ExecutiveBriefingProps) {
-  const [isExportingCsv, setIsExportingCsv] = useState(false);
-  const [csvDownloaded, setCsvDownloaded] = useState(false);
-  const downloadCSV = (data: any[], filename: string) => {
-    if (!data.length) return;
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(","),
-      ...data.map(row => headers.map(h => `"${String(row[h]).replace(/"/g, '""')}"`).join(","))
-    ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const { requestExport } = useExportManager();
 
-  const totalAnomalies = playbookResults.reduce((acc, pb) => acc + pb.flaggedCount, 0);
-  const cleanRecordsCount = Math.max(0, totalRecordsScanned - totalAnomalies);
-  const actualCleanPercentage = totalRecordsScanned > 0 
-    ? Number((cleanRecordsCount / totalRecordsScanned * 100).toFixed(1))
-    : 100;
-
-  // Sort playbooks by flagged count descending so the biggest issue is shown first
   const sortedPlaybooks = [...playbookResults].sort((a, b) => b.flaggedCount - a.flaggedCount);
-  const maxFlagged = Math.max(...playbookResults.map((p) => p.flaggedCount), 1);
+  const totalAnomalies = sortedPlaybooks.reduce((acc, pb) => acc + pb.flaggedCount, 0);
+  const cleanRecordsCount = Math.max(0, totalRecordsScanned - totalAnomalies);
+  const actualCleanPercentage = totalRecordsScanned > 0 ? Number(((cleanRecordsCount / totalRecordsScanned) * 100).toFixed(1)) : 100;
+  const maxFlagged = Math.max(...sortedPlaybooks.map(p => p.flaggedCount), 1);
 
-  const downloadFullAuditCSV = () => {
-    setIsExportingCsv(true);
-    try {
-      const exportRows: any[] = [];
-      
-      sortedPlaybooks.forEach((pb) => {
-        const count = Math.max(1, Math.min(pb.flaggedCount, 15));
-        for (let i = 0; i < count; i++) {
-          exportRows.push({
-            voter_id: `MS-${104920 + i * 7}`,
-            name: i === 0 ? "Robert Smith Jr" : i === 1 ? "Mary E Johnson" : "David L Miller",
-            address: `${1400 + i * 12} PROMENADE PKWY, APT #${100 + i}`,
-            city: "Madison",
-            state: stateCode || "MS",
-            zip: "39110",
-            playbook_rule: pb.name,
-            audit_category: pb.audit_type,
-            flag_reason: pb.description,
-            audit_status: "Needs Review",
-            jurisdiction: jurisdictionName,
-            audit_date: executionTimestamp.slice(0, 10)
-          });
-        }
+  const handleExportFullAudit = () => {
+    const allExportRows: any[] = [];
+    sortedPlaybooks.forEach(p => {
+      const pRows = anomalyRecords[p.id] || [];
+      pRows.forEach(r => {
+        allExportRows.push({
+          County: r.county || "Statewide",
+          Playbook_Rule: p.name,
+          Risk_Level: r.risk_level || "HIGH",
+          Voter_ID: r.id || r.voter_id,
+          Full_Name: r.name,
+          Address: r.address,
+          City: r.city || "Jackson",
+          State: r.state || stateCode,
+          Zip: r.zip,
+          Occupants_At_Address: r.occupant_count || 1,
+          Details: r.details
+        });
       });
+    });
 
-      const safeJurisdiction = jurisdictionName.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      downloadCSV(exportRows, `${safeJurisdiction}_full_jurisdiction_audit_checklist.csv`);
-      
-      if (typeof window !== "undefined") {
-        localStorage.setItem("marigold_last_audit_export", JSON.stringify({
-          timestamp: executionTimestamp,
-          jurisdiction: jurisdictionName,
-          totalScanned: totalRecordsScanned,
-          flaggedCount: totalAnomalies,
-          rowCount: exportRows.length
-        }));
-      }
-
-      setCsvDownloaded(true);
-      setTimeout(() => setCsvDownloaded(false), 4000);
-    } catch (err) {
-      console.error("Failed to export full audit CSV:", err);
-    } finally {
-      setIsExportingCsv(false);
-    }
-  };
-
-  const handlePrintPdf = () => {
-    window.print();
+    requestExport({
+      contextType: "FULL_AUDIT",
+      title: "Full 360 Audit Checklist",
+      description: `Comprehensive audit of ${totalRecordsScanned.toLocaleString()} records across ${jurisdictionName}. ${totalAnomalies} anomalies were flagged for review.`,
+      data: allExportRows,
+      insights: `The audit completed with a cleanliness score of ${actualCleanPercentage}%. The most severe issues were found in: ${sortedPlaybooks.slice(0, 3).map(pb => pb.name).join(", ")}. Immediate review of these top categories is recommended.`
+    });
   };
 
   return (
@@ -130,29 +90,33 @@ export function ExecutiveBriefingExport({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <button
-              type="button"
-              onClick={handlePrintPdf}
+            <Button
+              variant="outline"
+              onClick={() => {
+                requestExport({
+                  contextType: "FULL_AUDIT",
+                  title: `${jurisdictionName} Executive Overview`,
+                  description: `Printable overview of ${totalRecordsScanned.toLocaleString()} records.`,
+                  data: [],
+                  insights: `The audit completed with a cleanliness score of ${actualCleanPercentage}%.`
+                });
+              }}
               disabled={!isAuditComplete}
-              className="flex-1 md:flex-initial bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-full shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 md:flex-initial"
             >
-              <Printer className="w-4 h-4 text-amber-400" />
-              <span>Print Official Executive Report</span>
-            </button>
+              <Printer className="w-4 h-4 mr-2" />
+              Print
+            </Button>
 
-            <button
-              type="button"
-              onClick={downloadFullAuditCSV}
-              disabled={isExportingCsv || !isAuditComplete}
-              className="flex-1 md:flex-initial bg-accent hover:bg-accent/90 text-white font-bold px-6 py-3 rounded-full shadow-sm transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            <Button
+              variant="primary"
+              onClick={handleExportFullAudit}
+              disabled={!isAuditComplete}
+              className="flex-1 md:flex-initial"
             >
-              {isExportingCsv ? (
-                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              <span>{csvDownloaded ? "✓ Saved to Disk & Session!" : "Download Full Audit Checklist (CSV)"}</span>
-            </button>
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
           </div>
         </div>
 

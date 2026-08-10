@@ -10,6 +10,7 @@ export interface GroupActivityItem {
   details: string;
   timestamp: string;
   recordCountBucket?: string;
+  isSystemAction?: boolean;
 }
 
 export interface SharedPlaybook {
@@ -102,18 +103,20 @@ export function useGroupSync() {
     }
   }, [loadAuditCache]);
 
-  const publishActivity = useCallback((action: string, details: string) => {
+  const publishActivity = useCallback((action: string, details: string, isSystemAction = false) => {
+    console.info(`[Telemetry] GroupSync: Broadcasting ${isSystemAction ? 'SYSTEM' : 'USER'} activity [${action}] to relay`);
     setIsSyncing(true);
     const sanitizedDetails = scrubGeographicAndPII({ details }).details;
 
     const newItem: GroupActivityItem = {
       id: `act-${Date.now()}`,
       groupId,
-      authorAlias: "You (Auditor-LOCAL)",
+      authorAlias: isSystemAction ? "System" : "You (Auditor-LOCAL)",
       action,
       details: sanitizedDetails,
       timestamp: new Date().toISOString(),
       recordCountBucket: "2M+",
+      isSystemAction
     };
 
     setActivities((prev) => [newItem, ...prev]);

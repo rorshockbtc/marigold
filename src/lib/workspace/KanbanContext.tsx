@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { CardData, Note } from "@/components/KanbanBoard";
+import { CardData, Note, INITIAL_CARDS } from "@/components/KanbanBoard";
 import { generateWorkspaceKey, encryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 interface KanbanContextType {
@@ -9,22 +9,32 @@ interface KanbanContextType {
   setCards: React.Dispatch<React.SetStateAction<CardData[]>>;
   addTask: (task: CardData) => void;
   addNoteToTask: (taskId: string, note: Note) => void;
+  selectedTicketId: string | null;
+  setSelectedTicketId: (id: string | null) => void;
 }
 
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
 
 export function KanbanProvider({ children }: { children: React.ReactNode }) {
   const [cards, setCards] = useState<CardData[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("marigold_kanban_cards") : null;
     if (stored) {
       try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCards(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (parsed.length > 0) {
+          setCards(parsed);
+        } else {
+          setCards(INITIAL_CARDS);
+        }
       } catch (e) {
         console.error("Failed to parse kanban cards", e);
+        setCards(INITIAL_CARDS);
       }
+    } else {
+      setCards(INITIAL_CARDS);
     }
   }, []);
 
@@ -36,7 +46,11 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
       (async () => {
         try {
           const key = await generateWorkspaceKey();
-          const rawCards = JSON.stringify(cards);
+          const syncableCards = cards.map(c => ({
+            ...c,
+            notes: c.notes.filter(n => !n.isPrivate)
+          }));
+          const rawCards = JSON.stringify(syncableCards);
           const { ciphertextHex, ivHex } = await encryptPayload(rawCards, key);
           const grp = localStorage.getItem("marigold_active_group") || "default";
 
@@ -67,6 +81,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addNoteToTask = (taskId: string, note: Note) => {
+    console.info(`[Telemetry] Kanban: Adding ${note.isPrivate ? "PRIVATE" : "GROUP"} note to ticket ${taskId}`);
     setCards((prev) => prev.map(c => {
       if (c.id === taskId) {
         return { ...c, notes: [note, ...c.notes], meta: `${c.notes.length + 1} Note(s)` };
@@ -76,7 +91,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <KanbanContext.Provider value={{ cards, setCards, addTask, addNoteToTask }}>
+    <KanbanContext.Provider value={{ cards, setCards, addTask, addNoteToTask, selectedTicketId, setSelectedTicketId }}>
       {children}
     </KanbanContext.Provider>
   );

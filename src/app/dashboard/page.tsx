@@ -101,7 +101,7 @@ export default function DashboardPage() {
               <Filter className="w-4 h-4" />
               Filter Board
             </Button>
-            <Button onClick={() => router.push('/comprehensive-audit')} variant="primary">
+            <Button onClick={() => router.push('/explore?autoRun=true')} variant="primary">
               Run 360° Audit
             </Button>
           </div>
@@ -220,12 +220,15 @@ export default function DashboardPage() {
 
               <div className="space-y-4">
                 {activities.map((act) => (
-                  <div key={act.id} className="p-4 rounded-xl bg-surface border border-border-soft space-y-1">
+                  <div key={act.id} className={`p-4 rounded-xl border space-y-1 ${act.isSystemAction ? 'bg-transparent border-dashed border-border-soft' : 'bg-surface border-border-soft'}`}>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-primary">{act.authorAlias}</span>
+                      <span className={`font-bold ${act.isSystemAction ? 'text-text-body' : 'text-primary'}`}>
+                        {act.isSystemAction && <Activity className="w-3 h-3 inline mr-1" />}
+                        {act.authorAlias}
+                      </span>
                       <span className="text-muted-foreground">{new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                    <div className="text-sm font-bold text-text-header">{act.action}</div>
+                    <div className={`text-sm ${act.isSystemAction ? 'text-text-body' : 'font-bold text-text-header'}`}>{act.action}</div>
                     <p className="text-xs text-text-body">{act.details}</p>
                   </div>
                 ))}

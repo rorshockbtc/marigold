@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { collection, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
+import { auth } from "@clerk/nextjs/server";
 
 const IS_FIREBASE_CONNECTED = !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
@@ -35,6 +36,11 @@ function saveDiskBlobs(groupId: string, blobs: any[]): void {
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { groupId, blob } = await req.json();
     
     if (!groupId || !blob) {
@@ -42,12 +48,13 @@ export async function POST(req: Request) {
     }
 
     // Zero-Knowledge Validation: Payload must contain ciphertext
-    if (typeof blob !== "object" || (!blob.ciphertext && !blob.encryptedPayload)) {
-      return NextResponse.json({ error: "Zero-Knowledge Violation: Payload must be encrypted before transmission." }, { status: 422 });
+    if (typeof blob !== "object" || (!blob.ciphertext && !blob.encryptedPayload) || !blob.id) {
+      return NextResponse.json({ error: "Zero-Knowledge Violation: Payload must be fully encrypted before transmission." }, { status: 422 });
     }
 
     const newEntry = {
       groupId,
+      userId,
       ...blob,
       timestamp: Date.now()
     };
@@ -74,8 +81,14 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const groupId = searchParams.get("groupId");
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const groupId = searchParams.get("groupId");
 
   if (!groupId) {
     return NextResponse.json({ error: "Missing groupId" }, { status: 400 });
@@ -100,4 +113,7 @@ export async function GET(req: Request) {
 
   const blobs = readDiskBlobs(groupId);
   return NextResponse.json({ blobs });
+  } catch (err) {
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  }
 }

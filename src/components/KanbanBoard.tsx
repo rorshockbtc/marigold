@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { DndContext, useDraggable, useDroppable, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, useDraggable, useDroppable, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { AlertTriangle, Clock, FileText, CheckCircle2, X, Filter, Lock, Database, ArrowRightLeft, ShieldAlert, BarChart3 } from 'lucide-react';
 import { useKanban } from '@/lib/workspace/KanbanContext';
@@ -14,8 +14,9 @@ export interface Note {
   serverCiphertext: string;
   fileVersion: string;
   date: string;
+  isPrivate?: boolean;
   isDataStory?: boolean;
-  storyPayload?: any; 
+  storyPayload?: any;
 }
 
 export interface CardData {
@@ -33,9 +34,11 @@ export interface CardData {
   assignee: string;
   notes: Note[];
   attachedRecordIds?: string[];
+  playbookId?: string;
+  countyFilter?: string;
 }
 
-const INITIAL_CARDS: CardData[] = [
+export const INITIAL_CARDS: CardData[] = [
   {
     id: "card-1",
     status: "Needs Triage",
@@ -76,27 +79,23 @@ const INITIAL_CARDS: CardData[] = [
 const COLUMNS = ["Needs Triage", "In Review", "Ready to Submit", "Resolved"];
 
 export function KanbanBoard() {
-  const { cards, setCards, addNoteToTask } = useKanban();
+  const { cards, setCards, setSelectedTicketId } = useKanban();
   const { isDataLoaded, activeGroup, jurisdiction } = useWorkspace();
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   // Group synchronization logic using the real workspace context
   const isGroupSynced = isDataLoaded; // Or whatever custom logic defined
   const activeEncryptionHash = activeGroup;
 
   const [groupMembers, setGroupMembers] = useState<string[]>(["Unassigned", "Kyle"]);
-  const [assigneeFilter, setAssigneeFilter] = useState<string>("All");
-  const [tagFilter, setTagFilter] = useState<string>("All");
-  const [newNote, setNewNote] = useState("");
+  const [assigneeFilter, setAssigneeFilter] = useState("All");
+  const [tagFilter, setTagFilter] = useState("All");
   const [mountMode, setMountMode] = useState("active");
 
-  useEffect(() => {
-    setTimeout(() => {
-      setGroupMembers(["Unassigned", "Kyle", "Cubby", "Sarah", "Alex"]);
-    }, 500);
-  }, []);
-
-  const selectedCard = cards.find(c => c.id === selectedCardId) || null;
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     if (!isGroupSynced) return; // Prevent drag-and-drop state changes if in Read-Only Mode
@@ -111,41 +110,7 @@ export function KanbanBoard() {
     }
   };
 
-  const handleSaveNote = () => {
-    if (!newNote.trim() || !selectedCard || !isGroupSynced) return;
-    
-    const tokenizedNote = "[ENCRYPTED_PAYLOAD] " + newNote; // TODO: Move encryption to Data Layer
-    
-    const note: Note = {
-      id: Math.random().toString(36).substr(2, 9),
-      serverCiphertext: tokenizedNote,
-      fileVersion: activeEncryptionHash,
-      date: new Date().toISOString()
-    };
 
-    addNoteToTask(selectedCard.id, note);
-    setNewNote("");
-  };
-
-  // Mock pushing a "Data Story Snapshot" from an independent dataset
-  const handlePublishDataStory = () => {
-    if (!selectedCard) return;
-    
-    const snapshotNote: Note = {
-      id: Math.random().toString(36).substr(2, 9),
-      serverCiphertext: "Published a Data Story Snapshot",
-      fileVersion: "Snapshot",
-      date: new Date().toISOString(),
-      isDataStory: true,
-      storyPayload: {
-        title: "Cross-Reference: National NCOA Database",
-        insight: "This record highly correlates with an out-of-state move registered in Wyoming.",
-        confidenceScore: "87%"
-      }
-    };
-
-    addNoteToTask(selectedCard.id, snapshotNote);
-  };
 
   const uniqueTags = ["All", ...Array.from(new Set(cards.map(c => c.tag)))];
   const uniqueAssignees = ["All", ...groupMembers];
@@ -210,119 +175,17 @@ export function KanbanBoard() {
         </div>
       </div>
 
-      <DndContext onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-full pb-8">
           {COLUMNS.map(col => (
             <Column id={col} title={col} isReadOnly={!isGroupSynced} key={col}>
               {filteredCards.filter(c => c.status === col).map(card => (
-                <DraggableCard key={card.id} card={card} onClick={() => setSelectedCardId(card.id)} isReadOnly={!isGroupSynced} />
+                <DraggableCard key={card.id} card={card} onClick={() => setSelectedTicketId(card.id)} isReadOnly={!isGroupSynced} />
               ))}
             </Column>
           ))}
         </div>
       </DndContext>
-
-      {selectedCard && (
-        <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-2xl border-l border-border-soft z-30 p-6 flex flex-col animate-in slide-in-from-right-8 overflow-y-auto">
-          <div className="flex justify-between items-center mb-6 shrink-0">
-            <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
-            <IconButton 
-              onClick={() => setSelectedCardId(null)}
-              icon={<X className="w-5 h-5 text-text-body" />}
-              aria-label="Close record insights"
-              variant="ghost"
-              className="p-2 hover:bg-surface rounded-full"
-            />
-          </div>
-          
-          <div className="bg-surface rounded-xl p-4 border border-border-soft mb-6 shrink-0">
-            <h4 className="font-serif text-text-header text-xl mb-1">{selectedCard.title}</h4>
-            <p className="text-sm text-text-body">{selectedCard.subtitle}</p>
-          </div>
-          
-          <div className="flex-1 flex flex-col min-h-0">
-            <h3 className="text-xs font-bold text-text-body uppercase tracking-wider mb-4 border-b border-border-soft pb-2 shrink-0">Group Notes & Stories</h3>
-            
-            <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
-              {selectedCard.notes.length === 0 ? (
-                <p className="text-sm text-text-body italic">No notes added yet.</p>
-              ) : (
-                selectedCard.notes.map(note => {
-                  
-                  // Render a Data Story Snapshot (Static, Anonymized, Safe for Group Sync)
-                  if (note.isDataStory) {
-                    return (
-                      <div key={note.id} className="bg-blue-50 p-3 rounded-lg border border-blue-200 shadow-sm relative">
-                        <div className="flex items-center gap-1 mb-2 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
-                          <BarChart3 className="w-3 h-3" /> Data Story Snapshot
-                        </div>
-                        <h4 className="font-bold text-sm text-blue-900">{note.storyPayload?.title}</h4>
-                        <p className="text-xs text-blue-800 mt-1">{note.storyPayload?.insight}</p>
-                        <div className="mt-2 text-[10px] text-blue-600 font-mono">
-                          Confidence: {note.storyPayload?.confidenceScore}
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  const displayText = note.serverCiphertext.replace("[ENCRYPTED_PAYLOAD] ", ""); // TODO: Move decryption to Data Layer
-
-                  return (
-                    <div key={note.id} className={`p-3 rounded-lg border relative group bg-surface border-border-soft`}>
-                      <p className={`text-sm whitespace-pre-wrap text-text-header`}>
-                        {displayText}
-                      </p>
-                      
-                      <div className="absolute inset-0 bg-black/90 text-white p-2 rounded-lg text-xs hidden group-hover:block overflow-auto font-mono z-50">
-                        [Server Payload]<br/>{note.serverCiphertext}
-                      </div>
-
-                      <span className="text-[10px] text-text-body mt-2 block flex justify-between items-center">
-                        <span>{new Date(note.date).toLocaleString()}</span>
-                      </span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="mt-auto space-y-3 pt-4 border-t border-border-soft shrink-0">
-              {!isGroupSynced ? (
-                <>
-                  <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200 text-center">
-                    Note saving disabled. You are in Read-Only Mode until you mount the Group Manifest datasets.
-                  </div>
-                  <Button 
-                    onClick={handlePublishDataStory}
-                    className="w-full py-3 bg-blue-600 text-white rounded-[12px] font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
-                  >
-                    <BarChart3 className="w-4 h-4" /> Publish Data Story Snapshot
-                  </Button>
-                  <p className="text-[10px] text-center text-text-body">
-                    You can still publish anonymized insight snapshots from your independent datasets.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <textarea 
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    placeholder="Type a note (PII tokenized locally)..."
-                    className="w-full text-sm bg-surface border border-border-soft rounded-md p-3 outline-none resize-none h-24"
-                  />
-                  <Button 
-                    onClick={handleSaveNote}
-                    disabled={!newNote.trim()}
-                    className="w-full py-3 bg-primary text-white rounded-[12px] font-bold shadow-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"
-                  >
-                    <Lock className="w-4 h-4" /> Save Encrypted Note
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

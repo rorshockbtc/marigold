@@ -3,6 +3,7 @@
 import React, { ReactNode } from "react";
 import AppSidebar from "@/components/AppSidebar";
 import MariRightPanel from "@/components/MariRightPanel";
+import { TicketRightPanel } from "@/components/TicketRightPanel";
 import { AuditDataPanel } from "@/components/AuditDataPanel";
 import { useWorkspace } from "@/lib/workspace/WorkspaceContext";
 
@@ -34,6 +35,11 @@ export default function ThreePaneLayout({ children }: ThreePaneLayoutProps) {
 
       {/* Persistent Record Detail Side Sheet */}
       {isSideSheetOpen && <AuditDataPanel />}
+
+      {/* Ticket Panel */}
+      <div className="flex-shrink-0 h-full z-20">
+        <TicketRightPanel />
+      </div>
 
       {/* Right Drawer (Mari) */}
       <div className="flex-shrink-0 h-full z-20">

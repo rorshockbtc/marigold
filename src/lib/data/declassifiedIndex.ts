@@ -35,7 +35,7 @@ This assessment evaluates the technical methodologies developed and deployed by 
 [PAGE 3] ANALYTICAL IMPLICATIONS FOR U.S. ELECTION INFRASTRUCTURE:
 Because numerous U.S. county election systems rely upon commercial-off-the-shelf (COTS) operating systems and third-party upstream definition programming, centralized tabulation pools remain vulnerable to identical memory buffer injection techniques. The Central Intelligence Agency assesses that air-gapping central servers from public internet networks is insufficient if upstream ballot definition files or electronic pollbook synchronization devices are exposed to foreign supply-chain interdiction.`,
     analyticalNote: "Proves that foreign intelligence evaluated and perfected methods to alter electronic tabulation pools right in active RAM buffers without triggering hash alarms. Local browser RAM verification (Marigold) allows citizen auditors to cross-verify physical ballot paper against precinct totals without relying on vulnerable central server software.",
-    downloadUrl: "/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+    downloadUrl: "/data/Vulnerabilities-in-Electronic-Voting-and-Ballot-Counting-Systems.zip"
   },
   {
     id: "cisa-red-02",
@@ -56,7 +56,7 @@ In simulated attack vectors executed during Red Team exercises, engineers demons
 [PAGE 16 - SECTION 4.1: OPTICAL SCANNER CALIBRATION THRESHOLDS]
 Furthermore, CISA engineers examined upstream programming definition files utilized by third-party vendors to format ballot paper layouts for optical scanners. By introducing subtle pixel-offset anomalies into the upstream barcode and timing mark definitions, testers successfully caused optical scanners to reject specific candidate selections or misroute valid ballots to 'over-vote' adjudication queues. Once ballots enter software adjudication queues, operators with administrative privileges can manually re-assign voter intent without creating a cryptographic audit trail on the physical ballot paper.`,
     analyticalNote: "Documents exact penetration test results where CISA engineers manipulated electronic pollbook check-ins to match excess printed ballot paper, and used barcode timing anomalies to dump ballots into silent adjudication queues. Marigold's local statistical engine catches these anomalies via polling place check-in versus ballot reconciliation.",
-    downloadUrl: "/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+    downloadUrl: "/data/Vulnerabilities-in-Electronic-Voting-and-Ballot-Counting-Systems.zip"
   },
   {
     id: "dni-prc-03",
@@ -80,7 +80,7 @@ Intelligence intercepts and behavioral analysis of PRC-controlled digital networ
 [PAGE 14 - TARGETING HIGH-DENSITY INSTITUTIONAL ADDRESSES]
 Furthermore, MSS exploitation units filtered the 220 million voter records to isolate jurisdictions exhibiting high rates of unremoved transient registrants. Operatives specifically mapped 'High-Density Occupancy' addresses—including university college dormitories, nursing homes, and commercial mail drop facilities (P.O. Boxes registered as residential addresses). In multiple university towns, PRC analysts identified precincts where total active voter registrations exceeded 100% of the resident adult citizen population ('more votes than residents'), noting these unpurged rolls provided an unmonitored vector for third-party ballot harvesting and digital interdiction.`,
     analyticalNote: "Proves that foreign adversaries mapped out specific U.S. precincts where registrations exceeded 100% of resident citizens ('more votes than residents') to execute targeted turnout operations. Marigold's client-side NCOA and High-Density Occupancy cross-checks allow local citizens to audit these exact transient and dormitory addresses right in their web browser.",
-    downloadUrl: "/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+    downloadUrl: "/data/Chinas-Acquisition-and-Exploitation-of-American-Voter-Data.zip"
   },
   {
     id: "fbi-det-04",
@@ -107,7 +107,7 @@ Witness #2 corroborated the gift card quota incentive structure, confirming that
 [PAGE 19 - FOUR-YEAR PROSECUTION DELAY AND STATUTORY ROLL RETENTION]
 Despite the Michigan State Police submitting comprehensive forensic handwriting analysis and physical evidence confirming systematic registration forgery to federal prosecutors in late October 2020, federal prosecution timelines experienced a four-year administrative delay. During this intervening period, county clerks across Michigan reported that thousands of unverified registration forms submitted by the investigated organization remained on active voter rolls. Because Section 8 of the National Voter Registration Act (NVRA) mandates a 90-day blackout period prior to federal elections restricting systematic roll purges, county officials were legally barred from removing unverified duplicate registrations without individualized judicial orders, resulting in active precinct rolls where registered voters exceeded eligible residents ('more votes than residents').`,
     analyticalNote: "Provides direct, on-the-record witness interview transcripts where canvassers confessed to fabricating thousands of registrations using phone books to earn prepaid gift card quotas, purposely inserting typos so county duplicate filters wouldn't catch them. Marigold's Fuzzy-Matching algorithm catches these exact single-character typo duplicates instantly.",
-    downloadUrl: "/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+    downloadUrl: "/data/Michigan-Voter-Registration-Investigation.zip"
   },
   {
     id: "dhs-save-05",
@@ -134,6 +134,6 @@ Because state licensing electronic pollbooks and mail-in registration portals au
 [PAGE 9 - PRECINCT OVER-REGISTRATION ANOMALIES]
 When unverified noncitizens are added to active county voter rolls alongside unmerged intra-county duplicates and high-density institutional transients, total active registrations in key urban and suburban precincts frequently exceed 100% of the resident adult citizen population ('more votes than residents'). DHS concludes that without mandatory pre-election SAVE database batch verification and strict proof-of-citizenship requirements at the point of registration (as codified in the SAVE Act), statewide voter rolls remain systematically open to unauthorized ballot generation and dilution of legal citizen votes.`,
     analyticalNote: "Details exact forensic cross-match figures proving over 278,000 noncitizens were entered onto state voter rolls via Automatic Voter Registration because state DMV computers failed to query the SAVE database. Marigold's audit engine enables states and citizens to crosscheck rolls against SAVE extracts and verify citizenship eligibility prior to ballot mailing.",
-    downloadUrl: "/data/Declassified_Election_Integrity_Master_Corpus_July16_2026.txt"
+    downloadUrl: "/data/Noncitizens-on-State-Voter-Rolls.zip"
   }
 ];

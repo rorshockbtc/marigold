@@ -35,7 +35,8 @@ test.describe('Demo Experience (End-to-End)', () => {
     await expect(zkGate).not.toBeVisible();
 
     // Should show the Explore page with playbook cards
-    const pageTitle = page.getByRole('heading', { name: 'Explore & Review' });
+    // Should show the Explore page with 360 overview
+    const pageTitle = page.getByRole('heading', { name: 'Jurisdiction Forensic Sweep' });
     await expect(pageTitle).toBeVisible();
 
     // Should have at least 3 visible playbook cards
@@ -65,7 +66,7 @@ test.describe('Demo Experience (End-to-End)', () => {
 
     // Gate should disappear, Explore page should load
     await expect(zkGate).not.toBeVisible();
-    const pageTitle = page.getByRole('heading', { name: 'Explore & Review' });
+    const pageTitle = page.getByRole('heading', { name: 'Jurisdiction Forensic Sweep' });
     await expect(pageTitle).toBeVisible();
   });
 
@@ -102,12 +103,12 @@ test.describe('Demo Experience (End-to-End)', () => {
     await page.goto('/explore');
     await page.waitForLoadState('networkidle');
 
-    // Before running: should show empty state
-    const emptyState = page.locator('text=Select a Playbook above');
-    await expect(emptyState).toBeVisible();
+    // Before running: should show the 360 overview instead of empty state
+    const overviewTitle = page.getByRole('heading', { name: 'Jurisdiction Forensic Sweep' });
+    await expect(overviewTitle).toBeVisible();
 
-    // Click the first playbook (High-Density Occupancy)
-    const densityPlaybook = page.locator('button, [data-testid^="btn-"], [data-testid*="playbook"]').filter({ hasText: /Density|Occupancy|Audit/i }).first();
+    // Click the first playbook (High-Density Occupancy) from the list
+    const densityPlaybook = page.locator('div').filter({ hasText: /^High-Density Residential Occupancy/i }).first();
     if (await densityPlaybook.count() > 0) {
       await densityPlaybook.click().catch(() => {});
 

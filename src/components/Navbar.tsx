@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { ChevronDown, ArrowRight, Menu, X, Globe, Map, Shield, Sparkles, Terminal } from 'lucide-react';
+import { ChevronDown, ArrowRight, Menu, X, Globe, Map, Shield, ShieldAlert, Sparkles, Terminal, Code } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 
 export function Navbar() {
@@ -56,8 +56,12 @@ export function Navbar() {
               {moreDropdownOpen && (
                 <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-border-soft rounded-xl shadow-lg py-2 z-50 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
                   <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
-                    <Terminal className="w-4 h-4 flex-shrink-0" />
-                    <span>Developer Docs</span>
+                    <Code className="w-4 h-4 text-emerald-400" />
+                    <span className="font-medium">Developer API</span>
+                  </Link>
+                  <Link href="/election-integrity-presidential-address" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-amber-500" />
+                    <span className="font-medium">Election Integrity (July 16)</span>
                   </Link>
                   <Link href="/compliance" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Shield className="w-4 h-4 flex-shrink-0" />

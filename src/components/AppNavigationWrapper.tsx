@@ -21,7 +21,6 @@ const WORKSPACE_ROUTES = [
   '/perspectives',
   '/settings',
   '/advanced-stats',
-  '/comprehensive-audit',
   '/data-prep',
 ];
 

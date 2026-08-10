@@ -151,7 +151,7 @@ export default function MissionControl() {
           {/* Executive 360° Audit Launch Banner */}
           <div className="pt-4">
             <Link
-              href="/comprehensive-audit"
+              href="/explore?autoRun=true"
               className="w-full sm:w-auto bg-gradient-to-r from-[#2D3142] to-[#1E212D] hover:from-[#1E212D] hover:to-black text-amber-300 font-extrabold px-6 py-4 rounded-xl shadow-md transition-all text-sm inline-flex items-center justify-center gap-2 border border-slate-700"
             >
               <span>🚀 Launch 360° Comprehensive Jurisdiction Audit across all 9 Playbooks →</span>

@@ -67,7 +67,7 @@ test.describe('Marigold Insights E2E Scenarios (JTBD Framework)', () => {
     await page.waitForLoadState('domcontentloaded');
     
     // Verify export button exists
-    const exportBtn = page.getByRole('button', { name: /Generate Report/i });
+    const exportBtn = page.getByRole('button', { name: /Export Full Audit/i });
     await expect(exportBtn).toBeVisible();
   });
 });

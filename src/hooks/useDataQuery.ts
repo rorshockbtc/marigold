@@ -111,14 +111,18 @@ export function useDataQuery() {
         });
 
         const datasetSig = typeof window !== "undefined" ? localStorage.getItem("marigold_dataset_signature") || "" : "";
-        MarigoldDataEngineService.savePersistentAuditMap(activeGroup, {
-          groupId: activeGroup,
-          timestamp: new Date().toISOString(),
-          totalScanned: totalCount,
-          datasetSignature: datasetSig,
-          anomalyRecords: resultMap,
-          severityCounts: { CRITICAL: critical, HIGH: high, MEDIUM: medium, INFO: info }
-        }).catch(e => console.warn("Failed to cache sweep", e));
+        
+        // Only save the global cache if this is a comprehensive, statewide sweep (no county filter)
+        if (!countyFilter) {
+          MarigoldDataEngineService.savePersistentAuditMap(activeGroup, {
+            groupId: activeGroup,
+            timestamp: new Date().toISOString(),
+            totalScanned: totalCount,
+            datasetSignature: datasetSig,
+            anomalyRecords: resultMap,
+            severityCounts: { CRITICAL: critical, HIGH: high, MEDIUM: medium, INFO: info }
+          }).catch(e => console.warn("Failed to cache sweep", e));
+        }
       });
 
       setQueryProgress(100);
@@ -144,7 +148,11 @@ export function useDataQuery() {
     const cached = await MarigoldDataEngineService.getPersistentAuditMap(activeGroup);
     
     if (cached && cached.anomalyRecords && cached.anomalyRecords[auditType]) {
-      return cached.anomalyRecords[auditType];
+      let records = cached.anomalyRecords[auditType];
+      if (countyFilter) {
+        records = records.filter(r => (r.county || '').toLowerCase() === countyFilter.toLowerCase());
+      }
+      return records;
     }
 
     const sweep = await runAllPlaybooksSweep(countyFilter, threshold);

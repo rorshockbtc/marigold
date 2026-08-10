@@ -72,7 +72,7 @@ export default function OnboardingPage() {
 
       setErrorStatus("✅ Workspace unlocked! Opening Data Engine...");
       setTimeout(() => {
-        router.push("/explore");
+        router.push("/explore?autoRun=true");
       }, 600);
     } catch (err) {
       console.error("Error unlocking workspace:", err);
@@ -80,7 +80,7 @@ export default function OnboardingPage() {
       if (typeof window !== "undefined") {
         localStorage.setItem("marigold_file_connected", "true");
       }
-      router.push("/explore");
+      router.push("/explore?autoRun=true");
     } finally {
       setIsProcessing(false);
     }
