@@ -88,7 +88,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix'
   ],
   full_name: [
-    'fullname', 'votername', 'name', 'voterfullname', 'displayname'
+    'fullname', 'voterfullname', 'displayname'
   ],
   status: [
     'voterstatus', 'regstatus', 'registrationstatus', 'activestatus',
@@ -173,7 +173,7 @@ export function extractActualCountyName(rawRow: Record<string, any>): string {
         continue;
       }
       for (const countyName of MISSISSIPPI_82_COUNTIES) {
-        if (strVal === countyName || strVal === `${countyName} COUNTY` || strVal.startsWith(`${countyName} `)) {
+        if (strVal === countyName || strVal === `${countyName} COUNTY`) {
           return `${countyName} County`;
         }
       }
@@ -310,11 +310,16 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   }
   if (!fullName) fullName = 'Unlisted Resident';
 
-  const exactCounty = extractActualCountyName(rawRow);
   const exactCity = getValue(activeMapping.city, ['city', 'residentialcity', 'rescity', 'cityname'], extractActualCityName(rawRow));
+  let exactCounty = getValue(activeMapping.county, ['county', 'rescounty', 'countyname'], '');
+  if (!exactCounty) {
+    exactCounty = extractActualCountyName(rawRow);
+  } else if (!exactCounty.toUpperCase().includes('COUNTY')) {
+    exactCounty = exactCounty.charAt(0).toUpperCase() + exactCounty.slice(1).toLowerCase() + ' County';
+  }
 
   return {
-    voter_id: getValue(activeMapping.voter_id, ['voterid', 'sosvoterid', 'id'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
+    voter_id: getValue(activeMapping.voter_id, ['voterid', 'sosvoterid', 'id', 'mappingvalue'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
     name: fullName,
     first_name: first,
     middle_name: middle,
