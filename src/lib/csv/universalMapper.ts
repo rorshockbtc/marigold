@@ -51,7 +51,7 @@ const MISSISSIPPI_82_COUNTIES = [
 
 const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   voter_id: [
-    'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
+    'mappingvalue', 'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
     'sosid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voteridnum',
     'id', 'voterkey', 'stateid', 'voterregid'
   ],
