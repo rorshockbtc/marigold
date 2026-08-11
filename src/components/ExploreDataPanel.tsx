@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { X, Lock, AlertCircle, BarChart3 } from "lucide-react";
 import { MarigoldIcon } from "@/components/MarigoldIcon";
@@ -26,7 +26,43 @@ export function ExploreDataPanel({
   playbooks,
   verboseMode
 }: ExploreDataPanelProps) {
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskStatus, setTaskStatus] = useState("Needs Triage");
+  const [taskAssignee, setTaskAssignee] = useState("Unassigned");
+  const [taskComment, setTaskComment] = useState("");
+
   if (!selectedRecord) return null;
+
+  const handleCreateTask = () => {
+    const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
+    const initialNotes = taskComment.trim() ? [{
+      id: Math.random().toString(36).substring(2, 9),
+      serverCiphertext: `[ENCRYPTED_PAYLOAD] ${taskComment}`,
+      fileVersion: "Current Session",
+      date: new Date().toISOString(),
+      author: authorName,
+      isPrivate: false
+    }] : [];
+
+    addTask({
+      id: `task-${selectedRecord.id}`,
+      status: taskStatus,
+      title: selectedRecord.name || selectedRecord.id,
+      subtitle: selectedRecord.details || "Requires further review",
+      tag: activePlaybook ? playbooks.find(p => p.id === activePlaybook)?.name || "Anomaly" : "Anomaly",
+      tagColor: "text-blue-700",
+      tagBg: "bg-blue-50",
+      icon: <AlertCircle className="w-4 h-4 text-blue-600" />,
+      iconColor: "text-blue-600",
+      borderColor: "border-l-blue-500",
+      meta: "Just now",
+      assignee: taskAssignee,
+      notes: initialNotes
+    });
+    setSelectedRecord({ ...selectedRecord, taskCreated: true });
+    setIsTaskModalOpen(false);
+    setTaskComment("");
+  };
 
   return (
     <div className="w-96 bg-white border-l border-border-soft shadow-xl h-full p-8 overflow-y-auto flex-shrink-0 animate-in slide-in-from-right-8">
@@ -65,24 +101,7 @@ export function ExploreDataPanel({
         ) : (
           <>
             <Button 
-              onClick={() => {
-                addTask({
-                  id: `task-${selectedRecord.id}`,
-                  status: "Needs Triage",
-                  title: selectedRecord.name || selectedRecord.id,
-                  subtitle: selectedRecord.details || "Requires further review",
-                  tag: activePlaybook ? playbooks.find(p => p.id === activePlaybook)?.name || "Anomaly" : "Anomaly",
-                  tagColor: "text-blue-700",
-                  tagBg: "bg-blue-50",
-                  icon: <AlertCircle className="w-4 h-4 text-blue-600" />,
-                  iconColor: "text-blue-600",
-                  borderColor: "border-l-blue-500",
-                  meta: "Just now",
-                  assignee: "Unassigned",
-                  notes: []
-                });
-                setSelectedRecord({ ...selectedRecord, taskCreated: true });
-              }}
+              onClick={() => setIsTaskModalOpen(true)}
               variant="outline"
               className="w-full py-3"
               disabled={selectedRecord.taskCreated}
@@ -133,6 +152,58 @@ export function ExploreDataPanel({
                 {selectedRecord.address}<br />
                 {selectedRecord.city}, {selectedRecord.state} {selectedRecord.zip}
               </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isTaskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
+            <h3 className="font-serif text-lg font-bold">Create Task</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold mb-1">Status</label>
+                <select 
+                  value={taskStatus} 
+                  onChange={e => setTaskStatus(e.target.value)}
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface"
+                >
+                  <option>Needs Triage</option>
+                  <option>In Review</option>
+                  <option>Ready to Submit</option>
+                  <option>Resolved</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1">Assignee</label>
+                <select 
+                  value={taskAssignee} 
+                  onChange={e => setTaskAssignee(e.target.value)}
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface"
+                >
+                  <option>Unassigned</option>
+                  <option>Kyle</option>
+                  {/* Additional members would be pulled dynamically */}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1">Initial Comment</label>
+                <textarea 
+                  value={taskComment}
+                  onChange={e => setTaskComment(e.target.value)}
+                  placeholder="Why are you creating this task?"
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface h-20 resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end mt-4">
+              <Button variant="ghost" onClick={() => setIsTaskModalOpen(false)}>Cancel</Button>
+              <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
             </div>
           </div>
         </div>

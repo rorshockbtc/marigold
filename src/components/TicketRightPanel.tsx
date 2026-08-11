@@ -47,12 +47,15 @@ export function TicketRightPanel() {
     
     const tokenizedNote = "[ENCRYPTED_PAYLOAD] " + newNote;
     
+    const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
+    
     const note: Note = {
       id: Math.random().toString(36).substr(2, 9),
       serverCiphertext: tokenizedNote,
       fileVersion: activeGroup,
       date: new Date().toISOString(),
-      isPrivate: !sendToGroup // Set privacy flag based on checkbox
+      isPrivate: !sendToGroup, // Set privacy flag based on checkbox
+      author: authorName
     };
 
     addNoteToTask(selectedCard.id, note);
@@ -288,6 +291,11 @@ export function TicketRightPanel() {
 
               return (
                 <div key={note.id} className={`p-3 rounded-lg border relative group bg-surface border-border-soft`}>
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-xs font-bold text-text-header">
+                      {note.author || "Investigator"}
+                    </span>
+                  </div>
                   <p className={`text-sm whitespace-pre-wrap text-text-header`}>
                     {displayText}
                   </p>

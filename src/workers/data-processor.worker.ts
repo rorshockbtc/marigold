@@ -1,6 +1,7 @@
 import * as Comlink from 'comlink';
 import Papa from 'papaparse';
 import { interpretColumnMappings, normalizeRowWithMapping } from '@/lib/csv/universalMapper';
+import { profileDatasetRows } from '@/lib/csv/DataProfiler';
 
 export class DataProcessorWorker {
   
@@ -35,6 +36,24 @@ export class DataProcessorWorker {
             const chunkData = results.data;
             if (columns.length === 0 && chunkData.length > 0) {
               columns = Object.keys(chunkData[0] as object);
+              
+              // Run AI profiling on first chunk
+              try {
+                const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+                const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                const profile = profileDatasetRows((chunkData as any[]).slice(0, 50));
+                fetch('/api/ai-mapper', { 
+                  method: 'POST', 
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ profile }) 
+                })
+                .then(r => r.json())
+                .then(data => {
+                  if (data.mapping && !data.error) {
+                    localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
+                  }
+                }).catch(() => {});
+              } catch (e) {}
             }
 
             const startIndex = rowsParsed;

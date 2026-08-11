@@ -17,6 +17,7 @@ export interface Note {
   isPrivate?: boolean;
   isDataStory?: boolean;
   storyPayload?: any;
+  author?: string;
 }
 
 export interface CardData {

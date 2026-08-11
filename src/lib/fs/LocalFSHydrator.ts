@@ -1,5 +1,6 @@
 import { openActiveDatabase, getActiveDatabaseName } from "@/lib/db/dbName";
 import Papa from "papaparse";
+import { profileDatasetRows } from "@/lib/csv/DataProfiler";
 
 export interface DiscoveredDataset {
   folderName: string;
@@ -143,6 +144,7 @@ export class LocalFSHydrator {
           await new Promise<void>((resolveChunk) => {
             let pendingTransaction: IDBTransaction | null = null;
             let currentStore: IDBObjectStore | null = null;
+            let hasProfiled = false;
 
             Papa.parse(file, {
               header: true,
@@ -153,6 +155,28 @@ export class LocalFSHydrator {
                 const chunkRows = results.data as Array<Record<string, any>>;
                 
                 try {
+                  if (!hasProfiled && chunkRows.length > 0) {
+                    hasProfiled = true;
+                    // Do this asynchronously without blocking the local parse, saving to localStorage when done
+                    const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+                    const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                    
+                    const profile = profileDatasetRows(chunkRows.slice(0, 50));
+                    fetch('/api/ai-mapper', { 
+                      method: 'POST', 
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ profile }) 
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                      if (data.mapping && !data.error) {
+                        localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
+                        console.log("Successfully stored intelligent AI mapping.");
+                      }
+                    })
+                    .catch(e => console.warn("AI mapper failed, falling back to static map", e));
+                  }
+
                   pendingTransaction = db.transaction(['rows'], 'readwrite');
                   currentStore = pendingTransaction.objectStore('rows');
                   

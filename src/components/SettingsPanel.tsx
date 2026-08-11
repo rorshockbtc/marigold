@@ -7,11 +7,13 @@ export default function SettingsPanel() {
   const [msfeEmail, setMsfeEmail] = useState("");
   const [geminiKey, setGeminiKey] = useState("");
   const [textSize, setTextSize] = useState("16");
+  const [userIdentity, setUserIdentity] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     setGeminiKey(localStorage.getItem("marigold_gemini_key") || "");
+    setUserIdentity(localStorage.getItem("marigold_user_identity") || "");
   }, []);
 
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -23,6 +25,9 @@ export default function SettingsPanel() {
     // Save Gemini Key
     if (geminiKey) localStorage.setItem("marigold_gemini_key", geminiKey);
     else localStorage.removeItem("marigold_gemini_key");
+
+    if (userIdentity.trim()) localStorage.setItem("marigold_user_identity", userIdentity.trim());
+    else localStorage.removeItem("marigold_user_identity");
 
     document.documentElement.style.fontSize = `${textSize}px`;
     setIsSaving(false);
@@ -45,6 +50,19 @@ export default function SettingsPanel() {
           <div>
             <h3 className="text-xl font-semibold border-b border-border pb-2 mb-4">Account Credentials</h3>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Display Name</label>
+                <input 
+                  type="text" 
+                  value={userIdentity}
+                  onChange={(e) => setUserIdentity(e.target.value)}
+                  className="input-field" 
+                  placeholder="e.g. Kyle, Investigator Alpha" 
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This name will appear on tasks you create and notes you write.
+                </p>
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1">MSFE Email Address</label>
                 <input 
