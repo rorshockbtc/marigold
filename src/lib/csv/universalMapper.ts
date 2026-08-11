@@ -152,7 +152,8 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
     for (const syn of synonyms) {
       if (syn.length <= 3) continue;
       if (mapping[key]) break;
-      const match = cleanMap.find(c => (c.clean.includes(syn) || syn.includes(c.clean)) && !mappedCols.has(c.original));
+      // Removed dangerous syn.includes(c.clean) which scrambles columns when c.clean is short/empty
+      const match = cleanMap.find(c => c.clean.includes(syn) && !mappedCols.has(c.original));
       if (match) {
         mapping[key] = match.original;
         mappedCols.add(match.original);

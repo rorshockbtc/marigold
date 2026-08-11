@@ -81,19 +81,27 @@ export function ExploreDataPanel({
                   assignee: "Unassigned",
                   notes: []
                 });
+                setSelectedRecord({ ...selectedRecord, taskCreated: true });
               }}
               variant="outline"
               className="w-full py-3"
+              disabled={selectedRecord.taskCreated}
             >
-              Create Task
+              {selectedRecord.taskCreated ? 'Task Created' : 'Create Task'}
             </Button>
             <Button 
               onClick={() => {
-                addNoteToTask(`task-${selectedRecord.id}`, {
+                const newNote = {
                   id: Math.random().toString(36).substring(2, 9),
                   serverCiphertext: "Verified baseline record note",
                   fileVersion: "Current Session",
-                  date: new Date().toISOString()
+                  date: new Date().toISOString(),
+                  text: "Verified baseline record note"
+                };
+                addNoteToTask(`task-${selectedRecord.id}`, newNote);
+                setSelectedRecord({ 
+                  ...selectedRecord, 
+                  notes: [newNote, ...(selectedRecord.notes || [])] 
                 });
               }}
               variant="outline"

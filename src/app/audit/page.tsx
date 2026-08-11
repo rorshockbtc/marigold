@@ -95,14 +95,7 @@ export default function AuditPage() {
       <PageHeader
         title="Guided Playbooks"
         subtitle="Choose an automated workflow to analyze your local data. Playbooks are organized by verification phase and execute mathematically sound audits against your secure civic records."
-        actions={
-          <button 
-            onClick={() => openMariWithQuery("Which playbook should I run first if I suspect residential zoning errors?")}
-            className="btn-secondary flex items-center gap-2 font-bold"
-          >
-            DISCUSS
-          </button>
-        }
+        actions={null}
       />
 
       {/* Playbook Categories */}

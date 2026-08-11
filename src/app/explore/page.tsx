@@ -685,11 +685,12 @@ export default function ExplorePage() {
                     <p className="text-sm text-text-body font-mono">Running Local Query Engine ({queryProgress}%)...</p>
                   </div>
                 ) : filteredResults.length > 0 ? (
+                  <div className="overflow-auto max-h-[600px]">
                   <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-border-soft bg-surface">
-                        <th className="px-6 py-4 text-xs font-bold text-text-body uppercase tracking-wider">Voter</th>
-                        <th className="px-6 py-4 text-xs font-bold text-text-body uppercase tracking-wider">Address</th>
+                    <thead className="bg-surface sticky top-0 z-10 border-b border-border-soft">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-text-body uppercase tracking-wider">Target / Voter</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-text-body uppercase tracking-wider">Address</th>
                         <th className="px-6 py-4 text-xs font-bold text-text-body uppercase tracking-wider">Risk Level</th>
                         {verboseMode && <th className="px-6 py-4 text-xs font-bold text-text-body uppercase tracking-wider">Anomaly Summary</th>}
                       </tr>
@@ -698,11 +699,22 @@ export default function ExplorePage() {
                       {filteredResults.slice(0, verboseMode ? 1000 : 50).map((row, idx) => (
                         <tr key={idx} onClick={() => setSelectedRecord(row)} className="hover:bg-surface cursor-pointer transition-colors">
                           <td className="px-6 py-4">
-                            <div className="text-sm font-bold text-text-header">{row.name}</div>
+                            <div className="flex items-center gap-2 mb-1">
+                              {row.occupant_count > 1 ? (
+                                <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Address</span>
+                              ) : (
+                                <span className="text-[10px] uppercase font-bold tracking-wider bg-blue-50 text-blue-600 px-2 py-0.5 rounded">Voter</span>
+                              )}
+                            </div>
+                            <div className="text-sm font-bold text-text-header">
+                              {row.occupant_count > 1 ? row.address : row.name}
+                            </div>
                             {verboseMode && <div className="text-xs font-mono text-text-body mt-1">{row.id}</div>}
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-text-header">{row.address}</div>
+                            <div className="text-sm text-text-header">
+                              {row.occupant_count > 1 ? `${row.occupant_count} Residents` : row.address}
+                            </div>
                             <div className="text-xs text-text-body mt-1">{row.city}, {row.state} {row.zip}</div>
                           </td>
                           <td className="px-6 py-4">
@@ -729,17 +741,19 @@ export default function ExplorePage() {
         </div>
         
         {viewMode === 'playbook_drilldown' && (
-          <ExploreDataPanel
-            selectedRecord={selectedRecord}
-            setSelectedRecord={setSelectedRecord}
-            isGroupSynced={isGroupSynced}
-            handlePublishDataStory={handlePublishDataStory}
-            addTask={addTask}
-            addNoteToTask={addNoteToTask}
-            activePlaybook={activePlaybook}
-            playbooks={playbooks as any}
-            verboseMode={verboseMode}
-          />
+          <div className="absolute right-0 top-0 h-full z-50">
+            <ExploreDataPanel
+              selectedRecord={selectedRecord}
+              setSelectedRecord={setSelectedRecord}
+              isGroupSynced={isGroupSynced}
+              handlePublishDataStory={handlePublishDataStory}
+              addTask={addTask}
+              addNoteToTask={addNoteToTask}
+              activePlaybook={activePlaybook}
+              playbooks={playbooks as any}
+              verboseMode={verboseMode}
+            />
+          </div>
         )}
       </div>
 
