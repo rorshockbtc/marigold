@@ -21,7 +21,7 @@ export default function FeedPage() {
 
       <div className="space-y-6">
         {feedEvents.length === 0 ? (
-          <div className="text-center py-20 bg-surface border border-border-soft rounded-2xl">
+          <div className="card text-center py-20">
             <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
             <h3 className="text-xl font-bold text-text-header mb-2">No Recent Activity</h3>
             <p className="text-text-body max-w-md mx-auto">
@@ -32,27 +32,27 @@ export default function FeedPage() {
           <div className="relative border-l-2 border-border-soft ml-4 md:ml-6 space-y-8 pb-10">
             {feedEvents.map((event, idx) => {
               let Icon = Activity;
-              let iconColor = "text-slate-500";
-              let iconBg = "bg-slate-100";
+              let iconColor = "text-secondary";
+              let iconBg = "bg-muted";
               let linkPath = "";
               let linkText = "";
 
               if (event.type === "playbook_promoted") {
                 Icon = BookOpen;
-                iconColor = "text-indigo-600";
-                iconBg = "bg-indigo-100";
+                iconColor = "text-albers-purple-bold";
+                iconBg = "bg-albers-purple-soft";
                 linkPath = "/playbooks";
                 linkText = "View Playbook";
               } else if (event.type === "ticket_promoted") {
                 Icon = Ticket;
-                iconColor = "text-emerald-600";
-                iconBg = "bg-emerald-100";
+                iconColor = "text-albers-green-bold";
+                iconBg = "bg-albers-green-soft";
                 linkPath = "/dashboard";
                 linkText = "View Ticket in Triage";
               } else if (event.type === "system_alert") {
                 Icon = AlertTriangle;
-                iconColor = "text-amber-600";
-                iconBg = "bg-amber-100";
+                iconColor = "text-accent";
+                iconBg = "bg-muted";
               }
 
               return (
@@ -63,7 +63,7 @@ export default function FeedPage() {
                   </div>
                   
                   {/* Content Card */}
-                  <div className="bg-white border border-border-soft rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="card p-5 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-2">
                       <p className="text-text-header">
                         <span className="font-bold">{event.author}</span> {event.message}

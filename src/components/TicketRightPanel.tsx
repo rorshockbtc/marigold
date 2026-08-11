@@ -124,12 +124,12 @@ export function TicketRightPanel() {
             <h5 className="text-xs font-bold text-text-body uppercase tracking-wider mb-2">Visibility</h5>
             <div className="flex items-center gap-2">
               {selectedCard.promotedGroups?.includes(activeGroup) ? (
-                <div className="flex items-center gap-1 text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                <div className="flex items-center gap-1 text-xs text-albers-green-bold font-bold bg-albers-green-soft px-2 py-1 rounded border border-border-soft">
                   <Eye className="w-3 h-3" /> Shared with {activeGroup}
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                  <div className="flex items-center gap-1 text-xs text-accent font-bold bg-muted px-2 py-1 rounded border border-border-soft">
                     <Lock className="w-3 h-3" /> Private
                   </div>
                   <Button 
@@ -144,7 +144,8 @@ export function TicketRightPanel() {
                     }}
                     variant="outline" 
                     size="sm" 
-                    className="text-xs py-1 h-auto border-primary text-primary hover:bg-primary/5"
+                    aria-label="Promote ticket to active group"
+                    className="btn-secondary text-xs py-1 h-auto transition-all active:scale-95 duration-200"
                   >
                     Promote to Group
                   </Button>
