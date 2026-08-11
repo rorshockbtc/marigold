@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { WorkspaceProvider } from "@/lib/workspace/WorkspaceContext";
 import { KanbanProvider } from "@/lib/workspace/KanbanContext";
+import { PlaybookProvider } from "@/lib/workspace/PlaybookContext";
 import { ExportManagerProvider } from "@/hooks/useExportManager";
 import AppNavigationWrapper from "@/components/AppNavigationWrapper";
 import { Analytics } from "@vercel/analytics/next";
@@ -76,13 +77,15 @@ export default function RootLayout({
           <AuthProvider>
             <WorkspaceProvider>
               <KanbanProvider>
-                <DuckDBProvider>
-                  <ExportManagerProvider>
-                    <AppNavigationWrapper>
-                      {children}
-                    </AppNavigationWrapper>
-                  </ExportManagerProvider>
-                </DuckDBProvider>
+                <PlaybookProvider>
+                  <DuckDBProvider>
+                    <ExportManagerProvider>
+                      <AppNavigationWrapper>
+                        {children}
+                      </AppNavigationWrapper>
+                    </ExportManagerProvider>
+                  </DuckDBProvider>
+                </PlaybookProvider>
               </KanbanProvider>
             </WorkspaceProvider>
           </AuthProvider>

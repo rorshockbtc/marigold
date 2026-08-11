@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { useDataQuery } from "@/hooks/useDataQuery";
 import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
+import { usePlaybooks } from "@/lib/workspace/PlaybookContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
-import { Filter, Download, ArrowRight, Shield, ShieldAlert, X, Activity, Database, Bot, ChevronDown, ChevronUp, Lock, BarChart3, AlertCircle, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Filter, Download, ArrowRight, Shield, ShieldAlert, X, Activity, Database, Bot, ChevronDown, ChevronUp, Lock, BarChart3, AlertCircle, RefreshCw, CheckCircle2, BookmarkPlus } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useExportManager } from "@/hooks/useExportManager";
 import { DataRequiredState } from "@/components/DataRequiredState";
@@ -33,6 +34,7 @@ export default function ExplorePage() {
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress, isQuerying } = useDataQuery();
   const { publishAuditCache, loadAuditCache } = useGroupSync();
   const { addTask, addNoteToTask, setSelectedTicketId } = useKanban();
+  const { addPlaybook } = usePlaybooks();
 
   const [verboseMode, setVerboseMode] = useState(false);
   const { requestExport } = useExportManager();
@@ -49,6 +51,11 @@ export default function ExplorePage() {
   const [needsZkProceed, setNeedsZkProceed] = useState(true);
   const [auditError, setAuditError] = useState<string | null>(null);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
+
+  // Playbook Wizard State
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [newPbName, setNewPbName] = useState('');
+  const [newPbDesc, setNewPbDesc] = useState('');
 
   // 360 Audit State
   const [auditorName, setAuditorName] = useState("Local Auditor");
@@ -509,6 +516,14 @@ export default function ExplorePage() {
                     onChange={(e) => setSearchQuery(e.target.value)} 
                   />
                 </div>
+                {viewMode === 'playbook_drilldown' && (
+                  <Button 
+                    onClick={() => setIsWizardOpen(true)}
+                    className="mt-5 bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 shadow-sm transition-all text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer"
+                  >
+                    <BookmarkPlus className="w-4 h-4" /> Save as Playbook
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -727,6 +742,79 @@ export default function ExplorePage() {
           />
         )}
       </div>
+
+      {/* Playbook Wizard Modal */}
+      {isWizardOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-200">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-slate-900">✨ Save as Custom Playbook</h3>
+              <button onClick={() => setIsWizardOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">✕</button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg flex items-start gap-2 mb-4">
+                <Filter className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-blue-900 font-medium leading-relaxed">
+                  You are saving your current filters (Target County: {countyFilter || "Statewide"}, Base Playbook: {activePlaybook}) into a repeatable, 1-click playbook.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Playbook Name</label>
+                <input 
+                  type="text" 
+                  value={newPbName}
+                  onChange={(e) => setNewPbName(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  placeholder="e.g. Dormitory Anomaly Scanner"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Description / Goal</label>
+                <textarea 
+                  value={newPbDesc}
+                  onChange={(e) => setNewPbDesc(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm h-24 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  placeholder="Describe what this playbook aims to find..."
+                />
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+              <button 
+                onClick={() => setIsWizardOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  if (newPbName.trim()) {
+                    addPlaybook({
+                      id: crypto.randomUUID(),
+                      name: newPbName,
+                      desc: newPbDesc.slice(0, 50) + (newPbDesc.length > 50 ? '...' : ''),
+                      description: newPbDesc,
+                      audit_type: activePlaybook || 'custom',
+                      county: countyFilter || undefined,
+                      promotedGroups: []
+                    });
+                    setIsWizardOpen(false);
+                    setNewPbName('');
+                    setNewPbDesc('');
+                  }
+                }}
+                disabled={!newPbName.trim()}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                Save Playbook
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

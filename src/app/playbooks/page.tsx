@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Tooltip } from "@/components/Tooltip";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
+import { usePlaybooks } from "@/lib/workspace/PlaybookContext";
 
 export default function MissionControl() {
   const [playbooks, setPlaybooks] = useState<any[]>([]);
@@ -15,27 +16,40 @@ export default function MissionControl() {
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const router = useRouter();
 
+  const { customPlaybooks, addPlaybook, updatePlaybook } = usePlaybooks();
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [newPbName, setNewPbName] = useState('');
+  const [newPbDesc, setNewPbDesc] = useState('');
+
   useEffect(() => {
     const fetchPlaybooks = async () => {
       try {
-        const res = await fetch('/api/playbooks');
-        const data = await res.json();
-        if (res.ok) {
-          setPlaybooks(data);
-          
-          // Fetch accuracy for all unique audit types
-          const uniqueAudits = Array.from(new Set(data.map((p: any) => p.audit_type)));
-          const newAccuracies: Record<string, number> = {};
-          
-          for (const audit of uniqueAudits) {
+        // System baseline playbooks
+        const systemPlaybooks = [
+          { id: "density", name: "High-Density Residential Occupancy", desc: "Identify 12+ voters at single address", description: "Flags single residential street addresses or apartments containing more than 8 active registered voters.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "density" },
+          { id: "out-of-state-mailing", name: "NCOA Interstate Out-of-State Relocations", desc: "Voter residing out of state via mail", description: "Cross-checks active registration addresses against official USPS National Change of Address (NCOA) forwardings.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "out-of-state-mailing" },
+          { id: "duplicates", name: "Intra-County Exact Name & Zip Duplicates", desc: "Same name & zip at different addresses", description: "Scans the entire jurisdiction for identical First Name, Last Name, and Zip Code pairings registered simultaneously at different physical addresses.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "duplicates" },
+          { id: "benfords-law", name: "Benford's Law Regression (Fabrication Test)", desc: "Mathematical test for fabrication", description: "Analyzes the leading digit distribution of all street addresses against the logarithmic Benford Curve.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "benfords-law" }
+        ];
+        
+        // Merge system + custom playbooks
+        const allPlaybooks = [...systemPlaybooks, ...customPlaybooks];
+        setPlaybooks(allPlaybooks);
+        
+        // Fetch accuracy for all unique audit types
+        const uniqueAudits = Array.from(new Set(allPlaybooks.map((p: any) => p.audit_type)));
+        const newAccuracies: Record<string, number> = {};
+        
+        for (const audit of uniqueAudits) {
+          try {
             const accRes = await fetch(`/api/feedback?auditType=${audit}`);
             if (accRes.ok) {
               const accData = await accRes.json();
               newAccuracies[audit as string] = accData.accuracy;
             }
-          }
-          setAccuracies(newAccuracies);
+          } catch (e) {} // ignore if feedback api fails
         }
+        setAccuracies(newAccuracies);
       } catch (e) {
         console.error(e);
       } finally {
@@ -43,7 +57,7 @@ export default function MissionControl() {
       }
     };
     fetchPlaybooks();
-  }, []);
+  }, [customPlaybooks]);
 
   const getAuditLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -169,6 +183,13 @@ export default function MissionControl() {
               {c === 'All' ? '🌐 All Playbooks' : c === 'Statewide' ? '🏛️ Statewide General' : `📍 ${c} County`}
             </button>
           ))}
+          <div className="flex-1" />
+          <button
+            onClick={() => setIsWizardOpen(true)}
+            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 shadow-sm transition-all flex items-center gap-1"
+          >
+            <span>✨ Create Custom Playbook</span>
+          </button>
         </div>
       </header>
 
@@ -207,6 +228,32 @@ export default function MissionControl() {
                       <span className="font-medium">County:</span> {p.county}
                     </p>
                   )}
+                  {p.audit_type === 'custom' && (
+                    <div className="pt-2 mt-2 border-t border-slate-100">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Visibility</p>
+                      {p.promotedGroups?.includes(typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") || "" : "") ? (
+                        <div className="inline-flex items-center gap-1 text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                          👁️ Shared with Group
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                            🔒 Private
+                          </div>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const grp = localStorage.getItem("marigold_active_group") || "default";
+                              updatePlaybook(p.id, { promotedGroups: [...(p.promotedGroups || []), grp] });
+                            }}
+                            className="text-xs py-1 px-2 rounded border border-primary text-primary hover:bg-primary/5 transition-colors font-bold"
+                          >
+                            Promote to Group
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-slate-100 border border-slate-200 rounded-lg p-2.5 mb-4 text-xs text-slate-800">
@@ -235,6 +282,78 @@ export default function MissionControl() {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Playbook Wizard Modal */}
+      {isWizardOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-200">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-slate-900">✨ Create Custom Playbook</h3>
+              <button onClick={() => setIsWizardOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">✕</button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Playbook Name</label>
+                <input 
+                  type="text" 
+                  value={newPbName}
+                  onChange={(e) => setNewPbName(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  placeholder="e.g. Dormitory Anomaly Scanner"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Description / Goal</label>
+                <textarea 
+                  value={newPbDesc}
+                  onChange={(e) => setNewPbDesc(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm h-24 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  placeholder="Describe what this playbook aims to find..."
+                />
+              </div>
+              
+              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-2">
+                <span className="text-amber-500 mt-0.5">💡</span>
+                <p className="text-xs text-amber-900 font-medium leading-relaxed">
+                  Tip: It is often easier to create a playbook directly from the Explore & Review page after you have filtered your data perfectly. Look for the "Save as Playbook" button there.
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+              <button 
+                onClick={() => setIsWizardOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  if (newPbName.trim()) {
+                    addPlaybook({
+                      id: crypto.randomUUID(),
+                      name: newPbName,
+                      desc: newPbDesc.slice(0, 50) + (newPbDesc.length > 50 ? '...' : ''),
+                      description: newPbDesc,
+                      audit_type: 'custom',
+                      promotedGroups: []
+                    });
+                    setIsWizardOpen(false);
+                    setNewPbName('');
+                    setNewPbDesc('');
+                  }
+                }}
+                disabled={!newPbName.trim()}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                Save Playbook
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
