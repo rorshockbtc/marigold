@@ -74,6 +74,10 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
                       newCards[existingIdx] = { ...existing, status: rc.status, assignee: rc.assignee };
                       changed = true;
                     }
+                    if (!newCards[existingIdx].promotedGroups?.includes(grp)) {
+                      newCards[existingIdx].promotedGroups = [...(newCards[existingIdx].promotedGroups || []), grp];
+                      changed = true;
+                    }
                     if (rc.evidenceUrl && existing.evidenceUrl !== rc.evidenceUrl) {
                       newCards[existingIdx].evidenceUrl = rc.evidenceUrl;
                       changed = true;
@@ -115,7 +119,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
                       changed = true;
                     }
                   } else {
-                    newCards.push(rc);
+                    newCards.push({ ...rc, promotedGroups: [...(rc.promotedGroups || []), grp] });
                     changed = true;
                   }
                 });
@@ -156,10 +160,14 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
           try {
             const grp = localStorage.getItem("marigold_active_group") || "default";
             const key = await deriveGroupKey(grp);
-            const syncableCards = cards.map(c => ({
-              ...c,
-              notes: c.notes.filter(n => !n.isPrivate)
-            }));
+            const syncableCards = cards
+              .filter(c => c.promotedGroups?.includes(grp))
+              .map(c => ({
+                ...c,
+                notes: c.notes.filter(n => !n.isPrivate)
+              }));
+            if (syncableCards.length === 0 && cards.length > 0) return; // Nothing to sync for this group
+
             const rawCards = JSON.stringify(syncableCards);
             const { ciphertextHex, ivHex } = await encryptPayload(rawCards, key);
 

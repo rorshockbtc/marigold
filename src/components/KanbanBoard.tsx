@@ -38,6 +38,7 @@ export interface CardData {
   countyFilter?: string;
   evidenceUrl?: string;
   checklists?: { id: string, text: string, completed: boolean }[];
+  promotedGroups?: string[];
 }
 
 export const INITIAL_CARDS: CardData[] = [

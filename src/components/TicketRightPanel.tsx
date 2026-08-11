@@ -117,6 +117,35 @@ export function TicketRightPanel() {
           <h4 className="font-serif text-text-header text-xl mb-1">{selectedCard.title}</h4>
           <p className="text-sm text-text-body mb-4">{selectedCard.subtitle}</p>
 
+          {/* Visibility & Publishing */}
+          <div className="mb-4">
+            <h5 className="text-xs font-bold text-text-body uppercase tracking-wider mb-2">Visibility</h5>
+            <div className="flex items-center gap-2">
+              {selectedCard.promotedGroups?.includes(activeGroup) ? (
+                <div className="flex items-center gap-1 text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                  <Eye className="w-3 h-3" /> Shared with {activeGroup}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                    <Lock className="w-3 h-3" /> Private
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      const current = selectedCard.promotedGroups || [];
+                      updateCardDetails(selectedCard.id, { promotedGroups: [...current, activeGroup] });
+                    }}
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs py-1 h-auto border-primary text-primary hover:bg-primary/5"
+                  >
+                    Promote to Group
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
           {selectedCard.attachedRecordIds && selectedCard.attachedRecordIds.length > 0 && (
             <Button 
               variant="outline" 
