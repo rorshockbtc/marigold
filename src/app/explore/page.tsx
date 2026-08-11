@@ -727,6 +727,7 @@ export default function ExplorePage() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-[400px]">
                     <Database className="w-8 h-8 text-border-soft mb-4" />
