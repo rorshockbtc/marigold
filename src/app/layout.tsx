@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 import { WorkspaceProvider } from "@/lib/workspace/WorkspaceContext";
 import { KanbanProvider } from "@/lib/workspace/KanbanContext";
 import { PlaybookProvider } from "@/lib/workspace/PlaybookContext";
+import { FeedProvider } from "@/lib/workspace/FeedContext";
 import { ExportManagerProvider } from "@/hooks/useExportManager";
 import AppNavigationWrapper from "@/components/AppNavigationWrapper";
 import { Analytics } from "@vercel/analytics/next";
@@ -78,13 +79,15 @@ export default function RootLayout({
             <WorkspaceProvider>
               <KanbanProvider>
                 <PlaybookProvider>
-                  <DuckDBProvider>
-                    <ExportManagerProvider>
-                      <AppNavigationWrapper>
-                        {children}
-                      </AppNavigationWrapper>
-                    </ExportManagerProvider>
-                  </DuckDBProvider>
+                  <FeedProvider>
+                    <DuckDBProvider>
+                      <ExportManagerProvider>
+                        <AppNavigationWrapper>
+                          {children}
+                        </AppNavigationWrapper>
+                      </ExportManagerProvider>
+                    </DuckDBProvider>
+                  </FeedProvider>
                 </PlaybookProvider>
               </KanbanProvider>
             </WorkspaceProvider>

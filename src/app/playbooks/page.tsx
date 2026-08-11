@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Tooltip } from "@/components/Tooltip";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 import { usePlaybooks } from "@/lib/workspace/PlaybookContext";
+import { useFeed } from "@/lib/workspace/FeedContext";
 
 export default function MissionControl() {
   const [playbooks, setPlaybooks] = useState<any[]>([]);
@@ -17,6 +18,7 @@ export default function MissionControl() {
   const router = useRouter();
 
   const { customPlaybooks, addPlaybook, updatePlaybook } = usePlaybooks();
+  const { addFeedEvent } = useFeed();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [newPbName, setNewPbName] = useState('');
   const [newPbDesc, setNewPbDesc] = useState('');
@@ -243,8 +245,15 @@ export default function MissionControl() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              const grp = localStorage.getItem("marigold_active_group") || "default";
-                              updatePlaybook(p.id, { promotedGroups: [...(p.promotedGroups || []), grp] });
+                              const grp = typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") || "" : "";
+                              if (grp) {
+                                updatePlaybook(p.id, { promotedGroups: [...(p.promotedGroups || []), grp] });
+                                addFeedEvent({
+                                  type: "playbook_promoted",
+                                  message: `shared the "${p.name}" playbook with the group.`,
+                                  meta: { playbookId: p.id, playbookName: p.name }
+                                });
+                              }
                             }}
                             className="text-xs py-1 px-2 rounded border border-primary text-primary hover:bg-primary/5 transition-colors font-bold"
                           >

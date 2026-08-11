@@ -5,6 +5,7 @@ import { X, BarChart3, Lock, Eye, Link as LinkIcon, Info, CheckSquare, Square, P
 import { useRouter } from 'next/navigation';
 import { useKanban } from '@/lib/workspace/KanbanContext';
 import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
+import { useFeed } from '@/lib/workspace/FeedContext';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Note } from '@/components/KanbanBoard';
@@ -13,6 +14,7 @@ export function TicketRightPanel() {
   const router = useRouter();
   const { cards, selectedTicketId, setSelectedTicketId, addNoteToTask, updateCardDetails } = useKanban();
   const { isDataLoaded, activeGroup } = useWorkspace();
+  const { addFeedEvent } = useFeed();
   
   const [newNote, setNewNote] = useState("");
   const [sendToGroup, setSendToGroup] = useState(false);
@@ -134,6 +136,11 @@ export function TicketRightPanel() {
                     onClick={() => {
                       const current = selectedCard.promotedGroups || [];
                       updateCardDetails(selectedCard.id, { promotedGroups: [...current, activeGroup] });
+                      addFeedEvent({
+                        type: "ticket_promoted",
+                        message: `pushed ticket "${selectedCard.title}" to triage.`,
+                        meta: { ticketId: selectedCard.id, ticketTitle: selectedCard.title }
+                      });
                     }}
                     variant="outline" 
                     size="sm" 

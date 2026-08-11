@@ -7,7 +7,7 @@ import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { GroupSwitcherModal } from '@/components/GroupSwitcherModal';
 import { LocalFolderStatusModal } from '@/components/LocalFolderStatusModal';
-import { Folder, LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart } from 'lucide-react';
+import { Folder, LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart, Activity } from 'lucide-react';
 import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
 
 const NAV_ITEMS = [
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { label: 'Data Insights', href: '/insights', icon: BarChart },
   { label: 'Explore & Review', href: '/explore', icon: GitCompare },
   { label: 'Guided Playbooks', href: '/audit', icon: BookOpen },
+  { label: 'Group Feed', href: '/feed', icon: Activity },
   { label: 'Advanced Stats', href: '/advanced-stats', icon: LineChart },
   { label: 'Volunteer Team', href: '/settings/group', icon: Users },
   { label: 'Developer Docs', href: '/developers', icon: Terminal },

@@ -266,7 +266,7 @@ export async function POST(req: NextRequest) {
     // In production, use Upstash Redis or Vercel KV for rate limiting here
     const clientIp = req.headers.get("x-forwarded-for") || "unknown";
 
-    const { query, history, userApiKey, isFriendlyMode, pageContext, articleState } = await req.json();
+    const { query, history, userApiKey, isFriendlyMode, isPlaybookMode, pageContext, articleState } = await req.json();
 
     // LOCAL LOGGING INTERCEPT: Write query to file so the Antigravity agent can read it
     try {
@@ -298,7 +298,10 @@ export async function POST(req: NextRequest) {
     const recentFeedback: { audit_type: string; user_feedback: string; created_at: string }[] = [];
     const feedbackContext = recentFeedback.map((f) => `- Audit: ${f.audit_type}, Feedback: ${f.user_feedback}, Date: ${f.created_at}`).join('\\n');
 
-    const modePrompt = isFriendlyMode !== false ? `
+    const modePrompt = isPlaybookMode ? `
+      CRITICAL INSTRUCTION FOR PLAYBOOK CREATOR MODE (ACTIVE):
+      The user is asking you to help them create a Mission Playbook. You MUST ask clarifying questions to understand what filters they need, and you MUST call the 'suggest_mission_playbook' tool to generate the playbook data structure so they can save it with 1-click!
+    ` : isFriendlyMode !== false ? `
       CRITICAL INSTRUCTION FOR FRIENDLY GUIDE MODE (ACTIVE):
       The user has toggled 'Friendly Guide Mode' ON. You MUST explain all data, statistics, and findings strictly in everyday kitchen-table analogies without quoting complex math terms like kurtosis, skewness, or raw vectors. Keep it warm, simple, conversational, and empowering! Never overwhelm them with technical jargon.
     ` : `

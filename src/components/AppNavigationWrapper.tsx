@@ -22,6 +22,7 @@ const WORKSPACE_ROUTES = [
   '/settings',
   '/advanced-stats',
   '/data-prep',
+  '/feed',
 ];
 
 export default function AppNavigationWrapper({ children }: { children: React.ReactNode }) {

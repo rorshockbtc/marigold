@@ -15,6 +15,7 @@ import { useDataStoryFS } from '@/hooks/useDataStoryFS';
 import { TriageCache } from '@/lib/triage/TriageCache';
 import { executeLocalEngine } from '@/lib/data/LocalDataEngine';
 import { useDuckDB } from '@/lib/data/DuckDBProvider';
+import { usePlaybooks } from '@/lib/workspace/PlaybookContext';
 
 import { ChatMessage, ChatSession, Playbook, ArticleState } from '@/lib/types';
 
@@ -37,6 +38,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [storageLimitReached, setStorageLimitReached] = useState(false);
   const { isReady: isDuckDBReady, query: queryDuckDB } = useDuckDB();
+  const { addPlaybook } = usePlaybooks();
 
   const getPageContext = () => {
     if (typeof window === 'undefined') return null;
@@ -96,6 +98,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   
   // Friendly Guide vs Pro Mode
   const [isFriendlyMode, setIsFriendlyMode] = useState(true);
+  const [isPlaybookMode, setIsPlaybookMode] = useState(false);
   // Voice listening state
   const [isListening, setIsListening] = useState(false);
 
@@ -162,15 +165,15 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
 
   const handleSaveSuggestedPlaybook = async (pb: Playbook) => {
     try {
-      await fetch('/api/playbooks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: pb.name,
-          auditType: pb.audit_type,
-          threshold: pb.threshold,
-          county: pb.county
-        })
+      addPlaybook({
+        id: crypto.randomUUID(),
+        name: pb.name,
+        desc: pb.description.slice(0, 50) + (pb.description.length > 50 ? '...' : ''),
+        description: pb.description,
+        audit_type: pb.audit_type || 'custom',
+        threshold: pb.threshold,
+        county: pb.county,
+        promotedGroups: []
       });
       setSavedPlaybooks(prev => ({ ...prev, [pb.name]: true }));
     } catch (e) {
@@ -302,6 +305,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           history: currentMessages,
           userApiKey,
           isFriendlyMode,
+          isPlaybookMode,
           pageContext: getPageContext(),
           articleState
         }),
@@ -373,6 +377,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               history: loopMessages,
               userApiKey,
               isFriendlyMode,
+              isPlaybookMode,
               pageContext: getPageContext(),
               articleState: updatedArticle
             }),
@@ -511,8 +516,22 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           </div>
         )}
         <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex justify-between items-center">
-          <div>
+          <div className="flex items-center gap-4">
             <h2 className="text-lg font-serif font-black text-text-header">{activeSession ? activeSession.title : "Data Investigator"}</h2>
+            <div className="flex bg-surface p-1 rounded-lg border border-border-soft">
+              <button
+                onClick={() => setIsPlaybookMode(false)}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${!isPlaybookMode ? 'bg-white shadow-sm text-primary' : 'text-text-body hover:bg-slate-100'}`}
+              >
+                Data Explorer
+              </button>
+              <button
+                onClick={() => setIsPlaybookMode(true)}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${isPlaybookMode ? 'bg-amber-100 shadow-sm text-amber-900 border border-amber-300' : 'text-text-body hover:bg-slate-100'}`}
+              >
+                Playbook Creator
+              </button>
+            </div>
           </div>
           {activeSession && (
             <div className="flex items-center gap-3">
