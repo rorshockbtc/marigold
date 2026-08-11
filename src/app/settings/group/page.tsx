@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/PageHeader';
+import { deriveGroupKey, decryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 interface Application {
   id: string;
@@ -105,6 +106,62 @@ export default function GroupSettingsPage() {
     localStorage.setItem(rosterKey, JSON.stringify(initialRoster));
   }, [user]);
 
+  // Poll for live applications
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    const pollRelay = async () => {
+      try {
+        const grp = localStorage.getItem("marigold_active_group") || "default";
+        if (grp === "Independent Researcher") return;
+
+        const key = await deriveGroupKey(grp);
+        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        
+        if (res.ok) {
+          const { blobs } = await res.json();
+          const appBlobs = blobs.filter((b: any) => b.type === "APPLICATION");
+          if (appBlobs.length > 0) {
+             const newApps: Application[] = [];
+             for (const blob of appBlobs) {
+                if (blob.ciphertext && blob.iv) {
+                   try {
+                     const decryptedRaw = await decryptPayload(blob.ciphertext, blob.iv, key);
+                     const appData = JSON.parse(decryptedRaw);
+                     newApps.push(appData);
+                   } catch (e) {
+                     console.warn("Failed to decrypt application", e);
+                   }
+                }
+             }
+
+             setApplications(prev => {
+                const updated = [...prev];
+                let changed = false;
+                newApps.forEach(na => {
+                  if (!updated.find(a => a.id === na.id)) {
+                     updated.push(na);
+                     changed = true;
+                  }
+                });
+                if (changed) {
+                  const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
+                  localStorage.setItem(appsKey, JSON.stringify(updated));
+                  return updated;
+                }
+                return prev;
+             });
+          }
+        }
+      } catch (e) {
+        console.warn("Polling relay failed", e);
+      }
+    };
+
+    interval = setInterval(pollRelay, 5000);
+    pollRelay();
+    return () => clearInterval(interval);
+  }, []);
+
   const setIndependentMode = () => {
     localStorage.setItem("marigold_active_group", "Independent Researcher");
     localStorage.setItem("marigold_active_jurisdiction", "Local / Independent");
@@ -190,6 +247,13 @@ export default function GroupSettingsPage() {
     setTimeout(() => setSavedMessage(false), 3000);
   };
 
+  const [inviteLink, setInviteLink] = useState("");
+  const generateInvite = () => {
+    const link = `${window.location.origin}/join/${encodeURIComponent(groupName)}`;
+    setInviteLink(link);
+    navigator.clipboard.writeText(link);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 pt-4 px-4 font-sans">
       <PageHeader
@@ -251,6 +315,12 @@ export default function GroupSettingsPage() {
                   Save Details
                 </Button>
                 {savedMessage && <p className="text-emerald-700 font-bold text-center pt-2 text-xs">✓ Settings successfully updated</p>}
+              </div>
+              <div className="pt-4 mt-4 border-t border-border-soft">
+                 <Button type="button" onClick={generateInvite} variant="outline" className="w-full">
+                   🔗 Generate & Copy Invite Link
+                 </Button>
+                 {inviteLink && <p className="text-xs text-muted-foreground text-center mt-2 break-all">{inviteLink}</p>}
               </div>
             </form>
           </CardContent>
