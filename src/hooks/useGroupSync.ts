@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
 
 export interface GroupActivityItem {
   id: string;
@@ -32,16 +33,11 @@ export interface CachedGroupAudit {
   anomalyRecords: Record<string, any[]>;
 }
 
-/**
- * Strict Zero-PII & Geographic Identifier Sanitizer
- */
 export function scrubGeographicAndPII<T extends Record<string, any>>(data: T): T {
   if (!data || typeof data !== "object") return data;
 
   const scrubbed = { ...data };
-  const bannedFields = [
-    "dob", "birth_date", "ssn", "social_security", "phone", "email"
-  ];
+  const bannedFields = ["dob", "birth_date", "ssn", "social_security", "phone", "email"];
 
   for (const key of Object.keys(scrubbed)) {
     const lowerKey = key.toLowerCase();
@@ -64,6 +60,8 @@ export function useGroupSync() {
   const [sharedPlaybooks, setSharedPlaybooks] = useState<SharedPlaybook[]>([]);
   const [cachedAudit, setCachedAudit] = useState<CachedGroupAudit | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  
+  const fetchedIdsRef = useRef<Set<string>>(new Set());
 
   const loadAuditCache = useCallback((grp: string) => {
     if (typeof window === "undefined") return null;
@@ -75,9 +73,7 @@ export function useGroupSync() {
         setCachedAudit(parsed);
         return parsed;
       }
-    } catch (e) {
-      console.warn("Could not parse group audit cache", e);
-    }
+    } catch (e) {}
     return null;
   }, []);
 
@@ -98,20 +94,68 @@ export function useGroupSync() {
           recordCountBucket: "2M+",
         },
       ];
-
       setActivities(initialActivities);
+      initialActivities.forEach(a => fetchedIdsRef.current.add(a.id));
     }
   }, [loadAuditCache]);
 
+  // Polling for remote activities
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let interval: NodeJS.Timeout;
+
+    const pollRelay = async () => {
+      try {
+        const grp = localStorage.getItem("marigold_active_group") || "default";
+        const key = await deriveGroupKey(grp);
+        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        
+        if (res.ok) {
+          const { blobs } = await res.json();
+          const activityBlobs = blobs.filter((b: any) => b.type === "ACTIVITY_SYNC");
+          
+          let newRemoteActivities: GroupActivityItem[] = [];
+          
+          for (const blob of activityBlobs) {
+            if (blob.ciphertext && blob.iv) {
+              try {
+                const decryptedRaw = await decryptPayload(blob.ciphertext, blob.iv, key);
+                const remoteActivity: GroupActivityItem = JSON.parse(decryptedRaw);
+                if (!fetchedIdsRef.current.has(remoteActivity.id)) {
+                  newRemoteActivities.push(remoteActivity);
+                  fetchedIdsRef.current.add(remoteActivity.id);
+                }
+              } catch(e) {}
+            }
+          }
+          
+          if (newRemoteActivities.length > 0) {
+            setActivities(prev => {
+              const merged = [...newRemoteActivities, ...prev];
+              merged.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+              return merged;
+            });
+            setIsSyncing(true);
+            setTimeout(() => setIsSyncing(false), 1000);
+          }
+        }
+      } catch (err) {}
+    };
+
+    interval = setInterval(pollRelay, 5000);
+    pollRelay();
+    return () => clearInterval(interval);
+  }, []);
+
   const publishActivity = useCallback((action: string, details: string, isSystemAction = false) => {
-    console.info(`[Telemetry] GroupSync: Broadcasting ${isSystemAction ? 'SYSTEM' : 'USER'} activity [${action}] to relay`);
     setIsSyncing(true);
     const sanitizedDetails = scrubGeographicAndPII({ details }).details;
+    const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
 
     const newItem: GroupActivityItem = {
-      id: `act-${Date.now()}`,
+      id: `act-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
       groupId,
-      authorAlias: isSystemAction ? "System" : "You (Auditor-LOCAL)",
+      authorAlias: isSystemAction ? "System" : authorName,
       action,
       details: sanitizedDetails,
       timestamp: new Date().toISOString(),
@@ -119,14 +163,25 @@ export function useGroupSync() {
       isSystemAction
     };
 
+    fetchedIdsRef.current.add(newItem.id);
     setActivities((prev) => [newItem, ...prev]);
 
-    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
-      try {
-        const channel = new BroadcastChannel("marigold_group_sync");
-        channel.postMessage({ type: "ACTIVITY_ADDED", item: newItem });
-        channel.close();
-      } catch (e) {}
+    // Push to Relay
+    if (typeof window !== "undefined") {
+      (async () => {
+        try {
+          const key = await deriveGroupKey(groupId);
+          const { ciphertextHex, ivHex } = await encryptPayload(JSON.stringify(newItem), key);
+          await fetch("/api/relay", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              groupId,
+              blob: { id: newItem.id, ciphertext: ciphertextHex, iv: ivHex, type: "ACTIVITY_SYNC" }
+            })
+          });
+        } catch(e) {}
+      })();
     }
 
     setTimeout(() => setIsSyncing(false), 300);
@@ -135,12 +190,13 @@ export function useGroupSync() {
   const sharePlaybook = useCallback((playbook: Omit<SharedPlaybook, "id" | "groupId" | "createdAt" | "authorAlias">) => {
     setIsSyncing(true);
     const sanitizedPlaybook = scrubGeographicAndPII(playbook);
+    const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
 
     const newPlaybook: SharedPlaybook = {
       ...sanitizedPlaybook,
       id: `sp-${Date.now()}`,
       groupId,
-      authorAlias: "You (Auditor-LOCAL)",
+      authorAlias: authorName,
       createdAt: new Date().toISOString(),
     };
 
@@ -153,25 +209,18 @@ export function useGroupSync() {
   const publishAuditCache = useCallback((grp: string, totalRows: number, anomalyMap: Record<string, any[]>) => {
     if (typeof window === "undefined") return;
     try {
+      const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
       const key = `marigold_group_audit_cache_${grp.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
       const cacheObj: CachedGroupAudit = {
         groupId: grp,
         timestamp: new Date().toISOString(),
-        authorAlias: "Auditor-GROUP",
+        authorAlias: authorName,
         totalRecordsScanned: totalRows,
         anomalyRecords: anomalyMap,
       };
       localStorage.setItem(key, JSON.stringify(cacheObj));
       setCachedAudit(cacheObj);
-
-      if ("BroadcastChannel" in window) {
-        const channel = new BroadcastChannel("marigold_group_sync");
-        channel.postMessage({ type: "AUDIT_CACHE_UPDATED", cache: cacheObj });
-        channel.close();
-      }
-    } catch (e) {
-      console.warn("Could not save audit cache to storage", e);
-    }
+    } catch (e) {}
   }, []);
 
   return {
