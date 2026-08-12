@@ -319,7 +319,6 @@ export class MarigoldDataEngineService {
             }
           }
         }
-      }
     } catch (e) {
       console.warn("Could not pull audit cache from Zero-Knowledge relay:", e);
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { decryptPayload, deriveGroupKey } from "../crypto/LocalKeyManager";
+import { decryptPayload, deriveGroupKey, encryptPayload } from "../crypto/LocalKeyManager";
 import { fetchBlobsFromRelay, pushBlobToRelay } from "../relay/clientRelay";
 
 export interface FeedEvent {
@@ -52,8 +52,14 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         for (const blob of (blobs || [])) {
           if (blob.type === "FEED_SYNC") {
             try {
-              const decrypted = await decryptPayload(blob.data, key);
-              incomingEvents.push(decrypted.event);
+              if (blob.ciphertext && blob.iv) {
+                const rawJson = await decryptPayload(blob.ciphertext, blob.iv, key);
+                const decryptedEvent = JSON.parse(rawJson);
+                incomingEvents.push(decryptedEvent);
+              } else if (blob.event) {
+                // Fallback for unencrypted legacy events
+                incomingEvents.push(blob.event);
+              }
             } catch (e) {
               console.error("Failed to decrypt feed event", e);
             }
@@ -101,7 +107,13 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     const grp = localStorage.getItem("marigold_active_group");
     if (grp) {
       try {
-        await pushBlobToRelay(grp, { type: "FEED_SYNC", event: newEvent });
+        const key = await deriveGroupKey(grp);
+        const { ciphertextHex, ivHex } = await encryptPayload(JSON.stringify(newEvent), key);
+        await pushBlobToRelay(grp, { 
+          type: "FEED_SYNC", 
+          ciphertext: ciphertextHex,
+          iv: ivHex
+        });
       } catch (e) {
         console.error("Failed to push feed event", e);
       }
