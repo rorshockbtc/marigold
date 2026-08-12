@@ -55,13 +55,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         setTotalRows(res.totalMatches);
         if (res.rows.length > 0) {
           const row = res.rows[0];
-          const st = row.state || "MS";
-          let cnty = row.county || "Statewide";
-          if (res.totalMatches > 300000) {
-            cnty = "Statewide";
+          const st = row.state || "";
+          
+          let fileName = localStorage.getItem("marigold_file_name");
+          if (fileName) {
+            // Clean up filename for display
+            fileName = fileName.replace(/\.[^/.]+$/, "");
+            if (fileName.length > 30) fileName = fileName.substring(0, 30) + "...";
+          } else {
+            fileName = "Local Dataset";
           }
-          setStateCode(st);
-          setJurisdiction(`${cnty}, ${st}`);
+
+          setStateCode(st || "..");
+          setJurisdiction(fileName);
         } else {
           setJurisdiction("Empty Database");
         }

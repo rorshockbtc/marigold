@@ -12,9 +12,11 @@ interface ThreePaneLayoutProps {
 }
 
 import { usePathname } from 'next/navigation';
+import { useKanban } from '@/lib/workspace/KanbanContext';
 
 export default function ThreePaneLayout({ children }: ThreePaneLayoutProps) {
   const { isSideSheetOpen } = useWorkspace();
+  const { isTicketOverlay, selectedTicketId } = useKanban();
   const pathname = usePathname();
   
   const isInsights = pathname?.startsWith('/insights');
@@ -37,9 +39,11 @@ export default function ThreePaneLayout({ children }: ThreePaneLayoutProps) {
       {isSideSheetOpen && <AuditDataPanel />}
 
       {/* Ticket Panel */}
-      <div className="flex-shrink-0 h-full z-20">
-        <TicketRightPanel />
-      </div>
+      {selectedTicketId && (
+        <div className={`h-full z-20 ${isTicketOverlay ? 'absolute right-0 top-0 bottom-0 shadow-[-20px_0_40px_rgba(0,0,0,0.15)] bg-white/50 backdrop-blur-sm transition-all' : 'flex-shrink-0 relative'}`}>
+          <TicketRightPanel />
+        </div>
+      )}
 
       {/* Right Drawer (Mari) */}
       <div className="flex-shrink-0 h-full z-20">

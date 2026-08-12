@@ -12,7 +12,7 @@ import { Note } from '@/components/KanbanBoard';
 
 export function TicketRightPanel() {
   const router = useRouter();
-  const { cards, selectedTicketId, setSelectedTicketId, addNoteToTask, updateCardDetails } = useKanban();
+  const { cards, selectedTicketId, setSelectedTicketId, addNoteToTask, updateCardDetails, isTicketOverlay, setIsTicketOverlay } = useKanban();
   const { isDataLoaded, activeGroup } = useWorkspace();
   const { addFeedEvent } = useFeed();
   
@@ -108,13 +108,23 @@ export function TicketRightPanel() {
     <div className="h-full w-[550px] bg-white shadow-2xl border-l border-border-soft flex flex-col overflow-y-auto pb-4">
       <div className="flex justify-between items-center mb-6 shrink-0 p-6 pb-0">
         <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
-        <IconButton 
-          onClick={() => setSelectedTicketId(null)}
-          icon={<X className="w-5 h-5 text-text-body" />}
-          aria-label="Close record insights"
-          variant="ghost"
-          className="p-2 hover:bg-surface rounded-full"
-        />
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setIsTicketOverlay(!isTicketOverlay)}
+            variant="ghost"
+            size="sm"
+            className="text-[10px] uppercase font-bold text-text-body tracking-wider border border-border-soft px-2 hover:bg-surface"
+          >
+            {isTicketOverlay ? 'Dock Panel' : 'Float Overlay'}
+          </Button>
+          <IconButton 
+            onClick={() => setSelectedTicketId(null)}
+            icon={<X className="w-5 h-5 text-text-body" />}
+            aria-label="Close record insights"
+            variant="ghost"
+            className="p-1 hover:bg-surface rounded-full"
+          />
+        </div>
       </div>
       
       <div className="px-6 shrink-0">

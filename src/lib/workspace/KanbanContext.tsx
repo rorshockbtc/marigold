@@ -13,6 +13,8 @@ interface KanbanContextType {
   selectedTicketId: string | null;
   setSelectedTicketId: (id: string | null) => void;
   isLiveSyncing: boolean;
+  isTicketOverlay: boolean;
+  setIsTicketOverlay: (val: boolean) => void;
 }
 
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   const [cards, setCards] = useState<CardData[]>([]);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isLiveSyncing, setIsLiveSyncing] = useState(false);
+  const [isTicketOverlay, setIsTicketOverlay] = useState(false);
   const localRevRef = useRef(0);
   const lastPushedRevRef = useRef(-1);
 
@@ -230,7 +233,11 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <KanbanContext.Provider value={{ cards, setCards: setCardsWithRev, addTask, addNoteToTask, updateCardDetails, selectedTicketId, setSelectedTicketId, isLiveSyncing }}>
+    <KanbanContext.Provider value={{ 
+      cards, setCards: setCardsWithRev, addTask, addNoteToTask, updateCardDetails, 
+      selectedTicketId, setSelectedTicketId, isLiveSyncing, 
+      isTicketOverlay, setIsTicketOverlay 
+    }}>
       {children}
     </KanbanContext.Provider>
   );
