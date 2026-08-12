@@ -15,7 +15,6 @@ const NAV_ITEMS = [
   { label: 'Data Insights', href: '/insights', icon: BarChart },
   { label: 'Explore & Review', href: '/explore', icon: GitCompare },
   { label: 'Guided Playbooks', href: '/audit', icon: BookOpen },
-  { label: 'Group Feed', href: '/feed', icon: Activity },
   { label: 'Advanced Stats', href: '/advanced-stats', icon: LineChart },
   { label: 'Volunteer Team', href: '/settings/group', icon: Users },
   { label: 'Developer Docs', href: '/developers', icon: Terminal },
