@@ -105,7 +105,7 @@ export function TicketRightPanel() {
   };
 
   return (
-    <div className="h-full w-[550px] bg-white shadow-2xl border-l border-border-soft flex flex-col overflow-y-auto pb-4">
+    <div className="h-full w-[550px] bg-white shadow-2xl border-l border-border-soft overflow-y-auto pb-8">
       <div className="flex justify-between items-center mb-6 shrink-0 p-6 pb-0">
         <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
         <div className="flex gap-2">
@@ -227,7 +227,7 @@ export function TicketRightPanel() {
         </div>
       </div>
       
-      <div className="px-6 flex flex-col">
+      <div className="px-6">
         {/* Actionable Checklists */}
         <div className="mb-6 shrink-0">
           <div className="flex justify-between items-center mb-3">
