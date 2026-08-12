@@ -33,11 +33,11 @@ export async function fetchBlobsFromRelay(groupId: string) {
     }
     const q = query(
       collection(db as any, "relay_blobs"),
-      where("groupId", "==", groupId),
-      orderBy("timestamp", "asc")
+      where("groupId", "==", groupId)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data());
+    const docs = snapshot.docs.map(doc => doc.data());
+    return docs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
   }
 
   // Fallback to API route for local disk testing

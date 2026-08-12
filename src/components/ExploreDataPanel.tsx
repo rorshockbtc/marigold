@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+
 import { Button } from "@/components/ui/Button";
 import { X, Lock, AlertCircle, BarChart3 } from "lucide-react";
 import { MarigoldIcon } from "@/components/MarigoldIcon";
@@ -88,7 +88,7 @@ export function ExploreDataPanel({
   };
 
   return (
-    <div className="h-full w-[400px] bg-white border-l border-border-soft shadow-xl overflow-y-auto pb-6">
+    <aside className="w-96 bg-white border-l border-border shadow-2xl h-full fixed right-0 top-0 p-6 overflow-y-auto z-40 pt-20">
       <div className="flex justify-between items-center mb-6 p-8 pb-0">
         <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
         <Button onClick={() => setSelectedRecord(null)} variant="outline" aria-label="Close Insights" className="p-2 rounded-full">
@@ -180,58 +180,59 @@ export function ExploreDataPanel({
         </div>
       )}
 
-      {isTaskModalOpen && mounted && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
+      {isTaskModalOpen && mounted && (
+        <div className="absolute inset-0 z-50 flex flex-col bg-white p-6 animate-in slide-in-from-right duration-200">
+          <div className="flex justify-between items-center mb-6">
             <h3 className="font-serif text-lg font-bold">Create Task</h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold mb-1">Status</label>
-                <select 
-                  value={taskStatus} 
-                  onChange={e => setTaskStatus(e.target.value)}
-                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface"
-                >
-                  <option>Needs Triage</option>
-                  <option>In Review</option>
-                  <option>Ready to Submit</option>
-                  <option>Resolved</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold mb-1">Assignee</label>
-                <select 
-                  value={taskAssignee} 
-                  onChange={e => setTaskAssignee(e.target.value)}
-                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface"
-                >
-                  <option>Unassigned</option>
-                  {roster.map((member, idx) => (
-                    <option key={idx} value={member.name}>{member.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold mb-1">Initial Comment</label>
-                <textarea 
-                  value={taskComment}
-                  onChange={e => setTaskComment(e.target.value)}
-                  placeholder="Why are you creating this task?"
-                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface h-20 resize-none"
-                />
-              </div>
+            <Button variant="ghost" onClick={() => setIsTaskModalOpen(false)} className="p-2 rounded-full">
+              <X className="w-5 h-5 text-text-body" />
+            </Button>
+          </div>
+          
+          <div className="space-y-4 flex-1 overflow-y-auto">
+            <div>
+              <label className="block text-xs font-bold mb-1">Status</label>
+              <select 
+                value={taskStatus} 
+                onChange={e => setTaskStatus(e.target.value)}
+                className="w-full text-sm p-3 border border-border-soft rounded-lg bg-surface relative z-[60]"
+              >
+                <option>Needs Triage</option>
+                <option>In Review</option>
+                <option>Ready to Submit</option>
+                <option>Resolved</option>
+              </select>
             </div>
 
-            <div className="flex gap-3 justify-end mt-4">
-              <Button variant="ghost" onClick={() => setIsTaskModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
+            <div>
+              <label className="block text-xs font-bold mb-1">Assignee</label>
+              <select 
+                value={taskAssignee} 
+                onChange={e => setTaskAssignee(e.target.value)}
+                className="w-full text-sm p-3 border border-border-soft rounded-lg bg-surface relative z-[60]"
+              >
+                <option>Unassigned</option>
+                {roster.map((member, idx) => (
+                  <option key={idx} value={member.name}>{member.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Initial Comment</label>
+              <textarea 
+                value={taskComment}
+                onChange={e => setTaskComment(e.target.value)}
+                placeholder="Why are you creating this task?"
+                className="w-full text-sm p-3 border border-border-soft rounded-lg bg-surface h-32 resize-none relative z-[60]"
+              />
             </div>
           </div>
-        </div>,
-        document.body
+
+          <div className="pt-4 border-t border-border-soft mt-auto">
+            <Button variant="primary" onClick={handleCreateTask} className="w-full py-3">Create Task</Button>
+          </div>
+        </div>
       )}
       
       <div className="mt-8 border-t border-border-soft pt-6">
@@ -250,6 +251,6 @@ export function ExploreDataPanel({
           <p className="text-xs text-text-body italic">No secure notes logged for this record yet.</p>
         )}
       </div>
-    </div>
+    </aside>
   );
 }
