@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/PageHeader';
-import { deriveGroupKey, decryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { deriveGroupKey, decryptPayload, encryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { pushBlobToRelay } from "@/lib/relay/clientRelay";
 
 interface Application {
   id: string;
@@ -119,38 +120,52 @@ export default function GroupSettingsPage() {
         
         if (res.ok) {
           const { blobs } = await res.json();
-          const appBlobs = blobs.filter((b: any) => b.type === "APPLICATION");
-          if (appBlobs.length > 0) {
-             const newApps: Application[] = [];
-             for (const blob of appBlobs) {
-                if (blob.ciphertext && blob.iv) {
-                   try {
-                     const decryptedRaw = await decryptPayload(blob.ciphertext, blob.iv, key);
-                     const appData = JSON.parse(decryptedRaw);
-                     newApps.push(appData);
-                   } catch (e) {
-                     console.warn("Failed to decrypt application", e);
-                   }
-                }
-             }
+           const appBlobs = blobs.filter((b: any) => b.type === "APPLICATION");
+           if (appBlobs.length > 0) {
+              const newApps: Application[] = [];
+              for (const blob of appBlobs) {
+                 if (blob.ciphertext && blob.iv) {
+                    try {
+                      const decryptedRaw = await decryptPayload(blob.ciphertext, blob.iv, key);
+                      const appData = JSON.parse(decryptedRaw);
+                      newApps.push(appData);
+                    } catch (e) {
+                      console.warn("Failed to decrypt application", e);
+                    }
+                 }
+              }
 
-             setApplications(prev => {
-                const updated = [...prev];
-                let changed = false;
-                newApps.forEach(na => {
-                  if (!updated.find(a => a.id === na.id)) {
-                     updated.push(na);
-                     changed = true;
-                  }
-                });
-                if (changed) {
-                  const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
-                  localStorage.setItem(appsKey, JSON.stringify(updated));
-                  return updated;
-                }
-                return prev;
-             });
-          }
+              setApplications(prev => {
+                 const updated = [...prev];
+                 let changed = false;
+                 newApps.forEach(na => {
+                   if (!updated.find(a => a.id === na.id)) {
+                      updated.push(na);
+                      changed = true;
+                   }
+                 });
+                 if (changed) {
+                   const appsKey = isDemoMode ? "marigold_demo_applications" : "marigold_group_applications";
+                   localStorage.setItem(appsKey, JSON.stringify(updated));
+                   return updated;
+                 }
+                 return prev;
+              });
+           }
+
+           const rosterBlobs = blobs.filter((b: any) => b.type === "ROSTER_SYNC");
+           if (rosterBlobs.length > 0) {
+             const latest = rosterBlobs[rosterBlobs.length - 1];
+             if (latest.ciphertext && latest.iv) {
+               try {
+                 const decryptedRaw = await decryptPayload(latest.ciphertext, latest.iv, key);
+                 const rosterData = JSON.parse(decryptedRaw);
+                 setRoster(rosterData);
+                 const rosterKey = isDemoMode ? "marigold_demo_roster" : "marigold_group_roster";
+                 localStorage.setItem(rosterKey, JSON.stringify(rosterData));
+               } catch (e) {}
+             }
+           }
         }
       } catch (e) {
         console.warn("Polling relay failed", e);
@@ -161,6 +176,25 @@ export default function GroupSettingsPage() {
     pollRelay();
     return () => clearInterval(interval);
   }, []);
+
+  const pushRosterSync = async (updatedRoster: any[]) => {
+    if (isDemoMode) return;
+    try {
+      const grp = localStorage.getItem("marigold_active_group") || "default";
+      if (grp === "Independent Researcher") return;
+      const key = await deriveGroupKey(grp);
+      const raw = JSON.stringify(updatedRoster);
+      const { ciphertextHex, ivHex } = await encryptPayload(raw, key);
+      await pushBlobToRelay(grp, {
+        id: crypto.randomUUID(),
+        type: "ROSTER_SYNC",
+        ciphertext: ciphertextHex,
+        iv: ivHex
+      });
+    } catch (e) {
+      console.warn("Failed to push roster sync", e);
+    }
+  };
 
   const setIndependentMode = () => {
     localStorage.setItem("marigold_active_group", "Independent Researcher");
@@ -204,6 +238,7 @@ export default function GroupSettingsPage() {
     const updatedRoster = [...roster, { name: app.name, email: app.email, role: '👤 Group Member', joined: 'Just Approved' }];
     setRoster(updatedRoster);
     localStorage.setItem(rosterKey, JSON.stringify(updatedRoster));
+    pushRosterSync(updatedRoster);
   };
 
   const handleReject = (app: Application) => {
@@ -224,6 +259,7 @@ export default function GroupSettingsPage() {
     });
     setRoster(updated);
     localStorage.setItem(rosterKey, JSON.stringify(updated));
+    pushRosterSync(updated);
   };
 
   const handleAddManualMember = (e: React.FormEvent) => {
@@ -233,6 +269,7 @@ export default function GroupSettingsPage() {
     const updated = [...roster, { name: newMemberName, email: newMemberEmail, role: newMemberRole, joined: "Manually Enrolled" }];
     setRoster(updated);
     localStorage.setItem(rosterKey, JSON.stringify(updated));
+    pushRosterSync(updated);
     setNewMemberName("");
     setNewMemberEmail("");
     setShowAddModal(false);

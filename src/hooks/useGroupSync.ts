@@ -138,6 +138,23 @@ export function useGroupSync() {
             setIsSyncing(true);
             setTimeout(() => setIsSyncing(false), 1000);
           }
+
+          // Also sync roster updates globally
+          const rosterBlobs = blobs.filter((b: any) => b.type === "ROSTER_SYNC");
+          if (rosterBlobs.length > 0) {
+            const latest = rosterBlobs[rosterBlobs.length - 1];
+            if (latest.ciphertext && latest.iv) {
+              try {
+                const decryptedRaw = await decryptPayload(latest.ciphertext, latest.iv, key);
+                const rosterData = JSON.parse(decryptedRaw);
+                const rosterKey = (activeGroup === "State of Roosevelt (Demo)") ? "marigold_demo_roster" : "marigold_group_roster";
+                localStorage.setItem(rosterKey, JSON.stringify(rosterData));
+                
+                // Dispatch event so panels can re-render immediately if they depend on roster
+                window.dispatchEvent(new Event("marigold_roster_updated"));
+              } catch (e) {}
+            }
+          }
         }
       } catch (err) {}
     };

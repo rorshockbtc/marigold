@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { X, Lock, ShieldAlert, CheckCircle, Flag, Trash2 } from "lucide-react";
 import { MarigoldIcon } from "@/components/MarigoldIcon";
@@ -12,6 +13,27 @@ export function AuditDataPanel() {
   const [isDismissed, setIsDismissed] = useState(false);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [roster, setRoster] = useState<{name: string, email: string}[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    
+    const loadRoster = () => {
+      const grp = localStorage.getItem("marigold_active_group") || "default";
+      const rosterKey = (grp === "State of Roosevelt (Demo)") ? "marigold_demo_roster" : "marigold_group_roster";
+      const saved = localStorage.getItem(rosterKey);
+      if (saved) {
+        try {
+          setRoster(JSON.parse(saved));
+        } catch(e) {}
+      }
+    };
+    
+    loadRoster();
+    window.addEventListener("marigold_roster_updated", loadRoster);
+    return () => window.removeEventListener("marigold_roster_updated", loadRoster);
+  }, []);
   const [taskStatus, setTaskStatus] = useState("Needs Triage");
   const [taskAssignee, setTaskAssignee] = useState("Unassigned");
   const [taskComment, setTaskComment] = useState("");
@@ -219,7 +241,7 @@ export function AuditDataPanel() {
         </span>
       </div>
 
-      {isTaskModalOpen && (
+      {isTaskModalOpen && mounted && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
             <h3 className="font-serif text-lg font-bold text-text-header">Create Task</h3>
@@ -247,7 +269,9 @@ export function AuditDataPanel() {
                   className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface text-text-header"
                 >
                   <option>Unassigned</option>
-                  <option>Kyle</option>
+                  {roster.map((member, idx) => (
+                    <option key={idx} value={member.name.split(' ')[0]}>{member.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -267,7 +291,8 @@ export function AuditDataPanel() {
               <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </aside>
   );

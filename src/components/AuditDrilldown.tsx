@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { Download, CheckCircle, ChevronLeft, ChevronRight, Layers, Users } from "lucide-react";
@@ -25,6 +26,27 @@ export function AuditDrilldown({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [roster, setRoster] = useState<{name: string, email: string}[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    
+    const loadRoster = () => {
+      const grp = localStorage.getItem("marigold_active_group") || "default";
+      const rosterKey = (grp === "State of Roosevelt (Demo)") ? "marigold_demo_roster" : "marigold_group_roster";
+      const saved = localStorage.getItem(rosterKey);
+      if (saved) {
+        try {
+          setRoster(JSON.parse(saved));
+        } catch(e) {}
+      }
+    };
+    
+    loadRoster();
+    window.addEventListener("marigold_roster_updated", loadRoster);
+    return () => window.removeEventListener("marigold_roster_updated", loadRoster);
+  }, []);
   const [taskStatus, setTaskStatus] = useState("Needs Triage");
   const [taskAssignee, setTaskAssignee] = useState("Unassigned");
   const [taskComment, setTaskComment] = useState("");
@@ -245,7 +267,7 @@ export function AuditDrilldown({
 
       {/* Floating Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-8 z-20">
+        <div className="fixed bottom-6 left-[200px] bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-8 z-20">
           <div className="flex items-center gap-2">
             <div className="bg-primary/20 p-1.5 rounded-full">
               <CheckCircle className="w-4 h-4 text-primary" />
@@ -262,8 +284,8 @@ export function AuditDrilldown({
         </div>
       )}
 
-      {isTaskModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      {isTaskModalOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
             <h3 className="font-serif text-lg font-bold text-text-header">Create Task</h3>
             
@@ -287,10 +309,12 @@ export function AuditDrilldown({
                 <select 
                   value={taskAssignee} 
                   onChange={e => setTaskAssignee(e.target.value)}
-                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface text-text-header"
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface"
                 >
                   <option>Unassigned</option>
-                  <option>Kyle</option>
+                  {roster.map((member, idx) => (
+                    <option key={idx} value={member.name.split(' ')[0]}>{member.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -310,7 +334,8 @@ export function AuditDrilldown({
               <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

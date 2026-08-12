@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { X, Lock, AlertCircle, BarChart3 } from "lucide-react";
 import { MarigoldIcon } from "@/components/MarigoldIcon";
@@ -27,6 +28,27 @@ export function ExploreDataPanel({
   verboseMode
 }: ExploreDataPanelProps) {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [roster, setRoster] = useState<{name: string, email: string}[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    
+    const loadRoster = () => {
+      const grp = localStorage.getItem("marigold_active_group") || "default";
+      const rosterKey = (grp === "State of Roosevelt (Demo)") ? "marigold_demo_roster" : "marigold_group_roster";
+      const saved = localStorage.getItem(rosterKey);
+      if (saved) {
+        try {
+          setRoster(JSON.parse(saved));
+        } catch(e) {}
+      }
+    };
+    
+    loadRoster();
+    window.addEventListener("marigold_roster_updated", loadRoster);
+    return () => window.removeEventListener("marigold_roster_updated", loadRoster);
+  }, []);
   const [taskStatus, setTaskStatus] = useState("Needs Triage");
   const [taskAssignee, setTaskAssignee] = useState("Unassigned");
   const [taskComment, setTaskComment] = useState("");
@@ -66,8 +88,8 @@ export function ExploreDataPanel({
   };
 
   return (
-    <div className="w-96 bg-white border-l border-border-soft shadow-xl h-full p-8 overflow-y-auto flex-shrink-0 animate-in slide-in-from-right-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="h-full w-[400px] bg-white border-l border-border-soft shadow-xl overflow-y-auto pb-6">
+      <div className="flex justify-between items-center mb-6 p-8 pb-0">
         <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
         <Button onClick={() => setSelectedRecord(null)} variant="outline" aria-label="Close Insights" className="p-2 rounded-full">
           <X className="w-5 h-5 text-text-body" />
@@ -158,8 +180,8 @@ export function ExploreDataPanel({
         </div>
       )}
 
-      {isTaskModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      {isTaskModalOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
             <h3 className="font-serif text-lg font-bold">Create Task</h3>
             
@@ -186,8 +208,9 @@ export function ExploreDataPanel({
                   className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface"
                 >
                   <option>Unassigned</option>
-                  <option>Kyle</option>
-                  {/* Additional members would be pulled dynamically */}
+                  {roster.map((member, idx) => (
+                    <option key={idx} value={member.name.split(' ')[0]}>{member.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -207,7 +230,8 @@ export function ExploreDataPanel({
               <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       
       <div className="mt-8 border-t border-border-soft pt-6">
