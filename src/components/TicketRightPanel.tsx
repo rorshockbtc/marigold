@@ -105,7 +105,7 @@ export function TicketRightPanel() {
   };
 
   return (
-    <div className="h-full w-[440px] bg-white shadow-2xl border-l border-border-soft flex flex-col overflow-y-auto">
+    <div className="h-full w-[550px] bg-white shadow-2xl border-l border-border-soft flex flex-col overflow-y-auto pb-4">
       <div className="flex justify-between items-center mb-6 shrink-0 p-6 pb-0">
         <h2 className="text-xl font-serif text-text-header">Record Insights</h2>
         <IconButton 
@@ -217,7 +217,7 @@ export function TicketRightPanel() {
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col min-h-0 px-6">
+      <div className="px-6 flex flex-col">
         {/* Actionable Checklists */}
         <div className="mb-6 shrink-0">
           <div className="flex justify-between items-center mb-3">
@@ -265,7 +265,7 @@ export function TicketRightPanel() {
 
         <h3 className="text-xs font-bold text-text-body uppercase tracking-wider mb-4 border-b border-border-soft pb-2 shrink-0">Activity & Comments Feed</h3>
         
-        <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
+        <div className="space-y-3 mb-4 pr-2">
           {selectedCard.notes.length === 0 ? (
             <p className="text-sm text-text-body italic">No notes added yet.</p>
           ) : (
@@ -322,7 +322,7 @@ export function TicketRightPanel() {
           )}
         </div>
 
-        <div className="mt-auto space-y-3 pt-4 border-t border-border-soft shrink-0 pb-6">
+        <div className="mt-8 space-y-3 pt-4 border-t border-border-soft pb-6">
           {!isGroupSynced ? (
             <>
               <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200 text-center">

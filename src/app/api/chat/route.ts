@@ -159,8 +159,8 @@ const chartSchema: any = {
             items: {
               type: SchemaType.OBJECT,
               properties: {
-                x: { type: SchemaType.STRING, description: "The X value" },
-                y: { type: SchemaType.NUMBER, description: "The Y value" }
+                x: { type: SchemaType.STRING, description: "The X value (MUST be a string, e.g., '2023', 'Hinds County')" },
+                y: { type: SchemaType.NUMBER, description: "The Y value (MUST be a number, e.g., 14.5)" }
               },
               required: ["x", "y"]
             }
@@ -356,6 +356,10 @@ export async function POST(req: NextRequest) {
       - IMPORTANT: If a user asks a broad analytical or historical question (e.g., 'What are national demographic trends from 1960 to today?'), evaluate if the currently linked dataset can answer it.
         - If YES (the dataset contains relevant local columns/years), use 'query_dataset' to fetch real aggregations.
         - If NO or UNCERTAIN (the user is asking for national historical data, general knowledge, or data not in the local voter roll), DO NOT run 'query_dataset' against the local file! Instead, use your broad knowledge to construct full, labeled multi-series charts (e.g. X: years/categories, Y: percentages/values) and use 'append_section' to update the Data Story canvas.
+      
+      MULTI-STEP REASONING & LOOPING:
+      - You have the ability to run multiple tools in a loop! If you need to fetch data, call \`query_dataset\` first. Wait for the system to return the data. THEN, in the next turn, call \`append_section\` to visualize the data or write the narrative. You can append as many sections as you want.
+      - Never cram all actions into one tool call. Use sequential steps to build a comprehensive story.
       - CONVERSATIONAL REPLY REQUIREMENT: Whenever you call 'append_section', 'update_section', or 'update_title', you MUST ALSO emit a warm, informative textual reply explaining what chart or analysis you just added to the canvas so the user is never left in silence!
       
       ${articleState ? `CURRENT ARTICLE STATE:\n${JSON.stringify(articleState, null, 2)}` : ''}

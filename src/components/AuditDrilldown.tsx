@@ -23,6 +23,11 @@ export function AuditDrilldown({
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskStatus, setTaskStatus] = useState("Needs Triage");
+  const [taskAssignee, setTaskAssignee] = useState("Unassigned");
+  const [taskComment, setTaskComment] = useState("");
 
   const records = selectedDrilldown ? (anomalyRecords[selectedDrilldown.id] || []) : [];
 
@@ -50,16 +55,29 @@ export function AuditDrilldown({
     }
   };
 
-  const handleGroupToTask = () => {
+  const openTaskModal = () => {
     if (selectedIds.size === 0) return;
-    
-    // Grab the first selected record to use as title
+    setIsTaskModalOpen(true);
+  };
+
+  const handleCreateTask = () => {
+    if (selectedIds.size === 0) return;
     const sampleRecord = records.find(r => selectedIds.has(r.id));
     if (!sampleRecord) return;
+    
+    const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
+    const initialNotes = taskComment.trim() ? [{
+      id: Math.random().toString(36).substring(2, 9),
+      serverCiphertext: `[ENCRYPTED_PAYLOAD] ${taskComment}`,
+      fileVersion: "Current Session",
+      date: new Date().toISOString(),
+      author: authorName,
+      isPrivate: false
+    }] : [];
 
     addTask({
       id: `task-cluster-${Math.random().toString(36).substring(2, 7)}`,
-      status: "Needs Triage",
+      status: taskStatus,
       title: `${selectedIds.size} Clustered Anomalies`,
       subtitle: `Multiple records matching ${selectedDrilldown.name} criteria. Includes ${sampleRecord.name || sampleRecord.id} and others.`,
       tag: "Bulk Triage",
@@ -69,11 +87,14 @@ export function AuditDrilldown({
       iconColor: "text-blue-700",
       borderColor: "border-l-blue-500",
       meta: "Added from Audit Bulk Select",
-      assignee: "Unassigned",
-      notes: [],
-      attachedRecordIds: Array.from(selectedIds)
+      assignee: taskAssignee,
+      notes: initialNotes,
+      attachedRecordIds: Array.from(selectedIds),
+      promotedGroups: [localStorage.getItem("marigold_active_group") || "Independent Audit Workspace"]
     });
     setSelectedIds(new Set());
+    setIsTaskModalOpen(false);
+    setTaskComment("");
   };
 
   return (
@@ -234,10 +255,61 @@ export function AuditDrilldown({
           <div className="h-6 w-px bg-slate-700" />
           <Button 
             className="bg-primary text-white hover:bg-primary/90 rounded-full text-sm font-bold px-4"
-            onClick={handleGroupToTask}
+            onClick={openTaskModal}
           >
             <Layers className="w-4 h-4 mr-2" /> Group to Task
           </Button>
+        </div>
+      )}
+
+      {isTaskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
+            <h3 className="font-serif text-lg font-bold text-text-header">Create Task</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold mb-1 text-text-body">Status</label>
+                <select 
+                  value={taskStatus} 
+                  onChange={e => setTaskStatus(e.target.value)}
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface text-text-header"
+                >
+                  <option>Needs Triage</option>
+                  <option>In Review</option>
+                  <option>Ready to Submit</option>
+                  <option>Resolved</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1 text-text-body">Assignee</label>
+                <select 
+                  value={taskAssignee} 
+                  onChange={e => setTaskAssignee(e.target.value)}
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface text-text-header"
+                >
+                  <option>Unassigned</option>
+                  <option>Kyle</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1 text-text-body">Initial Comment</label>
+                <textarea 
+                  value={taskComment}
+                  onChange={e => setTaskComment(e.target.value)}
+                  placeholder="Why are you creating this task?"
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface h-20 resize-none text-text-header"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end mt-4">
+              <Button variant="ghost" onClick={() => setIsTaskModalOpen(false)}>Cancel</Button>
+              <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

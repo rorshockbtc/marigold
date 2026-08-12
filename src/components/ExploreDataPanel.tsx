@@ -57,7 +57,8 @@ export function ExploreDataPanel({
       borderColor: "border-l-blue-500",
       meta: "Just now",
       assignee: taskAssignee,
-      notes: initialNotes
+      notes: initialNotes,
+      promotedGroups: [localStorage.getItem("marigold_active_group") || "Independent Audit Workspace"]
     });
     setSelectedRecord({ ...selectedRecord, taskCreated: true });
     setIsTaskModalOpen(false);

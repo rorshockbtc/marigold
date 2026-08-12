@@ -11,12 +11,31 @@ export function AuditDataPanel() {
   const [showConfirmDismiss, setShowConfirmDismiss] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskStatus, setTaskStatus] = useState("Needs Triage");
+  const [taskAssignee, setTaskAssignee] = useState("Unassigned");
+  const [taskComment, setTaskComment] = useState("");
+
   if (!selectedRecord) return null;
 
-  const handleFlagForReview = () => {
+  const openTaskModal = () => {
+    setIsTaskModalOpen(true);
+  };
+
+  const handleCreateTask = () => {
+    const authorName = localStorage.getItem("marigold_user_identity") || "Investigator";
+    const initialNotes = taskComment.trim() ? [{
+      id: Math.random().toString(36).substring(2, 9),
+      serverCiphertext: `[ENCRYPTED_PAYLOAD] ${taskComment}`,
+      fileVersion: "Current Session",
+      date: new Date().toISOString(),
+      author: authorName,
+      isPrivate: false
+    }] : [];
+
     addTask({
       id: `task-${selectedRecord.id || Math.random().toString(36).substring(2, 7)}`,
-      status: "Needs Triage",
+      status: taskStatus,
       title: selectedRecord.name || selectedRecord.address || "Flagged Citizen Record",
       subtitle: selectedRecord.details || selectedRecord.address || "Requires board review",
       tag: selectedRecord.anomalyType || "Anomaly Flag",
@@ -26,9 +45,13 @@ export function AuditDataPanel() {
       iconColor: "text-amber-700",
       borderColor: "border-l-amber-500",
       meta: "Added from Audit",
-      assignee: "Unassigned",
-      notes: []
+      assignee: taskAssignee,
+      notes: initialNotes,
+      promotedGroups: [localStorage.getItem("marigold_active_group") || "Independent Audit Workspace"]
     });
+    
+    setIsTaskModalOpen(false);
+    setTaskComment("");
   };
 
   const handleConfirmDismiss = () => {
@@ -96,7 +119,7 @@ export function AuditDataPanel() {
           
           <Button 
             type="button"
-            onClick={handleFlagForReview}
+            onClick={openTaskModal}
             variant="primary"
             className="w-full py-3 rounded-full text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
           >
@@ -195,6 +218,57 @@ export function AuditDataPanel() {
           🔒 Air-Gapped Session • Zero Cloud Exposure
         </span>
       </div>
+
+      {isTaskModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
+            <h3 className="font-serif text-lg font-bold text-text-header">Create Task</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold mb-1 text-text-body">Status</label>
+                <select 
+                  value={taskStatus} 
+                  onChange={e => setTaskStatus(e.target.value)}
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface text-text-header"
+                >
+                  <option>Needs Triage</option>
+                  <option>In Review</option>
+                  <option>Ready to Submit</option>
+                  <option>Resolved</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1 text-text-body">Assignee</label>
+                <select 
+                  value={taskAssignee} 
+                  onChange={e => setTaskAssignee(e.target.value)}
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface text-text-header"
+                >
+                  <option>Unassigned</option>
+                  <option>Kyle</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1 text-text-body">Initial Comment</label>
+                <textarea 
+                  value={taskComment}
+                  onChange={e => setTaskComment(e.target.value)}
+                  placeholder="Why are you creating this task?"
+                  className="w-full text-sm p-2 border border-border-soft rounded-lg bg-surface h-20 resize-none text-text-header"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end mt-4">
+              <Button variant="ghost" onClick={() => setIsTaskModalOpen(false)}>Cancel</Button>
+              <Button variant="primary" onClick={handleCreateTask}>Create Task</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

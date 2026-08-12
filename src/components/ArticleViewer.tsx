@@ -38,14 +38,17 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
           
           if (sec.chart.series) {
             for (const series of sec.chart.series) {
+               if (!series || !series.data) continue;
+               const seriesIdRaw = series.id || "Series";
                const nextSeries = {
-                 id: (await DecryptionEngine.hydrateText(series.id)).replace(/\n/g, ' ').trim(),
+                 id: (await DecryptionEngine.hydrateText(seriesIdRaw)).replace(/\n/g, ' ').trim(),
                  data: [] as any[]
                };
                for (const pt of series.data) {
+                 if (pt.x === undefined || pt.y === undefined) continue; // Defensive check for bad Gemini schemas
                  nextSeries.data.push({
-                   x: typeof pt.x === 'string' ? (await DecryptionEngine.hydrateText(pt.x)).replace(/\n/g, ' ').trim() : pt.x,
-                   y: pt.y
+                   x: typeof pt.x === 'string' ? (await DecryptionEngine.hydrateText(pt.x)).replace(/\n/g, ' ').trim() : String(pt.x),
+                   y: Number(pt.y) || 0
                  });
                }
                nextSec.chart.series.push(nextSeries);
