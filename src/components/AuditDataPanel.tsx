@@ -270,7 +270,7 @@ export function AuditDataPanel() {
                 >
                   <option>Unassigned</option>
                   {roster.map((member, idx) => (
-                    <option key={idx} value={member.name.split(' ')[0]}>{member.name}</option>
+                    <option key={idx} value={member.name}>{member.name}</option>
                   ))}
                 </select>
               </div>

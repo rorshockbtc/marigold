@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { deriveGroupKey, encryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { pushBlobToRelay } from "@/lib/relay/clientRelay";
 
 export default function GroupInviteGatewayPage() {
   const router = useRouter();
@@ -79,18 +80,11 @@ export default function GroupInviteGatewayPage() {
       const rawApp = JSON.stringify(applicationData);
       const { ciphertextHex, ivHex } = await encryptPayload(rawApp, key);
 
-      await fetch("/api/relay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          groupId: targetGroup.name,
-          blob: {
-            id: applicationData.id,
-            ciphertext: ciphertextHex,
-            iv: ivHex,
-            type: "APPLICATION"
-          }
-        })
+      await pushBlobToRelay(targetGroup.name, {
+        id: applicationData.id,
+        ciphertext: ciphertextHex,
+        iv: ivHex,
+        type: "APPLICATION"
       });
 
       // Set active workspace

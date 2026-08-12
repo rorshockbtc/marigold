@@ -5,6 +5,7 @@
  */
 
 import { exportKeyBytes, importKeyBytes } from "./LocalKeyManager";
+import { pushBlobToRelay, fetchBlobsFromRelay } from "../relay/clientRelay";
 
 export interface EncryptedStateBlob {
   iv: string; // hex
@@ -62,17 +63,11 @@ export async function decryptState(workspaceKey: CryptoKey, blob: EncryptedState
 
 // Push to the Dumb Relay Server
 export async function pushToRelay(groupId: string, blob: EncryptedStateBlob): Promise<void> {
-  await fetch(`/api/relay`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ groupId, blob })
-  });
+  await pushBlobToRelay(groupId, blob);
 }
 
 // Fetch from the Dumb Relay Server
 export async function fetchFromRelay(groupId: string): Promise<EncryptedStateBlob[]> {
-  const res = await fetch(`/api/relay?groupId=${encodeURIComponent(groupId)}`);
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.blobs;
+  const blobs = await fetchBlobsFromRelay(groupId);
+  return blobs || [];
 }

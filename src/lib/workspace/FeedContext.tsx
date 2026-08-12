@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useGroupSync } from "@/hooks/useGroupSync";
+import { decryptPayload, deriveGroupKey } from "../crypto/LocalKeyManager";
+import { fetchBlobsFromRelay, pushBlobToRelay } from "../relay/clientRelay";
 
 export interface FeedEvent {
   id: string;
@@ -22,7 +23,6 @@ const FeedContext = createContext<FeedContextType | undefined>(undefined);
 
 export function FeedProvider({ children }: { children: React.ReactNode }) {
   const [feedEvents, setFeedEvents] = useState<FeedEvent[]>([]);
-  const { loadAuditCache } = useGroupSync(); // use this just as a trigger loop
 
   useEffect(() => {
     const loadFeeds = () => {
@@ -45,17 +45,20 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       if (!grp) return;
 
       try {
-        const res = await fetch(`/api/relay?groupId=${grp}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const packets = data.packets || [];
-
+        const key = await deriveGroupKey(grp);
+        const blobs = await fetchBlobsFromRelay(grp);
+        
         const incomingEvents: FeedEvent[] = [];
-        packets.forEach((pkt: any) => {
-          if (pkt.blob && pkt.blob.type === "FEED_SYNC") {
-            incomingEvents.push(pkt.blob.event);
+        for (const blob of (blobs || [])) {
+          if (blob.type === "FEED_SYNC") {
+            try {
+              const decrypted = await decryptPayload(blob.data, key);
+              incomingEvents.push(decrypted.event);
+            } catch (e) {
+              console.error("Failed to decrypt feed event", e);
+            }
           }
-        });
+        }
 
         if (incomingEvents.length > 0) {
           setFeedEvents(prev => {
@@ -98,14 +101,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     const grp = localStorage.getItem("marigold_active_group");
     if (grp) {
       try {
-        await fetch("/api/relay", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            groupId: grp,
-            blob: { type: "FEED_SYNC", event: newEvent }
-          })
-        });
+        await pushBlobToRelay(grp, { type: "FEED_SYNC", event: newEvent });
       } catch (e) {
         console.error("Failed to push feed event", e);
       }

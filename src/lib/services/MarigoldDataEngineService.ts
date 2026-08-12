@@ -2,6 +2,7 @@ import { getActiveDatabaseName, isDemoGroupActive, openActiveDatabase, getActive
 import { normalizeRowWithMapping, interpretColumnMappings } from "@/lib/csv/universalMapper";
 import { getDirectoryHandle, writeStructuredFile, readStructuredFile } from "@/lib/fs/LocalFSManager";
 import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { fetchBlobsFromRelay, pushBlobToRelay } from "@/lib/relay/clientRelay";
 
 export interface AuditSweepResults {
   groupId: string;
@@ -302,10 +303,8 @@ export class MarigoldDataEngineService {
     // Tier 4: Zero-Knowledge Fetch from Firebase Relay
     try {
       if (typeof window !== 'undefined') {
-        const relayReq = await fetch(`/api/relay?groupId=${slug}`);
-        if (relayReq.ok) {
-          const { blobs } = await relayReq.json();
-          if (blobs && blobs.length > 0) {
+        const blobs = await fetchBlobsFromRelay(slug);
+        if (blobs && blobs.length > 0) {
             // Find the latest AUDIT_CACHE_SNAPSHOT
             const latestAudit = blobs.filter((b: any) => b.type === "AUDIT_CACHE_SNAPSHOT").pop();
             if (latestAudit && latestAudit.ciphertext) {
@@ -386,19 +385,11 @@ export class MarigoldDataEngineService {
       try {
         const groupKey = await deriveGroupKey(slug);
         const { ciphertextHex, ivHex } = await encryptPayload(JSON.stringify(sweepData), groupKey);
-        await fetch("/api/relay", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          keepalive: true,
-          body: JSON.stringify({ 
-            groupId: slug, 
-            blob: { 
-              ciphertext: ciphertextHex, 
-              iv: ivHex, 
-              type: "AUDIT_CACHE_SNAPSHOT",
-              timestamp: Date.now()
-            } 
-          })
+        await pushBlobToRelay(slug, { 
+          ciphertext: ciphertextHex, 
+          iv: ivHex, 
+          type: "AUDIT_CACHE_SNAPSHOT",
+          timestamp: Date.now()
         });
       } catch (e) {
         console.warn("Could not push audit cache to Zero-Knowledge relay:", e);

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { decryptPayload, deriveGroupKey, encryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { fetchBlobsFromRelay, pushBlobToRelay } from "@/lib/relay/clientRelay";
 
 export interface CustomPlaybook {
   id: string;
@@ -49,10 +50,9 @@ export function PlaybookProvider({ children }: { children: React.ReactNode }) {
       try {
         const grp = localStorage.getItem("marigold_active_group") || "default";
         const key = await deriveGroupKey(grp);
-        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        const blobs = await fetchBlobsFromRelay(grp);
         
-        if (res.ok) {
-          const { blobs } = await res.json();
+        if (blobs && blobs.length > 0) {
           const pbBlobs = blobs.filter((b: any) => b.type === "PLAYBOOK_SYNC");
           if (pbBlobs.length > 0) {
             const latest = pbBlobs[pbBlobs.length - 1];
@@ -121,18 +121,11 @@ export function PlaybookProvider({ children }: { children: React.ReactNode }) {
             const rawPayload = JSON.stringify(syncable);
             const { ciphertextHex, ivHex } = await encryptPayload(rawPayload, key);
 
-            await fetch("/api/relay", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                groupId: grp,
-                blob: {
-                  id: crypto.randomUUID(),
-                  ciphertext: ciphertextHex,
-                  iv: ivHex,
-                  type: "PLAYBOOK_SYNC"
-                }
-              })
+            await pushBlobToRelay(grp, {
+              id: crypto.randomUUID(),
+              ciphertext: ciphertextHex,
+              iv: ivHex,
+              type: "PLAYBOOK_SYNC"
             });
           } catch (err) {
             console.warn("Playbook sync deferred", err);

@@ -301,6 +301,7 @@ export default function ExplorePage() {
     try {
       const { generateWorkspaceKey, encryptPayload } = await import("@/lib/crypto/LocalKeyManager");
       const { getDirectoryHandle, writeStructuredFile } = await import("@/lib/fs/LocalFSManager");
+      const { pushBlobToRelay } = await import("@/lib/relay/clientRelay");
       
       const key = await generateWorkspaceKey();
       const now = new Date();
@@ -330,11 +331,7 @@ export default function ExplorePage() {
         await writeStructuredFile(dirHandle, "Data_Stories", filename, JSON.stringify(payload, null, 2));
       }
 
-      await fetch("/api/relay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: grp, blob: payload })
-      });
+      await pushBlobToRelay(grp, payload);
       
       setPublishStatus(`Data Story saved to Marigold_Local/Data_Stories/${filename}!`);
       setTimeout(() => setPublishStatus(null), 4500);

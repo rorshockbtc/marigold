@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/PageHeader';
 import { deriveGroupKey, decryptPayload, encryptPayload } from "@/lib/crypto/LocalKeyManager";
-import { pushBlobToRelay } from "@/lib/relay/clientRelay";
+import { pushBlobToRelay, fetchBlobsFromRelay } from "@/lib/relay/clientRelay";
 
 interface Application {
   id: string;
@@ -116,10 +116,9 @@ export default function GroupSettingsPage() {
         if (grp === "Independent Researcher") return;
 
         const key = await deriveGroupKey(grp);
-        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        const blobs = await fetchBlobsFromRelay(grp);
         
-        if (res.ok) {
-          const { blobs } = await res.json();
+        if (blobs && blobs.length > 0) {
            const appBlobs = blobs.filter((b: any) => b.type === "APPLICATION");
            if (appBlobs.length > 0) {
               const newApps: Application[] = [];
