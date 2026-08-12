@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { collection, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
+import { signInAnonymously } from "firebase/auth";
+import { db, auth as fbAuth } from "@/lib/firebase/client";
 import { auth } from "@clerk/nextjs/server";
 
 const IS_FIREBASE_CONNECTED = !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -61,6 +62,9 @@ export async function POST(req: Request) {
 
     if (IS_FIREBASE_CONNECTED) {
       try {
+        if (fbAuth && !fbAuth.currentUser) {
+          await signInAnonymously(fbAuth);
+        }
         await addDoc(collection(db as any, "relay_blobs"), newEntry);
       } catch (err) {
         console.warn("Firebase relay write failed, writing to fallback disk store", err);
@@ -96,6 +100,9 @@ export async function GET(req: Request) {
 
   if (IS_FIREBASE_CONNECTED) {
     try {
+      if (fbAuth && !fbAuth.currentUser) {
+        await signInAnonymously(fbAuth);
+      }
       const q = query(
         collection(db as any, "relay_blobs"),
         where("groupId", "==", groupId),

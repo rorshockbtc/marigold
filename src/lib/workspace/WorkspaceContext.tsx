@@ -56,7 +56,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         if (res.rows.length > 0) {
           const row = res.rows[0];
           const st = row.state || "MS";
-          const cnty = row.county || "Statewide";
+          let cnty = row.county || "Statewide";
+          if (res.totalMatches > 300000) {
+            cnty = "Statewide";
+          }
           setStateCode(st);
           setJurisdiction(`${cnty}, ${st}`);
         } else {
