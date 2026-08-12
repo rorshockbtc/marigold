@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { CardData, Note, INITIAL_CARDS } from "@/components/KanbanBoard";
 import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { pushBlobToRelay, fetchBlobsFromRelay } from "@/lib/relay/clientRelay";
 
 interface KanbanContextType {
   cards: CardData[];
@@ -54,10 +55,9 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
       try {
         const grp = localStorage.getItem("marigold_active_group") || "default";
         const key = await deriveGroupKey(grp);
-        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        const blobs = await fetchBlobsFromRelay(grp);
         
-        if (res.ok) {
-          const { blobs } = await res.json();
+        if (blobs && blobs.length > 0) {
           const kanbanBlobs = blobs.filter((b: any) => b.type === "KANBAN_SYNC");
           if (kanbanBlobs.length > 0) {
             const latest = kanbanBlobs[kanbanBlobs.length - 1];
@@ -174,18 +174,11 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
             const rawCards = JSON.stringify(syncableCards);
             const { ciphertextHex, ivHex } = await encryptPayload(rawCards, key);
 
-            await fetch("/api/relay", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                groupId: grp,
-                blob: {
-                  id: crypto.randomUUID(),
-                  ciphertext: ciphertextHex,
-                  iv: ivHex,
-                  type: "KANBAN_SYNC"
-                }
-              })
+            await pushBlobToRelay(grp, {
+              id: crypto.randomUUID(),
+              ciphertext: ciphertextHex,
+              iv: ivHex,
+              type: "KANBAN_SYNC"
             });
           } catch (err) {
             console.warn("Zero-knowledge relay sync deferred", err);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
+import { fetchBlobsFromRelay, pushBlobToRelay } from "@/lib/relay/clientRelay";
 
 export interface GroupActivityItem {
   id: string;
@@ -106,12 +107,11 @@ export function useGroupSync() {
 
     const pollRelay = async () => {
       try {
-        const grp = localStorage.getItem("marigold_active_group") || "default";
-        const key = await deriveGroupKey(grp);
-        const res = await fetch(`/api/relay?groupId=${encodeURIComponent(grp)}`);
+        const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+        const key = await deriveGroupKey(activeGroup);
+        const blobs = await fetchBlobsFromRelay(activeGroup);
         
-        if (res.ok) {
-          const { blobs } = await res.json();
+        if (blobs && blobs.length > 0) {
           const activityBlobs = blobs.filter((b: any) => b.type === "ACTIVITY_SYNC");
           
           let newRemoteActivities: GroupActivityItem[] = [];
@@ -172,13 +172,11 @@ export function useGroupSync() {
         try {
           const key = await deriveGroupKey(groupId);
           const { ciphertextHex, ivHex } = await encryptPayload(JSON.stringify(newItem), key);
-          await fetch("/api/relay", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              groupId,
-              blob: { id: newItem.id, ciphertext: ciphertextHex, iv: ivHex, type: "ACTIVITY_SYNC" }
-            })
+          await pushBlobToRelay(groupId, {
+            id: newItem.id,
+            ciphertext: ciphertextHex,
+            iv: ivHex,
+            type: "ACTIVITY_SYNC"
           });
         } catch(e) {}
       })();
