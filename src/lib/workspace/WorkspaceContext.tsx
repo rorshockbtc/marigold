@@ -98,16 +98,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     const slug = targetGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
     localStorage.removeItem(`marigold_file_mapping_${slug}`);
     
-    const isDemo = targetGroup === "State of Roosevelt (Demo)" ||
-                   targetGroup === "ACME Civic Data Sandbox (Demo Environment)";
+    const isDemo = targetGroup === "State of Roosevelt (Demo)";
     
     if (isDemo) {
-      const currentFileName = localStorage.getItem("marigold_file_name") || "";
-      if (!currentFileName.toUpperCase().includes("DEMO")) {
-        localStorage.setItem("marigold_file_connected", "false");
-        localStorage.setItem("marigold_file_rows", "0");
-        localStorage.setItem("marigold_file_name", "Synthetic DEMO_ dataset required");
-      }
+      localStorage.setItem("marigold_file_connected", "true");
+      localStorage.setItem("marigold_file_rows", "0");
+      localStorage.setItem("marigold_file_name", "DEMO_roosevelt_statewide_voter_roll.csv");
     } else if (targetGroup === "Mississippi Fair Elections") {
       // Do not inject fake connection state. Require user to link/upload their local folder.
     } else {

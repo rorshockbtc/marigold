@@ -121,22 +121,7 @@ export default function AppSidebar() {
               <span>🌲 State of Roosevelt (Demo)</span>
               {activeGroup === "State of Roosevelt (Demo)" && <span>✓</span>}
             </button>
-            <button
-              type="button"
-              onClick={() => handleSwitchGroup("ACME Civic Data Sandbox (Demo Environment)")}
-              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "ACME Civic Data Sandbox (Demo Environment)" ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
-            >
-              <span>🧪 ACME Civic Data Sandbox</span>
-              {activeGroup === "ACME Civic Data Sandbox (Demo Environment)" && <span>✓</span>}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSwitchGroup("Mississippi Fair Elections")}
-              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === "Mississippi Fair Elections" ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
-            >
-              <span>👑 Mississippi Fair Elections</span>
-              {activeGroup === "Mississippi Fair Elections" && <span>✓</span>}
-            </button>
+
             <button
               type="button"
               onClick={() => handleSwitchGroup("Independent Audit Workspace")}

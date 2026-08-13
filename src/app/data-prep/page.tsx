@@ -40,8 +40,9 @@ export default function DataPrepPage() {
   const execute1ClickLoadDemo = async () => {
     setIsLoadingDemo(true);
     try {
-      await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
-      window.location.href = "/explore";
+      const rowCount = await autoLoadSyntheticDemoDataset((msg) => setDemoStatusMsg(msg));
+      setExistingShardCount(rowCount);
+      setIsLoadingDemo(false);
     } catch (err) {
       setIsLoadingDemo(false);
       setDemoStatusMsg("Failed to auto-load demo dataset.");
