@@ -35,7 +35,7 @@ Marigold Insights generalizes three foundational areas of computer science prior
 ### 3. Decoupled Query Package Management ("Cartridges")
 * **Prior Art Foundation:** Modular package management architectures (Debian APT, Node NPM).
 * **Marigold Synthesis:** To democratize forensic auditing across different state jurisdictions, Marigold introduces the concept of **Audit Playbooks** or **Cartridges** (`*.cartridge.json`).
-* **Execution Mechanics:** A Cartridge is a lightweight, standardized JSON payload containing structured SQL/analytical query templates, compliance checklists, and state statutory references. The central server hosts *only* these lightweight logic definitions. When an auditor selects a Cartridge, the browser downloads the query recipe and executes it strictly against the local air-gapped dataset.
+* **Execution Mechanics:** A Cartridge is a lightweight, standardized JSON payload (`chb.marigold.cartridge.v1`) containing structured DuckDB query templates, semantic mapping schemas, and state statutory references. When a user runs a Playbook, the execution runner (`src/lib/cartridge/runner.ts`) securely binds UI inputs into DuckDB native prepared statements, preventing SQL injection, and executes them completely offline against the local Apache Arrow data shards.
 
 ---
 

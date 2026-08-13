@@ -124,3 +124,6 @@ export interface WorkerMessage<T = unknown> {
   payload?: T;
   error?: string;
 }
+
+// -- Executable Cartridges (Pipes Upstream) --
+export * from './cartridge';

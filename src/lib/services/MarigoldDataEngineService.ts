@@ -1,4 +1,4 @@
-import { getActiveDatabaseName, isDemoGroupActive, openActiveDatabase, getActiveDatabaseNameWithFallback } from "@/lib/db/dbName";
+import { getActiveDatabaseName, isDemoGroupActive, openActiveDatabase } from "@/lib/db/dbName";
 import { normalizeRowWithMapping, interpretColumnMappings } from "@/lib/csv/universalMapper";
 import { getDirectoryHandle, writeStructuredFile, readStructuredFile } from "@/lib/fs/LocalFSManager";
 import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
@@ -37,7 +37,7 @@ export class MarigoldDataEngineService {
    */
   public static async getResolvedDatabaseName(groupId?: string): Promise<string> {
     const grp = groupId || (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
-    return await getActiveDatabaseNameWithFallback(grp);
+    return getActiveDatabaseName(grp);
   }
 
   /**

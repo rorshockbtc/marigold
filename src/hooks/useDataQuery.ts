@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { normalizeRowWithMapping, interpretColumnMappings } from '@/lib/csv/universalMapper';
-import { openActiveDatabase, isDemoGroupActive, getActiveDatabaseNameWithFallback } from '@/lib/db/dbName';
+import { openActiveDatabase, isDemoGroupActive, getActiveDatabaseName } from '@/lib/db/dbName';
 import * as Comlink from 'comlink';
 
 // Helper to manage Screen Wake Lock during heavy local browser RAM traversal
@@ -69,7 +69,7 @@ export function useDataQuery() {
 
     try {
       // Use migration-aware DB lookup: if MarigoldDB_xxx is empty, falls back to legacy VoterDataDB
-      const dbName = await getActiveDatabaseNameWithFallback();
+      const dbName = getActiveDatabaseName();
 
       let activeMapping: any = null;
       try {

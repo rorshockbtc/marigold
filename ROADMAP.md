@@ -18,6 +18,7 @@ Marigold Insights is dedicated to modernizing civic data collaboration, voter ro
 ## 🟡 Phase 2: National Cartridge Store & Ecosystem (Q4 2026)
 **Focus:** Expanding the decentralized marketplace of standardized civic audit playbooks.
 
+* [x] **Secure Cartridge Execution Engine:** Designed `chb.marigold.cartridge.v1` schema and DuckDB-Wasm parameter binding pipeline (`src/lib/cartridge/runner.ts`) to safely execute playbooks locally without SQL injection risks.
 * [ ] **Cryptographic Cartridge Registry:** Implement automated SHA-256 signing pipelines for community-submitted JSON audit playbooks.
 * [ ] **Multi-State NCOA Templates:** Standardized relocation checklists tailored for specific state statutory requirements (e.g., Ohio, Florida, Texas, Georgia).
 * [ ] **Assessor Zoning Cross-Reference Module:** Interactive UI tools for mapping commercial property tax roll land-use codes against residential registration files.

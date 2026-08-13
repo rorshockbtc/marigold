@@ -66,3 +66,6 @@ clipboard.txt
 keyManagementPolicy.md
 QA_PIPELINE.md
 .marigold/
+
+# CHB Architecture Context
+marigold_pipes_integration_vision.md

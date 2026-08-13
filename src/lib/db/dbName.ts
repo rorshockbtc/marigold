@@ -15,50 +15,7 @@ export function getActiveDatabaseName(overrideGroup?: string | null): string {
   return `MarigoldDB_${safeSlug}`;
 }
 
-/**
- * One-time migration: if the new per-group DB is empty but the legacy VoterDataDB has data,
- * transparently use VoterDataDB until the user re-processes their file.
- * Returns the DB name that actually has data.
- */
-export async function getActiveDatabaseNameWithFallback(overrideGroup?: string | null): Promise<string> {
-  if (typeof window === "undefined") return "VoterDataDB";
-  const targetName = getActiveDatabaseName(overrideGroup);
-  
-  if (targetName === "VoterDataDB" || targetName === "DemoVoterDataDB") return targetName;
-  
-  try {
-    const targetDb = await openActiveDatabase(targetName);
-    const targetCount: number = await new Promise(resolve => {
-      const tx = targetDb.transaction(['rows'], 'readonly');
-      const req = tx.objectStore('rows').count();
-      req.onsuccess = () => resolve(req.result || 0);
-      req.onerror = () => resolve(0);
-    });
-    targetDb.close();
-    
-    const legacyDb = await openActiveDatabase("VoterDataDB");
-    const legacyCount: number = await new Promise(resolve => {
-      const ltx = legacyDb.transaction(['rows'], 'readonly');
-      const req = ltx.objectStore('rows').count();
-      req.onsuccess = () => resolve(req.result || 0);
-      req.onerror = () => resolve(0);
-    });
-    legacyDb.close();
-    
-    if (legacyCount > targetCount && legacyCount > 0) {
-      console.log(`📦 Migration Fallback: Using VoterDataDB (${legacyCount} records) over partial/empty DB "${targetName}" (${targetCount} records)`);
-      return "VoterDataDB";
-    }
-    
-    if (targetCount > 0) return targetName;
-    if (legacyCount > 0) return "VoterDataDB";
-    
-  } catch (e) {
-    console.warn("DB fallback check failed:", e);
-  }
-  
-  return targetName;
-}
+
 
 export function isDemoGroupActive(overrideGroup?: string | null): boolean {
   if (typeof window === "undefined") return false;
