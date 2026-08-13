@@ -17,9 +17,7 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: path.resolve("."),
-  },
+  // removed turbopack root override to prevent infinite loop / incorrect resolution
   async headers() {
     return [
       {

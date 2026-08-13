@@ -9,7 +9,7 @@ import { auth } from "@clerk/nextjs/server";
 const IS_FIREBASE_CONNECTED = !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
 // Fallback Persistent Disk Store
-const DATA_DIR = process.env.RELAY_STORAGE_DIR || path.join(process.cwd(), ".data");
+const DATA_DIR = process.env.RELAY_STORAGE_DIR || path.join(/*turbopackIgnore: true*/ process.cwd(), ".data");
 
 function getStoragePath(groupId: string): string {
   if (!fs.existsSync(DATA_DIR)) {
