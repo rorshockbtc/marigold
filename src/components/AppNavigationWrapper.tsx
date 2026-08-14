@@ -64,7 +64,7 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
     return (
       <ThreePaneLayout>
         {children}
-        {pathname !== '/insights' && <GlobalMariButton />}
+        {<GlobalMariButton />}
       </ThreePaneLayout>
     );
   }
