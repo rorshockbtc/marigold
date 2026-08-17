@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { GroupSwitcherModal } from '@/components/GroupSwitcherModal';
 import { LocalFolderStatusModal } from '@/components/LocalFolderStatusModal';
@@ -22,6 +22,7 @@ const NAV_ITEMS = [
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = React.useState(false);
   const [isFolderModalOpen, setIsFolderModalOpen] = React.useState(false);
@@ -65,6 +66,23 @@ export default function AppSidebar() {
     setIsSwitcherOpen(false);
     switchGroup(targetGroup);
   };
+
+  const email = user?.primaryEmailAddress?.emailAddress;
+  const isMSFEAdmin = email === 'rorshock@protonmail.com' || email === 'kencyree@gmail.com' || email === 'lcyree@protonmail.com';
+  
+  let joinedGroups: string[] = [];
+  if (user?.publicMetadata?.joinedGroups) {
+    joinedGroups = user.publicMetadata.joinedGroups as string[];
+  } else if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('marigold_joined_groups');
+    if (local) {
+      try { joinedGroups = JSON.parse(local); } catch(e) {}
+    }
+  }
+
+  if (isMSFEAdmin && !joinedGroups.includes("Mississippi Fair Elections")) {
+    joinedGroups.push("Mississippi Fair Elections");
+  }
 
   return (
     <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-muted text-foreground flex flex-col h-screen border-r border-border z-50 shadow-lg font-sans select-none transition-all duration-300`}>
@@ -113,6 +131,7 @@ export default function AppSidebar() {
             <div className="text-[10px] font-mono uppercase tracking-wider text-[#D96B27] font-black px-2 py-1">
               Switch Jurisdiction or Mode:
             </div>
+            
             <button
               type="button"
               onClick={() => handleSwitchGroup("State of Roosevelt (Demo)")}
@@ -130,17 +149,27 @@ export default function AppSidebar() {
               <span>🛡️ Independent Workspace</span>
               {activeGroup === "Independent Audit Workspace" && <span>✓</span>}
             </button>
-            <div className="border-t border-border pt-1 mt-1">
+
+            {joinedGroups.map((grp: string) => (
               <button
+                key={grp}
                 type="button"
-                onClick={() => {
-                  setIsSwitcherOpen(false);
-                  setIsGroupModalOpen(true);
-                }}
-                className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#D96B27] hover:bg-[#FAF8F5] transition-colors"
+                onClick={() => handleSwitchGroup(grp)}
+                className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-colors ${activeGroup === grp ? "bg-accent text-white" : "hover:bg-[#FAF8F5] text-foreground"}`}
               >
-                ➕ Custom Organization...
+                <span className="truncate">🏢 {grp}</span>
+                {activeGroup === grp && <span>✓</span>}
               </button>
+            ))}
+
+            <div className="border-t border-border pt-1 mt-1">
+              <Link
+                href="/explore-groups"
+                onClick={() => setIsSwitcherOpen(false)}
+                className="w-full block text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#D96B27] hover:bg-[#FAF8F5] transition-colors"
+              >
+                🔎 Explore & Join Groups...
+              </Link>
             </div>
           </div>
         )}

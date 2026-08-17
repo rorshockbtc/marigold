@@ -40,6 +40,7 @@ export interface ChatMessage {
   isTriage?: boolean;
   originalQuery?: string;
   hiddenContext?: string; // Used to feed tool execution memory back to the LLM without showing it in the UI
+  hasFolderRelinkAffordance?: boolean;
 }
 
 export interface ChatSession {

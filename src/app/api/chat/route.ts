@@ -69,11 +69,18 @@ MVC Anomaly Controller Drawer & Output Interpretation Guide:
 - Out-of-State Mailing Loophole ('out-of-state-mailing'): The drawer renders a 'Side-by-Side Comparison' comparing their Mississippi residence against their out-of-state mailing address.
 - Registration Spikes ('spikes'): The drawer renders a 'Resident Cluster Roster' showing the sample cohort of individuals registered on that surge date across the jurisdiction.
 
-User Orientation & Lost User Guidance:
-- If a user feels overwhelmed or lost, gently orient them using their real-time pageContext:
-- Step 1: Check the top-right dataset indicator to confirm if their voter roll file is linked into browser RAM.
 - Step 2: Remind them that Marigold is designed around 1-click exploration—they can click any card on the Dashboard or Playbooks page to run an audit without knowing formulas.
 - Step 3: Encourage them to click any row in an analysis table to open the MVC Anomaly Controller drawer and inspect the corroborating resident rosters or address comparisons.
+
+DATASET TOO LARGE / CHUNKING ERROR RESOLUTION:
+- Sometimes a user will try to process a massive dataset (e.g., 2 Million rows) using the fast 'In-Browser RAM' mode, which fails. The local engine will return an error stating the dataset is too large.
+- When this happens, you MUST explain the architectural tradeoff to the user: "Browsers limit RAM for security. To process a massive dataset, we need to stream it directly from your hard drive using Marigold Local."
+- Instead of just telling them to re-link, you MUST call the \`offer_local_folder_relink\` tool. This tool renders a clickable button in your chat message that opens the secure folder picker without making them navigate away.
+
+LONG-TERM MEMORY & CONTEXT SWITCHING:
+- You will receive a lightweight index of the user's past Chat Sessions and Saved Data Stories in your page context.
+- If a user asks a question that requires details from a past session or story, use the \`read_past_session\` or \`read_data_story\` tools to retrieve the full text.
+- If the user explicitly asks you to 'switch back' or 'open' a past chat, use the \`switch_chat_session\` tool to instantly switch their active window to that chat.
 
 Stats 101 Reference (For Non-Nerds):
 - Mean (Average): The mathematical average. Prone to being wildly skewed by massive outliers (like nursing homes).
@@ -260,6 +267,51 @@ const suggestMissionPlaybookDeclaration: FunctionDeclaration = {
   }
 };
 
+const switchChatSessionDeclaration: FunctionDeclaration = {
+  name: "switch_chat_session",
+  description: "Instantly switches the user's active UI window to a previous chat session. Use this ONLY if the user explicitly asks to go back to an old chat.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      sessionId: { type: SchemaType.STRING, description: "The ID of the past chat session to switch to." }
+    },
+    required: ["sessionId"]
+  }
+};
+
+const readPastSessionDeclaration: FunctionDeclaration = {
+  name: "read_past_session",
+  description: "Retrieves the full transcript of a past chat session if you need to remember what was discussed.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      sessionId: { type: SchemaType.STRING, description: "The ID of the past chat session." }
+    },
+    required: ["sessionId"]
+  }
+};
+
+const readDataStoryDeclaration: FunctionDeclaration = {
+  name: "read_data_story",
+  description: "Retrieves the full text and sections of a previously saved Data Story.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      storyId: { type: SchemaType.STRING, description: "The ID of the past data story." }
+    },
+    required: ["storyId"]
+  }
+};
+
+const offerLocalFolderRelinkDeclaration: FunctionDeclaration = {
+  name: "offer_local_folder_relink",
+  description: "Renders an interactive UI button in the chat stream that lets the user securely re-link their local folder. Call this when encountering DATASET_TOO_LARGE errors or when discussing local disk vs. browser RAM streaming.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {}
+  }
+};
+
 export async function POST(req: NextRequest) {
   try {
     // Simple IP-based rate limiting stub for demonstration
@@ -323,6 +375,10 @@ export async function POST(req: NextRequest) {
       - If the user is on '/data-prep', guide them through linking their local CSV/TXT file, streaming shards, and understanding air-gapped RAM safety.
       - If the user is on '/playbooks', explain how 1-click Mission Playbooks (like High-Density Occupancy or NCOA Relocation) work and how to execute them.
       - Always tailor your advice to their exact screen and dataset status!
+      
+      USER LONG-TERM MEMORY INDEX:
+      - Past Chat Sessions: ${pageContext.pastChats && pageContext.pastChats.length > 0 ? JSON.stringify(pageContext.pastChats) : "None"}
+      - Saved Data Stories: ${pageContext.pastStories && pageContext.pastStories.length > 0 ? JSON.stringify(pageContext.pastStories) : "None"}
     ` : "";
 
     const systemInstruction = `
@@ -405,7 +461,20 @@ export async function POST(req: NextRequest) {
       "gemini-flash-lite-latest"
     ];
 
-    const tools = [{ functionDeclarations: [runRobustStatisticsDeclaration, runBenfordsLawDeclaration, suggestMissionPlaybookDeclaration, appendSectionDeclaration, updateSectionDeclaration, updateTitleDeclaration, queryDatasetDeclaration, triageAndFetchDatasetDeclaration] }];
+    const tools = [{ functionDeclarations: [
+      runRobustStatisticsDeclaration, 
+      runBenfordsLawDeclaration, 
+      suggestMissionPlaybookDeclaration, 
+      appendSectionDeclaration, 
+      updateSectionDeclaration, 
+      updateTitleDeclaration, 
+      queryDatasetDeclaration, 
+      triageAndFetchDatasetDeclaration,
+      switchChatSessionDeclaration,
+      readPastSessionDeclaration,
+      readDataStoryDeclaration,
+      offerLocalFolderRelinkDeclaration
+    ] }];
 
     let responseText = "";
     let functionCalls: any[] | undefined = undefined;
@@ -456,6 +525,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ action: 'run_tool', tool: 'query_dataset', args: call.args, reply: responseText || undefined });
       } else if (call.name === "triage_and_fetch_dataset") {
         return NextResponse.json({ action: 'run_tool', tool: 'triage_and_fetch_dataset', args: call.args, reply: responseText || undefined });
+      } else if (call.name === "switch_chat_session") {
+        return NextResponse.json({ action: 'run_tool', tool: 'switch_chat_session', args: call.args, reply: responseText || undefined });
+      } else if (call.name === "read_past_session") {
+        return NextResponse.json({ action: 'run_tool', tool: 'read_past_session', args: call.args, reply: responseText || undefined });
+      } else if (call.name === "read_data_story") {
+        return NextResponse.json({ action: 'run_tool', tool: 'read_data_story', args: call.args, reply: responseText || undefined });
+      } else if (call.name === "offer_local_folder_relink") {
+        return NextResponse.json({ action: 'run_tool', tool: 'offer_local_folder_relink', args: call.args, reply: responseText || "I've added a button below so you can securely re-link your local folder without leaving this chat!" });
       }
     }
 

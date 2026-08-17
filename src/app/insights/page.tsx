@@ -19,6 +19,8 @@ export default function InsightsPage() {
   const [viewMode, setViewMode] = useState<'landing' | 'workspace'>('landing');
   const [initialSearch, setInitialSearch] = useState("");
   const [articleState, setArticleState] = useState<import('@/lib/types').ArticleState | undefined>(undefined);
+  const [recentChats, setRecentChats] = useState<{id: string, title: string, timestamp: number}[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | undefined>(undefined);
   const [isMounted, setIsMounted] = useState(false);
   const feedEndRef = useRef<HTMLDivElement>(null);
   
@@ -38,6 +40,22 @@ export default function InsightsPage() {
     };
     
     window.addEventListener('mari-article-update', handleArticleUpdate as EventListener);
+    
+    // Load recent chats from localStorage
+    try {
+      const savedSessions = localStorage.getItem("elly_chat_sessions");
+      if (savedSessions) {
+        const parsed = JSON.parse(savedSessions);
+        setRecentChats(parsed.map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          timestamp: s.timestamp
+        })));
+      }
+    } catch (e) {
+      console.error("Failed to parse chat sessions", e);
+    }
+
     return () => {
       window.removeEventListener('mari-article-update', handleArticleUpdate as EventListener);
     };
@@ -107,6 +125,11 @@ export default function InsightsPage() {
       articleState: articleState
     };
     saveStoryLocally(shell);
+  };
+
+  const handleResumeChat = (sessionId: string) => {
+    setSelectedSessionId(sessionId);
+    setViewMode('workspace');
   };
 
   return (
@@ -196,6 +219,33 @@ export default function InsightsPage() {
                  </div>
                </div>
              )}
+
+             {recentChats.length > 0 && (
+               <div className="pt-10">
+                 <div className="flex items-center gap-2 mb-6">
+                   <Clock className="w-5 h-5 text-muted-foreground" />
+                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Recent Chat Sessions</h3>
+                 </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                   {recentChats.slice(0, 4).map((chat) => (
+                     <div
+                       key={chat.id}
+                       onClick={() => handleResumeChat(chat.id)}
+                       className="bg-white border border-border-soft hover:border-primary p-4 rounded-2xl shadow-sm transition-all cursor-pointer group hover:-translate-y-0.5"
+                     >
+                       <div className="flex items-center justify-between mb-2">
+                         <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
+                           <Clock className="w-3 h-3" /> {new Date(chat.timestamp).toLocaleDateString()}
+                         </span>
+                       </div>
+                       <h4 className="text-sm font-medium text-text-header group-hover:text-primary transition-colors line-clamp-2">
+                         {chat.title}
+                       </h4>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )}
            </div>
         </div>
       ) : (
@@ -230,6 +280,7 @@ export default function InsightsPage() {
               isDrawer={true} 
               hideSidebar={true} 
               initialQuery={initialSearch}
+              initialSessionId={selectedSessionId}
               articleState={articleState}
             />
           </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { getSearchRecipes, saveSearchRecipe, SearchRecipe } from "@/lib/firebase/db";
 import ReactMarkdown from 'react-markdown';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Volume2, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope, Save, ShieldCheck, Download } from 'lucide-react';
+import { BookOpen, Volume2, Building2, Package, HelpCircle, BarChart3, Sprout, Microscope, Save, ShieldCheck, Download, Folder } from 'lucide-react';
 import { LocalFolderGuideModal } from './LocalFolderGuideModal';
 import { DataStory } from '@/hooks/useDataConcierge';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
@@ -24,9 +24,10 @@ export interface ChatInterfaceProps {
   hideSidebar?: boolean;
   initialQuery?: string;
   articleState?: ArticleState;
+  initialSessionId?: string;
 }
 
-export default function ChatInterface({ isDrawer = false, hideSidebar = false, initialQuery = "", articleState }: ChatInterfaceProps) {
+export default function ChatInterface({ isDrawer = false, hideSidebar = false, initialQuery = "", initialSessionId, articleState }: ChatInterfaceProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [query, setQuery] = useState(initialQuery);
@@ -37,6 +38,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const { saveDataStory, isSaving, error: saveError } = useDataStoryFS();
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [storageLimitReached, setStorageLimitReached] = useState(false);
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const { isReady: isDuckDBReady, query: queryDuckDB } = useDuckDB();
   const { addPlaybook } = usePlaybooks();
 
@@ -46,13 +48,23 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     const fname = localStorage.getItem("marigold_file_name") || "No file linked";
     const isDemo = activeGrp.toLowerCase().includes("demo") || activeGrp.toLowerCase().includes("acme") || activeGrp.toLowerCase().includes("roosevelt") || activeGrp.toLowerCase().includes("sandbox");
     const isDemoIsolated = isDemo && !fname.toUpperCase().includes("DEMO") && localStorage.getItem("marigold_file_connected") !== "true";
+    
+    // Lightweight index of past chats and stories for long-term memory
+    let pastChats = [];
+    try { pastChats = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]").map((s: any) => ({ id: s.id, title: s.title, timestamp: s.timestamp })); } catch(e){}
+    
+    let pastStories = [];
+    try { pastStories = JSON.parse(localStorage.getItem("elly_data_stories") || "[]").map((s: any) => ({ id: s.id, title: s.title, summary: s.summary, createdAt: s.createdAt })); } catch(e){}
+
     return {
       currentRoute: pathname,
       activeGroup: activeGrp,
       datasetName: isDemoIsolated ? "No demo file linked (`DEMO_roosevelt_...csv` required)" : fname,
       datasetRowCount: isDemoIsolated ? "0" : (localStorage.getItem("marigold_file_rows") || (isDemo ? "1800" : "0")),
       isDataConnected: isDemoIsolated ? false : (localStorage.getItem("marigold_file_connected") === "true" || isDemo),
-      isDemoMode: isDemo
+      isDemoMode: isDemo,
+      pastChats: pastChats.slice(0, 10), // Limit to 10 for context length
+      pastStories: pastStories.slice(0, 10)
     };
   };
 
@@ -191,7 +203,11 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setSessions(parsed);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (parsed.length > 0) setActiveSessionId(parsed[0].id);
+        if (initialSessionId && parsed.some((s: any) => s.id === initialSessionId)) {
+          setActiveSessionId(initialSessionId);
+        } else if (parsed.length > 0) {
+          setActiveSessionId(parsed[0].id);
+        }
       } catch (e) {
         console.error("Failed to parse sessions", e);
       }
@@ -458,6 +474,76 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           });
           loopResponseData = await loopResponse.json();
           finalReply = loopResponseData.reply || finalReply;
+        } else if (t === 'read_past_session') {
+          const pastSessId = args.sessionId;
+          let pastContent = "Error: Chat session not found.";
+          try {
+            const allSessions = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]");
+            const found = allSessions.find((s: any) => s.id === pastSessId);
+            if (found) {
+              // Convert the history to text, scrubbed again for safety
+              pastContent = `[SYSTEM: RETRIEVED PAST CHAT SESSION "${found.title}"]\n\n` + 
+                found.messages.map((m: any) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+            }
+          } catch(e) {}
+          
+          const toolMessage: ChatMessage = { role: "user", content: pastContent };
+          loopMessages = [...loopMessages, toolMessage];
+          
+          const loopResponse = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              query: toolMessage.content, 
+              history: loopMessages,
+              userApiKey,
+              isFriendlyMode,
+              isPlaybookMode,
+              pageContext: getPageContext(),
+              articleState: updatedArticle
+            }),
+          });
+          loopResponseData = await loopResponse.json();
+          finalReply = loopResponseData.reply || finalReply;
+        } else if (t === 'read_data_story') {
+          const pastStoryId = args.storyId;
+          let pastContent = "Error: Data story not found.";
+          try {
+            const allStories = JSON.parse(localStorage.getItem("elly_data_stories") || "[]");
+            const found = allStories.find((s: any) => s.id === pastStoryId);
+            if (found) {
+              pastContent = `[SYSTEM: RETRIEVED PAST DATA STORY "${found.title}"]\nSummary: ${found.summary}\n`;
+              if (found.articleState?.sections) {
+                pastContent += found.articleState.sections.map((sec: any) => `## ${sec.heading}\n${sec.narrative}`).join('\n\n');
+              }
+            }
+          } catch(e) {}
+          
+          const toolMessage: ChatMessage = { role: "user", content: pastContent };
+          loopMessages = [...loopMessages, toolMessage];
+          
+          const loopResponse = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              query: toolMessage.content, 
+              history: loopMessages,
+              userApiKey,
+              isFriendlyMode,
+              isPlaybookMode,
+              pageContext: getPageContext(),
+              articleState: updatedArticle
+            }),
+          });
+          loopResponseData = await loopResponse.json();
+          finalReply = loopResponseData.reply || finalReply;
+        } else if (t === 'switch_chat_session') {
+          setActiveSessionId(args.sessionId);
+          return; // Instantly abort the current submission and switch context
+        } else if (t === 'offer_local_folder_relink') {
+          finalReply = loopResponseData.reply || finalReply;
+          // We will tag the final message to render the affordance
+          break;
         } else if (t === 'triage_and_fetch_dataset') {
           finalReply = loopResponseData.reply || `I found a dataset online! ${args.description}. However, I need you to connect it first.`;
           break;
@@ -470,7 +556,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         role: "assistant", 
         content: response.ok ? (finalReply || "I've updated the Data Story. Please review the changes in the center pane.") : `Error: ${loopResponseData.error || data.error}`,
         suggestedPlaybook: loopResponseData.suggestedPlaybook || data.suggestedPlaybook,
-        hiddenContext
+        hiddenContext,
+        hasFolderRelinkAffordance: loopResponseData.tool === 'offer_local_folder_relink' || loopResponseData.action === 'run_tool' && loopResponseData.tool === 'offer_local_folder_relink'
       };
 
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage] } : s));
@@ -655,6 +742,21 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                     </button>
                   </div>
                 )}
+                
+                {msg.hasFolderRelinkAffordance && (
+                  <div className="mt-4 pt-3 border-t border-border-soft">
+                    <Button 
+                      onClick={() => setIsFolderModalOpen(true)}
+                      variant="primary" 
+                      className="w-full justify-center gap-2 font-bold text-sm bg-primary text-white py-3 rounded-xl shadow-sm hover:bg-primary/90 transition-all"
+                    >
+                      <Folder className="w-4 h-4" /> Save Dataset to Local Folder
+                    </Button>
+                    <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                      Opens your secure browser sandbox picker.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -722,8 +824,10 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           </p>
         </div>
 
-
-
+        <LocalFolderGuideModal 
+          isOpen={isFolderModalOpen} 
+          onClose={() => setIsFolderModalOpen(false)} 
+        />
       </div>
     </div>
   );
