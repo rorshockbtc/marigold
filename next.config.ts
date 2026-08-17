@@ -5,7 +5,7 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.com;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://img.clerk.com;
+    img-src 'self' blob: data: https://img.clerk.com https:;
     font-src 'self';
     object-src 'none';
     base-uri 'self';

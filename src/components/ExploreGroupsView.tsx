@@ -83,7 +83,7 @@ function GroupCard({ group, onClick }: { group: Group, onClick: () => void }) {
       <div 
         className="h-32 w-full bg-slate-200 relative overflow-hidden group/image"
         style={{
-          backgroundImage: unsplashData ? `url(${unsplashData.url})` : undefined,
+          backgroundImage: unsplashData ? `url("${unsplashData.url}")` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
