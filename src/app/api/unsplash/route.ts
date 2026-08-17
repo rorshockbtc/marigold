@@ -10,7 +10,12 @@ export async function GET(req: Request) {
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
-    return NextResponse.json({ error: 'Unsplash API key not configured' }, { status: 500 });
+    // Fallback if API key is not configured
+    return NextResponse.json({ 
+      url: `https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&q=80&w=1000`, 
+      photographerName: 'Fallback', 
+      photographerUrl: '#' 
+    });
   }
 
   try {
@@ -23,7 +28,11 @@ export async function GET(req: Request) {
     if (!res.ok) {
       const errorText = await res.text();
       console.error("Unsplash API Error:", res.status, errorText);
-      return NextResponse.json({ error: 'Failed to fetch from Unsplash' }, { status: res.status });
+      return NextResponse.json({ 
+        url: `https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&q=80&w=1000`, 
+        photographerName: 'Fallback', 
+        photographerUrl: '#' 
+      });
     }
 
     const photo = await res.json();
@@ -40,6 +49,10 @@ export async function GET(req: Request) {
     }
   } catch (error) {
     console.error("Error connecting to Unsplash:", error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      url: `https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&q=80&w=1000`, 
+      photographerName: 'Fallback', 
+      photographerUrl: '#' 
+    });
   }
 }

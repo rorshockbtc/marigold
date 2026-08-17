@@ -348,6 +348,10 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         const t = loopResponseData.tool;
         const args = loopResponseData.args;
 
+        if (loopResponseData.reply) {
+          loopMessages = [...loopMessages, { role: "assistant", content: loopResponseData.reply }];
+        }
+
         if (t === 'query_dataset' || t.startsWith('run_')) {
           let localEngineResponse: any = null;
           
