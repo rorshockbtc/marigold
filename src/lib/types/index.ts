@@ -48,6 +48,7 @@ export interface ChatSession {
   title: string;
   timestamp: number;
   messages: ChatMessage[];
+  articleState?: ArticleState;
 }
 
 export interface ChatPayload {

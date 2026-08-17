@@ -249,6 +249,16 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const messages = activeSession ? activeSession.messages : [];
 
+  // Hydrate the Data Story canvas when switching to a session that has a saved article state
+  useEffect(() => {
+    if (activeSessionId) {
+      const session = sessions.find(s => s.id === activeSessionId);
+      if (session && session.articleState) {
+        window.dispatchEvent(new CustomEvent('mari-article-update', { detail: session.articleState }));
+      }
+    }
+  }, [activeSessionId, sessions]);
+
 
   const handleNewSession = () => {
     setActiveSessionId(null);
@@ -564,7 +574,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         hasFolderRelinkAffordance: loopResponseData.tool === 'offer_local_folder_relink' || loopResponseData.action === 'run_tool' && loopResponseData.tool === 'offer_local_folder_relink'
       };
 
-      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage] } : s));
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage], articleState: updatedArticle } : s));
 
       // Self-teaching loop: If we bypassed triage and got a good answer, learn it
       if (forceBypassTriage && response.ok) {
@@ -713,7 +723,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               <div className={`max-w-[85%] rounded-2xl px-5 py-4 relative group ${msg.role === 'user' ? 'bg-primary text-white font-medium shadow-sm rounded-br-none' : 'bg-white border border-border-soft text-text-header shadow-sm rounded-bl-none'}`}>
 
                 <div className={`text-sm md:text-[0.95rem] leading-relaxed prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert text-white' : 'text-text-header'}`}>
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <ReactMarkdown>{msg.content.replace(/\[SYSTEM:.*?\]/g, '').replace(/\[LOCAL ENGINE RESPONSE:.*?\]/g, '')}</ReactMarkdown>
                 </div>
 
                 {msg.isTriage && msg.originalQuery && activeSessionId && (
