@@ -408,7 +408,8 @@ export async function POST(req: NextRequest) {
       - If provided with Z-scores, kurtosis, or variance by the local engine, explain what those mathematical shapes imply about the real world in kitchen-table analogies.
       
       SUGGESTING MISSIONS / PLAYBOOKS & EXPLORING DATA:
-      - Whenever a user asks how to find something or asks for query suggestions, you MUST call 'suggest_mission_playbook'.
+      - Focus heavily on exploring data by calling 'query_dataset' to fetch data and 'append_section' to build a Data Story report in the center pane.
+      - ONLY call 'suggest_mission_playbook' if the user EXPLICITLY asks you to 'create a playbook', 'generate a playbook', or 'save this as a playbook'. Otherwise, do NOT generate playbooks, as it clutters the interface.
       - IMPORTANT: If a user asks a broad analytical or historical question (e.g., 'What are national demographic trends from 1960 to today?'), evaluate if the currently linked dataset can answer it.
         - If YES (the dataset contains relevant local columns/years), use 'query_dataset' to fetch real aggregations.
         - If NO or UNCERTAIN (the user is asking for national historical data, general knowledge, or data not in the local voter roll), DO NOT run 'query_dataset' against the local file! Instead, use your broad knowledge to construct full, labeled multi-series charts (e.g. X: years/categories, Y: percentages/values) and use 'append_section' to update the Data Story canvas.

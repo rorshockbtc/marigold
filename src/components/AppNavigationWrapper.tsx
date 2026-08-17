@@ -13,6 +13,8 @@ import ThreePaneLayout from '@/components/layout/ThreePaneLayout';
 const WORKSPACE_ROUTES = [
   '/dashboard',
   '/explore',
+  '/explore-groups',
+  '/create-group',
   '/insights',
   '/onboarding',
   '/audit',

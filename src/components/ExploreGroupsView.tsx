@@ -26,26 +26,8 @@ const DEFAULT_GROUPS: Group[] = [
     description: "Auditing Hinds and Rankin county registration rolls. Verifying commercial P.O. Box matches and population flight discrepancies.",
     jurisdiction: "Mississippi (Statewide)",
     emoji: "🦅",
-    membersCount: 14,
+    membersCount: 3,
     unsplashQuery: "mississippi landscape"
-  },
-  {
-    id: "tx-ei",
-    name: "Texas Election Integrity",
-    description: "Analyzing border county voter rolls and cross-referencing with DMV datasets.",
-    jurisdiction: "Texas (Border Counties)",
-    emoji: "⭐️",
-    membersCount: 89,
-    unsplashQuery: "texas flag"
-  },
-  {
-    id: "fl-dw",
-    name: "Florida Data Watch",
-    description: "Monitoring mail-in ballot request anomalies and signature verification thresholds.",
-    jurisdiction: "Florida (Statewide)",
-    emoji: "🍊",
-    membersCount: 42,
-    unsplashQuery: "florida beach"
   },
   {
     id: "acme-sandbox",
@@ -53,7 +35,7 @@ const DEFAULT_GROUPS: Group[] = [
     description: "A testing ground for new algorithmic chunking models and Nivo chart testing.",
     jurisdiction: "Global (Testing)",
     emoji: "🧪",
-    membersCount: 3,
+    membersCount: 1,
     unsplashQuery: "technology lab"
   }
 ];

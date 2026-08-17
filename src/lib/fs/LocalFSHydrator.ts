@@ -108,6 +108,20 @@ export class LocalFSHydrator {
       }
 
       const targetDataset = datasets[0];
+      const signature = `${targetDataset.datasetName}-${targetDataset.totalBytes}-${targetDataset.lastModified}`;
+      const savedSignature = typeof window !== "undefined" ? localStorage.getItem("marigold_file_signature") : null;
+      const savedRows = typeof window !== "undefined" ? localStorage.getItem("marigold_file_rows") : null;
+
+      if (savedSignature === signature && savedRows && parseInt(savedRows) > 0) {
+        if (onProgress) onProgress(`⚡ Cryptosig match! Fast-booting '${targetDataset.datasetName}' from local cache...`);
+        // Background stream could be dispatched here if needed, but we'll just fast-boot for now
+        if (typeof window !== "undefined") {
+          localStorage.setItem("marigold_file_connected", "true");
+          window.dispatchEvent(new CustomEvent("marigold-data-connected"));
+        }
+        return parseInt(savedRows);
+      }
+
       if (onProgress) onProgress(`⚡ Hydrating '${targetDataset.datasetName}' into isolated memory...`);
 
       const uploadedDataHandle = await rootHandle.getDirectoryHandle("Uploaded_Data", { create: false });
@@ -221,6 +235,7 @@ export class LocalFSHydrator {
         localStorage.setItem("marigold_file_connected", "true");
         localStorage.setItem("marigold_file_name", targetDataset.datasetName);
         localStorage.setItem("marigold_file_rows", String(totalRowsHydrated));
+        localStorage.setItem("marigold_file_signature", signature);
         window.dispatchEvent(new CustomEvent("marigold-data-connected"));
       }
 
