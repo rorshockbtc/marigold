@@ -653,9 +653,13 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
             </div>
           </div>
         )}
-        <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-serif font-black text-text-header">{activeSession ? activeSession.title : "Data Investigator"}</h2>
+        <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex flex-col gap-3">
+          <div className="w-full">
+            <h2 className="text-lg font-serif font-black text-text-header line-clamp-1" title={activeSession ? activeSession.title : "Data Investigator"}>
+              {activeSession ? activeSession.title : "Data Investigator"}
+            </h2>
+          </div>
+          <div className="flex items-center justify-between">
             <div className="flex bg-surface p-1 rounded-lg border border-border-soft">
               <button
                 onClick={() => setIsPlaybookMode(false)}
@@ -670,16 +674,16 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                 Playbook Creator
               </button>
             </div>
+            {activeSession && (
+              <div className="flex items-center gap-2">
+                {saveError && <span className="text-xs text-red-500 font-mono truncate max-w-[150px] hidden sm:block">{saveError}</span>}
+                <Button onClick={handleSaveToDisk} disabled={isSaving} variant="secondary" className="gap-2 text-xs h-8 px-3">
+                  {isSaving ? <span className="animate-spin text-lg leading-none">⟳</span> : <Save className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{saveSuccess ? "Saved to Disk" : "Save Story"}</span>
+                </Button>
+              </div>
+            )}
           </div>
-          {activeSession && (
-            <div className="flex items-center gap-3">
-              {saveError && <span className="text-xs text-red-500 font-mono truncate max-w-[200px]">{saveError}</span>}
-              <Button onClick={handleSaveToDisk} disabled={isSaving} variant="secondary" className="gap-2 text-xs h-9">
-                {isSaving ? <span className="animate-spin text-lg leading-none">⟳</span> : <Save className="w-4 h-4" />}
-                {saveSuccess ? "Saved to Local Disk" : "Save Story to Disk"}
-              </Button>
-            </div>
-          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-6">

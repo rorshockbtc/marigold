@@ -137,9 +137,9 @@ export default function InsightsPage() {
       
       {viewMode === 'landing' ? (
         // GEMINI-STYLE LANDING PAGE
-        <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto relative">
+        <div className="flex-1 flex flex-col items-center p-8 pt-24 overflow-y-auto relative">
            
-           <div className="absolute top-6 right-6 flex gap-3">
+           <div className="absolute top-6 right-6 flex gap-3 z-10">
              <Link href="/data-prep" className="btn-secondary hidden sm:flex items-center gap-2">
                 <Database className="w-4 h-4" /> Upload Data
              </Link>

@@ -39,7 +39,7 @@ export function GlobalMariButton() {
     );
   };
 
-  if (!isVisible || isMariOpen) return null;
+  if (!isVisible || isMariOpen || pathname === '/insights') return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3 animate-in slide-in-from-bottom-8 duration-700 fade-in group">
