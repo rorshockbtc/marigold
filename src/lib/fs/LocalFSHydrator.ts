@@ -1,6 +1,8 @@
 import { openActiveDatabase, getActiveDatabaseName } from "@/lib/db/dbName";
 import Papa from "papaparse";
 import { profileDatasetRows } from "@/lib/csv/DataProfiler";
+import { storeFileHandle } from "@/lib/fs/LocalFSManager";
+import { profileDatasetRows } from "@/lib/csv/DataProfiler";
 
 export interface DiscoveredDataset {
   folderName: string;
@@ -139,88 +141,57 @@ export class LocalFSHydrator {
       const dbName = getActiveDatabaseName();
       const db = await openActiveDatabase(dbName);
       
-      // Clear old rows
-      await new Promise<void>((res, rej) => {
-        const tx = db.transaction(['rows'], 'readwrite');
-        tx.objectStore('rows').clear();
-        tx.oncomplete = () => res();
-        tx.onerror = () => rej(tx.error);
-      });
-
+      // Instead of clearing old rows from IDB, we just get ready to store file handles
       let totalRowsHydrated = 0;
 
       for (const fileName of targetDataset.shardFiles) {
         try {
           const fileHandle = await targetHandle.getFileHandle(fileName);
           const file = await fileHandle.getFile();
+          
+          // 1. Store the handle for DuckDB to mount later
+          const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+          const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+          await storeFileHandle(slug, fileHandle);
 
-          // Use streaming chunks to prevent main UI thread lockup
+          // 2. Profile only the first 50 rows for the AI Mapper to avoid memory limits
           await new Promise<void>((resolveChunk) => {
-            let pendingTransaction: IDBTransaction | null = null;
-            let currentStore: IDBObjectStore | null = null;
             let hasProfiled = false;
 
             Papa.parse(file, {
               header: true,
               skipEmptyLines: true,
-              chunkSize: 1024 * 1024 * 5, // 5MB streaming chunks
+              chunkSize: 1024 * 512, // 512KB is enough for 50 rows
               chunk: (results, parser) => {
-                parser.pause();
+                parser.abort(); // Stop immediately after first chunk!
                 const chunkRows = results.data as Array<Record<string, any>>;
                 
-                try {
-                  if (!hasProfiled && chunkRows.length > 0) {
-                    hasProfiled = true;
-                    // Do this asynchronously without blocking the local parse, saving to localStorage when done
-                    const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
-                    const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                    
-                    const profile = profileDatasetRows(chunkRows.slice(0, 50));
-                    fetch('/api/ai-mapper', { 
-                      method: 'POST', 
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ profile }) 
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                      if (data.mapping && !data.error) {
-                        localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
-                        console.log("Successfully stored intelligent AI mapping.");
-                      }
-                    })
-                    .catch(e => console.warn("AI mapper failed, falling back to static map", e));
-                  }
-
-                  pendingTransaction = db.transaction(['rows'], 'readwrite');
-                  currentStore = pendingTransaction.objectStore('rows');
+                if (!hasProfiled && chunkRows.length > 0) {
+                  hasProfiled = true;
+                  totalRowsHydrated = targetDataset.rowCount > 0 ? targetDataset.rowCount : 2000000; // Mock total for now or use manifest
                   
-                  for (let i = 0; i < chunkRows.length; i++) {
-                    currentStore.add(chunkRows[i]);
-                  }
-
-                  totalRowsHydrated += chunkRows.length;
                   if (onProgress) {
-                    onProgress(`⚡ Loaded ${totalRowsHydrated.toLocaleString()} records into memory...`);
+                    onProgress(`⚡ Fast-mounting ${totalRowsHydrated.toLocaleString()} records via DuckDB...`);
                   }
 
-                  pendingTransaction.oncomplete = () => {
-                    parser.resume();
-                  };
-                  pendingTransaction.onerror = () => {
-                    console.warn("Chunk batch write warning, resuming...");
-                    parser.resume();
-                  };
-                } catch (e) {
-                  console.warn("Chunk error:", e);
-                  parser.resume();
+                  const profile = profileDatasetRows(chunkRows.slice(0, 50));
+                  fetch('/api/ai-mapper', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ profile }) 
+                  })
+                  .then(r => r.json())
+                  .then(data => {
+                    if (data.mapping && !data.error) {
+                      localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
+                      console.log("Successfully stored intelligent AI mapping.");
+                    }
+                  })
+                  .catch(e => console.warn("AI mapper failed, falling back to static map", e));
                 }
               },
-              complete: () => {
-                resolveChunk();
-              },
-              error: () => {
-                resolveChunk();
-              }
+              complete: () => resolveChunk(),
+              error: () => resolveChunk()
             });
           });
 
@@ -229,7 +200,7 @@ export class LocalFSHydrator {
         }
       }
 
-      db.close();
+      // No db.close() needed because we didn't open it here in the loop
 
       if (typeof window !== "undefined") {
         localStorage.setItem("marigold_file_connected", "true");

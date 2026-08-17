@@ -38,6 +38,21 @@ export async function removeDirectoryHandle(groupName: string): Promise<void> {
   await db.delete(STORE_NAME, key);
 }
 
+export async function storeFileHandle(key: string, handle: FileSystemFileHandle): Promise<void> {
+  const db = await getDB();
+  await db.put(STORE_NAME, handle, `file_${key}`);
+}
+
+export async function getFileHandle(key: string): Promise<FileSystemFileHandle | null> {
+  try {
+    const db = await getDB();
+    const handle = await db.get(STORE_NAME, `file_${key}`);
+    return handle || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function verifyPermission(fileHandle: any, readWrite: boolean): Promise<boolean> {
   const options: any = {};
   if (readWrite) {

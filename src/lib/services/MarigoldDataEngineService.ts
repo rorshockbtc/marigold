@@ -3,6 +3,18 @@ import { normalizeRowWithMapping, interpretColumnMappings } from "@/lib/csv/univ
 import { getDirectoryHandle, writeStructuredFile, readStructuredFile } from "@/lib/fs/LocalFSManager";
 import { deriveGroupKey, encryptPayload, decryptPayload } from "@/lib/crypto/LocalKeyManager";
 import { fetchBlobsFromRelay, pushBlobToRelay } from "@/lib/relay/clientRelay";
+import { getFileHandle } from "@/lib/fs/LocalFSManager";
+import * as Comlink from 'comlink';
+
+let duckDBWorker: any = null;
+
+async function getDuckDB() {
+  if (!duckDBWorker) {
+    const worker = new Worker(new URL('../../workers/duckdb.worker.ts', import.meta.url), { type: 'module' });
+    duckDBWorker = Comlink.wrap(worker);
+  }
+  return duckDBWorker;
+}
 
 export interface AuditSweepResults {
   groupId: string;
@@ -45,16 +57,28 @@ export class MarigoldDataEngineService {
    */
   public static async getTotalRowCount(groupId?: string): Promise<number> {
     try {
+      const grp = groupId || (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+      const slug = grp.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      
+      // HYBRID ROUTER: Try DuckDB (Marigold_Local) first
+      const fileHandle = await getFileHandle(slug);
+      if (fileHandle) {
+        const db = await getDuckDB();
+        await db.mountFileHandle(fileHandle.name, fileHandle);
+        return await db.getRowCount(fileHandle.name);
+      }
+
+      // FALLBACK: Ephemeral/IndexedDB
       const dbName = await this.getResolvedDatabaseName(groupId);
-      const db = await openActiveDatabase(dbName);
-      const storeName = this.getValidStoreName(db);
-      const tx = db.transaction([storeName], "readonly");
+      const idb = await openActiveDatabase(dbName);
+      const storeName = this.getValidStoreName(idb);
+      const tx = idb.transaction([storeName], "readonly");
       const req = tx.objectStore(storeName).count();
       const count = await new Promise<number>((resolve) => {
         req.onsuccess = () => resolve(req.result || 0);
         req.onerror = () => resolve(0);
       });
-      db.close();
+      idb.close();
       return count;
     } catch (e) {
       console.warn("Could not get row count:", e);
@@ -73,19 +97,37 @@ export class MarigoldDataEngineService {
     offset: number = 0,
     groupId?: string
   ): Promise<{ rows: any[], totalMatches: number }> {
+    const activeGroup = groupId || (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+    const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+    let activeMapping: any = null;
+    try {
+      const savedMap = typeof window !== "undefined" ? localStorage.getItem(`marigold_file_mapping_${slug}`) : null;
+      if (savedMap) activeMapping = JSON.parse(savedMap);
+    } catch (e) {}
+
+    // HYBRID ROUTER: Try DuckDB (Marigold_Local) first
+    const fileHandle = await getFileHandle(slug);
+    if (fileHandle) {
+      const db = await getDuckDB();
+      await db.mountFileHandle(fileHandle.name, fileHandle);
+      const result = await db.fetchRows(fileHandle.name, limit, offset, searchTerm, columns);
+      
+      // Normalize rows using active mapping
+      if (result.rows.length > 0 && !activeMapping) {
+        activeMapping = interpretColumnMappings(Object.keys(result.rows[0]));
+      }
+      result.rows = result.rows.map((row: any) => normalizeRowWithMapping(row, activeMapping));
+      
+      return result;
+    }
+
+    // FALLBACK: Ephemeral/IndexedDB logic
     const dbName = await this.getResolvedDatabaseName(groupId);
     const db = await openActiveDatabase(dbName);
     const storeName = this.getValidStoreName(db);
     const tx = db.transaction([storeName], "readonly");
     const store = tx.objectStore(storeName);
-
-    let activeMapping: any = null;
-    try {
-      const activeGroup = groupId || (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
-      const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      const savedMap = typeof window !== "undefined" ? localStorage.getItem(`marigold_file_mapping_${slug}`) : null;
-      if (savedMap) activeMapping = JSON.parse(savedMap);
-    } catch (e) {}
 
     // OPTIMIZATION: If there is no search term, use fast cursor skip
     if (!searchTerm) {
@@ -176,6 +218,18 @@ export class MarigoldDataEngineService {
   }
 
   public static async analyzeData(groupId?: string): Promise<any> {
+    const activeGroup = groupId || (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+    const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+    // HYBRID ROUTER: Try DuckDB (Marigold_Local) first
+    const fileHandle = await getFileHandle(slug);
+    if (fileHandle) {
+      const db = await getDuckDB();
+      await db.mountFileHandle(fileHandle.name, fileHandle);
+      return await db.analyzeData(fileHandle.name);
+    }
+
+    // FALLBACK: Ephemeral/IndexedDB
     const dbName = await this.getResolvedDatabaseName(groupId);
     const db = await openActiveDatabase(dbName);
     const storeName = this.getValidStoreName(db);
