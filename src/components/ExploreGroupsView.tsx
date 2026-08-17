@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Search, Plus, MapPin, Users, Info, Shield, Check } from "lucide-react";
+import { Search, Plus, MapPin, Users, Info, Shield, Check, Edit2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { useUser } from "@clerk/nextjs";
@@ -137,18 +137,28 @@ export default function ExploreGroupsView() {
   const [applyStatus, setApplyStatus] = useState<"idle" | "submitting" | "success">("idle");
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  // Create / Edit modal state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDesc, setNewGroupDesc] = useState("");
   const [newGroupEmoji, setNewGroupEmoji] = useState("📊");
   const [newGroupJurisdiction, setNewGroupJurisdiction] = useState("");
   const [newGroupImageQuery, setNewGroupImageQuery] = useState("");
+  const [newGroupImageUrl, setNewGroupImageUrl] = useState("");
+
+  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase();
+  const isGlobalAdmin = email === 'rorshock@protonmail.com' || email === 'kencyree@gmail.com' || email === 'lcyree@protonmail.com' || email === 'msfe@marigoldinsights.org';
 
   useEffect(() => {
     const saved = localStorage.getItem("marigold_custom_groups");
     if (saved) {
       try {
         const customGroups = JSON.parse(saved);
-        setGroups([...DEFAULT_GROUPS, ...customGroups]);
+        const customIds = new Set(customGroups.map((g: any) => g.id));
+        const filteredDefaults = DEFAULT_GROUPS.filter(g => !customIds.has(g.id));
+        setGroups([...filteredDefaults, ...customGroups]);
       } catch (e) {}
     }
   }, []);
@@ -175,38 +185,86 @@ export default function ExploreGroupsView() {
     }, 800);
   };
 
-  const handleCreateGroup = (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setEditingGroupId(null);
+    setNewGroupName("");
+    setNewGroupDesc("");
+    setNewGroupEmoji("📊");
+    setNewGroupJurisdiction("");
+    setNewGroupImageQuery("");
+    setNewGroupImageUrl("");
+    setShowCreateModal(true);
+  };
+
+  const openEditModal = (g: Group) => {
+    setIsEditing(true);
+    setEditingGroupId(g.id);
+    setNewGroupName(g.name);
+    setNewGroupDesc(g.description);
+    setNewGroupEmoji(g.emoji);
+    setNewGroupJurisdiction(g.jurisdiction);
+    setNewGroupImageQuery(g.unsplashQuery || "");
+    setNewGroupImageUrl(g.imageUrl || "");
+    setShowCreateModal(true);
+  };
+
+  const handleSaveGroup = (e: React.FormEvent) => {
     e.preventDefault();
-    const newGroup: Group = {
-      id: `grp-${Date.now()}`,
+    
+    const savedGroup: Group = {
+      id: isEditing && editingGroupId ? editingGroupId : `grp-${Date.now()}`,
       name: newGroupName,
       description: newGroupDesc,
       jurisdiction: newGroupJurisdiction,
       emoji: newGroupEmoji,
-      membersCount: 1,
-      unsplashQuery: newGroupImageQuery || newGroupJurisdiction || "community"
+      membersCount: isEditing && selectedGroup ? selectedGroup.membersCount : 1,
+      unsplashQuery: newGroupImageQuery || undefined,
+      imageUrl: newGroupImageUrl || undefined
     };
 
-    const updatedGroups = [...groups, newGroup];
+    let updatedGroups = [];
+    if (isEditing) {
+      updatedGroups = groups.map(g => g.id === savedGroup.id ? savedGroup : g);
+      if (selectedGroup?.id === savedGroup.id) {
+         setSelectedGroup(savedGroup);
+      }
+    } else {
+      updatedGroups = [...groups, savedGroup];
+    }
+    
     setGroups(updatedGroups);
 
-    const customOnly = updatedGroups.filter(g => !DEFAULT_GROUPS.find(d => d.id === g.id));
-    localStorage.setItem("marigold_custom_groups", JSON.stringify(customOnly));
+    // Save all non-default groups or overridden default groups to local storage
+    const defaultIds = new Set(DEFAULT_GROUPS.map(g => g.id));
+    const toSave = updatedGroups.filter(g => {
+       if (!defaultIds.has(g.id)) return true; // It's a custom group
+       // It is a default group ID. Check if it was modified.
+       const def = DEFAULT_GROUPS.find(d => d.id === g.id);
+       if (JSON.stringify(def) !== JSON.stringify(g)) return true; // Modified
+       return false;
+    });
 
-    fetch("/api/user/groups", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "join", groupName: newGroup.name })
-    }).catch(console.error);
+    localStorage.setItem("marigold_custom_groups", JSON.stringify(toSave));
 
-    const localJoined = localStorage.getItem("marigold_joined_groups");
-    let joined = [];
-    if (localJoined) try { joined = JSON.parse(localJoined); } catch (e) {}
-    joined.push(newGroup.name);
-    localStorage.setItem("marigold_joined_groups", JSON.stringify(joined));
+    if (!isEditing) {
+      fetch("/api/user/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "join", groupName: savedGroup.name })
+      }).catch(console.error);
 
-    localStorage.setItem("marigold_active_group", newGroup.name);
-    window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: newGroup.name } }));
+      const localJoined = localStorage.getItem("marigold_joined_groups");
+      let joined = [];
+      if (localJoined) try { joined = JSON.parse(localJoined); } catch (e) {}
+      if (!joined.includes(savedGroup.name)) {
+         joined.push(savedGroup.name);
+         localStorage.setItem("marigold_joined_groups", JSON.stringify(joined));
+      }
+
+      localStorage.setItem("marigold_active_group", savedGroup.name);
+      window.dispatchEvent(new CustomEvent('marigold-group-change', { detail: { group: savedGroup.name } }));
+    }
 
     setShowCreateModal(false);
   };
@@ -218,7 +276,7 @@ export default function ExploreGroupsView() {
           <h1 className="text-3xl font-serif font-bold text-slate-900">Explore Groups</h1>
           <p className="text-slate-600 mt-1">Discover local civic auditing chapters and request access to their shared data pools.</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="primary" className="shadow-md">
+        <Button onClick={openCreateModal} variant="primary" className="shadow-md">
           <Plus className="w-4 h-4 mr-2" />
           Create New Group
         </Button>
@@ -269,8 +327,19 @@ export default function ExploreGroupsView() {
         <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-[#FAF8F5]">
-              <h2 className="text-xl font-serif font-bold text-slate-900">Join Group</h2>
-              <button onClick={() => setShowApplySheet(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold p-2">✕</button>
+              <h2 className="text-xl font-serif font-bold text-slate-900">Group Details</h2>
+              <div className="flex gap-2 items-center">
+                {(isGlobalAdmin || !DEFAULT_GROUPS.find(g => g.id === selectedGroup.id)) && (
+                  <button 
+                    onClick={() => openEditModal(selectedGroup)} 
+                    className="p-2 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors"
+                    title="Edit Group"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
+                <button onClick={() => setShowApplySheet(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold p-2">✕</button>
+              </div>
             </div>
             <div className="p-6 flex-1 overflow-y-auto">
               <div className="text-6xl text-center mb-4">{selectedGroup.emoji}</div>
@@ -317,17 +386,17 @@ export default function ExploreGroupsView() {
         </div>
       )}
 
-      {/* Create Group Modal */}
+      {/* Create / Edit Group Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-[#FAF8F5]">
-              <h2 className="text-xl font-serif font-bold text-slate-900">Create New Group</h2>
+              <h2 className="text-xl font-serif font-bold text-slate-900">{isEditing ? "Edit Group" : "Create New Group"}</h2>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold p-2">✕</button>
             </div>
             
             <div className="p-6 overflow-y-auto">
-              <form id="create-group-form" onSubmit={handleCreateGroup} className="space-y-5">
+              <form id="create-group-form" onSubmit={handleSaveGroup} className="space-y-5">
                 <div className="flex gap-4">
                   <div className="w-20">
                     <Input 
@@ -359,12 +428,27 @@ export default function ExploreGroupsView() {
                   required
                 />
                 
-                <Input 
-                  label="Unsplash Image Search Term"
-                  placeholder="e.g. las vegas landscape (Optional)"
-                  value={newGroupImageQuery}
-                  onChange={(e) => setNewGroupImageQuery(e.target.value)}
-                />
+                <div className="space-y-2 border border-slate-200 p-4 rounded-xl bg-slate-50">
+                  <h4 className="text-sm font-bold text-slate-800">Cover Image</h4>
+                  <p className="text-xs text-slate-500 mb-3">Provide a search term for Unsplash, or paste a direct image URL if you prefer.</p>
+                  <Input 
+                    placeholder="Unsplash Search Term (e.g. las vegas landscape)"
+                    value={newGroupImageQuery}
+                    onChange={(e) => {
+                      setNewGroupImageQuery(e.target.value);
+                      setNewGroupImageUrl("");
+                    }}
+                  />
+                  <div className="text-center text-xs text-slate-400">OR</div>
+                  <Input 
+                    placeholder="Direct Image URL (https://...)"
+                    value={newGroupImageUrl}
+                    onChange={(e) => {
+                      setNewGroupImageUrl(e.target.value);
+                      setNewGroupImageQuery("");
+                    }}
+                  />
+                </div>
 
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">Group Mission / Description</label>
@@ -381,7 +465,7 @@ export default function ExploreGroupsView() {
             
             <div className="p-6 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
               <Button type="button" onClick={() => setShowCreateModal(false)} variant="secondary">Cancel</Button>
-              <Button type="submit" form="create-group-form" variant="primary">Create & Join Group</Button>
+              <Button type="submit" form="create-group-form" variant="primary">{isEditing ? "Save Changes" : "Create & Join Group"}</Button>
             </div>
           </div>
         </div>
