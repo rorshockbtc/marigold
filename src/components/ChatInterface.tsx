@@ -415,7 +415,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           loopResponseData = await loopResponse.json();
           finalReply = loopResponseData.reply || finalReply;
         } else if (t === 'update_title') {
-          updatedArticle.title = args.title;
+          updatedArticle = { ...updatedArticle, title: args.title };
           hiddenContext = `[SYSTEM: Title updated to "${args.title}"]`;
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           
@@ -438,7 +438,10 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           loopResponseData = await loopResponse.json();
           finalReply = loopResponseData.reply || finalReply;
         } else if (t === 'append_section') {
-          updatedArticle.sections.push({ id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart });
+          updatedArticle = { 
+            ...updatedArticle, 
+            sections: [...updatedArticle.sections, { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart }] 
+          };
           hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           
@@ -461,14 +464,22 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           loopResponseData = await loopResponse.json();
           finalReply = loopResponseData.reply || finalReply;
         } else if (t === 'update_section') {
-          const sec = updatedArticle.sections.find(s => s.id === args.id);
-          if (sec) {
-            if (args.heading) sec.heading = args.heading;
-            if (args.narrative) sec.narrative = args.narrative;
-            if (args.chart) sec.chart = args.chart;
-            hiddenContext = `[SYSTEM: Updated section "${args.id}"]`;
-            window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
-          }
+          updatedArticle = {
+            ...updatedArticle,
+            sections: updatedArticle.sections.map(s => {
+              if (s.id === args.id) {
+                return {
+                  ...s,
+                  heading: args.heading || s.heading,
+                  narrative: args.narrative || s.narrative,
+                  chart: args.chart || s.chart
+                };
+              }
+              return s;
+            })
+          };
+          hiddenContext = `[SYSTEM: Updated section "${args.id}"]`;
+          window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           
           const toolMessage: ChatMessage = { role: "user", content: `[SYSTEM: Section updated successfully. You may continue.]` };
           loopMessages = [...loopMessages, toolMessage];
