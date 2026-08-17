@@ -201,7 +201,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     
     // We update the UI optimistically and trigger handleSendMessage 
     // to feed this system instruction into Mari's next ReAct loop
-    setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...s.messages, streamMsg] } : s));
+    setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, streamMsg] } : s));
     
     // Send it back to the backend
     handleSendMessage(new Event('submit') as any, streamMsg.content);
