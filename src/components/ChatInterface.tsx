@@ -204,7 +204,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, streamMsg] } : s));
     
     // Send it back to the backend
-    handleSendMessage(new Event('submit') as any, streamMsg.content);
+    handleSubmit(undefined as any, false, streamMsg.content);
   };
   
   // Load initial data
@@ -289,11 +289,12 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, forceBypassTriage: boolean = false) => {
+  const handleSubmit = async (e?: React.FormEvent, forceBypassTriage: boolean = false, overrideQuery?: string) => {
     if (e?.preventDefault) e.preventDefault();
-    if (!query.trim()) return;
+    const activeQuery = overrideQuery || query;
+    if (!activeQuery.trim()) return;
 
-    const scrubbedQuery = await PIIRedactor.scrubAsync(query);
+    const scrubbedQuery = await PIIRedactor.scrubAsync(activeQuery);
     let currentSessionId = activeSessionId;
     let currentMessages = messages;
 
