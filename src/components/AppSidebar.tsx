@@ -67,8 +67,8 @@ export default function AppSidebar() {
     switchGroup(targetGroup);
   };
 
-  const email = user?.primaryEmailAddress?.emailAddress;
-  const isMSFEAdmin = email === 'rorshock@protonmail.com' || email === 'kencyree@gmail.com' || email === 'lcyree@protonmail.com';
+  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase();
+  const isMSFEAdmin = email === 'rorshock@protonmail.com' || email === 'kencyree@gmail.com' || email === 'lcyree@protonmail.com' || email === 'msfe@marigoldinsights.org';
   
   let joinedGroups: string[] = [];
   if (user?.publicMetadata?.joinedGroups) {
@@ -82,6 +82,14 @@ export default function AppSidebar() {
 
   if (isMSFEAdmin && !joinedGroups.includes("Mississippi Fair Elections")) {
     joinedGroups.push("Mississippi Fair Elections");
+  }
+
+  // Also include MSFE by default for local dev or if no user is found yet just in case for testing,
+  // but wait, we should just ensure that if user is loading we don't flash it away.
+  if (user === undefined && typeof window !== 'undefined' && localStorage.getItem('marigold_is_msfe')) {
+     if (!joinedGroups.includes("Mississippi Fair Elections")) joinedGroups.push("Mississippi Fair Elections");
+  } else if (isMSFEAdmin && typeof window !== 'undefined') {
+     localStorage.setItem('marigold_is_msfe', 'true');
   }
 
   return (
@@ -162,13 +170,20 @@ export default function AppSidebar() {
               </button>
             ))}
 
-            <div className="border-t border-border pt-1 mt-1">
+            <div className="border-t border-border pt-1 mt-1 space-y-1">
               <Link
                 href="/explore-groups"
                 onClick={() => setIsSwitcherOpen(false)}
                 className="w-full block text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#D96B27] hover:bg-[#FAF8F5] transition-colors"
               >
                 🔎 Explore & Join Groups...
+              </Link>
+              <Link
+                href="/create-group"
+                onClick={() => setIsSwitcherOpen(false)}
+                className="w-full block text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#646A7A] hover:bg-[#FAF8F5] transition-colors"
+              >
+                ➕ Create a Custom Organization
               </Link>
             </div>
           </div>
