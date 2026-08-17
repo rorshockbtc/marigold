@@ -572,8 +572,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           // We will tag the final message to render the affordance
           break;
         } else if (t === 'triage_and_fetch_dataset') {
-          finalReply = loopResponseData.reply || `I found a dataset online! ${args.description}. However, I need you to connect it first.`;
-          break;
+          finalReply = `I found a public dataset online that might help: [${args.suggested_name}](${args.found_url}).\n\n${args.description} Let me draft a preliminary Data Story using my general knowledge while you download it.`;
+          // We do not break here, allowing Mari to concurrently call append_section in the same turn!
         } else {
           break;
         }
