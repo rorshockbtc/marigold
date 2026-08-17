@@ -2,8 +2,6 @@ import { openActiveDatabase, getActiveDatabaseName } from "@/lib/db/dbName";
 import Papa from "papaparse";
 import { profileDatasetRows } from "@/lib/csv/DataProfiler";
 import { storeFileHandle } from "@/lib/fs/LocalFSManager";
-import { profileDatasetRows } from "@/lib/csv/DataProfiler";
-
 export interface DiscoveredDataset {
   folderName: string;
   datasetName: string;
