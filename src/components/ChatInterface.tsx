@@ -54,7 +54,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     try { pastChats = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]").map((s: any) => ({ id: s.id, title: s.title, timestamp: s.timestamp })); } catch(e){}
     
     let pastStories = [];
-    try { pastStories = JSON.parse(localStorage.getItem("elly_data_stories") || "[]").map((s: any) => ({ id: s.id, title: s.title, summary: s.summary, createdAt: s.createdAt })); } catch(e){}
+    try { pastStories = JSON.parse(localStorage.getItem("marigold_saved_stories") || "[]").map((s: any) => ({ id: s.id, title: s.title, summary: s.summary, createdAt: s.createdAt })); } catch(e){}
 
     return {
       currentRoute: pathname,
@@ -255,6 +255,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       const session = sessions.find(s => s.id === activeSessionId);
       if (session && session.articleState) {
         window.dispatchEvent(new CustomEvent('mari-article-update', { detail: session.articleState }));
+      } else if (session && !session.articleState) {
+        window.dispatchEvent(new CustomEvent('mari-article-update', { detail: undefined }));
       }
     }
   }, [activeSessionId, sessions]);
@@ -534,7 +536,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           const pastStoryId = args.storyId;
           let pastContent = "Error: Data story not found.";
           try {
-            const allStories = JSON.parse(localStorage.getItem("elly_data_stories") || "[]");
+            const allStories = JSON.parse(localStorage.getItem("marigold_saved_stories") || "[]");
             const found = allStories.find((s: any) => s.id === pastStoryId);
             if (found) {
               pastContent = `[SYSTEM: RETRIEVED PAST DATA STORY "${found.title}"]\nSummary: ${found.summary}\n`;

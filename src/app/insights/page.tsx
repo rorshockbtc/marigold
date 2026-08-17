@@ -102,9 +102,26 @@ export default function InsightsPage() {
 
   const handleResumeStory = (story: any) => {
     selectSavedStory(story);
+    
+    // Create a new chat session to continue investigating this story
+    const newSessionId = `s-${Date.now()}`;
+    const newSession = {
+      id: newSessionId,
+      title: `Continuing: ${story.title}`,
+      timestamp: Date.now(),
+      messages: [{ role: "assistant", content: `I've loaded the Data Story "${story.title}". What would you like to investigate next?` }],
+      articleState: story.articleState
+    };
+    
+    try {
+      const savedSessions = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]");
+      localStorage.setItem("elly_chat_sessions", JSON.stringify([newSession, ...savedSessions]));
+    } catch(e) {}
+    
     if (story.articleState) {
       setArticleState(story.articleState);
     }
+    setSelectedSessionId(newSessionId);
     setViewMode('workspace');
   };
 
