@@ -192,6 +192,20 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       console.error(e);
     }
   };
+
+  const handleStreamDataset = async (affordance: { datasetName: string, datasetUrl: string, description: string }) => {
+    const streamMsg: ChatMessage = {
+      role: "user",
+      content: `[SYSTEM: The user authorized streaming the public dataset "${affordance.datasetName}" (${affordance.datasetUrl}) into their local workspace. Please acknowledge this and begin querying the streamed data to construct the Data Story.]`
+    };
+    
+    // We update the UI optimistically and trigger handleSendMessage 
+    // to feed this system instruction into Mari's next ReAct loop
+    setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...s.messages, streamMsg] } : s));
+    
+    // Send it back to the backend
+    handleSendMessage(new Event('submit') as any, streamMsg.content);
+  };
   
   // Load initial data
   useEffect(() => {
@@ -353,6 +367,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       let loopResponseData = data;
       let finalReply = loopResponseData.reply;
       let loopMessages = newMessages;
+      let streamAffordance: { datasetName: string; datasetUrl: string; description: string; } | undefined = undefined;
 
       let loopCount = 0;
       while (response.ok && loopResponseData.action === 'run_tool' && loopCount < 5) {
@@ -573,6 +588,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           break;
         } else if (t === 'triage_and_fetch_dataset') {
           finalReply = `I found a public dataset online that might help: [${args.suggested_name}](${args.found_url}).\n\n${args.description} Let me draft a preliminary Data Story using my general knowledge while you download it.`;
+          streamAffordance = { datasetName: args.suggested_name, datasetUrl: args.found_url, description: args.description };
           // We do not break here, allowing Mari to concurrently call append_section in the same turn!
         } else {
           break;
@@ -584,7 +600,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         content: response.ok ? (finalReply || "I've updated the Data Story. Please review the changes in the center pane.") : `Error: ${loopResponseData.error || data.error}`,
         suggestedPlaybook: loopResponseData.suggestedPlaybook || data.suggestedPlaybook,
         hiddenContext,
-        hasFolderRelinkAffordance: loopResponseData.tool === 'offer_local_folder_relink' || loopResponseData.action === 'run_tool' && loopResponseData.tool === 'offer_local_folder_relink'
+        hasFolderRelinkAffordance: loopResponseData.tool === 'offer_local_folder_relink' || loopResponseData.action === 'run_tool' && loopResponseData.tool === 'offer_local_folder_relink',
+        streamAffordance
       };
 
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage], articleState: updatedArticle } : s));
@@ -785,6 +802,21 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                     </Button>
                     <p className="text-[10px] text-muted-foreground mt-2 text-center">
                       Opens your secure browser sandbox picker.
+                    </p>
+                  </div>
+                )}
+                
+                {msg.streamAffordance && (
+                  <div className="mt-4 pt-3 border-t border-border-soft">
+                    <Button 
+                      onClick={() => handleStreamDataset(msg.streamAffordance!)}
+                      variant="primary" 
+                      className="w-full justify-center gap-2 font-bold text-sm bg-blue-600 text-white py-3 rounded-xl shadow-sm hover:bg-blue-700 transition-all"
+                    >
+                      <Download className="w-4 h-4" /> Stream {msg.streamAffordance.datasetName} to Local Workspace
+                    </Button>
+                    <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                      Authorizes Marigold to fetch this public dataset securely.
                     </p>
                   </div>
                 )}

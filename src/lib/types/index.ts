@@ -41,6 +41,7 @@ export interface ChatMessage {
   originalQuery?: string;
   hiddenContext?: string; // Used to feed tool execution memory back to the LLM without showing it in the UI
   hasFolderRelinkAffordance?: boolean;
+  streamAffordance?: { datasetName: string; datasetUrl: string; description: string; };
 }
 
 export interface ChatSession {
