@@ -18,6 +18,15 @@ const cspHeader = `
 
 const nextConfig: NextConfig = {
   // removed turbopack root override to prevent infinite loop / incorrect resolution
+  async redirects() {
+    return [
+      {
+        source: '/create-group',
+        destination: '/explore-groups?create=true',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

@@ -14,7 +14,6 @@ const WORKSPACE_ROUTES = [
   '/dashboard',
   '/explore',
   '/explore-groups',
-  '/create-group',
   '/insights',
   '/onboarding',
   '/audit',
