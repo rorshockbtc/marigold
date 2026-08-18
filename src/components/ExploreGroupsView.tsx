@@ -7,6 +7,7 @@ import { Search, Plus, MapPin, Users, Info, Shield, Check, Edit2 } from "lucide-
 import { Card, CardContent } from "@/components/ui/Card";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { useUser } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
 
 interface Group {
   id: string;
@@ -196,6 +197,17 @@ export default function ExploreGroupsView() {
     setNewGroupImageUrl("");
     setShowCreateModal(true);
   };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('create') === 'true') {
+        openCreateModal();
+        // Clear the query parameter without refreshing the page
+        window.history.replaceState({}, '', '/explore-groups');
+      }
+    }
+  }, []);
 
   const openEditModal = (g: Group) => {
     setIsEditing(true);

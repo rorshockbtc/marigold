@@ -179,7 +179,7 @@ export default function AppSidebar() {
                 🔎 Explore & Join Groups...
               </Link>
               <Link
-                href="/create-group"
+                href="/explore-groups?create=true"
                 onClick={() => setIsSwitcherOpen(false)}
                 className="w-full block text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#646A7A] hover:bg-[#FAF8F5] transition-colors"
               >
