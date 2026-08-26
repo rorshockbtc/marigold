@@ -13,6 +13,7 @@ const cspHeader = `
     frame-ancestors 'none';
     connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com;
     worker-src 'self' blob:;
+    frame-src 'self' https://www.youtube.com https://youtube.com;
     upgrade-insecure-requests;
 `;
 
