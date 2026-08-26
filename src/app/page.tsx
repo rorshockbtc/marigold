@@ -207,7 +207,22 @@ export default function MarketingHomePage() {
       </section>
 
       {/* Main Container for Rest of Content */}
-      <div className="space-y-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+      <div className="space-y-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-12">
+        
+        {/* Video Introduction Section */}
+        <section className="max-w-5xl mx-auto -mt-8 sm:-mt-16 relative z-20">
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl border-4 border-border/50 bg-black">
+            <iframe 
+              width="100%" 
+              height="100%" 
+              src="https://www.youtube.com/embed/ec_vC_hvzbI?rel=0" 
+              title="Marigold Introduction" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowFullScreen
+            ></iframe>
+          </div>
+        </section>
         
         {/* The Three Major Stakeholder Groups */}
         <section className="space-y-16 max-w-6xl mx-auto">
