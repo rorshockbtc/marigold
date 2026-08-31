@@ -149,6 +149,18 @@ export const EditorialBriefing: React.FC<EditorialBriefingProps> = ({ narrative 
                 <RefreshCw className={`w-4 h-4 ${isFetchingImage ? 'animate-spin' : ''}`} />
               </button>
             )}
+
+            <div className="h-6 w-px bg-gray-700 mx-1" />
+
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(narrative.replace(/\\n/g, '\n'));
+                alert("Briefing copied to clipboard!");
+              }}
+              className="px-4 py-1.5 bg-[#2D3A34] border border-[#8C9E8C] text-[#E5E5E5] text-xs font-bold rounded-lg hover:bg-opacity-80 transition-colors"
+            >
+              Copy Briefing
+            </button>
           </div>
         </div>
         

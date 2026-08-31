@@ -1,0 +1,14 @@
+--- src/components/ChatInterface.tsx
++++ src/components/ChatInterface.tsx
+@@ -346,6 +346,12 @@
+       while (response.ok && loopResponseData.action === 'run_tool' && loopCount < 5) {
+         loopCount++;
+         const t = loopResponseData.tool;
+         const args = loopResponseData.args;
++        
++        // If Mari generated text alongside the tool call, preserve it in the history so she doesn't forget!
++        if (loopResponseData.reply) {
++          loopMessages = [...loopMessages, { role: "assistant", content: loopResponseData.reply }];
++        }
+ 
+         if (t === 'query_dataset' || t.startsWith('run_')) {

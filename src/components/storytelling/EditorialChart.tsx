@@ -1,70 +1,43 @@
 "use client";
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { ResponsiveScatterPlot } from '@nivo/scatterplot';
 import { ResponsiveBar } from '@nivo/bar';
+import { terracottaGardenTheme } from './theme';
+import { Download } from 'lucide-react';
 
 interface EditorialChartProps {
   chartType: string;
-  data: any[]; // The aggregated output from DuckDB
+  data: any[]; 
+  config?: {
+    xAxisKey?: string;
+    yAxisKey?: string;
+    xAxisLabel?: string;
+    yAxisLabel?: string;
+    title?: string;
+    seriesKeys?: string[];
+  };
 }
 
-// Vignelli/Terracotta Theme for Nivo
-const terracottaTheme = {
-  background: 'transparent',
-  textColor: '#E5E7EB', // Tailwind gray-200
-  fontSize: 12,
-  axis: {
-    domain: {
-      line: {
-        stroke: '#4B5563', // Tailwind gray-600
-        strokeWidth: 1,
-      },
-    },
-    ticks: {
-      line: {
-        stroke: '#4B5563',
-        strokeWidth: 1,
-      },
-      text: {
-        fill: '#9CA3AF', // Tailwind gray-400
-      },
-    },
-  },
-  grid: {
-    line: {
-      stroke: '#374151', // Tailwind gray-700
-      strokeWidth: 1,
-      strokeDasharray: '4 4',
-    },
-  },
-  tooltip: {
-    container: {
-      background: 'rgba(31, 41, 55, 0.85)', // Glassmorphic gray-800
-      backdropFilter: 'blur(8px)',
-      color: '#F3F4F6',
-      fontSize: 14,
-      borderRadius: '8px',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-      border: '1px solid #4B5563',
-    },
-  },
-};
+export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data, config }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
-export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data }) => {
   if (!data || data.length === 0) return null;
+
+  const exportChart = () => {
+    // Basic export utility (mock for now, or simple canvas grab)
+    alert("In production, this will download a high-res PNG of the interactive chart!");
+  };
 
   const renderChart = () => {
     switch (chartType) {
       case 'scatter':
       case 'scatter_plot':
-        // Nivo Scatterplot expects data in { id: string, data: [{x, y}] } format
-        // We do a basic mapping assuming the DuckDB query returned generic x and y columns
         const scatterData = [{
-          id: 'Insight',
+          id: config?.title || 'Insight',
           data: data.map(d => ({
-            x: d.x !== undefined ? d.x : Object.values(d)[0],
-            y: d.y !== undefined ? d.y : Object.values(d)[1]
+            x: config?.xAxisKey ? d[config.xAxisKey] : Object.values(d)[0],
+            y: config?.yAxisKey ? d[config.yAxisKey] : Object.values(d)[1]
           }))
         }];
         
@@ -74,17 +47,17 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data 
             margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
             xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
             yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
-            colors={['#E27D60']} // Terracotta primary
-            theme={terracottaTheme}
+            colors={terracottaGardenTheme.colors.primary}
+            theme={terracottaGardenTheme.nivoTheme}
             nodeSize={8}
             useMesh={true}
             axisBottom={{
-              legend: 'X Axis',
+              legend: config?.xAxisLabel || 'X Axis',
               legendPosition: 'middle',
               legendOffset: 46,
             }}
             axisLeft={{
-              legend: 'Y Axis',
+              legend: config?.yAxisLabel || 'Y Axis',
               legendPosition: 'middle',
               legendOffset: -46,
             }}
@@ -92,10 +65,8 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data 
         );
 
       case 'bar':
-        // Expects { [keyField]: value, [valueField]: amount }
-        const keys = Object.keys(data[0]);
-        const indexBy = keys[0];
-        const barKeys = keys.slice(1);
+        const indexBy = config?.xAxisKey || Object.keys(data[0])[0];
+        const barKeys = config?.seriesKeys || Object.keys(data[0]).filter(k => k !== indexBy);
 
         return (
           <ResponsiveBar
@@ -104,14 +75,19 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data 
             indexBy={indexBy}
             margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
             padding={0.3}
-            colors={['#E27D60', '#C38D9E', '#41B3A3']} // Terracotta palette
-            theme={terracottaTheme}
+            colors={terracottaGardenTheme.colors.primary}
+            theme={terracottaGardenTheme.nivoTheme}
             labelSkipWidth={12}
             labelSkipHeight={12}
             axisBottom={{
-              legend: indexBy,
+              legend: config?.xAxisLabel || indexBy,
               legendPosition: 'middle',
               legendOffset: 46,
+            }}
+            axisLeft={{
+              legend: config?.yAxisLabel || barKeys.join(', '),
+              legendPosition: 'middle',
+              legendOffset: -46,
             }}
           />
         );
@@ -126,8 +102,22 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data 
   };
 
   return (
-    <div className="h-[400px] w-full border border-gray-700 bg-surface rounded-lg p-4 shadow-xl">
-      {renderChart()}
+    <div className="w-full border border-gray-700 bg-[#1E2025] rounded-xl shadow-2xl relative overflow-hidden group">
+      {config?.title && (
+        <div className="px-6 py-4 border-b border-gray-700/50 flex justify-between items-center bg-[#2A2D35]/30">
+          <h3 className="text-[#D1D5DB] font-serif font-medium tracking-wide">{config.title}</h3>
+          <button 
+            onClick={exportChart}
+            className="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100"
+            title="Download Chart as PNG"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+      <div ref={containerRef} className="h-[400px] w-full p-4">
+        {renderChart()}
+      </div>
     </div>
   );
 };
