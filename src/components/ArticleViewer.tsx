@@ -103,6 +103,31 @@ export function ArticleViewer({
     setTimeout(() => setIsSaved(false), 3000);
   };
 
+  const [unsplashData, setUnsplashData] = useState<any>(null);
+
+  useEffect(() => {
+    if (!displayArticle.title) return;
+    const fetchImage = async () => {
+      try {
+        const res = await fetch(`/api/unsplash?query=${encodeURIComponent(displayArticle.title)}`);
+        const data = await res.json();
+        if (data.url) {
+          setUnsplashData(data);
+          if (data.downloadLocation) {
+            fetch('/api/unsplash/download', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ downloadLocation: data.downloadLocation })
+            }).catch(() => {});
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch Unsplash image", e);
+      }
+    };
+    fetchImage();
+  }, [displayArticle.title]);
+
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
@@ -323,9 +348,31 @@ export function ArticleViewer({
       {/* Article Body */}
       <article className="max-w-3xl mx-auto px-8 py-12 space-y-12">
         <header className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-text-header leading-tight mb-6">
-            {displayArticle.title}
-          </h1>
+          {unsplashData && (
+            <div 
+              className="w-full h-64 md:h-80 rounded-2xl mb-8 relative overflow-hidden shadow-2xl transition-all duration-500 group"
+              style={{
+                backgroundImage: `url(${unsplashData.url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-transparent to-transparent opacity-80" />
+              <div className="absolute bottom-4 left-6 text-white">
+                <h1 className="text-3xl md:text-4xl font-serif font-bold shadow-sm">{displayArticle.title}</h1>
+              </div>
+              
+              {/* Attribution */}
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md text-xs text-white px-3 py-1 rounded-full pointer-events-auto shadow-lg">
+                Photo by <a href={unsplashData.photographerUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-300">{unsplashData.photographerName}</a> on <a href="https://unsplash.com/?utm_source=marigold_insights&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-300">Unsplash</a>
+              </div>
+            </div>
+          )}
+          {!unsplashData && (
+            <h1 className="text-4xl md:text-5xl font-serif font-bold text-text-header leading-tight mb-6">
+              {displayArticle.title}
+            </h1>
+          )}
           <hr className="border-border-soft" />
         </header>
 
