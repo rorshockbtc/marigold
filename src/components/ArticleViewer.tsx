@@ -5,16 +5,37 @@ import { ResponsiveBar } from '@nivo/bar';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveLine } from '@nivo/line';
 import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { DecryptionEngine } from '@/lib/security/DecryptionEngine';
 
 export interface ArticleViewerProps {
   article: ArticleState;
   onPublishToGroup: () => void;
   onSaveLocally: () => void;
+  isPublicView?: boolean;
 }
 
-export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: ArticleViewerProps) {
+export function ArticleViewer({ article, onPublishToGroup, onSaveLocally, isPublicView = false }: ArticleViewerProps) {
   const [displayArticle, setDisplayArticle] = useState<ArticleState>(article);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+
+  const handleSaveClick = () => {
+    setIsSaved(true);
+    onSaveLocally();
+    setTimeout(() => setIsSaved(false), 3000);
+  };
+
+  const handlePublishClick = () => {
+    setIsPublished(true);
+    onPublishToGroup();
+    // Save to local storage for the published view
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('marigold_published_story', JSON.stringify(displayArticle));
+      window.open('/published', '_blank');
+    }
+    setTimeout(() => setIsPublished(false), 3000);
+  };
 
   useEffect(() => {
     async function hydrate() {
@@ -71,12 +92,16 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
           {displayArticle.title || "Untitled Data Story"}
         </h1>
         <div className="flex items-center gap-3 shrink-0">
-          <Button onClick={onSaveLocally} variant="outline" className="flex items-center gap-2">
-            <Save className="w-4 h-4" /> Save
-          </Button>
-          <Button onClick={onPublishToGroup} variant="primary" className="flex items-center gap-2">
-            <Share2 className="w-4 h-4" /> Publish
-          </Button>
+          {!isPublicView && (
+            <>
+              <Button onClick={handleSaveClick} variant="outline" className="flex items-center gap-2">
+                <Save className="w-4 h-4" /> {isSaved ? "Saved!" : "Save"}
+              </Button>
+              <Button onClick={handlePublishClick} variant="primary" className="flex items-center gap-2">
+                <Share2 className="w-4 h-4" /> {isPublished ? "Published!" : "Publish"}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -98,10 +123,8 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
             )}
             
             {section.narrative && (
-              <div className="prose prose-lg max-w-none text-text-body leading-relaxed">
-                {section.narrative.split('\n').map((paragraph, idx) => (
-                  <p key={idx} className="mb-4">{paragraph}</p>
-                ))}
+              <div className="prose prose-lg max-w-none text-text-body leading-relaxed markdown-content">
+                <ReactMarkdown>{section.narrative}</ReactMarkdown>
               </div>
             )}
 
@@ -170,16 +193,44 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
                       });
                       
                       const barData = Array.from(barDataMap.values());
+                      
+                      // Calculate max label length for rotation
+                      let maxLabelLength = 0;
+                      barData.forEach(d => {
+                        if (d.label && String(d.label).length > maxLabelLength) {
+                          maxLabelLength = String(d.label).length;
+                        }
+                      });
+
+                      let rotation = 0;
+                      let bottomMargin = 60;
+                      let legendOffset = 40;
+
+                      if (maxLabelLength > 20) {
+                        rotation = -90;
+                        bottomMargin = 140;
+                        legendOffset = 120;
+                      } else if (maxLabelLength > 10) {
+                        rotation = -45;
+                        bottomMargin = 100;
+                        legendOffset = 80;
+                      }
+
+                      const dynamicAxisBottom = { 
+                        ...axisBottom, 
+                        tickRotation: rotation,
+                        legendOffset: legendOffset
+                      };
 
                       return (
                         <ResponsiveBar
                           data={barData}
                           keys={keys}
                           indexBy="label"
-                          margin={{ top: 20, right: 180, bottom: 60, left: 60 }}
+                          margin={{ top: 20, right: 180, bottom: bottomMargin, left: 60 }}
                           padding={0.3}
                           colors={{ scheme: 'set2' }}
-                          axisBottom={axisBottom}
+                          axisBottom={dynamicAxisBottom}
                           axisLeft={axisLeft}
                           labelSkipWidth={12}
                           labelSkipHeight={12}
@@ -239,16 +290,19 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally }: Arti
                         value: d.y
                       }));
 
+                      const tooManySlices = pieData.length > 10;
+                      
                       return (
                         <ResponsivePie
                           data={pieData}
-                          margin={{ top: 20, right: 80, bottom: 120, left: 80 }}
+                          margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
                           innerRadius={0.5}
                           padAngle={0.7}
                           cornerRadius={3}
                           colors={{ scheme: 'set2' }}
                           borderWidth={1}
                           borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+                          enableArcLinkLabels={!tooManySlices}
                           arcLinkLabelsSkipAngle={10}
                           arcLinkLabelsTextColor="#333333"
                           arcLinkLabelsThickness={2}

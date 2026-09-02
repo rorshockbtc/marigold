@@ -456,11 +456,20 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           loopResponseData = await loopResponse.json();
           finalReply = loopResponseData.reply || finalReply;
         } else if (t === 'append_section') {
-          updatedArticle = { 
-            ...updatedArticle, 
-            sections: [...updatedArticle.sections, { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart }] 
-          };
-          hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
+          const sectionExists = updatedArticle.sections.some(s => s.id === args.id);
+          if (sectionExists) {
+            updatedArticle = {
+              ...updatedArticle,
+              sections: updatedArticle.sections.map(s => s.id === args.id ? { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart } : s)
+            };
+            hiddenContext = `[SYSTEM: Updated existing section "${args.heading}"]`;
+          } else {
+            updatedArticle = { 
+              ...updatedArticle, 
+              sections: [...updatedArticle.sections, { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart }] 
+            };
+            hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
+          }
           window.dispatchEvent(new CustomEvent('mari-article-update', { detail: updatedArticle }));
           
           const toolMessage: ChatMessage = { role: "user", content: `[SYSTEM: Section appended successfully. You may continue.]` };
@@ -596,9 +605,22 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         }
       }
 
+      let didUpdateArticle = false;
+      if (
+        updatedArticle.title !== (articleState?.title || "Data Investigation") ||
+        updatedArticle.sections.length !== (articleState?.sections.length || 0) ||
+        JSON.stringify(updatedArticle.sections) !== JSON.stringify(articleState?.sections)
+      ) {
+        didUpdateArticle = true;
+      }
+
+      const defaultFallbackText = didUpdateArticle 
+        ? "I've updated the Data Story. Please review the changes in the center pane." 
+        : "I didn't find any new data to update the story with. What should we look at next?";
+
       const assistantMessage: ChatMessage = { 
         role: "assistant", 
-        content: response.ok ? (finalReply || "I've updated the Data Story. Please review the changes in the center pane.") : `Error: ${loopResponseData.error || data.error}`,
+        content: response.ok ? (finalReply || defaultFallbackText) : `Error: ${loopResponseData.error || data.error}`,
         suggestedPlaybook: loopResponseData.suggestedPlaybook || data.suggestedPlaybook,
         hiddenContext,
         hasFolderRelinkAffordance: loopResponseData.tool === 'offer_local_folder_relink' || loopResponseData.action === 'run_tool' && loopResponseData.tool === 'offer_local_folder_relink',
