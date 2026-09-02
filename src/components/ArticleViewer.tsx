@@ -156,8 +156,9 @@ export function ArticleViewer({
     setPublishStatus("Scrubbing PII & Publishing to Web...");
     const uid = uuidv4().substring(0, 8);
     const sanitizedArticle = sanitizeArticle(displayArticle);
+    const cleanForFirestore = JSON.parse(JSON.stringify(sanitizedArticle));
     
-    const success = await publishStoryToFirestore(uid, sanitizedArticle);
+    const success = await publishStoryToFirestore(uid, cleanForFirestore);
     if (success) {
       if (typeof window !== 'undefined') {
         const url = `${window.location.origin}/published?id=${uid}`;

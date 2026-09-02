@@ -11,7 +11,7 @@ const cspHeader = `
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'none';
-    connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com;
+    connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com;
     worker-src 'self' blob:;
     frame-src 'self' https://www.youtube.com https://youtube.com;
     upgrade-insecure-requests;
