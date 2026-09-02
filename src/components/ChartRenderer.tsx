@@ -101,6 +101,9 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
               axisBottom.legend = c.yAxisLabel || '';
               axisLeft.legend = c.xAxisLabel || '';
               axisLeft.legendOffset = -leftMargin + 20;
+              (axisBottom as any).tickValues = 5; // limit ticks on value axis
+            } else {
+              (axisLeft as any).tickValues = 5; // limit ticks on value axis
             }
 
             return (
@@ -108,7 +111,7 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 data={barData}
                 keys={keys}
                 indexBy="label"
-                margin={{ top: 20, right: 180, bottom: bottomMargin, left: leftMargin }}
+                margin={{ top: 20, right: keys.length === 1 ? 40 : 180, bottom: bottomMargin, left: leftMargin }}
                 padding={0.3}
                 layout={isHorizontal ? 'horizontal' : 'vertical'}
                 colors={{ scheme: 'nivo' }}
@@ -117,7 +120,7 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 axisLeft={axisLeft}
                 labelSkipWidth={12}
                 labelSkipHeight={12}
-                legends={commonLegends}
+                legends={keys.length === 1 ? [] : commonLegends}
               />
             );
           }
