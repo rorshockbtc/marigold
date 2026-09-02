@@ -30,6 +30,18 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
   };
 
   const renderChart = () => {
+    // Heuristic for X-axis label collision
+    const getAxisBottomConfig = (dataLength: number, sampleLabel: string) => {
+      const isDense = dataLength > 5;
+      const isLongLabel = sampleLabel && sampleLabel.toString().length > 8;
+      
+      return {
+        legendPosition: 'middle' as const,
+        legendOffset: (isDense || isLongLabel) ? 60 : 46, // push legend down if labels are rotated
+        tickRotation: (isDense || isLongLabel) ? -45 : 0,
+      };
+    };
+
     switch (chartType) {
       case 'scatter':
       case 'scatter_plot':
@@ -41,10 +53,15 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
           }))
         }];
         
+        const scatterAxisBottom = getAxisBottomConfig(
+          data.length, 
+          scatterData[0].data[0]?.x?.toString() || ''
+        );
+
         return (
           <ResponsiveScatterPlot
             data={scatterData}
-            margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
+            margin={{ top: 20, right: 20, bottom: scatterAxisBottom.legendOffset + 20, left: 60 }}
             xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
             yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
             colors={terracottaGardenTheme.colors.primary}
@@ -53,8 +70,7 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
             useMesh={true}
             axisBottom={{
               legend: config?.xAxisLabel || 'X Axis',
-              legendPosition: 'middle',
-              legendOffset: 46,
+              ...scatterAxisBottom
             }}
             axisLeft={{
               legend: config?.yAxisLabel || 'Y Axis',
@@ -67,13 +83,18 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
       case 'bar':
         const indexBy = config?.xAxisKey || Object.keys(data[0])[0];
         const barKeys = config?.seriesKeys || Object.keys(data[0]).filter(k => k !== indexBy);
+        
+        const barAxisBottom = getAxisBottomConfig(
+          data.length,
+          data[0]?.[indexBy]?.toString() || ''
+        );
 
         return (
           <ResponsiveBar
             data={data}
             keys={barKeys}
             indexBy={indexBy}
-            margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
+            margin={{ top: 20, right: 20, bottom: barAxisBottom.legendOffset + 20, left: 60 }}
             padding={0.3}
             colors={terracottaGardenTheme.colors.primary}
             theme={terracottaGardenTheme.nivoTheme}
@@ -81,8 +102,7 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
             labelSkipHeight={12}
             axisBottom={{
               legend: config?.xAxisLabel || indexBy,
-              legendPosition: 'middle',
-              legendOffset: 46,
+              ...barAxisBottom
             }}
             axisLeft={{
               legend: config?.yAxisLabel || barKeys.join(', '),

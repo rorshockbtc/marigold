@@ -7,19 +7,19 @@ export const terracottaGardenTheme = {
     background: 'transparent',
     text: {
       fontSize: 12,
-      fontFamily: 'Inter, system-ui, sans-serif',
-      fill: '#D1D5DB', // text-gray-300 to match dark mode text
+      fontFamily: '"Helvetica Neue", Helvetica, Inter, system-ui, sans-serif',
+      fill: '#9CA3AF', // subtle grey for tick labels
     },
     axis: {
-      domain: { line: { stroke: '#4B5563', strokeWidth: 1 } },
+      domain: { line: { stroke: 'transparent', strokeWidth: 0 } }, // Remove axis domain line for maximum data-ink ratio
       ticks: { 
-        line: { stroke: '#4B5563', strokeWidth: 1 },
-        text: { fill: '#9CA3AF' }
+        line: { stroke: '#374151', strokeWidth: 1 },
+        text: { fill: '#6B7280' } // Very subtle text for ticks
       },
-      legend: { text: { fontSize: 13, fontWeight: 600, fill: '#D1D5DB' } },
+      legend: { text: { fontSize: 13, fontWeight: 500, fill: '#D1D5DB' } },
     },
     grid: {
-      line: { stroke: '#374151', strokeWidth: 1, strokeDasharray: '4 4' },
+      line: { stroke: '#1F2937', strokeWidth: 1, strokeDasharray: '2 4' }, // extremely subtle grid
     },
     tooltip: {
       container: {

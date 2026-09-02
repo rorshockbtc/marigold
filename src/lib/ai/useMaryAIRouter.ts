@@ -118,7 +118,7 @@ export function useMaryAIRouter() {
     naturalLanguageQuery: string,
     chartData: any[],
     chartConfig: ChartConfig
-  ): Promise<string | null> => {
+  ): Promise<{ blocks: any[], nextSocraticQuestion: string } | null> => {
     setIsGenerating(true);
     setError(null);
     setPipelineStatus("Synthesizing editorial narrative...");
@@ -133,7 +133,10 @@ export function useMaryAIRouter() {
       if (!res.ok) throw new Error("Failed to generate narrative");
 
       const data = await res.json();
-      return globalPIIPipeline.decodeString(data.narrative);
+      return {
+        blocks: data.blocks || [],
+        nextSocraticQuestion: data.nextSocraticQuestion || "What would you like to investigate next?"
+      };
     } catch (err: any) {
       console.error("Narrative Gen Error:", err);
       setError(err.message || "An unexpected error occurred.");

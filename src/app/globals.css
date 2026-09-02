@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @layer base {
   :root {
     /* Cassandra / Terracotta Garden Palette */
@@ -83,5 +79,38 @@ h1, h2, h3, h4, h5, h6 {
 
   .card {
     @apply rounded-[12px] border border-border bg-[var(--card-bg)] text-foreground shadow-sm p-6;
+  }
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Reset margins for print */
+  .print-reset-layout {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  @page {
+    margin: 2cm;
   }
 }
