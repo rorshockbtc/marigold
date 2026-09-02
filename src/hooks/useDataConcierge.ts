@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalFileSystem } from '@/lib/data/useLocalFileSystem';
 import { SecurityScanner } from '@/lib/data/SecurityScanner';
+import localforage from 'localforage';
 
 export type ConciergeState = 'IDLE' | 'LOCAL_CHECK' | 'DATA_DISCOVERY' | 'INGESTING' | 'RENDERING' | 'ERROR';
 
@@ -40,20 +41,23 @@ export function useDataConcierge() {
   const [ingestStatus, setIngestStatus] = useState<string>('');
   const { isConnected, requestDirectoryAccess, saveFileSilently } = useLocalFileSystem();
 
-  // Load saved stories from localStorage on mount
+  // Load saved stories from localforage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("marigold_saved_stories");
-        if (stored) {
-          setSavedStories(JSON.parse(stored));
-        } else {
-          setSavedStories([]);
-          localStorage.setItem("marigold_saved_stories", JSON.stringify([]));
+      const loadStories = async () => {
+        try {
+          const stored: any = await localforage.getItem("marigold_saved_stories");
+          if (stored) {
+            setSavedStories(stored);
+          } else {
+            setSavedStories([]);
+            await localforage.setItem("marigold_saved_stories", []);
+          }
+        } catch (e) {
+          console.error("Failed to load saved stories:", e);
         }
-      } catch (e) {
-        console.error("Failed to load saved stories:", e);
-      }
+      };
+      loadStories();
     }
   }, []);
 
@@ -70,7 +74,7 @@ export function useDataConcierge() {
       const filtered = prev.filter((s) => s.id !== updatedStory.id);
       const next = [updatedStory, ...filtered];
       if (typeof window !== "undefined") {
-        localStorage.setItem("marigold_saved_stories", JSON.stringify(next));
+        localforage.setItem("marigold_saved_stories", next).catch(e => console.error(e));
       }
       return next;
     });

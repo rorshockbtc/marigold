@@ -12,6 +12,7 @@ import { Link } from "@/components/ui/Link";
 import { DataRequiredState } from "@/components/DataRequiredState";
 import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
+import localforage from 'localforage';
 
 import { ArticleViewer } from '@/components/ArticleViewer';
 
@@ -41,20 +42,22 @@ export default function InsightsPage() {
     
     window.addEventListener('mari-article-update', handleArticleUpdate as EventListener);
     
-    // Load recent chats from localStorage
-    try {
-      const savedSessions = localStorage.getItem("elly_chat_sessions");
-      if (savedSessions) {
-        const parsed = JSON.parse(savedSessions);
-        setRecentChats(parsed.map((s: any) => ({
-          id: s.id,
-          title: s.title,
-          timestamp: s.timestamp
-        })));
+    // Load recent chats from localforage
+    const loadRecentChats = async () => {
+      try {
+        const parsed: any = await localforage.getItem("elly_chat_sessions");
+        if (parsed && Array.isArray(parsed)) {
+          setRecentChats(parsed.map((s: any) => ({
+            id: s.id,
+            title: s.title,
+            timestamp: s.timestamp
+          })));
+        }
+      } catch (e) {
+        console.error("Failed to parse chat sessions", e);
       }
-    } catch (e) {
-      console.error("Failed to parse chat sessions", e);
-    }
+    };
+    loadRecentChats();
 
     return () => {
       window.removeEventListener('mari-article-update', handleArticleUpdate as EventListener);
@@ -113,10 +116,13 @@ export default function InsightsPage() {
       articleState: story.articleState
     };
     
-    try {
-      const savedSessions = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]");
-      localStorage.setItem("elly_chat_sessions", JSON.stringify([newSession, ...savedSessions]));
-    } catch(e) {}
+    const saveNewSession = async () => {
+      try {
+        const savedSessions: any = await localforage.getItem("elly_chat_sessions") || [];
+        await localforage.setItem("elly_chat_sessions", [newSession, ...savedSessions]);
+      } catch(e) {}
+    };
+    saveNewSession();
     
     if (story.articleState) {
       setArticleState(story.articleState);

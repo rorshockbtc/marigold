@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import localforage from "localforage";
 import { getSearchRecipes, saveSearchRecipe, SearchRecipe } from "@/lib/firebase/db";
 import ReactMarkdown from 'react-markdown';
 import { usePathname } from 'next/navigation';
@@ -42,19 +43,24 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const { isReady: isDuckDBReady, query: queryDuckDB } = useDuckDB();
   const { addPlaybook } = usePlaybooks();
 
-  const getPageContext = () => {
+  const getPageContext = async () => {
     if (typeof window === 'undefined') return null;
     const activeGrp = localStorage.getItem("marigold_active_group") || "Independent Audit Workspace";
     const fname = localStorage.getItem("marigold_file_name") || "No file linked";
     const isDemo = activeGrp.toLowerCase().includes("demo") || activeGrp.toLowerCase().includes("acme") || activeGrp.toLowerCase().includes("roosevelt") || activeGrp.toLowerCase().includes("sandbox");
     const isDemoIsolated = isDemo && !fname.toUpperCase().includes("DEMO") && localStorage.getItem("marigold_file_connected") !== "true";
     
-    // Lightweight index of past chats and stories for long-term memory
     let pastChats = [];
-    try { pastChats = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]").map((s: any) => ({ id: s.id, title: s.title, timestamp: s.timestamp })); } catch(e){}
+    try { 
+      const rawSessions: any = await localforage.getItem("elly_chat_sessions");
+      if (rawSessions) pastChats = rawSessions.map((s: any) => ({ id: s.id, title: s.title, timestamp: s.timestamp })); 
+    } catch(e){}
     
     let pastStories = [];
-    try { pastStories = JSON.parse(localStorage.getItem("marigold_saved_stories") || "[]").map((s: any) => ({ id: s.id, title: s.title, summary: s.summary, createdAt: s.createdAt })); } catch(e){}
+    try { 
+      const rawStories: any = await localforage.getItem("marigold_saved_stories");
+      if (rawStories) pastStories = rawStories.map((s: any) => ({ id: s.id, title: s.title, summary: s.summary, createdAt: s.createdAt })); 
+    } catch(e){}
 
     return {
       currentRoute: pathname,
@@ -63,7 +69,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       datasetRowCount: isDemoIsolated ? "0" : (localStorage.getItem("marigold_file_rows") || (isDemo ? "1800" : "0")),
       isDataConnected: isDemoIsolated ? false : (localStorage.getItem("marigold_file_connected") === "true" || isDemo),
       isDemoMode: isDemo,
-      pastChats: pastChats.slice(0, 10), // Limit to 10 for context length
+      pastChats: pastChats.slice(0, 10),
       pastStories: pastStories.slice(0, 10)
     };
   };
@@ -74,12 +80,10 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     }
   }, [query]);
 
-  // Auto-submit initial query if provided (e.g. from Insights landing page)
   const hasAutoSubmitted = useRef(false);
   useEffect(() => {
     if (initialQuery && !hasAutoSubmitted.current) {
       hasAutoSubmitted.current = true;
-      // Use setTimeout to allow state to settle before firing
       setTimeout(() => {
         const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
         handleSubmit(fakeEvent);
@@ -87,18 +91,15 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     }
   }, [initialQuery]);
 
-  // Ethel Auto-scroll logic
   const activeSessionCheck = sessions.find(s => s.id === activeSessionId);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSessionCheck?.messages?.length]);
 
-  // Listen for external requests to fill the query box (e.g. from NonTechnicalTranslator)
   useEffect(() => {
     const handleSetQuery = (e: CustomEvent | Event) => {
       if ('detail' in e && (e as CustomEvent).detail?.query) {
         setQuery((e as CustomEvent).detail.query);
-        // Optionally focus the textarea
         if (textareaRef.current) {
           textareaRef.current.focus();
         }
@@ -108,24 +109,19 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     return () => window.removeEventListener('mari-set-query', handleSetQuery);
   }, []);
   
-  // Friendly Guide vs Pro Mode
   const [isFriendlyMode, setIsFriendlyMode] = useState(true);
   const [isPlaybookMode, setIsPlaybookMode] = useState(false);
-  // Voice listening state
   const [isListening, setIsListening] = useState(false);
 
-  // Recipes
   const [orgRecipes, setOrgRecipes] = useState<SearchRecipe[]>([]);
   const [localRecipes, setLocalRecipes] = useState<SearchRecipe[]>([]);
 
-  // Template Modal State
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [templateDesc, setTemplateDesc] = useState("");
   const [templateScope, setTemplateScope] = useState<"local" | "org">("local");
   const [savedPlaybooks, setSavedPlaybooks] = useState<Record<string, boolean>>({});
 
-  // Voice recognition helper
   const toggleSpeechRecognition = () => {
     if (typeof window === "undefined") return;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -152,16 +148,13 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     recognition.start();
   };
 
-  // Read aloud helper with natural voice selection
   const handleSpeakText = (text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    // Strip markdown chars for clean speaking
     const cleanText = text.replace(/[*#`~_]/g, "").replace(/\[.*?\]\(.*?\)/g, "");
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = 1.0;
 
-    // Select the most natural English voice available (e.g. Samantha, Alex, Google US)
     const voices = window.speechSynthesis.getVoices();
     const preferredNames = ["Samantha", "Alex", "Google US English", "Daniel", "Karen", "Oliver", "Ava", "Victoria"];
     let selectedVoice = voices.find(v => preferredNames.includes(v.name));
@@ -199,35 +192,29 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       content: `[SYSTEM: The user authorized streaming the public dataset "${affordance.datasetName}" (${affordance.datasetUrl}) into their local workspace. Please acknowledge this and begin querying the streamed data to construct the Data Story.]`
     };
     
-    // We update the UI optimistically and trigger handleSendMessage 
-    // to feed this system instruction into Mari's next ReAct loop
     setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, streamMsg] } : s));
     
-    // Send it back to the backend
     handleSubmit(undefined as any, false, streamMsg.content);
   };
   
-  // Load initial data
   useEffect(() => {
-    // Load Sessions
-    const savedSessions = localStorage.getItem("elly_chat_sessions");
-    if (savedSessions) {
+    const loadSessions = async () => {
       try {
-        const parsed = JSON.parse(savedSessions);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSessions(parsed);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (initialSessionId && parsed.some((s: any) => s.id === initialSessionId)) {
-          setActiveSessionId(initialSessionId);
-        } else if (parsed.length > 0) {
-          setActiveSessionId(parsed[0].id);
+        const parsed: any = await localforage.getItem("elly_chat_sessions");
+        if (parsed && Array.isArray(parsed)) {
+          setSessions(parsed);
+          if (initialSessionId && parsed.some((s: any) => s.id === initialSessionId)) {
+            setActiveSessionId(initialSessionId);
+          } else if (parsed.length > 0) {
+            setActiveSessionId(parsed[0].id);
+          }
         }
       } catch (e) {
         console.error("Failed to parse sessions", e);
       }
-    }
+    };
+    loadSessions();
 
-    // Load Local Recipes
     const savedLocalRecipes = localStorage.getItem("elly_local_recipes");
     if (savedLocalRecipes) {
       try {
@@ -237,25 +224,19 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       }
     }
 
-    // Load Org Recipes
     getSearchRecipes().then(setOrgRecipes);
 
-    // Pre-seed Semantic NLP Triage Cache
     TriageCache.getInstance().preSeedFAQs();
   }, []);
 
-  // Save sessions whenever they change
   useEffect(() => {
-    try {
-      localStorage.setItem("elly_chat_sessions", JSON.stringify(sessions));
-      setStorageLimitReached(false);
-    } catch (e) {
-      console.warn("Failed to save sessions, likely quota exceeded.", e);
-      setStorageLimitReached(true);
+    if (sessions.length > 0) {
+      localforage.setItem("elly_chat_sessions", sessions).catch((e) => {
+        console.warn("Failed to save sessions to localforage.", e);
+      });
     }
   }, [sessions]);
 
-  // Save local recipes whenever they change
   useEffect(() => {
     localStorage.setItem("elly_local_recipes", JSON.stringify(localRecipes));
   }, [localRecipes]);
@@ -263,7 +244,6 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const messages = activeSession ? activeSession.messages : [];
 
-  // Hydrate the Data Story canvas when switching to a session that has a saved article state
   useEffect(() => {
     if (activeSessionId) {
       const session = sessions.find(s => s.id === activeSessionId);
@@ -298,7 +278,6 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     let currentSessionId = activeSessionId;
     let currentMessages = messages;
 
-    // Create new session if none active
     if (!currentSessionId) {
       const newSession: ChatSession = {
         id: "s" + Date.now(),
@@ -315,10 +294,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
     const userMessage: ChatMessage = { role: "user", content: scrubbedQuery };
     const newMessages = [...currentMessages, userMessage];
     
-    // Update active session locally
     setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: newMessages } : s));
     
-    // Triage interception (unless escalated)
     if (!forceBypassTriage) {
       const triageAnswer = await TriageCache.getInstance().checkTriage(scrubbedQuery);
       if (triageAnswer) {
@@ -339,6 +316,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
 
     try {
       const userApiKey = localStorage.getItem("marigold_gemini_key") || "";
+      const pageCtx = await getPageContext();
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -349,7 +327,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           userApiKey,
           isFriendlyMode,
           isPlaybookMode,
-          pageContext: getPageContext(),
+          pageContext: pageCtx,
           articleState
         }),
       });
@@ -426,7 +404,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               userApiKey,
               isFriendlyMode,
               isPlaybookMode,
-              pageContext: getPageContext(),
+              pageContext: pageCtx,
               articleState: updatedArticle
             }),
           });
@@ -449,7 +427,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               userApiKey,
               isFriendlyMode,
               isPlaybookMode,
-              pageContext: getPageContext(),
+              pageContext: pageCtx,
               articleState: updatedArticle
             }),
           });
@@ -484,7 +462,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               userApiKey,
               isFriendlyMode,
               isPlaybookMode,
-              pageContext: getPageContext(),
+              pageContext: pageCtx,
               articleState: updatedArticle
             }),
           });
@@ -520,7 +498,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               userApiKey,
               isFriendlyMode,
               isPlaybookMode,
-              pageContext: getPageContext(),
+              pageContext: pageCtx,
               articleState: updatedArticle
             }),
           });
@@ -530,43 +508,13 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           const pastSessId = args.sessionId;
           let pastContent = "Error: Chat session not found.";
           try {
-            const allSessions = JSON.parse(localStorage.getItem("elly_chat_sessions") || "[]");
-            const found = allSessions.find((s: any) => s.id === pastSessId);
-            if (found) {
-              // Convert the history to text, scrubbed again for safety
-              pastContent = `[SYSTEM: RETRIEVED PAST CHAT SESSION "${found.title}"]\n\n` + 
-                found.messages.map((m: any) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-            }
-          } catch(e) {}
-          
-          const toolMessage: ChatMessage = { role: "user", content: pastContent };
-          loopMessages = [...loopMessages, toolMessage];
-          
-          const loopResponse = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              query: toolMessage.content, 
-              history: loopMessages,
-              userApiKey,
-              isFriendlyMode,
-              isPlaybookMode,
-              pageContext: getPageContext(),
-              articleState: updatedArticle
-            }),
-          });
-          loopResponseData = await loopResponse.json();
-          finalReply = loopResponseData.reply || finalReply;
-        } else if (t === 'read_data_story') {
-          const pastStoryId = args.storyId;
-          let pastContent = "Error: Data story not found.";
-          try {
-            const allStories = JSON.parse(localStorage.getItem("marigold_saved_stories") || "[]");
-            const found = allStories.find((s: any) => s.id === pastStoryId);
-            if (found) {
-              pastContent = `[SYSTEM: RETRIEVED PAST DATA STORY "${found.title}"]\nSummary: ${found.summary}\n`;
-              if (found.articleState?.sections) {
-                pastContent += found.articleState.sections.map((sec: any) => `## ${sec.heading}\n${sec.narrative}`).join('\n\n');
+            const allSessions: any = await localforage.getItem("elly_chat_sessions");
+            if (allSessions) {
+              const found = allSessions.find((s: any) => s.id === pastSessId);
+              if (found) {
+                // Convert the history to text, scrubbed again for safety
+                pastContent = `[SYSTEM: RETRIEVED PAST CHAT SESSION "${found.title}"]\n\n` + 
+                  found.messages.map((m: any) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
               }
             }
           } catch(e) {}
@@ -583,7 +531,41 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
               userApiKey,
               isFriendlyMode,
               isPlaybookMode,
-              pageContext: getPageContext(),
+              pageContext: pageCtx,
+              articleState: updatedArticle
+            }),
+          });
+          loopResponseData = await loopResponse.json();
+          finalReply = loopResponseData.reply || finalReply;
+        } else if (t === 'read_data_story') {
+          const pastStoryId = args.storyId;
+          let pastContent = "Error: Data story not found.";
+          try {
+            const allStories: any = await localforage.getItem("marigold_saved_stories");
+            if (allStories) {
+              const found = allStories.find((s: any) => s.id === pastStoryId);
+              if (found) {
+                pastContent = `[SYSTEM: RETRIEVED PAST DATA STORY "${found.title}"]\nSummary: ${found.summary}\n`;
+                if (found.articleState?.sections) {
+                  pastContent += found.articleState.sections.map((sec: any) => `## ${sec.heading}\n${sec.narrative}`).join('\n\n');
+                }
+              }
+            }
+          } catch(e) {}
+          
+          const toolMessage: ChatMessage = { role: "user", content: pastContent };
+          loopMessages = [...loopMessages, toolMessage];
+          
+          const loopResponse = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              query: toolMessage.content, 
+              history: loopMessages,
+              userApiKey,
+              isFriendlyMode,
+              isPlaybookMode,
+              pageContext: pageCtx,
               articleState: updatedArticle
             }),
           });
