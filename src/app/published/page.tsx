@@ -4,23 +4,41 @@ import React, { useEffect, useState } from 'react';
 import { ArticleViewer } from '@/components/ArticleViewer';
 import { ArticleState } from '@/lib/types';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
+import { getPublishedStory } from '@/lib/firebase/firestore';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function PublishedStoryPage() {
+function PublishedStoryContent() {
   const [article, setArticle] = useState<ArticleState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('marigold_published_story');
-      if (stored) {
-        setArticle(JSON.parse(stored));
-      } else {
-        setError("No published story found. Please publish a story from the Data Explorer first.");
+    async function loadStory() {
+      const id = searchParams.get('id');
+      try {
+        if (id) {
+          const story = await getPublishedStory(id);
+          if (story) {
+            setArticle(story);
+            return;
+          }
+        }
+        
+        // Fallback to local storage
+        const stored = localStorage.getItem('marigold_published_story');
+        if (stored) {
+          setArticle(JSON.parse(stored));
+        } else {
+          setError("No published story found. Please publish a story from the Data Explorer first.");
+        }
+      } catch (e) {
+        setError("Failed to load published story.");
       }
-    } catch (e) {
-      setError("Failed to load published story.");
     }
-  }, []);
+    
+    loadStory();
+  }, [searchParams]);
 
   if (error) {
     return (
@@ -54,5 +72,20 @@ export default function PublishedStoryPage() {
         isPublicView={true} 
       />
     </div>
+  );
+}
+
+export default function PublishedStoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <MarigoldIcon className="w-12 h-12 text-primary opacity-50 mb-4" />
+          <p className="text-muted-foreground font-serif">Loading published story...</p>
+        </div>
+      </div>
+    }>
+      <PublishedStoryContent />
+    </Suspense>
   );
 }

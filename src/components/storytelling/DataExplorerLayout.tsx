@@ -92,12 +92,12 @@ export const DataExplorerLayout: React.FC = () => {
     const intentPayload = await classifyIntent(userText, activeSchema?.fileName || null);
     if (!intentPayload) return;
 
-    if (intentPayload.intent === 'LOCAL_DATA') {
+    if (intentPayload.intent === 'LOCAL_DATA_EXPLORE' || intentPayload.intent === 'LOCAL_DATA_DRAFT') {
         if (!activeSchema) {
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', text: "I need a dataset to run this analysis. Please upload a CSV first." }]);
             return;
         }
-        await executeLocalPipeline(userText);
+        await executeLocalPipeline(userText, intentPayload.intent === 'LOCAL_DATA_DRAFT', intentPayload.socraticQuestion || undefined);
     } 
     else if (intentPayload.intent === 'WEB_HUNT') {
         setMessages(prev => [...prev, {
@@ -110,9 +110,16 @@ export const DataExplorerLayout: React.FC = () => {
     else if (intentPayload.intent === 'QUALITATIVE_RESEARCH') {
         await executeResearchPipeline(userText);
     }
+    else if (intentPayload.intent === 'CLARIFY_MOTIVATION') {
+        setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: 'assistant',
+            text: intentPayload.socraticQuestion || "Could you clarify your goal?"
+        }]);
+    }
   };
 
-  const executeLocalPipeline = async (userQuery: string) => {
+  const executeLocalPipeline = async (userQuery: string, isDrafting: boolean, exploreQuestion?: string) => {
     if (!activeSchema) return;
     
     let sqlPayload = null;
@@ -139,41 +146,56 @@ export const DataExplorerLayout: React.FC = () => {
 
     if (!duckDbResult || !sqlPayload) return;
 
-    const aiResponse = await synthesizeNarrative(userQuery, duckDbResult, sqlPayload.chartConfig);
-    if (!aiResponse || !Array.isArray(aiResponse.blocks)) return;
+    if (isDrafting) {
+      const aiResponse = await synthesizeNarrative(userQuery, duckDbResult, sqlPayload.chartConfig);
+      if (!aiResponse || !Array.isArray(aiResponse.blocks)) return;
 
-    setMessages(prev => [...prev, {
-      id: Date.now().toString(),
-      role: 'assistant',
-      text: aiResponse.nextSocraticQuestion,
-      payload: {
-        query: sqlPayload.query,
-        chartType: sqlPayload.chartType,
-        chartConfig: sqlPayload.chartConfig,
-        narrative: "I've drafted a new section in the dossier."
-      }
-    }]);
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        text: aiResponse.nextSocraticQuestion,
+        payload: {
+          query: sqlPayload.query,
+          chartType: sqlPayload.chartType,
+          chartConfig: sqlPayload.chartConfig,
+          narrative: "I've drafted a new section in the dossier."
+        }
+      }]);
 
-    const newDossierBlocks: DossierBlock[] = aiResponse.blocks.map((b: any, index: number) => {
-      const isChart = b.type === 'chart';
-      return {
-        id: Date.now().toString() + '-' + index,
-        type: isChart ? 'chart' : b.type,
-        status: 'proposed',
-        content: {
-          title: b.type === 'header' ? globalPIIPipeline.decodeString(b.content) : undefined,
-          narrative: b.type === 'paragraph' ? globalPIIPipeline.decodeString(b.content) : undefined,
-          chartConfig: isChart ? {
-            chartType: sqlPayload!.chartType,
-            data: duckDbResult!,
-            config: sqlPayload!.chartConfig
-          } : undefined
-        },
-        sqlProvenance: isChart ? sqlPayload!.query : undefined
-      };
-    });
+      const newDossierBlocks: DossierBlock[] = aiResponse.blocks.map((b: any, index: number) => {
+        const isChart = b.type === 'chart';
+        return {
+          id: Date.now().toString() + '-' + index,
+          type: isChart ? 'chart' : b.type,
+          status: 'proposed',
+          content: {
+            title: b.title ? globalPIIPipeline.decodeString(b.title) : undefined,
+            narrative: b.narrative ? globalPIIPipeline.decodeString(b.narrative) : undefined,
+            chartConfig: isChart ? {
+              chartType: sqlPayload!.chartType,
+              data: duckDbResult!,
+              config: sqlPayload!.chartConfig
+            } : undefined
+          },
+          sqlProvenance: isChart ? sqlPayload!.query : undefined
+        };
+      });
 
-    setDossierBlocks(prev => [...prev, ...newDossierBlocks]);
+      setDossierBlocks(prev => [...prev, ...newDossierBlocks]);
+    } else {
+      // Just exploratory
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        text: exploreQuestion || "Here's what I found. Shall we draft a section for the report?",
+        payload: {
+          query: sqlPayload.query,
+          chartType: sqlPayload.chartType,
+          chartConfig: sqlPayload.chartConfig,
+          narrative: `Exploratory Query Executed: Found ${duckDbResult.length} rows.`
+        }
+      }]);
+    }
   };
 
   const executeResearchPipeline = async (userQuery: string) => {

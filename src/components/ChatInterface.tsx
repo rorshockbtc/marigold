@@ -448,17 +448,17 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           loopResponseData = await loopResponse.json();
           finalReply = loopResponseData.reply || finalReply;
         } else if (t === 'append_section') {
-          const sectionExists = updatedArticle.sections.some(s => s.id === args.id);
+          const sectionExists = (updatedArticle.sections || []).some(s => s.id === args.id);
           if (sectionExists) {
             updatedArticle = {
               ...updatedArticle,
-              sections: updatedArticle.sections.map(s => s.id === args.id ? { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart } : s)
+              sections: (updatedArticle.sections || []).map(s => s.id === args.id ? { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart } : s)
             };
             hiddenContext = `[SYSTEM: Updated existing section "${args.heading}"]`;
           } else {
             updatedArticle = { 
               ...updatedArticle, 
-              sections: [...updatedArticle.sections, { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart }] 
+              sections: [...(updatedArticle.sections || []), { id: args.id, heading: args.heading, narrative: args.narrative, chart: args.chart }] 
             };
             hiddenContext = `[SYSTEM: Appended section "${args.heading}"]`;
           }
@@ -485,7 +485,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         } else if (t === 'update_section') {
           updatedArticle = {
             ...updatedArticle,
-            sections: updatedArticle.sections.map(s => {
+            sections: (updatedArticle.sections || []).map(s => {
               if (s.id === args.id) {
                 return {
                   ...s,
@@ -604,7 +604,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       let didUpdateArticle = false;
       if (
         updatedArticle.title !== (articleState?.title || "Data Investigation") ||
-        updatedArticle.sections.length !== (articleState?.sections.length || 0) ||
+        (updatedArticle.sections?.length || 0) !== (articleState?.sections?.length || 0) ||
         JSON.stringify(updatedArticle.sections) !== JSON.stringify(articleState?.sections)
       ) {
         didUpdateArticle = true;

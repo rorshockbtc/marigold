@@ -22,6 +22,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/mock-login(.*)',
   '/mock-search(.*)',
+  '/published(.*)',
   '/api/(.*)',
 ]);
 

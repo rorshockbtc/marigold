@@ -20,9 +20,10 @@ export interface SQLPayload {
 }
 
 export interface IntentPayload {
-  intent: 'LOCAL_DATA' | 'WEB_HUNT' | 'QUALITATIVE_RESEARCH';
+  intent: 'LOCAL_DATA_EXPLORE' | 'LOCAL_DATA_DRAFT' | 'WEB_HUNT' | 'QUALITATIVE_RESEARCH' | 'CLARIFY_MOTIVATION';
   reasoning: string;
   proposedDatasetQuery: string | null;
+  socraticQuestion: string | null;
 }
 
 export function useMaryAIRouter() {

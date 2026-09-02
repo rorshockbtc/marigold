@@ -24,8 +24,9 @@ export async function POST(req: Request) {
           items: {
             type: SchemaType.OBJECT,
             properties: {
-              type: { type: SchemaType.STRING, description: "Must be 'header', 'paragraph', or 'chart'" },
-              content: { type: SchemaType.STRING, description: "The text content for headers or paragraphs. Leave empty for 'chart'." }
+              type: { type: SchemaType.STRING, description: "Must be 'hook', 'thesis', 'chart', 'dialectic_antithesis', or 'synthesis'" },
+              title: { type: SchemaType.STRING, description: "Optional title for this block. Leave empty if 'chart'." },
+              narrative: { type: SchemaType.STRING, description: "The text content for this block. Leave empty if 'chart'." }
             },
             required: ["type"]
           }

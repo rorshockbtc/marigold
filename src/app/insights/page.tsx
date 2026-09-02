@@ -102,7 +102,7 @@ export default function InsightsPage() {
   const handlePublishStory = (storyToPublish: import('@/lib/types').ArticleState) => {
     sharePlaybook({
       title: storyToPublish.title,
-      description: storyToPublish.sections[0]?.narrative || "",
+      description: storyToPublish.blocks?.[0]?.content.narrative || storyToPublish.sections?.[0]?.narrative || "",
       ruleType: "DATA_STORY",
       threshold: 0,
     });
@@ -150,7 +150,7 @@ export default function InsightsPage() {
       id: `story-${Date.now()}`,
       title: articleState.title || "Untitled Data Story",
       query: articleState.title || "Data Investigation",
-      summary: articleState.sections[0]?.narrative || "Local data investigation...",
+      summary: articleState.blocks?.[0]?.content.narrative || articleState.sections?.[0]?.narrative || "Local data investigation...",
       correlationScore: parseFloat((0.80 + Math.random() * 0.15).toFixed(2)), // Mock score for aesthetics
       sourceUrl: "local",
       sourceName: "Local Dataset",

@@ -27,9 +27,22 @@ export interface ArticleSection {
   chart?: ArticleChart;
 }
 
+export interface DossierBlock {
+  id: string;
+  type: 'hook' | 'thesis' | 'chart' | 'dialectic_antithesis' | 'synthesis';
+  status: 'proposed' | 'approved' | 'rejected';
+  content: {
+    title?: string;
+    narrative?: string;
+    chartSpec?: ArticleChart;
+  };
+  sqlProvenance?: string;
+}
+
 export interface ArticleState {
   title: string;
-  sections: ArticleSection[];
+  blocks?: DossierBlock[];
+  sections?: ArticleSection[]; // Legacy support for old formatted mock stories
 }
 
 // -- Chat & LLM Interfaces --
