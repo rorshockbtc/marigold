@@ -109,7 +109,15 @@ export function ArticleViewer({
     if (!displayArticle.title) return;
     const fetchImage = async () => {
       try {
-        const res = await fetch(`/api/unsplash?query=${encodeURIComponent(displayArticle.title)}`);
+        // Extract 1-3 key terms from the title for a better Unsplash search
+        const stopWords = ['is', 'there', 'a', 'the', 'of', 'and', 'to', 'in', 'for', 'on', 'with', 'what', 'how', 'why', 'when', 'who', 'are', 'do', 'does'];
+        const words = displayArticle.title
+          .replace(/[^\w\s]/gi, '')
+          .split(' ')
+          .filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
+        const imageQuery = words.slice(0, 2).join(' ') || 'data analytics';
+
+        const res = await fetch(`/api/unsplash?query=${encodeURIComponent(imageQuery)}`);
         const data = await res.json();
         if (data.url) {
           setUnsplashData(data);
@@ -378,9 +386,9 @@ export function ArticleViewer({
                 backgroundPosition: 'center'
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-4 left-6 text-white">
-                <h1 className="text-3xl md:text-4xl font-serif font-bold shadow-sm">{displayArticle.title}</h1>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+              <div className="absolute bottom-6 left-8 right-8 text-white">
+                <h1 className="text-3xl md:text-4xl font-serif font-bold text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.9)] leading-tight">{displayArticle.title}</h1>
               </div>
               
               {/* Attribution */}
