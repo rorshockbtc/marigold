@@ -7,6 +7,7 @@ import { ResponsiveLine } from '@nivo/line';
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { DecryptionEngine } from '@/lib/security/DecryptionEngine';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ArticleViewerProps {
   article: ArticleState;
@@ -29,10 +30,11 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally, isPubl
   const handlePublishClick = () => {
     setIsPublished(true);
     onPublishToGroup();
-    // Save to local storage for the published view
+    // Save to local storage for the published view with a unique ID
     if (typeof window !== 'undefined') {
-      localStorage.setItem('marigold_published_story', JSON.stringify(displayArticle));
-      window.open('/published', '_blank');
+      const uid = uuidv4().substring(0, 8);
+      localStorage.setItem('marigold_published_story', JSON.stringify({ ...displayArticle, _publishId: uid }));
+      window.open(`/published?id=${uid}`, '_blank');
     }
     setTimeout(() => setIsPublished(false), 3000);
   };
@@ -46,10 +48,20 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally, isPubl
       };
       
       for (const sec of article.sections) {
+        let cleanNarrative = "";
+        if (sec.narrative) {
+          const raw = await DecryptionEngine.hydrateText(sec.narrative);
+          cleanNarrative = raw
+            .replace(/\\n/g, '\n')
+            .replace(/\\\*/g, '*')
+            .replace(/\\_/g, '_')
+            .replace(/\\#/g, '#');
+        }
+
         const nextSec: ArticleSection = {
           id: sec.id,
           heading: sec.heading ? await DecryptionEngine.hydrateText(sec.heading) : "",
-          narrative: sec.narrative ? await DecryptionEngine.hydrateText(sec.narrative) : "",
+          narrative: cleanNarrative,
         };
         
         if (sec.chart) {
@@ -91,9 +103,12 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally, isPubl
         <h1 className="text-xl font-serif font-bold text-text-header truncate mr-4">
           {displayArticle.title || "Untitled Data Story"}
         </h1>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 print:hidden">
           {!isPublicView && (
             <>
+              <Button onClick={() => window.print()} variant="outline" className="flex items-center gap-2">
+                Export PDF
+              </Button>
               <Button onClick={handleSaveClick} variant="outline" className="flex items-center gap-2">
                 <Save className="w-4 h-4" /> {isSaved ? "Saved!" : "Save"}
               </Button>
@@ -137,7 +152,7 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally, isPubl
                   Data Visualization: {section.chart.type.toUpperCase()}
                 </figcaption>
                 
-                <div className="h-[400px] w-full">
+                <div className="h-[550px] w-full">
                   {(() => {
                     const c = section.chart;
                     if (!c) return null;
@@ -208,12 +223,12 @@ export function ArticleViewer({ article, onPublishToGroup, onSaveLocally, isPubl
 
                       if (maxLabelLength > 20) {
                         rotation = -90;
-                        bottomMargin = 140;
-                        legendOffset = 120;
+                        bottomMargin = Math.max(140, maxLabelLength * 6);
+                        legendOffset = bottomMargin - 20;
                       } else if (maxLabelLength > 10) {
                         rotation = -45;
-                        bottomMargin = 100;
-                        legendOffset = 80;
+                        bottomMargin = Math.max(100, maxLabelLength * 5);
+                        legendOffset = bottomMargin - 20;
                       }
 
                       const dynamicAxisBottom = { 
