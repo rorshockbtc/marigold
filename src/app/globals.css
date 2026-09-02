@@ -80,6 +80,14 @@ h1, h2, h3, h4, h5, h6 {
   .card {
     @apply rounded-[12px] border border-border bg-[var(--card-bg)] text-foreground shadow-sm p-6;
   }
+  
+  .markdown-content strong {
+    @apply font-bold text-foreground;
+  }
+
+  .markdown-content em {
+    @apply italic;
+  }
 }
 
 @media print {

@@ -611,8 +611,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       }
 
       finalReply = finalReply || (didUpdateArticle 
-        ? "I've updated the Data Story! Take a look at the new section—does this align with what you were looking for, or should we examine another variable next?" 
-        : "I didn't find any new data to update the story with. What should we look at next?");
+        ? "I've updated the Data Story with my findings. How does this align with your initial expectations?" 
+        : "I couldn't find any new data to add. Is there another specific angle you'd like to explore?");
 
       const assistantMessage: ChatMessage = { 
         role: "assistant", 
@@ -832,7 +832,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                       variant="primary" 
                       className="w-full justify-center gap-2 font-bold text-sm bg-blue-600 text-white py-3 rounded-xl shadow-sm hover:bg-blue-700 transition-all"
                     >
-                      <Download className="w-4 h-4 shrink-0" /> <span className="truncate">Download: {msg.streamAffordance.datasetName}</span>
+                      <Download className="w-4 h-4 shrink-0" /> <span className="truncate">Stream Dataset</span>
                     </Button>
                     <p className="text-[10px] text-muted-foreground mt-2 text-center">
                       Authorizes Marigold to fetch this public dataset securely.
