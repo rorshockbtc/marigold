@@ -200,7 +200,21 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
   useEffect(() => {
     const loadSessions = async () => {
       try {
-        const parsed: any = await localforage.getItem("elly_chat_sessions");
+        let parsed: any = await localforage.getItem("elly_chat_sessions");
+        
+        // Migrate old localStorage data if localforage is empty
+        if (!parsed || parsed.length === 0) {
+          const oldData = localStorage.getItem("elly_chat_sessions");
+          if (oldData) {
+            try {
+              parsed = JSON.parse(oldData);
+              if (parsed && Array.isArray(parsed)) {
+                await localforage.setItem("elly_chat_sessions", parsed);
+              }
+            } catch(e) {}
+          }
+        }
+
         if (parsed && Array.isArray(parsed)) {
           setSessions(parsed);
           if (initialSessionId && parsed.some((s: any) => s.id === initialSessionId)) {

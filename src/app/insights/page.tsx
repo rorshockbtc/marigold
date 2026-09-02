@@ -45,7 +45,20 @@ export default function InsightsPage() {
     // Load recent chats from localforage
     const loadRecentChats = async () => {
       try {
-        const parsed: any = await localforage.getItem("elly_chat_sessions");
+        let parsed: any = await localforage.getItem("elly_chat_sessions");
+        
+        if (!parsed || parsed.length === 0) {
+          const oldData = localStorage.getItem("elly_chat_sessions");
+          if (oldData) {
+            try {
+              parsed = JSON.parse(oldData);
+              if (parsed && Array.isArray(parsed)) {
+                await localforage.setItem("elly_chat_sessions", parsed);
+              }
+            } catch(e) {}
+          }
+        }
+
         if (parsed && Array.isArray(parsed)) {
           setRecentChats(parsed.map((s: any) => ({
             id: s.id,

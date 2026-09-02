@@ -46,8 +46,21 @@ export function useDataConcierge() {
     if (typeof window !== "undefined") {
       const loadStories = async () => {
         try {
-          const stored: any = await localforage.getItem("marigold_saved_stories");
-          if (stored) {
+          let stored: any = await localforage.getItem("marigold_saved_stories");
+          
+          if (!stored || stored.length === 0) {
+            const oldData = localStorage.getItem("marigold_saved_stories");
+            if (oldData) {
+              try {
+                stored = JSON.parse(oldData);
+                if (stored && Array.isArray(stored) && stored.length > 0) {
+                  await localforage.setItem("marigold_saved_stories", stored);
+                }
+              } catch(e) {}
+            }
+          }
+
+          if (stored && Array.isArray(stored) && stored.length > 0) {
             setSavedStories(stored);
           } else {
             setSavedStories([]);
