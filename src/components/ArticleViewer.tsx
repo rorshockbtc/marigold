@@ -131,8 +131,10 @@ export function ArticleViewer({
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [publishConsent, setPublishConsent] = useState(false);
 
   const handlePublishClick = () => {
+    setPublishConsent(false);
     setIsPublishModalOpen(true);
   };
 
@@ -334,10 +336,28 @@ export function ArticleViewer({
                       <span className="text-sm font-normal text-muted-foreground text-center">Save this story to your local offline workspace. Fully private.</span>
                     </Button>
                     
-                    <Button onClick={handlePublishToWeb} variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-blue-500 hover:bg-blue-500/5 transition-all">
-                      <span className="font-bold text-lg text-blue-600">Publish to Public Web</span>
-                      <span className="text-sm font-normal text-muted-foreground text-center px-4">Generate a shareable public URL. An aggressive PII scrubber will automatically redact names, emails, phones, and specific street addresses before publishing.</span>
-                    </Button>
+                    <div className="border border-border rounded-lg p-4 bg-surface-secondary mt-6">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          className="mt-1 w-4 h-4 text-primary border-border rounded focus:ring-primary bg-surface"
+                          checked={publishConsent}
+                          onChange={(e) => setPublishConsent(e.target.checked)}
+                        />
+                        <span className="text-sm text-text-body font-medium">
+                          I consent to publishing this data publicly and understand that I am fully responsible for ensuring no sensitive PII is leaked.
+                        </span>
+                      </label>
+                      <Button 
+                        onClick={handlePublishToWeb} 
+                        disabled={!publishConsent}
+                        variant="outline" 
+                        className="w-full h-auto mt-4 py-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-blue-500 hover:bg-blue-500/5 disabled:opacity-50 disabled:hover:border-border disabled:hover:bg-transparent transition-all"
+                      >
+                        <span className="font-bold text-lg text-blue-600">Publish to Public Web</span>
+                        <span className="text-sm font-normal text-muted-foreground text-center px-4">Generate a shareable public URL. An aggressive PII scrubber will automatically redact names, emails, phones, and specific street addresses before publishing.</span>
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}

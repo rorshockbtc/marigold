@@ -2,12 +2,15 @@ import { ArticleChart } from '@/lib/types';
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveLine } from '@nivo/line';
-import { BarChart3, PieChart, TrendingUp } from 'lucide-react';
+import { BarChart3, PieChart, TrendingUp, Activity } from 'lucide-react';
+import { useState } from 'react';
 
 export function ChartRenderer({ chart }: { chart: ArticleChart }) {
+  const [localType, setLocalType] = useState(chart.type);
+
   if (!chart || !chart.series || chart.series.length === 0) return null;
 
-  const c = chart;
+  const c = { ...chart, type: localType };
 
   const commonLegends: any[] = [
     {
@@ -47,11 +50,28 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
 
   return (
     <figure className="my-10 bg-white border border-border-soft rounded-xl p-6 shadow-sm">
-      <figcaption className="text-xs font-bold text-text-header uppercase tracking-wider flex items-center gap-2 mb-6 pb-4 border-b border-border-soft">
-        {c.type === 'bar' ? <BarChart3 className="w-4 h-4 text-primary" /> : 
-         c.type === 'pie' ? <PieChart className="w-4 h-4 text-primary" /> : 
-         <TrendingUp className="w-4 h-4 text-primary" />}
-        Data Visualization: {c.type.toUpperCase()}
+      <figcaption className="flex items-center justify-between mb-6 pb-4 border-b border-border-soft">
+        <div className="text-xs font-bold text-text-header uppercase tracking-wider flex items-center gap-2">
+          {c.type === 'bar' ? <BarChart3 className="w-4 h-4 text-primary" /> : 
+           c.type === 'pie' ? <PieChart className="w-4 h-4 text-primary" /> : 
+           c.type === 'scatter' ? <Activity className="w-4 h-4 text-primary" /> :
+           <TrendingUp className="w-4 h-4 text-primary" />}
+          Data Visualization
+        </div>
+        <div className="flex items-center gap-1 bg-surface-hover p-1 rounded-md border border-border">
+          <button onClick={() => setLocalType('bar')} title="Bar Chart" className={`p-1.5 rounded-sm transition-colors ${c.type === 'bar' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-surface hover:text-text-body'}`}>
+            <BarChart3 className="w-4 h-4" />
+          </button>
+          <button onClick={() => setLocalType('line')} title="Line Chart" className={`p-1.5 rounded-sm transition-colors ${c.type === 'line' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-surface hover:text-text-body'}`}>
+            <TrendingUp className="w-4 h-4" />
+          </button>
+          <button onClick={() => setLocalType('scatter')} title="Scatter Plot" className={`p-1.5 rounded-sm transition-colors ${c.type === 'scatter' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-surface hover:text-text-body'}`}>
+            <Activity className="w-4 h-4" />
+          </button>
+          <button onClick={() => setLocalType('pie')} title="Pie Chart" className={`p-1.5 rounded-sm transition-colors ${c.type === 'pie' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-surface hover:text-text-body'}`}>
+            <PieChart className="w-4 h-4" />
+          </button>
+        </div>
       </figcaption>
       
       <div className="h-[550px] w-full">
@@ -121,6 +141,8 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 labelSkipWidth={12}
                 labelSkipHeight={12}
                 legends={keys.length === 1 ? [] : commonLegends}
+                animate={true}
+                motionConfig="gentle"
               />
             );
           }
@@ -161,6 +183,8 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 lineWidth={isScatter ? 0 : 2}
                 colors={{ scheme: 'nivo' }}
                 legends={commonLegends.map(l => ({ ...l, dataFrom: undefined }))}
+                animate={true}
+                motionConfig="gentle"
               />
             );
           }
@@ -193,6 +217,8 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 arcLabelsSkipAngle={10}
                 arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
                 legends={commonLegends.map(l => ({ ...l, dataFrom: undefined, direction: 'column', anchor: 'right', translateY: 0, translateX: 140 }))}
+                animate={true}
+                motionConfig="gentle"
               />
             );
           }
