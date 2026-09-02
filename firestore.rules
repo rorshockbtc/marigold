@@ -11,6 +11,11 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
     
+    // Public Stories can be published by anyone (for demo purposes)
+    match /public_stories/{document=**} {
+      allow read, write: if true;
+    }
+    
     // Default deny for everything else
     match /{document=**} {
       allow read, write: if false;

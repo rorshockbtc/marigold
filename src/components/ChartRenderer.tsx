@@ -111,7 +111,8 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 margin={{ top: 20, right: 180, bottom: bottomMargin, left: leftMargin }}
                 padding={0.3}
                 layout={isHorizontal ? 'horizontal' : 'vertical'}
-                colors={{ scheme: 'set2' }}
+                colors={{ scheme: 'nivo' }}
+                colorBy={keys.length === 1 ? 'indexValue' : 'id'}
                 axisBottom={axisBottom}
                 axisLeft={axisLeft}
                 labelSkipWidth={12}
@@ -155,7 +156,7 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 enableGridX={!isScatter}
                 enableGridY={true}
                 lineWidth={isScatter ? 0 : 2}
-                colors={{ scheme: 'set2' }}
+                colors={{ scheme: 'nivo' }}
                 legends={commonLegends.map(l => ({ ...l, dataFrom: undefined }))}
               />
             );
@@ -178,7 +179,7 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 innerRadius={0.5}
                 padAngle={0.7}
                 cornerRadius={3}
-                colors={{ scheme: 'set2' }}
+                colors={{ scheme: 'nivo' }}
                 borderWidth={1}
                 borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
                 enableArcLinkLabels={!tooManySlices}

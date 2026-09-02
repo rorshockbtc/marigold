@@ -49,7 +49,13 @@ export async function POST(req: Request) {
 Your job is to read a CSV schema and a user query, and return ONLY a valid DuckDB SQL statement and a chart configuration for Nivo.
 The SQL query MUST read from a table named 'data_file'.
 Example query: SELECT county as x, count(*) as y FROM data_file GROUP BY county ORDER BY y DESC LIMIT 10
-Schema: ${JSON.stringify(schema)}`;
+Schema: ${JSON.stringify(schema)}
+
+Chart Selection Rules:
+1. 'scatter' - USE THIS when comparing two continuous numerical variables or plotting correlations over time (e.g., Temperature vs Turnout, GDP vs Time).
+2. 'line' - USE THIS when showing trends over time (e.g., yearly growth) where data is continuous.
+3. 'pie' - USE THIS for showing proportions of a whole with fewer than 7 categories.
+4. 'bar' - USE THIS for comparing discrete categories (e.g., states, names, buckets).`;
 
     if (sqlError) {
       systemPrompt += `\n\nCRITICAL: Your previous SQL attempt failed with error: ${sqlError}\nPlease correct your DuckDB SQL syntax.`;
