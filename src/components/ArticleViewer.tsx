@@ -339,9 +339,14 @@ export function ArticleViewer({
               ) : (
                 <>
                   <div className="space-y-4">
-                    <Button onClick={handlePublishToWorkspace} variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-primary hover:bg-primary/5 transition-all">
-                      <span className="font-bold text-lg">Private to Workspace</span>
-                      <span className="text-sm font-normal text-muted-foreground text-center">Save this story to your local offline workspace. Fully private.</span>
+                    <Button onClick={handlePublishToGroup} variant="outline" className="w-full h-auto py-4 px-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-primary hover:bg-primary/5 transition-all overflow-hidden">
+                      <span className="font-bold text-lg truncate max-w-full">Publish to Group Hub</span>
+                      <span className="text-sm font-normal text-muted-foreground text-center whitespace-normal break-words w-full">Share this Data Story securely with your verified group. Only users with authorized credentials will be able to view this data.</span>
+                    </Button>
+                    
+                    <Button onClick={handlePublishToWorkspace} variant="outline" className="w-full h-auto py-4 px-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-primary hover:bg-primary/5 transition-all overflow-hidden">
+                      <span className="font-bold text-lg truncate max-w-full">Private to Workspace</span>
+                      <span className="text-sm font-normal text-muted-foreground text-center whitespace-normal break-words w-full">Save this Data Story to your local offline workspace. Fully private.</span>
                     </Button>
                     
                     <div className="border border-border rounded-lg p-4 bg-surface-secondary mt-6">
@@ -360,10 +365,10 @@ export function ArticleViewer({
                         onClick={handlePublishToWeb} 
                         disabled={!publishConsent}
                         variant="outline" 
-                        className="w-full h-auto mt-4 py-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-blue-500 hover:bg-blue-500/5 disabled:opacity-50 disabled:hover:border-border disabled:hover:bg-transparent transition-all"
+                        className="w-full h-auto mt-4 py-4 px-4 flex flex-col items-center gap-2 justify-center border-2 border-border hover:border-blue-500 hover:bg-blue-500/5 disabled:opacity-50 disabled:hover:border-border disabled:hover:bg-transparent transition-all overflow-hidden"
                       >
-                        <span className="font-bold text-lg text-blue-600">Publish to Public Web</span>
-                        <span className="text-sm font-normal text-muted-foreground text-center px-4">Generate a shareable public URL. An aggressive PII scrubber will automatically redact names, emails, phones, and specific street addresses before publishing.</span>
+                        <span className="font-bold text-lg text-blue-600 truncate max-w-full">Publish to Public Web</span>
+                        <span className="text-sm font-normal text-muted-foreground text-center whitespace-normal break-words w-full">Generate a shareable public URL. An aggressive PII scrubber will automatically redact names, emails, phones, and specific street addresses before publishing.</span>
                       </Button>
                     </div>
                   </div>

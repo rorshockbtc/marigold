@@ -9,8 +9,12 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
   const [localType, setLocalType] = useState(chart.type);
 
   if (!chart || !chart.series || chart.series.length === 0) return null;
+  
+  // Filter out series that have absolutely no data points
+  const validSeries = chart.series.filter(s => s.data && s.data.length > 0);
+  if (validSeries.length === 0) return null;
 
-  const c = { ...chart, type: localType };
+  const c = { ...chart, type: localType, series: validSeries };
 
   const commonLegends: any[] = [
     {
@@ -92,14 +96,21 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
             
             const barData = Array.from(barDataMap.values());
             
-            // Calculate max label length for rotation
             let maxLabelLength = 0;
             barData.forEach(d => {
+              if (d.label && String(d.label).length > 25) {
+                const originalLabel = String(d.label);
+                d.label = originalLabel.substring(0, 22) + '...';
+                // Move original to a tooltip property if needed
+                d.fullLabel = originalLabel;
+              }
               if (d.label && String(d.label).length > maxLabelLength) {
                 maxLabelLength = String(d.label).length;
               }
             });
-
+            
+            // Calculate max label length for rotation
+            
             let isHorizontal = maxLabelLength > 12;
             let leftMargin = isHorizontal ? Math.min(200, maxLabelLength * 7) : 60;
             let bottomMargin = isHorizontal ? 60 : 60;
@@ -177,6 +188,8 @@ export function ChartRenderer({ chart }: { chart: ArticleChart }) {
                 pointBorderColor={{ from: 'serieColor' }}
                 pointLabelYOffset={-12}
                 useMesh={true}
+                enableCrosshair={true}
+                crosshairType="cross"
                 enableArea={false}
                 enableGridX={!isScatter}
                 enableGridY={true}

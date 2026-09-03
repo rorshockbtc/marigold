@@ -12,7 +12,7 @@ import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Data Insights', href: '/insights', icon: BarChart },
+  { label: 'Data Stories', href: '/insights', icon: BarChart },
   { label: 'Explore & Review', href: '/explore', icon: GitCompare },
   { label: 'Guided Playbooks', href: '/audit', icon: BookOpen },
   { label: 'Advanced Stats', href: '/advanced-stats', icon: LineChart },

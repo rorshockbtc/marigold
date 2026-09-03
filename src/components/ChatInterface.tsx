@@ -18,7 +18,14 @@ import { executeLocalEngine } from '@/lib/data/LocalDataEngine';
 import { useDuckDB } from '@/lib/data/DuckDBProvider';
 import { usePlaybooks } from '@/lib/workspace/PlaybookContext';
 
-import { ChatMessage, ChatSession, Playbook, ArticleState } from '@/lib/types';
+export interface ChatSession {
+  id: string;
+  title: string;
+  timestamp: number;
+  messages: ChatMessage[];
+  articleState?: ArticleState;
+  hasShownPledge?: boolean;
+}
 
 export interface ChatInterfaceProps {
   isDrawer?: boolean;
@@ -297,7 +304,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         id: "s" + Date.now(),
         title: scrubbedQuery.substring(0, 30) + (scrubbedQuery.length > 30 ? "..." : ""),
         timestamp: Date.now(),
-        messages: [{ role: "assistant", content: "I am instructing your local machine to calculate that right now. Because we do this securely on your hardware, it may take a few moments." }]
+        messages: [{ role: "assistant", content: "I am instructing your local machine to calculate that right now. Because we do this securely on your hardware, it may take a few moments." }],
+        hasShownPledge: false
       };
       setSessions(prev => [newSession, ...prev]);
       currentSessionId = newSession.id;
@@ -623,7 +631,22 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
         streamAffordance
       };
 
-      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage], articleState: updatedArticle } : s));
+      const finalMessages = [...newMessages, assistantMessage];
+      
+      let shouldShowPledge = false;
+      if (currentSessionId) {
+        const session = sessions.find(s => s.id === currentSessionId);
+        if (session && !session.hasShownPledge && finalMessages.filter(m => m.role === 'user').length >= 2) {
+          shouldShowPledge = true;
+          finalMessages.push({
+            role: "system",
+            content: "We hope you're enjoying Marigold. If you find this valuable, would you pledge $10/mo to support our privacy-first development and unlock Marigold Pro?",
+            isPledge: true
+          });
+        }
+      }
+
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: finalMessages, articleState: updatedArticle, hasShownPledge: s.hasShownPledge || shouldShowPledge } : s));
 
       // Self-teaching loop: If we bypassed triage and got a good answer, learn it
       if (forceBypassTriage && response.ok) {
@@ -837,6 +860,23 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                     <p className="text-[10px] text-muted-foreground mt-2 text-center">
                       Authorizes Marigold to fetch this public dataset securely.
                     </p>
+                  </div>
+                )}
+                
+                {msg.isPledge && (
+                  <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 space-y-3 text-left">
+                    <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-emerald-700">
+                      <MarigoldIcon className="w-4 h-4" />
+                      <span>Support Marigold</span>
+                    </div>
+                    <p className="text-sm font-medium leading-relaxed">
+                      {msg.content}
+                    </p>
+                    <div className="flex gap-2 pt-2">
+                      <Button onClick={() => window.open('https://marigold.org/pledge', '_blank')} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs">
+                        Pledge $10/mo
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
