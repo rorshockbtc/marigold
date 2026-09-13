@@ -51,9 +51,10 @@ const MISSISSIPPI_82_COUNTIES = [
 
 const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   voter_id: [
-    'mappingvalue', 'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
+    'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
     'sosid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voteridnum',
-    'id', 'voterkey', 'stateid', 'voterregid'
+    'voterkey', 'stateid', 'voterregid', 'voterregnum', 'voterregno', 'statevoteridnum',
+    'voteridnumber', 'statevoteridnumber', 'voter_id', 'voter_reg_num', 'sos_voter_id'
   ],
   address: [
     'residentialaddress', 'residenceaddress', 'streetaddress', 'resstreet',
@@ -320,7 +321,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   }
 
   return {
-    voter_id: getValue(activeMapping.voter_id, ['voterid', 'sosvoterid', 'id', 'mappingvalue'], `REC-${Math.floor(100000 + Math.random() * 900000)}`),
+    voter_id: getValue(activeMapping.voter_id, ['sosvoterid', 'voterid', 'voterregistrationnumber', 'statevoterid'], 'N/A (Unlisted)'),
     name: fullName,
     first_name: first,
     middle_name: middle,

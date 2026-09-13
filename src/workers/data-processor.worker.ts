@@ -204,8 +204,13 @@ export class DataProcessorWorker {
 
       const dupFirst = std.first_name || (std.name ? std.name.trim().split(/\s+/)[0] : '');
       const dupLast = std.last_name || (std.name ? std.name.trim().split(/\s+/).pop() : '');
+      const dupMid = std.middle_name ? std.middle_name.toLowerCase().trim() : '';
+      const dupDob = String(std.raw?.dob || std.raw?.DOB || std.raw?.birth_date || std.raw?.BIRTH_DATE || std.raw?.date_of_birth || '').trim().toLowerCase();
+
+      // Require DOB or Middle Name to prevent common-name homonym false positives in small zip codes
       if (dupFirst && dupLast && std.zip) {
-        const dupKey = `${dupFirst.toLowerCase()}|${dupLast.toLowerCase()}|${std.zip}`;
+        const discriminator = dupDob ? dupDob : dupMid ? dupMid : 'homonym';
+        const dupKey = `${dupFirst.toLowerCase()}|${dupLast.toLowerCase()}|${discriminator}|${std.zip}`;
         const dExisting = dupMap.get(dupKey);
         if (dExisting) {
           dExisting.count++;
@@ -256,10 +261,14 @@ export class DataProcessorWorker {
 
     const resultMap: Record<string, Array<Record<string, any>>> = {};
 
+    const INSTITUTIONAL_KEYWORDS = ['NURSING', 'CARE CENTER', 'SENIOR LIVING', 'REHAB', 'RETIREMENT', 'CONVALESCENT', 'DORMITORY', 'HALL', 'MANOR', 'HEALTHCARE', 'ASSISTED LIVING'];
+    const isInstitutional = (a: string) => INSTITUTIONAL_KEYWORDS.some(kw => a.toUpperCase().includes(kw));
+
     const densityResults: Array<Record<string, any>> = [];
     for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
       if (count >= threshold) {
-        densityResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: count > 20 ? 'CRITICAL' : 'HIGH', details: `${count} voters registered at this address.`, raw: sample.raw, residentCluster: residents });
+        const inst = isInstitutional(addr);
+        densityResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: inst ? 'MEDIUM' : count > 20 ? 'CRITICAL' : 'HIGH', details: inst ? `${count} voters registered at care/institutional facility.` : `${count} voters registered at residential address.`, raw: sample.raw, residentCluster: residents });
       }
     }
     resultMap['density'] = densityResults.sort((a, b) => b.occupant_count - a.occupant_count);

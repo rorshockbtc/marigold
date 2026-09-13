@@ -81,12 +81,12 @@ export async function runDuckDBAuditSweep(tableName: string = 'voter_roll'): Pro
        OR ncoa_flag = 'Y'
   `);
 
-  // Intra-county duplicates
+  // Intra-county duplicates (requires DOB or Middle Name to avoid homonym false positives)
   const dupRes = await conn.query(`
-    SELECT name, zip, COUNT(DISTINCT address) as addrs_count, COUNT(*) as occupant_count, MAX(voter_id) as id, MAX(address) as address, MAX(city) as city, MAX(state) as state, MAX(county) as county
+    SELECT name, COALESCE(dob, middle_name, 'homonym') as discriminator, zip, COUNT(DISTINCT address) as addrs_count, COUNT(*) as occupant_count, MAX(voter_id) as id, MAX(address) as address, MAX(city) as city, MAX(state) as state, MAX(county) as county
     FROM ${tableName}
     WHERE name IS NOT NULL AND zip IS NOT NULL
-    GROUP BY name, zip
+    GROUP BY name, COALESCE(dob, middle_name, 'homonym'), zip
     HAVING COUNT(*) > 1 AND COUNT(DISTINCT address) > 1
   `);
 
