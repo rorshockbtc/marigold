@@ -374,6 +374,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       county: 'Hinds County',
       status: 'Active',
       date_registered: '',
+      dob: '',
       precinct_code: '',
       ncoa_flag: '',
       raw: {}

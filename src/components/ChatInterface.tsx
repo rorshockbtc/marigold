@@ -17,6 +17,7 @@ import { TriageCache } from '@/lib/triage/TriageCache';
 import { executeLocalEngine } from '@/lib/data/LocalDataEngine';
 import { useDuckDB } from '@/lib/data/DuckDBProvider';
 import { usePlaybooks } from '@/lib/workspace/PlaybookContext';
+import { ArticleState, ChatMessage, Playbook } from '@/lib/types';
 
 export interface ChatSession {
   id: string;

@@ -29,11 +29,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   // Generate a brief excerpt from the first block
   let description = 'View interactive, AI-driven data analysis.';
   if (story.blocks && story.blocks.length > 0) {
-    const firstTextBlock = story.blocks.find(b => b.type === 'narrative');
-    if (firstTextBlock && firstTextBlock.content) {
-      // Clean HTML tags and truncate
-      const cleanContent = firstTextBlock.content.replace(/<[^>]*>?/gm, '');
-      description = cleanContent.substring(0, 150) + '...';
+    const firstTextBlock = story.blocks.find(b => (b as any).narrative || (b as any).content);
+    if (firstTextBlock) {
+      const textVal = (firstTextBlock as any).narrative || (firstTextBlock as any).content || '';
+      const cleanContent = textVal.replace(/<[^>]*>?/gm, '');
+      if (cleanContent) {
+        description = cleanContent.substring(0, 150) + '...';
+      }
     }
   }
 

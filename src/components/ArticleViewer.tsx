@@ -76,8 +76,8 @@ const sanitizeArticle = (article: ArticleState): ArticleState => {
 
 export interface ArticleViewerProps {
   article: ArticleState;
-  onPublishToGroup: () => void;
-  onSaveLocally: () => void;
+  onPublishToGroup?: () => void;
+  onSaveLocally?: () => void;
   isPublicView?: boolean;
   onBlockApprove?: (id: string) => void;
   onBlockReject?: (id: string) => void;
@@ -93,13 +93,20 @@ export function ArticleViewer({
   onBlockReject,
   onBlockDiscuss
 }: ArticleViewerProps) {
+  const handlePublishToGroup = () => {
+    if (onPublishToGroup) onPublishToGroup();
+  };
+
+  const handleSaveLocally = () => {
+    if (onSaveLocally) onSaveLocally();
+  };
   const [displayArticle, setDisplayArticle] = useState<ArticleState>(article);
   const [isSaved, setIsSaved] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
 
   const handleSaveClick = () => {
     setIsSaved(true);
-    onSaveLocally();
+    handleSaveLocally();
     setTimeout(() => setIsSaved(false), 3000);
   };
 
@@ -155,7 +162,7 @@ export function ArticleViewer({
         setPublishStatus(null);
         setIsPublishModalOpen(false);
         setIsPublished(true);
-        onPublishToGroup();
+        handlePublishToGroup();
         window.open(`/published?id=${uid}`, '_blank');
         setTimeout(() => setIsPublished(false), 3000);
       }, 800);
