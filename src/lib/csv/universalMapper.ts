@@ -108,7 +108,97 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   ]
 };
 
-export function interpretColumnMappings(headers: string[]): ColumnMappingSchema {
+// Jaro-Winkler String Distance Metric
+function jaroWinklerDistance(s1: string, s2: string): number {
+  if (s1 === s2) return 1.0;
+  const len1 = s1.length;
+  const len2 = s2.length;
+  if (len1 === 0 || len2 === 0) return 0.0;
+
+  const matchDistance = Math.floor(Math.max(len1, len2) / 2) - 1;
+  const s1Matches = new Array(len1).fill(false);
+  const s2Matches = new Array(len2).fill(false);
+
+  let matches = 0;
+  let transpositions = 0;
+
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchDistance);
+    const end = Math.min(i + matchDistance + 1, len2);
+    for (let j = start; j < end; j++) {
+      if (s2Matches[j]) continue;
+      if (s1[i] !== s2[j]) continue;
+      s1Matches[i] = true;
+      s2Matches[j] = true;
+      matches++;
+      break;
+    }
+  }
+
+  if (matches === 0) return 0.0;
+
+  let k = 0;
+  for (let i = 0; i < len1; i++) {
+    if (!s1Matches[i]) continue;
+    while (!s2Matches[k]) k++;
+    if (s1[i] !== s2[k]) transpositions++;
+    k++;
+  }
+
+  const jaro = (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
+
+  // Winkler prefix scaling
+  let prefix = 0;
+  const maxPrefix = 4;
+  for (let i = 0; i < Math.min(maxPrefix, Math.min(len1, len2)); i++) {
+    if (s1[i] === s2[i]) prefix++;
+    else break;
+  }
+
+  return jaro + prefix * 0.1 * (1 - jaro);
+}
+
+export function evaluateSemanticMatchScore(sampleValues: string[], fieldKey: keyof ColumnMappingSchema): number {
+  if (sampleValues.length === 0) return 0;
+  let matches = 0;
+
+  for (const rawVal of sampleValues) {
+    const val = rawVal.trim();
+    if (!val) continue;
+
+    switch (fieldKey) {
+      case 'zip':
+        if (/^\d{5}(-\d{4})?$/.test(val)) matches++;
+        break;
+      case 'state':
+        if (/^[A-Za-z]{2}$/.test(val) && val.length === 2) matches++;
+        break;
+      case 'date_registered':
+        if (/^\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}$/.test(val)) matches++;
+        break;
+      case 'address':
+        if (/^\d+\s+[A-Za-z0-9\s.,#-]+/.test(val) || /^(PO BOX|P.O. BOX|PMB)/i.test(val)) matches++;
+        break;
+      case 'first_name':
+      case 'last_name':
+        if (/^[A-Za-z' -]{2,30}$/.test(val) && !/\d/.test(val)) matches++;
+        break;
+      case 'voter_id':
+        if (/^\d{6,12}$/.test(val) || /^(MS|SOS|VOT)[A-Za-z0-9-]+$/i.test(val)) matches++;
+        break;
+      case 'status':
+        if (/^(ACTIVE|INACTIVE|CANCELLED|PURGED|DECEASED|A|I|C|P)$/i.test(val)) matches++;
+        break;
+      default:
+        // Do not assign false-positive semantic match for unhandled fields
+        break;
+    }
+  }
+
+  return matches / sampleValues.length;
+}
+
+export function interpretColumnMappings(headers: string[], sampleRows: Record<string, any>[] = []): ColumnMappingSchema {
   const mapping: ColumnMappingSchema = {
     voter_id: '',
     first_name: '',
@@ -134,31 +224,64 @@ export function interpretColumnMappings(headers: string[]): ColumnMappingSchema 
 
   const mappedCols = new Set<string>();
 
+  // Extract sample values per header for semantic profiling
+  const sampleValueMap = new Map<string, string[]>();
+  for (const h of headers) {
+    const vals: string[] = [];
+    for (const r of sampleRows.slice(0, 50)) {
+      if (r && r[h] !== undefined && r[h] !== null && String(r[h]).trim() !== '') {
+        vals.push(String(r[h]).trim());
+      }
+    }
+    sampleValueMap.set(h, vals);
+  }
+
+  // Pass 1: Direct Synonym Exact Match (100% Confidence)
   for (const [fieldKey, synonyms] of Object.entries(FIELD_SYNONYMS)) {
     const key = fieldKey as keyof ColumnMappingSchema;
-    for (const syn of synonyms) {
-      if (mapping[key]) break;
-      const match = cleanMap.find(c => c.clean === syn && !mappedCols.has(c.original));
-      if (match) {
-        mapping[key] = match.original;
-        mappedCols.add(match.original);
+    for (const item of cleanMap) {
+      if (mappedCols.has(item.original) || mapping[key]) continue;
+      if (synonyms.includes(item.clean)) {
+        mapping[key] = item.original;
+        mappedCols.add(item.original);
       }
     }
   }
 
+  // Pass 2: Hybrid Jaro-Winkler + Semantic Matching for Unmapped Headers
   for (const [fieldKey, synonyms] of Object.entries(FIELD_SYNONYMS)) {
     const key = fieldKey as keyof ColumnMappingSchema;
     if (mapping[key]) continue;
 
-    for (const syn of synonyms) {
-      if (syn.length <= 3) continue;
-      if (mapping[key]) break;
-      // Removed dangerous syn.includes(c.clean) which scrambles columns when c.clean is short/empty
-      const match = cleanMap.find(c => c.clean.includes(syn) && !mappedCols.has(c.original));
-      if (match) {
-        mapping[key] = match.original;
-        mappedCols.add(match.original);
+    let bestMatchHeader = '';
+    let highestScore = 0;
+
+    for (const item of cleanMap) {
+      if (mappedCols.has(item.original)) continue;
+
+      let maxLexicalScore = 0;
+      for (const syn of synonyms) {
+        if (syn.length <= 3) continue;
+        const dist = jaroWinklerDistance(item.clean, syn);
+        if (dist > maxLexicalScore) maxLexicalScore = dist;
       }
+
+      const sampleVals = sampleValueMap.get(item.original) || [];
+      const semanticScore = sampleRows.length > 0 ? evaluateSemanticMatchScore(sampleVals, key) : 0;
+
+      // DeepMind Hybrid Formula: (Lexical * 0.4) + (Semantic * 0.6)
+      const hybridScore = sampleRows.length > 0 ? (maxLexicalScore * 0.4) + (semanticScore * 0.6) : maxLexicalScore;
+
+      // Strict Threshold check: Must score at least 0.75 confidence
+      if (hybridScore >= 0.75 && hybridScore > highestScore) {
+        highestScore = hybridScore;
+        bestMatchHeader = item.original;
+      }
+    }
+
+    if (bestMatchHeader) {
+      mapping[key] = bestMatchHeader;
+      mappedCols.add(bestMatchHeader);
     }
   }
 
