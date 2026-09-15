@@ -88,7 +88,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'lastname', 'voterlastname', 'lname', 'last', 'namelast', 'surname'
   ],
   suffix: [
-    'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix'
+    'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix', 'name_suffix', 'voter_suffix', 'title'
   ],
   full_name: [
     'fullname', 'voterfullname', 'displayname'

@@ -207,11 +207,20 @@ export class DataProcessorWorker {
       const dupMid = std.middle_name ? std.middle_name.toLowerCase().trim() : '';
       const dupDob = String(std.dob || std.raw?.dob || std.raw?.DOB || std.raw?.birth_date || std.raw?.BIRTH_DATE || std.raw?.date_of_birth || '').trim().toLowerCase();
 
+      // Extract Suffix (JR, SR, III, etc.) from std.suffix or full name
+      const extractSuffixStr = (s: any): string => {
+        if (s.suffix && String(s.suffix).trim()) return String(s.suffix).trim();
+        const full = String(s.name || s.raw?.name || '').toUpperCase();
+        const match = full.match(/\b(JR|SR|II|III|IV|V|ESQ)\b/);
+        return match ? match[1] : '';
+      };
+      const dupSuf = extractSuffixStr(std).toLowerCase();
+
       // STRICT RULE: Require explicit Date of Birth (DOB) or Middle Name to group records as duplicates.
-      // If neither exists, do NOT auto-collapse under 'homonym' fallback!
+      // Include Suffix (JR/SR) in the key to prevent Father/Son homonym collisions!
       if (dupFirst && dupLast && std.zip && (dupDob || dupMid)) {
         const discriminator = dupDob ? dupDob : dupMid;
-        const dupKey = `${dupFirst.toLowerCase()}|${dupLast.toLowerCase()}|${discriminator}|${std.zip}`;
+        const dupKey = `${dupFirst.toLowerCase()}|${dupLast.toLowerCase()}|${dupSuf}|${discriminator}|${std.zip}`;
         const dExisting = dupMap.get(dupKey);
         if (dExisting) {
           dExisting.count++;
