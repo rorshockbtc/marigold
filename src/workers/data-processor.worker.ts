@@ -205,11 +205,12 @@ export class DataProcessorWorker {
       const dupFirst = std.first_name || (std.name ? std.name.trim().split(/\s+/)[0] : '');
       const dupLast = std.last_name || (std.name ? std.name.trim().split(/\s+/).pop() : '');
       const dupMid = std.middle_name ? std.middle_name.toLowerCase().trim() : '';
-      const dupDob = String(std.raw?.dob || std.raw?.DOB || std.raw?.birth_date || std.raw?.BIRTH_DATE || std.raw?.date_of_birth || '').trim().toLowerCase();
+      const dupDob = String(std.dob || std.raw?.dob || std.raw?.DOB || std.raw?.birth_date || std.raw?.BIRTH_DATE || std.raw?.date_of_birth || '').trim().toLowerCase();
 
-      // Require DOB or Middle Name to prevent common-name homonym false positives in small zip codes
-      if (dupFirst && dupLast && std.zip) {
-        const discriminator = dupDob ? dupDob : dupMid ? dupMid : 'homonym';
+      // STRICT RULE: Require explicit Date of Birth (DOB) or Middle Name to group records as duplicates.
+      // If neither exists, do NOT auto-collapse under 'homonym' fallback!
+      if (dupFirst && dupLast && std.zip && (dupDob || dupMid)) {
+        const discriminator = dupDob ? dupDob : dupMid;
         const dupKey = `${dupFirst.toLowerCase()}|${dupLast.toLowerCase()}|${discriminator}|${std.zip}`;
         const dExisting = dupMap.get(dupKey);
         if (dExisting) {

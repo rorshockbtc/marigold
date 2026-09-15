@@ -12,6 +12,7 @@ export interface ColumnMappingSchema {
   county: string;
   status: string;
   date_registered: string;
+  dob: string;
   precinct_code: string;
   ncoa_flag: string;
 }
@@ -30,6 +31,7 @@ export interface StandardizedVoterRow {
   county: string;
   status: string;
   date_registered: string;
+  dob: string;
   precinct_code: string;
   ncoa_flag: string;
   raw: Record<string, any>;
@@ -98,6 +100,10 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   date_registered: [
     'registrationdate', 'dateregistered', 'regdate', 'origregdate',
     'effectivedate', 'enrolldate', 'appdate', 'dateadded'
+  ],
+  dob: [
+    'dob', 'birthdate', 'dateofbirth', 'voterbirthdate', 'birth_date',
+    'bdate', 'birthyear', 'yb', 'yob', 'yearofbirth'
   ],
   precinct_code: [
     'precinctname', 'precinctcode', 'precinctid', 'pctcode', 'precinct',
@@ -213,6 +219,7 @@ export function interpretColumnMappings(headers: string[], sampleRows: Record<st
     county: '',
     status: '',
     date_registered: '',
+    dob: '',
     precinct_code: '',
     ncoa_flag: ''
   };
@@ -457,6 +464,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     county: exactCounty,
     status: getValue(activeMapping.status, ['status', 'voterstatus'], 'Active'),
     date_registered: getValue(activeMapping.date_registered, ['regdate', 'date_registered'], ''),
+    dob: getValue(activeMapping.dob, ['dob', 'birthdate', 'dateofbirth', 'birth_date', 'bdate'], ''),
     precinct_code: getValue(activeMapping.precinct_code, ['precinct', 'pct'], ''),
     ncoa_flag: getValue(activeMapping.ncoa_flag, ['ncoaflag', 'ncoa'], ''),
     raw: { ...rawRow }
