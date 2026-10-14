@@ -59,6 +59,10 @@ export default function DashboardPage() {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6 font-sans">
         <DeviceSecurityNotice />
+        <DataRequiredState
+          title="Connect Your Workspace Data"
+          subtitle="Link a local Marigold folder, upload a voter registry CSV, or launch the Roosevelt State synthetic benchmark to unlock the Mission Kanban and Group Sync."
+        />
         <LocalFolderGuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       </div>
     );

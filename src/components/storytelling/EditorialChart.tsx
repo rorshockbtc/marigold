@@ -6,6 +6,7 @@ import { ResponsiveBar } from '@nivo/bar';
 import { ResponsiveLine } from '@nivo/line';
 import { terracottaGardenTheme } from './theme';
 import { Download, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface EditorialChartProps {
   chartType: string;
@@ -26,7 +27,16 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
   if (!data || data.length === 0) return null;
 
   const exportChart = () => {
-    alert("Downloading high-resolution publication-ready vector image...");
+    const svgEl = containerRef.current?.querySelector('svg');
+    if (!svgEl) return;
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(config?.title || 'marigold-chart').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.svg`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const getAxisBottomConfig = (dataLength: number, sampleLabel: string) => {
@@ -157,13 +167,16 @@ export const EditorialChart: React.FC<EditorialChartProps> = ({ chartType, data,
             <Sparkles className="w-4 h-4 text-amber-500" />
             {config.title}
           </h4>
-          <button 
+          <Button 
+            variant="ghost"
+            size="sm"
             onClick={exportChart}
             className="text-slate-400 hover:text-slate-100 p-1.5 rounded-lg hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100"
             title="Download Publication Vector"
+            data-testid="btn-export-chart-svg"
           >
             <Download className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       )}
       <div ref={containerRef} className="h-[360px] w-full pt-2">

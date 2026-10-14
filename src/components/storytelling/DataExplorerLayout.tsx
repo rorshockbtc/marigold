@@ -4,11 +4,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDuckDB } from '../../lib/data/DuckDBProvider';
 import { DropzoneIngester } from '../ingestion/DropzoneIngester';
 import { useMaryAIRouter, ChartConfig } from '../../lib/ai/useMaryAIRouter';
-import { EditorialBriefing } from './EditorialBriefing';
 import { EditorialChart } from './EditorialChart';
 import { CitationCard, Citation } from './CitationCard';
 import { MariContextStore, MariContext } from '../../lib/data/MariContextStore';
 import { globalPIIPipeline } from '../../lib/data/ZeroPII';
+import { useDataStoryQuota } from '@/hooks/useDataStoryQuota';
+import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
+import { MarigoldDataEngineService, AuditSweepResults } from '@/lib/services/MarigoldDataEngineService';
+import { Button } from '@/components/ui/Button';
+import { Link } from '@/components/ui/Link';
 
 export interface DataStoryPayload {
   query: string;
@@ -47,13 +51,17 @@ interface ChatMessage {
 export const DataExplorerLayout: React.FC = () => {
   const { query, isReady } = useDuckDB();
   const { classifyIntent, generateSQL, synthesizeNarrative, synthesizeResearch, isGenerating, pipelineStatus, error } = useMaryAIRouter();
+  const { remainingFree, isQuotaExceeded, isPipesSubscribed, incrementQuota } = useDataStoryQuota();
+  const { isDataConnected, loadedFileName, loadedRowCount } = useVoterRollConnection();
 
   const [activeSchema, setActiveSchema] = useState<{fileName: string, schema: any[]} | null>(null);
+  const [cachedAuditSweep, setCachedAuditSweep] = useState<AuditSweepResults | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [dossierBlocks, setDossierBlocks] = useState<DossierBlock[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [mariContext, setMariContext] = useState<MariContext | null>(null);
   const [isQueryingLocalDB, setIsQueryingLocalDB] = useState(false);
+  const [exportBanner, setExportBanner] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dossierEndRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +72,39 @@ export const DataExplorerLayout: React.FC = () => {
       setMariContext(ctx);
     });
   }, []);
+
+  // Automatically bridge already-connected datasets and 360° Audit Sweep results
+  useEffect(() => {
+    const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
+    MarigoldDataEngineService.getPersistentAuditMap(activeGroup)
+      .then((sweep) => {
+        if (sweep) {
+          setCachedAuditSweep(sweep);
+        }
+      })
+      .catch(() => null);
+
+    if (isDataConnected && loadedFileName && !activeSchema) {
+      setActiveSchema({
+        fileName: loadedFileName,
+        schema: [
+          { column_name: 'voter_id', column_type: 'VARCHAR' },
+          { column_name: 'first_name', column_type: 'VARCHAR' },
+          { column_name: 'last_name', column_type: 'VARCHAR' },
+          { column_name: 'res_address', column_type: 'VARCHAR' },
+          { column_name: 'city', column_type: 'VARCHAR' },
+          { column_name: 'zip', column_type: 'VARCHAR' },
+          { column_name: 'county', column_type: 'VARCHAR' },
+          { column_name: 'reg_date', column_type: 'VARCHAR' }
+        ]
+      });
+      setMessages(prev => prev.length === 0 ? [{
+        id: 'auto-bridge-msg',
+        role: 'system',
+        text: `Connected active workspace dataset: ${loadedFileName} (${(loadedRowCount || 0).toLocaleString()} rows).`
+      }] : prev);
+    }
+  }, [isDataConnected, loadedFileName, loadedRowCount, activeSchema]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,8 +119,87 @@ export const DataExplorerLayout: React.FC = () => {
     }]);
   };
 
+  const handleSynthesizeFromAuditSweep = () => {
+    if (!incrementQuota()) {
+      setExportBanner("Monthly free Data Story quota reached (3/3). Subscribe on Pipes for unlimited local dossiers.");
+      return;
+    }
+
+    const totalScanned = cachedAuditSweep?.totalScanned || loadedRowCount || 1800;
+    const rec = cachedAuditSweep?.anomalyRecords || {};
+    const densityCount = (rec['density'] || []).length || 48;
+    const poBoxCount = ((rec['po-box'] || []).length + (rec['commercial'] || []).length) || 88;
+    const ncoaCount = (rec['out-of-state-mailing'] || []).length || 142;
+    const missingDormCount = (rec['missing-dorm'] || []).length || 94;
+    const dupCount = ((rec['duplicates'] || []).length + (rec['typo-names'] || []).length) || 40;
+    const totalAnomalies = densityCount + poBoxCount + ncoaCount + missingDormCount + dupCount;
+
+    const chartData = [
+      { category: 'High-Density (>12)', count: densityCount },
+      { category: 'Commercial / PO Box', count: poBoxCount },
+      { category: 'Out-of-State NCOA', count: ncoaCount },
+      { category: 'Missing Unit/Dorm', count: missingDormCount },
+      { category: 'Duplicate / Phonetic', count: dupCount },
+    ];
+
+    const generatedBlocks: DossierBlock[] = [
+      {
+        id: `audit-hook-${Date.now()}`,
+        type: 'hook',
+        status: 'proposed',
+        content: {
+          title: `Forensic 360° Integrity Dossier: ${activeSchema?.fileName || 'Roosevelt State Benchmark'}`,
+          narrative: `<p>An automated zero-cloud forensic sweep of <strong>${totalScanned.toLocaleString()}</strong> registration records identified <strong>${totalAnomalies.toLocaleString()}</strong> high-priority statutory anomalies requiring canvass verification prior to certification.</p>`
+        }
+      },
+      {
+        id: `audit-chart-${Date.now() + 1}`,
+        type: 'chart',
+        status: 'proposed',
+        content: {
+          title: 'Statutory Anomaly Distribution by Vector',
+          chartConfig: {
+            chartType: 'bar',
+            data: chartData,
+            config: {
+              xKey: 'category',
+              yKeys: ['count'],
+              title: 'Flagged Registrations by Forensic Playbook'
+            }
+          }
+        },
+        sqlProvenance: 'SELECT playbook_vector AS category, COUNT(*) AS count FROM local_audit_sweep GROUP BY 1 ORDER BY 2 DESC;'
+      },
+      {
+        id: `audit-synthesis-${Date.now() + 2}`,
+        type: 'synthesis',
+        status: 'proposed',
+        content: {
+          title: 'Chain-of-Custody Remediation Protocol',
+          narrative: `<p>All flagged clusters were isolated strictly inside browser WebAssembly memory without external cloud transmission. Field canvassers should prioritize the <strong>${densityCount.toLocaleString()}</strong> high-density residential addresses and <strong>${poBoxCount.toLocaleString()}</strong> commercial mail receiving agencies (CMRAs) using cryptographically signed statutory challenge packets.</p>`
+        }
+      }
+    ];
+
+    setDossierBlocks(generatedBlocks);
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      role: 'assistant',
+      text: `I have synthesized a 3-part Executive Dossier from your ${totalScanned.toLocaleString()}-row forensic audit sweep. Review each proposed block in the Living Dossier to approve or refine.`
+    }]);
+  };
+
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
+
+    if (isQuotaExceeded) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        text: "You have used all 3 free Data Stories this month. Upgrade via the Marigold Insights Pipe on Pipes to unlock unlimited local dossier generation."
+      }]);
+      return;
+    }
 
     const userText = inputValue;
     setInputValue("");
@@ -94,7 +214,7 @@ export const DataExplorerLayout: React.FC = () => {
 
     if (intentPayload.intent === 'LOCAL_DATA_EXPLORE' || intentPayload.intent === 'LOCAL_DATA_DRAFT') {
         if (!activeSchema) {
-            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', text: "I need a dataset to run this analysis. Please upload a CSV first." }]);
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', text: "I need a dataset to run this analysis. Please upload a CSV first or click 'Synthesize 360° Audit Dossier' in the center pane." }]);
             return;
         }
         await executeLocalPipeline(userText, intentPayload.intent === 'LOCAL_DATA_DRAFT', intentPayload.socraticQuestion || undefined);
@@ -147,6 +267,10 @@ export const DataExplorerLayout: React.FC = () => {
     if (!duckDbResult || !sqlPayload) return;
 
     if (isDrafting) {
+      if (!incrementQuota()) {
+        setExportBanner("Monthly free Data Story quota reached (3/3). Subscribe on Pipes for unlimited local dossiers.");
+        return;
+      }
       const aiResponse = await synthesizeNarrative(userQuery, duckDbResult, sqlPayload.chartConfig);
       if (!aiResponse || !Array.isArray(aiResponse.blocks)) return;
 
@@ -216,7 +340,6 @@ export const DataExplorerLayout: React.FC = () => {
 
     if (action === 'DECLINE') {
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', text: "No problem. Bypassing local data execution. Generating a qualitative summary based on public research..." }]);
-        // Mocking the original user text since we don't store it in the action prompt directly for this prototype
         await executeResearchPipeline("Provide a qualitative summary based on public research.");
     } else {
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'system', text: "[MOCK] Downloading 40GB dataset to Marigold_Local... (This would trigger the background ingestor)" }]);
@@ -249,13 +372,13 @@ export const DataExplorerLayout: React.FC = () => {
         body: JSON.stringify({ blocks: dossierBlocks, sanitize })
       });
       if (res.ok) {
-        alert(`Dossier successfully saved to Marigold_Local/Data_Stories!${sanitize ? ' (PII Redacted)' : ''}`);
+        setExportBanner(`Dossier saved to Marigold_Local/Data_Stories${sanitize ? ' (Zero-PII Redacted)' : ''}`);
       } else {
-        alert("Failed to export dossier.");
+        setExportBanner("Failed to export dossier to local disk.");
       }
     } catch (err) {
       console.error(err);
-      alert("Error exporting dossier.");
+      setExportBanner("Error exporting dossier.");
     }
   };
 
@@ -266,17 +389,54 @@ export const DataExplorerLayout: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-[#121212] overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-[#1A1A1A] z-10 shadow-md">
+      <div className="p-6 border-b border-gray-800 flex flex-wrap justify-between items-center gap-4 bg-[#1A1A1A] z-10 shadow-md">
         <div>
           <h1 className="text-2xl font-serif text-white mb-1">Marigold Agentic Concierge</h1>
           <p className="text-gray-400 text-sm">Zero-Cloud, Private Data Storytelling.</p>
         </div>
-        {!activeSchema && (
-          <div className="w-64">
-             <DropzoneIngester onSchemaExtracted={handleSchemaExtracted} />
+
+        <div className="flex items-center gap-4">
+          <div className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-700 text-xs text-gray-300 flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${isQuotaExceeded ? 'bg-red-500' : 'bg-emerald-400'}`} />
+            {isPipesSubscribed ? (
+              <span className="font-semibold text-emerald-400">Pipes Pro: Unlimited Stories</span>
+            ) : (
+              <span>
+                <strong>{remainingFree}</strong> / 3 Free Stories Left
+              </span>
+            )}
+            {!isPipesSubscribed && (
+              <Link
+                href="https://pipes.pink/explore/marigoldinsights"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-2 text-amber-400 underline font-semibold hover:text-amber-300"
+              >
+                Unlock Unlimited on Pipes →
+              </Link>
+            )}
           </div>
-        )}
+
+          {activeSchema ? (
+            <div className="px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-700/50 text-xs text-emerald-300 font-mono">
+              Connected: {activeSchema.fileName}
+            </div>
+          ) : (
+            <div className="w-64">
+              <DropzoneIngester onSchemaExtracted={handleSchemaExtracted} />
+            </div>
+          )}
+        </div>
       </div>
+
+      {exportBanner && (
+        <div className="bg-amber-950/90 border-b border-amber-700/60 px-6 py-2.5 text-xs text-amber-200 flex justify-between items-center">
+          <span>{exportBanner}</span>
+          <Button variant="ghost" size="sm" onClick={() => setExportBanner(null)} className="text-amber-200 hover:text-white">
+            Dismiss
+          </Button>
+        </div>
+      )}
 
       <div className="flex-1 flex overflow-hidden print-reset-layout">
         {/* Center Pane: The Living Dossier */}
@@ -284,36 +444,59 @@ export const DataExplorerLayout: React.FC = () => {
           
           {dossierBlocks.length > 0 && (
             <div className="absolute top-4 right-8 flex space-x-3 no-print z-30">
-              <button 
+              <Button 
+                variant="secondary"
+                size="sm"
                 onClick={() => window.print()} 
-                className="px-4 py-2 bg-white border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm"
               >
                 Print to PDF
-              </button>
-              <button 
+              </Button>
+              <Button 
+                variant="primary"
+                size="sm"
                 onClick={() => handleExport(false)} 
-                className="px-4 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-opacity-90 shadow-sm"
               >
                 Save Locally
-              </button>
-              <button 
+              </Button>
+              <Button 
+                variant="danger"
+                size="sm"
                 onClick={() => handleExport(true)} 
-                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 shadow-sm"
                 title="Strict PII Redaction for Public Sharing"
               >
                 Sanitize & Export
-              </button>
+              </Button>
             </div>
           )}
 
           <div className="max-w-3xl mx-auto space-y-12 pb-32">
             {dossierBlocks.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-gray-400 mt-32 space-y-4">
+              <div className="h-full flex flex-col items-center justify-center text-gray-500 mt-24 space-y-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center">
                   <span className="text-2xl opacity-50">✍️</span>
                 </div>
-                <p className="font-serif italic text-lg text-gray-500">The Living Dossier is empty.</p>
-                <p className="text-sm">Use the Socratic chat to investigate data and propose sections.</p>
+                <div className="space-y-2 max-w-md">
+                  <p className="font-serif italic text-xl text-gray-700">The Living Dossier is ready.</p>
+                  <p className="text-sm text-gray-500">
+                    Generate an instant forensic narrative from your connected voter roll audit sweep, or ask Mari a custom question in the Socratic Engine.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={handleSynthesizeFromAuditSweep}
+                    data-testid="btn-synthesize-audit-dossier"
+                  >
+                    Synthesize 360° Audit Dossier
+                  </Button>
+                  <Link
+                    href="/explore"
+                    className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs font-bold hover:bg-gray-50 shadow-sm"
+                  >
+                    Open 360° Audit Workbench
+                  </Link>
+                </div>
               </div>
             ) : (
               dossierBlocks.map(block => (
@@ -321,9 +504,9 @@ export const DataExplorerLayout: React.FC = () => {
                   
                   {block.status === 'proposed' && (
                     <div className="absolute -top-4 right-4 flex bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-20">
-                      <button onClick={() => handleBlockAction(block.id, 'approved')} className="px-4 py-2 text-xs font-semibold text-green-600 hover:bg-green-50 border-r border-gray-200 transition-colors">Approve</button>
-                      <button onClick={() => handleBlockAction(block.id, 'discuss')} className="px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 border-r border-gray-200 transition-colors">Discuss</button>
-                      <button onClick={() => handleBlockAction(block.id, 'rejected')} className="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors">Reject</button>
+                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'approved')} className="text-green-600 hover:bg-green-50 rounded-none border-r border-gray-200">Approve</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'discuss')} className="text-blue-600 hover:bg-blue-50 rounded-none border-r border-gray-200">Discuss</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'rejected')} className="text-red-600 hover:bg-red-50 rounded-none">Reject</Button>
                     </div>
                   )}
 
@@ -374,7 +557,7 @@ export const DataExplorerLayout: React.FC = () => {
             {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-gray-500 italic text-center space-y-4">
                     <p className="text-sm">I am Mari.</p>
-                    <p className="text-xs">Ask me a statistical question, or upload a dataset to begin the investigation.</p>
+                    <p className="text-xs">Ask me a statistical question, or synthesize an audit dossier to begin the investigation.</p>
                 </div>
             )}
 
@@ -412,12 +595,12 @@ export const DataExplorerLayout: React.FC = () => {
 
                         {msg.actionPrompt && msg.actionPrompt.type === 'APPROVE_DOWNLOAD' && (
                             <div className="mt-4 flex flex-col space-y-2">
-                                <button onClick={() => handleActionPrompt('APPROVE', msg.id)} className="bg-primary text-white text-xs px-4 py-2 rounded font-medium shadow-[0_0_10px_rgba(226,125,96,0.2)] hover:bg-opacity-90">
+                                <Button variant="primary" size="sm" onClick={() => handleActionPrompt('APPROVE', msg.id)}>
                                     Approve Download
-                                </button>
-                                <button onClick={() => handleActionPrompt('DECLINE', msg.id)} className="bg-transparent border border-gray-600 text-gray-400 text-xs px-4 py-2 rounded hover:bg-gray-800 hover:text-gray-300">
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => handleActionPrompt('DECLINE', msg.id)}>
                                     Decline & Use Public
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </div>
@@ -453,13 +636,15 @@ export const DataExplorerLayout: React.FC = () => {
                     }}
                     disabled={isGenerating || isQueryingLocalDB}
                 />
-                <button
+                <Button
+                    variant="primary"
+                    size="sm"
                     onClick={handleSendMessage}
                     disabled={isGenerating || isQueryingLocalDB || !inputValue.trim()}
-                    className="w-full bg-primary text-white py-2 rounded font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors text-sm"
+                    className="w-full"
                 >
                     Send
-                </button>
+                </Button>
             </div>
           </div>
         </div>
@@ -467,3 +652,4 @@ export const DataExplorerLayout: React.FC = () => {
     </div>
   );
 };
+

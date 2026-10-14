@@ -9,6 +9,7 @@ import { getActiveDatabaseName, isDemoGroupActive as checkIsDemoGroupActive } fr
 import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
 import { useDataStats } from '@/hooks/useDataStats';
 import { useCSVHydrate } from '@/hooks/useCSVHydrate';
+import { MarigoldDataEngineService } from '@/lib/services/MarigoldDataEngineService';
 
 // Data definitions for visual impact
 const CATEGORY_DATA = [
@@ -49,7 +50,16 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
   const [isIngesting, setIsIngesting] = useState(false);
   const [ingestionPhase, setIngestionPhase] = useState(0);
   const [ingestionText, setIngestionText] = useState("");
-  const [activeStats, setActiveStats] = useState({
+  const [activeStats, setActiveStats] = useState<{
+    totalFlagged: number;
+    poBoxes: number;
+    ncoa: number;
+    missingUnit: number;
+    highDensity?: number;
+    duplicates?: number;
+    totalVoters: number;
+    isRealDataset: boolean;
+  }>({
     totalFlagged: 4340,
     poBoxes: 850,
     ncoa: 1120,
@@ -69,11 +79,44 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
       setLocalFileConnected(true);
       setLocalFileName(loadedFileName);
       
-      // Consume real data stats instead of fake logic
-      analyze().then((realStats) => {
+      const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || (isSandbox ? "Sandbox" : "default");
+
+      // Consume real data stats and persistent 360° audit sweep map
+      Promise.all([
+        analyze(),
+        MarigoldDataEngineService.getPersistentAuditMap(activeGroup).catch(() => null)
+      ]).then(([realStats, auditMap]) => {
         const rowCount = realStats.totalRows || loadedRowCount;
         const isSample = loadedFileName === "ms_statewide_benchmark_100k.csv";
         const scale = rowCount / (loadedFileName.toUpperCase().includes("DEMO") ? 1800 : 100000);
+
+        if (auditMap && auditMap.anomalyRecords) {
+          const rec = auditMap.anomalyRecords;
+          const densityCount = (rec['density'] || []).length;
+          const poBoxCount = (rec['po-box'] || []).length + (rec['commercial'] || []).length;
+          const ncoaCount = (rec['out-of-state-mailing'] || []).length;
+          const missingUnitCount = (rec['missing-dorm'] || []).length;
+          const dupCount = (rec['duplicates'] || []).length + (rec['typo-names'] || []).length;
+          const totalSweepAnomalies = Object.values(rec).reduce(
+            (acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0),
+            0
+          );
+
+          if (totalSweepAnomalies > 0) {
+            setActiveStats({
+              totalFlagged: totalSweepAnomalies,
+              poBoxes: poBoxCount,
+              ncoa: ncoaCount,
+              missingUnit: missingUnitCount,
+              highDensity: densityCount,
+              duplicates: dupCount,
+              totalVoters: auditMap.totalScanned || rowCount,
+              isRealDataset: true
+            });
+            setCartridgeVersion('2.0');
+            return;
+          }
+        }
         
         setActiveStats({
           totalFlagged: Math.round(4340 * scale),
@@ -89,14 +132,14 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
       setLocalFileConnected(false);
       setLocalFileName("");
     }
-  }, [isDataConnected, loadedRowCount, loadedFileName, analyze]);
+  }, [isDataConnected, loadedRowCount, loadedFileName, analyze, isSandbox]);
 
   const dynamicCategories = [
-    { id: 'high_density', name: 'High-Density Occupancy (>12)', count: Math.round(activeStats.totalFlagged * 0.327), color: '#B7410E', desc: 'Addresses where more than 12 unrelated registered voters share a single residential dwelling unit without apartment designation.' },
+    { id: 'high_density', name: 'High-Density Occupancy (>12)', count: activeStats.highDensity ?? Math.round(activeStats.totalFlagged * 0.327), color: '#B7410E', desc: 'Addresses where more than 12 unrelated registered voters share a single residential dwelling unit without apartment designation.' },
     { id: 'po_box', name: 'Commercial P.O. Box Disguise', count: activeStats.poBoxes, color: '#D97706', desc: 'Voter registrations utilizing commercial mailbox centers (e.g., UPS Store, Mail Pak) formatted with # or Ste to resemble residential apartments.' },
     { id: 'ncoa', name: 'NCOA Interstate Relocation', count: activeStats.ncoa, color: '#1A365D', desc: 'Registrants who filed permanent National Change of Address (NCOA) forwarding orders to another state prior to the registration date.' },
     { id: 'missing_unit', name: 'Missing Dorm/Unit Number', count: activeStats.missingUnit, color: '#059669', desc: 'Multi-family structures or university housing facilities registered at the street address without required individual apartment numbers.' },
-    { id: 'duplicate', name: 'Intra-County Duplicates', count: Math.round(activeStats.totalFlagged * 0.071), color: '#7C3AED', desc: 'Identical name and date-of-birth matches appearing across multiple precincts or address records within the same jurisdiction.' },
+    { id: 'duplicate', name: 'Intra-County Duplicates', count: activeStats.duplicates ?? Math.round(activeStats.totalFlagged * 0.071), color: '#7C3AED', desc: 'Identical name and date-of-birth matches appearing across multiple precincts or address records within the same jurisdiction.' },
   ];
 
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -579,9 +622,9 @@ export function ExecutiveVisualCanvas({ userName = "Active User", isSandbox = fa
                 You uploaded a file that does not match your active group jurisdiction. To prevent data corruption or misaligned statistical auditing, the file was rejected.
               </p>
               {isDemoGroupActive ? (
-                <a href="/demo-voter-file.csv" download="DEMO_roosevelt_statewide_voter_roll.csv" className="text-amber-400 hover:underline font-bold inline-block pt-1">
+                <Link href="/demo-voter-file.csv" className="text-amber-400 hover:underline font-bold inline-block pt-1">
                   📥 Download Roosevelt DEMO_ Dataset (.csv) →
-                </a>
+                </Link>
               ) : (
                 <Link href="/registry" className="text-amber-400 hover:underline font-bold inline-block pt-1">
                   View Official State Acquisition Link in Registry →

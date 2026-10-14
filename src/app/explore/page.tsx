@@ -15,6 +15,7 @@ import { DataRequiredState } from "@/components/DataRequiredState";
 import { ExploreDataPanel } from "@/components/ExploreDataPanel";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { ExecutiveBriefingExport } from "@/components/ExecutiveBriefingExport";
+import { Link } from "@/components/ui/Link";
 
 interface PlaybookStatus {
   id: string;
@@ -559,6 +560,14 @@ export default function ExplorePage() {
                         Everything is up to date with the most current version.
                       </span>
                     )}
+                    <Link
+                      href="/data-stories"
+                      data-testid="link-synthesize-data-story"
+                      className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm"
+                    >
+                      <span>Synthesize Data Story</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
               </Card>
@@ -761,7 +770,7 @@ export default function ExplorePage() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-200">
             <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
               <h3 className="font-bold text-lg text-slate-900">✨ Save as Custom Playbook</h3>
-              <button onClick={() => setIsWizardOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">✕</button>
+              <Button variant="ghost" size="sm" onClick={() => setIsWizardOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">✕</Button>
             </div>
             
             <div className="p-6 space-y-4">
@@ -795,13 +804,16 @@ export default function ExplorePage() {
             </div>
             
             <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button 
+              <Button 
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsWizardOpen(false)}
-                className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors"
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
+                variant="primary"
+                size="sm"
                 onClick={() => {
                   if (newPbName.trim()) {
                     addPlaybook({
@@ -819,10 +831,9 @@ export default function ExplorePage() {
                   }
                 }}
                 disabled={!newPbName.trim()}
-                className="px-4 py-2 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 Save Playbook
-              </button>
+              </Button>
             </div>
           </div>
         </div>
