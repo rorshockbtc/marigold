@@ -2,6 +2,12 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 const isPublicRoute = createRouteMatcher([
   '/',
+  '/overview(.*)',
+  '/onepager(.*)',
+  '/one-pager(.*)',
+  '/Marigold-OnePager.pdf',
+  '/marigold-overview.pdf',
+  '/(.*)\\.pdf',
   '/explore(.*)',
   '/dashboard(.*)',
   '/data-prep(.*)',
@@ -35,7 +41,7 @@ export default clerkMiddleware(async (auth, request) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and static files
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|pdf)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
     '/__clerk/:path*',
