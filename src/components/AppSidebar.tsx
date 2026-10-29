@@ -7,7 +7,7 @@ import { UserButton, useUser } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { GroupSwitcherModal } from '@/components/GroupSwitcherModal';
 import { LocalFolderStatusModal } from '@/components/LocalFolderStatusModal';
-import { Folder, LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart, Activity } from 'lucide-react';
+import { Folder, LayoutDashboard, Search, GitCompare, BookOpen, MessageSquare, Users, ChevronLeft, Menu, ArrowLeft, LineChart, Terminal, BarChart, Activity, FileText } from 'lucide-react';
 import { useWorkspace } from '@/lib/workspace/WorkspaceContext';
 
 const NAV_ITEMS = [
@@ -239,6 +239,15 @@ export default function AppSidebar() {
           <Folder className="w-4 h-4 text-primary" />
           {!isCollapsed && <span>📁 Marigold Local Folder</span>}
         </button>
+
+        <Link 
+          href="/overview" 
+          title={isCollapsed ? "One-Pager & Overview" : undefined}
+          className="flex items-center justify-center gap-2 text-xs text-[#4A5060] hover:text-[#D96B27] font-semibold px-2 py-1.5 rounded-lg hover:bg-white/60 transition-colors"
+        >
+          <FileText className="w-3.5 h-3.5 text-amber-600" />
+          {!isCollapsed && <span>One-Pager &amp; Share</span>}
+        </Link>
 
         <Link 
           href="/" 

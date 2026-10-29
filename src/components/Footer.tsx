@@ -32,6 +32,7 @@ export function Footer() {
           {/* Column 1: Platform & Resources */}
           <div className="space-y-4 flex flex-col">
             <h4 className="font-bold text-foreground font-serif tracking-tight">Platform</h4>
+            <Link href="/overview" className="text-primary font-bold hover:text-accent transition-colors">Overview &amp; One-Pager</Link>
             <Link href="/store" className="text-secondary hover:text-primary transition-colors">Audit Checklists</Link>
             <Link href="/registry" className="text-secondary hover:text-primary transition-colors">State Registry</Link>
             <Link href="/developers" className="text-secondary hover:text-primary transition-colors">Developer Docs</Link>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
-import { ChevronDown, ArrowRight, Menu, X, Globe, Map, Shield, ShieldAlert, Sparkles, Terminal, Code } from 'lucide-react';
+import { ChevronDown, ArrowRight, Menu, X, Globe, Map, Shield, ShieldAlert, Sparkles, Terminal, Code, FileText } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 
 export function Navbar() {
@@ -54,7 +54,11 @@ export function Navbar() {
               </button>
               
               {moreDropdownOpen && (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-border-soft rounded-xl shadow-lg py-2 z-50 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 top-full mt-1 w-60 bg-white border border-border-soft rounded-xl shadow-lg py-2 z-50 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                  <Link href="/overview" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-primary font-bold hover:bg-muted transition-colors flex items-center gap-2 border-b border-border-soft bg-amber-50/50">
+                    <FileText className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <span>Overview &amp; One-Pager</span>
+                  </Link>
                   <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Code className="w-4 h-4 text-emerald-400" />
                     <span className="font-medium">Developer API</span>
@@ -135,6 +139,10 @@ export function Navbar() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <nav className="lg:hidden mt-4 pt-4 border-t border-border-soft flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <Link href="/overview" onClick={() => setMobileMenuOpen(false)} className="text-primary font-bold px-2 py-1.5 transition-colors flex items-center gap-2 bg-amber-50/60 rounded-lg">
+              <FileText className="w-4 h-4 text-amber-600" />
+              <span>Overview &amp; One-Pager</span>
+            </Link>
             <Link href="/sandbox" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Public Sandbox</Link>
             <Link href="/store" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Audit Checklists</Link>
             <Link href="/registry" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">State Registry</Link>
