@@ -3,11 +3,12 @@ import { getPublishedStory } from '@/lib/firebase/firestore';
 import PublishedStoryClient from './PublishedStoryClient';
 
 type Props = {
-  searchParams: { id?: string }
+  searchParams: Promise<{ id?: string }>
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const id = searchParams.id;
+  const resolvedParams = await searchParams;
+  const id = resolvedParams?.id;
   
   if (!id) {
     return {
