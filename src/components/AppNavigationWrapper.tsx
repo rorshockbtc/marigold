@@ -73,7 +73,7 @@ export default function AppNavigationWrapper({ children }: { children: React.Rea
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
       <Navbar />
-      <main className={`flex-1 ${pathname === '/' ? '' : 'container mx-auto p-4 md:p-8'}`}>
+      <main className={`flex-1 ${pathname === '/' || pathname.startsWith('/overview') ? '' : 'container mx-auto p-4 md:p-8'}`}>
         {children}
       </main>
       <Footer />

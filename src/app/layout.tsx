@@ -72,7 +72,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_test_ZXF1aXBwZWQtZGFzc2llLTkxLmNsZXJrLmFjY291bnRzLmRldiQ"}>
       <html lang="en" suppressHydrationWarning>
         <body suppressHydrationWarning className={`${roboto.variable} ${lora.variable} ${inter.variable} ${fraunces.variable} font-sans antialiased min-h-screen flex flex-col`}>
           <AuthProvider>

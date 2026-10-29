@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { MonitorSmartphone, X, AlertTriangle, Zap } from 'lucide-react';
 
 export default function MobileWarning() {
+  const pathname = usePathname() || '';
   const [isVisible, setIsVisible] = useState(false);
   const [hasDismissed, setHasDismissed] = useState(false);
+
+  const isOverviewPage = pathname.startsWith('/overview') || pathname.startsWith('/onepager') || pathname.startsWith('/one-pager');
 
   useEffect(() => {
     const checkMobile = () => {
@@ -22,7 +26,7 @@ export default function MobileWarning() {
     return () => window.removeEventListener('resize', checkMobile);
   }, [hasDismissed]);
 
-  if (!isVisible) return null;
+  if (!isVisible || isOverviewPage) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">
