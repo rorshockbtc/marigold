@@ -8,5 +8,6 @@ node_modules
 *.sqlite3
 *.csv
 /data/
-.env*
+.env.local
+.env*.local
 voters.db
