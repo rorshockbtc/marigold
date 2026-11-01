@@ -3,6 +3,7 @@ import { Download, Printer, ShieldCheck, CheckCircle, AlertTriangle, FileText } 
 import { ExecutiveReportPDFTemplate } from "@/components/ExecutiveReportPDFTemplate";
 import { Button } from "@/components/ui/Button";
 import { useExportManager } from "@/hooks/useExportManager";
+import { PipesNetworkBridgeModal } from "@/components/PipesNetworkBridgeModal";
 
 export interface PlaybookAuditSummary {
   id: string;
@@ -38,6 +39,7 @@ export function ExecutiveBriefingExport({
   anomalyRecords,
 }: ExecutiveBriefingProps) {
   const { requestExport } = useExportManager();
+  const [isPipesBridgeOpen, setIsPipesBridgeOpen] = useState(false);
 
   const sortedPlaybooks = [...playbookResults].sort((a, b) => b.flaggedCount - a.flaggedCount);
   const totalAnomalies = sortedPlaybooks.reduce((acc, pb) => acc + pb.flaggedCount, 0);
@@ -90,6 +92,16 @@ export function ExecutiveBriefingExport({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => setIsPipesBridgeOpen(true)}
+              className="flex-1 md:flex-initial"
+              data-testid="btn-executive-pipes-bridge"
+            >
+              <ShieldCheck className="w-4 h-4 mr-2" />
+              Sovereign Custody &amp; Pipes Mount
+            </Button>
+
             <Button
               variant="outline"
               onClick={() => {
@@ -183,6 +195,22 @@ export function ExecutiveBriefingExport({
         executionTimestamp={executionTimestamp}
         auditorName={auditorName}
         playbookResults={sortedPlaybooks}
+      />
+
+      <PipesNetworkBridgeModal
+        isOpen={isPipesBridgeOpen}
+        onClose={() => setIsPipesBridgeOpen(false)}
+        datasetName={`${jurisdictionName}_${stateCode}_Roll.csv`}
+        totalRows={totalRecordsScanned || 1800}
+        dossierTitle={`${jurisdictionName} (${stateCode}) 360° Executive Integrity Briefing`}
+        narratives={[
+          `Comprehensive zero-cloud audit of ${totalRecordsScanned.toLocaleString()} records across ${jurisdictionName} (${stateCode}) with a ${actualCleanPercentage}% cleanliness baseline and ${totalAnomalies.toLocaleString()} flagged statutory anomalies across ${sortedPlaybooks.length} playbooks.`,
+        ]}
+        playbookSummaries={sortedPlaybooks.map((pb) => ({
+          id: pb.id,
+          name: pb.name,
+          flaggedCount: pb.flaggedCount,
+        }))}
       />
     </div>
   );

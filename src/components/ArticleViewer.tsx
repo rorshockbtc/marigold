@@ -7,7 +7,8 @@ import ReactMarkdown from 'react-markdown';
 import { DecryptionEngine } from '@/lib/security/DecryptionEngine';
 import { v4 as uuidv4 } from 'uuid';
 import { publishStoryToFirestore } from '@/lib/firebase/firestore';
-import { X } from 'lucide-react';
+import { X, ShieldCheck } from 'lucide-react';
+import { PipesNetworkBridgeModal } from '@/components/PipesNetworkBridgeModal';
 
 const scrubPII = (text: string): string => {
   if (!text) return text;
@@ -144,6 +145,7 @@ export function ArticleViewer({
   }, [displayArticle.title]);
 
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isPipesBridgeOpen, setIsPipesBridgeOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [publishConsent, setPublishConsent] = useState(false);
@@ -336,6 +338,9 @@ export function ArticleViewer({
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           {!isPublicView && (
             <>
+              <Button onClick={() => setIsPipesBridgeOpen(true)} variant="outline" className="flex items-center gap-2 text-xs">
+                <ShieldCheck className="w-4 h-4 text-amber-700" /> Sovereign Custody &amp; Pipes Mount
+              </Button>
               <Button onClick={handleExportPodcastScript} variant="outline" className="flex items-center gap-2 text-xs">
                 🎙️ Export Audio Script
               </Button>
@@ -531,6 +536,18 @@ export function ArticleViewer({
           </section>
         ))}
       </article>
+
+      <PipesNetworkBridgeModal
+        isOpen={isPipesBridgeOpen}
+        onClose={() => setIsPipesBridgeOpen(false)}
+        datasetName="Roosevelt_Civic_Benchmark_2026.csv"
+        totalRows={1800}
+        dossierTitle={displayArticle.title || "360° Jurisdictional Integrity Dossier"}
+        narratives={[
+          ...(displayArticle.sections?.map((s) => s.narrative) || []),
+          ...(displayArticle.blocks?.map((b) => b.content.narrative || "") || []),
+        ].filter(Boolean)}
+      />
     </div>
   );
 }

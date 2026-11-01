@@ -107,6 +107,18 @@ export default function ExplorePage() {
       const searchParams = new URLSearchParams(window.location.search);
       const pbParam = searchParams.get('playbook');
       const autoRun = searchParams.get('autoRun') === 'true';
+      const demoParam = searchParams.get('demo');
+      const pipeParam = searchParams.get('pipe');
+
+      if (demoParam === 'roosevelt' || pipeParam) {
+        localStorage.setItem('marigold_active_group', 'State of Roosevelt (Demo)');
+        localStorage.setItem('marigold_file_connected', 'true');
+        localStorage.setItem('marigold_file_name', 'Roosevelt_Civic_Benchmark_DEMO.csv');
+        sessionStorage.setItem('marigold_zk_proceeded', 'true');
+        setNeedsZkProceed(false);
+        setIsDataLoaded(true);
+        autoLoadSyntheticDemoDataset().catch(() => {});
+      }
 
       if (pbParam) {
         setViewMode('playbook_drilldown');

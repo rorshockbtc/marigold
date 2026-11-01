@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { globalPIIPipeline } from '../data/ZeroPII';
-import { MariContext } from '../data/MariContextStore';
+import {
+  classifyIntentDeterministic,
+  generateDeterministicSQLPayload,
+  synthesizeDeterministicNarrative,
+  synthesizeDeterministicResearch,
+  tryLocalOllamaOrByokJSON,
+} from './deterministicStoryEngine';
 
 export interface ChartConfig {
   xAxisKey?: string;
@@ -34,20 +40,19 @@ export function useMaryAIRouter() {
   const classifyIntent = async (naturalLanguageQuery: string, activeSchemaName: string | null): Promise<IntentPayload | null> => {
     setIsGenerating(true);
     setError(null);
-    setPipelineStatus("Analyzing intent...");
+    setPipelineStatus("Analyzing intent locally...");
     try {
-      const res = await fetch('/api/data-story/router', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: naturalLanguageQuery, activeSchemaName })
-      });
-      if (!res.ok) throw new Error("Failed to classify intent");
-      return await res.json();
-    } catch (err: unknown) {
-      console.error("Intent Classifier Error:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred.";
-      setError(errorMessage);
-      return null;
+      // Tier 1: Optional Local Ollama / BYOK
+      const localIntent = await tryLocalOllamaOrByokJSON<IntentPayload>(
+        naturalLanguageQuery,
+        `Classify query into JSON with intent ('LOCAL_DATA_EXPLORE'|'LOCAL_DATA_DRAFT'|'WEB_HUNT'|'QUALITATIVE_RESEARCH'|'CLARIFY_MOTIVATION'), reasoning, proposedDatasetQuery, socraticQuestion. Active dataset: ${activeSchemaName || 'None'}`
+      );
+      if (localIntent && localIntent.intent) return localIntent;
+
+      // Tier 0: Zero-cost deterministic intent router (instant, 0 server cost)
+      return classifyIntentDeterministic(naturalLanguageQuery, activeSchemaName);
+    } catch {
+      return classifyIntentDeterministic(naturalLanguageQuery, activeSchemaName);
     } finally {
       setIsGenerating(false);
       setPipelineStatus(null);
@@ -57,20 +62,19 @@ export function useMaryAIRouter() {
   const synthesizeResearch = async (naturalLanguageQuery: string): Promise<any> => {
     setIsGenerating(true);
     setError(null);
-    setPipelineStatus("Compiling historical and qualitative research...");
+    setPipelineStatus("Compiling statutory and methodological research...");
     try {
       const res = await fetch('/api/data-story/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: naturalLanguageQuery })
       });
-      if (!res.ok) throw new Error("Failed to compile research");
-      return await res.json();
-    } catch (err: unknown) {
-      console.error("Research Error:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred.";
-      setError(errorMessage);
-      return null;
+      if (res.ok) {
+        return await res.json();
+      }
+      return synthesizeDeterministicResearch(naturalLanguageQuery);
+    } catch {
+      return synthesizeDeterministicResearch(naturalLanguageQuery);
     } finally {
       setIsGenerating(false);
       setPipelineStatus(null);
@@ -84,31 +88,45 @@ export function useMaryAIRouter() {
   ): Promise<SQLPayload | null> => {
     setIsGenerating(true);
     setError(null);
-    setPipelineStatus("Analyzing schema & establishing constraints...");
+    setPipelineStatus("Compiling DuckDB-Wasm SQL query...");
 
     try {
+      // If a previous LLM SQL attempt failed, immediately use the verified deterministic SQL engine
+      if (sqlError) {
+        return generateDeterministicSQLPayload(naturalLanguageQuery, schema);
+      }
+
       const scrubbedSchema = schema.map(col => ({
         ...col,
         column_name: globalPIIPipeline.encodeValue(col.column_name)
       }));
 
+      // Tier 1: Optional Local Ollama / BYOK
+      const localSql = await tryLocalOllamaOrByokJSON<SQLPayload>(
+        `Query: ${naturalLanguageQuery}\nSchema: ${JSON.stringify(scrubbedSchema)}`,
+        `Return JSON { query: "SELECT ... FROM data_file ...", chartType: "bar"|"line"|"scatter"|"pie", chartConfig: { xAxisKey: "x", yAxisKey: "y", title: "..." } }`
+      );
+      if (localSql && localSql.query) {
+        localSql.query = globalPIIPipeline.decodeString(localSql.query);
+        return localSql;
+      }
+
+      // Tier 0 / Server Cascade: call server endpoint (which itself falls back to deterministic SQL at $0 cost)
       const res = await fetch('/api/data-story/sql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: naturalLanguageQuery, schema: scrubbedSchema, sqlError })
       });
 
-      if (!res.ok) throw new Error("Failed to generate SQL payload");
+      if (res.ok) {
+        const payload: SQLPayload = await res.json();
+        payload.query = globalPIIPipeline.decodeString(payload.query);
+        return payload;
+      }
 
-      const payload: SQLPayload = await res.json();
-      
-      // Decode the generated SQL so DuckDB can read the real column names
-      payload.query = globalPIIPipeline.decodeString(payload.query);
-      return payload;
-    } catch (err: any) {
-      console.error("SQL Gen Error:", err);
-      setError(err.message || "An unexpected error occurred.");
-      return null;
+      return generateDeterministicSQLPayload(naturalLanguageQuery, schema);
+    } catch {
+      return generateDeterministicSQLPayload(naturalLanguageQuery, schema);
     } finally {
       setIsGenerating(false);
       setPipelineStatus(null);
@@ -122,26 +140,38 @@ export function useMaryAIRouter() {
   ): Promise<{ blocks: any[], nextSocraticQuestion: string } | null> => {
     setIsGenerating(true);
     setError(null);
-    setPipelineStatus("Synthesizing editorial narrative...");
+    setPipelineStatus("Synthesizing 6-stage rhetorical narrative...");
 
     try {
+      // Tier 1: Optional Local Ollama / BYOK
+      const localNarrative = await tryLocalOllamaOrByokJSON<{ blocks: any[]; nextSocraticQuestion: string }>(
+        `Query: ${naturalLanguageQuery}\nChartConfig: ${JSON.stringify(chartConfig)}\nAggregatedData: ${JSON.stringify(chartData)}`,
+        `Return JSON { nextSocraticQuestion: string, blocks: [{ type: 'hook'|'thesis'|'chart'|'dialectic_antithesis'|'synthesis', title?: string, narrative?: string }] }`
+      );
+      if (localNarrative && Array.isArray(localNarrative.blocks) && localNarrative.blocks.length > 0) {
+        return localNarrative;
+      }
+
+      // Tier 0 / Server Cascade
       const res = await fetch('/api/data-story/narrative', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: naturalLanguageQuery, chartData, chartConfig })
       });
 
-      if (!res.ok) throw new Error("Failed to generate narrative");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.blocks) && data.blocks.length > 0) {
+          return {
+            blocks: data.blocks,
+            nextSocraticQuestion: data.nextSocraticQuestion || "What would you like to investigate next?"
+          };
+        }
+      }
 
-      const data = await res.json();
-      return {
-        blocks: data.blocks || [],
-        nextSocraticQuestion: data.nextSocraticQuestion || "What would you like to investigate next?"
-      };
-    } catch (err: any) {
-      console.error("Narrative Gen Error:", err);
-      setError(err.message || "An unexpected error occurred.");
-      return null;
+      return synthesizeDeterministicNarrative(naturalLanguageQuery, chartData, chartConfig);
+    } catch {
+      return synthesizeDeterministicNarrative(naturalLanguageQuery, chartData, chartConfig);
     } finally {
       setIsGenerating(false);
       setPipelineStatus(null);

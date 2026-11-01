@@ -13,6 +13,8 @@ import { useVoterRollConnection } from '@/hooks/useVoterRollConnection';
 import { MarigoldDataEngineService, AuditSweepResults } from '@/lib/services/MarigoldDataEngineService';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/components/ui/Link';
+import { PipesNetworkBridgeModal } from '@/components/PipesNetworkBridgeModal';
+import { BlindSpotItem } from '@/lib/pipes/editorialRubricAndGraph';
 
 export interface DataStoryPayload {
   query: string;
@@ -62,6 +64,7 @@ export const DataExplorerLayout: React.FC = () => {
   const [mariContext, setMariContext] = useState<MariContext | null>(null);
   const [isQueryingLocalDB, setIsQueryingLocalDB] = useState(false);
   const [exportBanner, setExportBanner] = useState<string | null>(null);
+  const [isPipesBridgeOpen, setIsPipesBridgeOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dossierEndRef = useRef<HTMLDivElement>(null);
 
@@ -443,7 +446,15 @@ export const DataExplorerLayout: React.FC = () => {
         <div className="flex-1 overflow-y-auto bg-[#F9FAFB] text-gray-900 p-8 lg:p-16 relative shadow-[inset_0_0_60px_rgba(0,0,0,0.05)] print-reset-layout">
           
           {dossierBlocks.length > 0 && (
-            <div className="absolute top-4 right-8 flex space-x-3 no-print z-30">
+            <div className="absolute top-4 right-8 flex flex-wrap gap-2 no-print z-30">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPipesBridgeOpen(true)}
+                data-testid="btn-open-pipes-bridge"
+              >
+                Sovereign Custody &amp; Pipes Mount
+              </Button>
               <Button 
                 variant="secondary"
                 size="sm"
@@ -464,7 +475,7 @@ export const DataExplorerLayout: React.FC = () => {
                 onClick={() => handleExport(true)} 
                 title="Strict PII Redaction for Public Sharing"
               >
-                Sanitize & Export
+                Sanitize &amp; Export
               </Button>
             </div>
           )}
@@ -489,6 +500,13 @@ export const DataExplorerLayout: React.FC = () => {
                     data-testid="btn-synthesize-audit-dossier"
                   >
                     Synthesize 360° Audit Dossier
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    onClick={() => setIsPipesBridgeOpen(true)}
+                  >
+                    Sovereign Custody &amp; Pipes Mount
                   </Button>
                   <Link
                     href="/explore"
@@ -649,6 +667,35 @@ export const DataExplorerLayout: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <PipesNetworkBridgeModal
+        isOpen={isPipesBridgeOpen}
+        onClose={() => setIsPipesBridgeOpen(false)}
+        datasetName={activeSchema?.fileName || loadedFileName || 'Roosevelt_Civic_Benchmark_2026.csv'}
+        totalRows={cachedAuditSweep?.totalScanned || loadedRowCount || 1800}
+        dossierTitle={
+          dossierBlocks.find((b) => b.content.title)?.content.title ||
+          `Forensic 360° Integrity Dossier: ${activeSchema?.fileName || 'Roosevelt State Benchmark'}`
+        }
+        narratives={dossierBlocks
+          .map((b) => b.content.narrative || '')
+          .filter(Boolean)}
+        onAppendBlindSpotBlock={(item: BlindSpotItem) => {
+          setDossierBlocks((prev) => [
+            ...prev,
+            {
+              id: `blindspot-${item.id}-${Date.now()}`,
+              type: 'thesis',
+              status: 'approved',
+              content: {
+                title: item.title,
+                narrative: `<p>${item.narrativeSummary}</p>`,
+              },
+              sqlProvenance: item.suggestedSql,
+            },
+          ]);
+        }}
+      />
     </div>
   );
 };
