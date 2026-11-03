@@ -15,6 +15,20 @@ export interface ColumnMappingSchema {
   dob: string;
   precinct_code: string;
   ncoa_flag: string;
+  house_num: string;
+  street_name: string;
+  street_type: string;
+  mail_address: string;
+  mail_city: string;
+  mail_state: string;
+  mail_zip: string;
+  precinct_name: string;
+  dist_cong: string;
+  dist_sen: string;
+  dist_rep: string;
+  dist_sup: string;
+  dist_da: string;
+  dist_sc: string;
 }
 
 export interface StandardizedVoterRow {
@@ -34,6 +48,20 @@ export interface StandardizedVoterRow {
   dob: string;
   precinct_code: string;
   ncoa_flag: string;
+  house_num: string;
+  street_name: string;
+  street_type: string;
+  mail_address: string;
+  mail_city: string;
+  mail_state: string;
+  mail_zip: string;
+  precinct_name: string;
+  dist_cong: string;
+  dist_sen: string;
+  dist_rep: string;
+  dist_sup: string;
+  dist_da: string;
+  dist_sc: string;
   raw: Record<string, any>;
 }
 
@@ -51,8 +79,61 @@ const MISSISSIPPI_82_COUNTIES = [
   "WILKINSON", "WINSTON", "YALOBUSHA", "YAZOO"
 ];
 
+export function isCleanValue(val: any): boolean {
+  if (val === undefined || val === null) return false;
+  const s = String(val).trim();
+  if (s === '') return false;
+  const upper = s.toUpperCase();
+  return upper !== 'NULL' && upper !== 'UNDEFINED' && upper !== 'NAN' && upper !== '\\N';
+}
+
+export function formatCountyName(rawCounty: string): string {
+  if (!rawCounty || !isCleanValue(rawCounty)) return 'Hinds County';
+  const clean = String(rawCounty).trim().replace(/\s+County$/i, '').trim();
+  if (!clean || !isCleanValue(clean)) return 'Hinds County';
+  const upper = clean.toUpperCase();
+  const matched = MISSISSIPPI_82_COUNTIES.find(c => c === upper);
+  if (matched) {
+    if (matched === 'DESOTO') return 'DeSoto County';
+    return matched.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') + ' County';
+  }
+  return clean.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') + ' County';
+}
+
+export function normalizeSuffix(rawSuffix: unknown): string {
+  if (rawSuffix === undefined || rawSuffix === null) return '';
+  let s = String(rawSuffix).trim();
+  if (!s) return '';
+
+  const lower = s.toLowerCase();
+  if (lower === 'null' || lower === 'undefined' || lower === 'n/a' || lower === 'none' || lower === 'nan') {
+    return '';
+  }
+
+  s = s.replace(/^[.\s*#\-+]+/, '').trim();
+  if (!s) return '';
+
+  s = s.toUpperCase();
+  s = s.replace(/[.,\s]+$/, '').trim();
+
+  if (s.includes('.')) {
+    s = s.replace(/\./g, '').trim();
+  }
+
+  if (s === 'JUNIOR') return 'JR';
+  if (s === 'SENIOR') return 'SR';
+
+  return s;
+}
+
+export function isGenerationalSuffix(suffix: unknown): boolean {
+  const clean = normalizeSuffix(suffix);
+  return ['JR', 'SR', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'].includes(clean);
+}
+
 const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   voter_id: [
+    'mappingvalue', 'mapping_value', 'mapping val', 'mappingval',
     'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
     'sosid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voteridnum',
     'voterkey', 'stateid', 'voterregid', 'voterregnum', 'voterregno', 'statevoteridnum',
@@ -72,11 +153,13 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'state', 'physstate'
   ],
   zip: [
-    'residentialzip', 'residencezip', 'reszip', 'zipcode', 'postalcode',
+    'reszipcode', 'res_zip_code', 'reszip',
+    'residentialzip', 'residencezip', 'zipcode', 'postalcode',
     'zip5', 'zip', 'physzip'
   ],
   county: [
-    'countyname', 'cntydesc', 'countyname', 'county', 'cnty'
+    'rescounty', 'residentialcounty', 'res_county',
+    'countyname', 'cntydesc', 'county', 'cnty'
   ],
   first_name: [
     'firstname', 'voterfirstname', 'fname', 'first', 'namefirst', 'givenname'
@@ -98,6 +181,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'statuscode', 'status'
   ],
   date_registered: [
+    'effectiveregndate', 'effective_regn_date', 'effectiveregdate', 'effectiveregistrationdate',
     'registrationdate', 'dateregistered', 'regdate', 'origregdate',
     'effectivedate', 'enrolldate', 'appdate', 'dateadded'
   ],
@@ -106,11 +190,53 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'bdate', 'birthyear', 'yb', 'yob', 'yearofbirth'
   ],
   precinct_code: [
-    'precinctname', 'precinctcode', 'precinctid', 'pctcode', 'precinct',
-    'pct', 'wardprecinct', 'splitcode'
+    'precinctcode', 'precinctid', 'pctcode', 'precinct',
+    'pct', 'wardprecinct', 'splitcode', 'precinct_code'
   ],
   ncoa_flag: [
     'ncoaflag', 'ncoastatus', 'ncoamatch', 'addresschangeflag', 'relocated'
+  ],
+  house_num: [
+    'housenum', 'housenumber', 'house_num', 'house_number', 'hn', 'res_house_num', 'reshousenum'
+  ],
+  street_name: [
+    'streetname', 'street_name', 'stname', 'st_name', 'res_street_name', 'resstreetname'
+  ],
+  street_type: [
+    'streettype', 'street_type', 'sttype', 'st_type', 'streettypecode'
+  ],
+  mail_address: [
+    'mailingaddress', 'mailaddress', 'mail_address', 'mailing_address', 'mailaddr', 'mail_addr', 'address2'
+  ],
+  mail_city: [
+    'mailcity', 'mail_city', 'mailingcity', 'mailing_city'
+  ],
+  mail_state: [
+    'mailstate', 'mail_state', 'mailingstate', 'mailing_state'
+  ],
+  mail_zip: [
+    'mailzipcode', 'mail_zip_code', 'mailzip', 'mail_zip', 'mailingzip', 'mailingzipcode', 'mailing_zip'
+  ],
+  precinct_name: [
+    'precinctname', 'precinct_name', 'pctname', 'pct_name', 'precinctdesc', 'precinctdescription'
+  ],
+  dist_cong: [
+    'cong', 'congressional', 'congressionaldistrict', 'dist_cong', 'cd', 'congdist'
+  ],
+  dist_sen: [
+    'sen', 'senate', 'senatedistrict', 'dist_sen', 'sd', 'senatedist'
+  ],
+  dist_rep: [
+    'rep', 'house', 'representative', 'housedistrict', 'dist_rep', 'hd', 'repdist', 'statedist'
+  ],
+  dist_sup: [
+    'sup', 'supervisor', 'supervisordistrict', 'dist_sup', 'supervisordist', 'beat'
+  ],
+  dist_da: [
+    'da', 'districtattorney', 'dist_da', 'dadistrict', 'prosecutor'
+  ],
+  dist_sc: [
+    'sc', 'supremecourt', 'dist_sc', 'supremecourtdistrict', 'scdistrict'
   ]
 };
 
@@ -174,15 +300,18 @@ export function evaluateSemanticMatchScore(sampleValues: string[], fieldKey: key
 
     switch (fieldKey) {
       case 'zip':
+      case 'mail_zip':
         if (/^\d{5}(-\d{4})?$/.test(val)) matches++;
         break;
       case 'state':
+      case 'mail_state':
         if (/^[A-Za-z]{2}$/.test(val) && val.length === 2) matches++;
         break;
       case 'date_registered':
         if (/^\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}$/.test(val)) matches++;
         break;
       case 'address':
+      case 'mail_address':
         if (/^\d+\s+[A-Za-z0-9\s.,#-]+/.test(val) || /^(PO BOX|P.O. BOX|PMB)/i.test(val)) matches++;
         break;
       case 'first_name':
@@ -194,6 +323,9 @@ export function evaluateSemanticMatchScore(sampleValues: string[], fieldKey: key
         break;
       case 'status':
         if (/^(ACTIVE|INACTIVE|CANCELLED|PURGED|DECEASED|A|I|C|P)$/i.test(val)) matches++;
+        break;
+      case 'house_num':
+        if (/^\d+[A-Za-z]?$/.test(val)) matches++;
         break;
       default:
         // Do not assign false-positive semantic match for unhandled fields
@@ -221,7 +353,21 @@ export function interpretColumnMappings(headers: string[], sampleRows: Record<st
     date_registered: '',
     dob: '',
     precinct_code: '',
-    ncoa_flag: ''
+    ncoa_flag: '',
+    house_num: '',
+    street_name: '',
+    street_type: '',
+    mail_address: '',
+    mail_city: '',
+    mail_state: '',
+    mail_zip: '',
+    precinct_name: '',
+    dist_cong: '',
+    dist_sen: '',
+    dist_rep: '',
+    dist_sup: '',
+    dist_da: '',
+    dist_sc: ''
   };
 
   const cleanMap = headers.map(h => ({
@@ -236,7 +382,7 @@ export function interpretColumnMappings(headers: string[], sampleRows: Record<st
   for (const h of headers) {
     const vals: string[] = [];
     for (const r of sampleRows.slice(0, 50)) {
-      if (r && r[h] !== undefined && r[h] !== null && String(r[h]).trim() !== '') {
+      if (r && isCleanValue(r[h])) {
         vals.push(String(r[h]).trim());
       }
     }
@@ -298,15 +444,15 @@ export function interpretColumnMappings(headers: string[], sampleRows: Record<st
 export function extractActualCountyName(rawRow: Record<string, any>): string {
   if (!rawRow || typeof rawRow !== 'object') return 'Hinds County';
 
-  for (const [key, val] of Object.entries(rawRow)) {
-    if (val !== undefined && val !== null) {
+  for (const [, val] of Object.entries(rawRow)) {
+    if (isCleanValue(val)) {
       const strVal = String(val).trim().toUpperCase();
       if (strVal.startsWith('SC0') || strVal.startsWith('SC1') || strVal.startsWith('CD0') || strVal.startsWith('SD0') || strVal.startsWith('HD0')) {
         continue;
       }
       for (const countyName of MISSISSIPPI_82_COUNTIES) {
         if (strVal === countyName || strVal === `${countyName} COUNTY`) {
-          return `${countyName} County`;
+          return formatCountyName(countyName);
         }
       }
     }
@@ -315,11 +461,11 @@ export function extractActualCountyName(rawRow: Record<string, any>): string {
   for (const [key, val] of Object.entries(rawRow)) {
     const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (cleanKey.includes('county') || cleanKey.includes('cnty')) {
-      if (val !== undefined && val !== null) {
+      if (isCleanValue(val)) {
         const strVal = String(val).trim();
         const upperVal = strVal.toUpperCase();
-        if (!upperVal.startsWith('SC0') && !upperVal.startsWith('CD0') && upperVal !== '' && upperVal !== 'NULL') {
-          return upperVal.includes('COUNTY') ? strVal : `${strVal} County`;
+        if (!upperVal.startsWith('SC0') && !upperVal.startsWith('CD0')) {
+          return formatCountyName(strVal);
         }
       }
     }
@@ -335,10 +481,7 @@ export function extractActualCityName(rawRow: Record<string, any>): string {
   for (const [key, val] of Object.entries(rawRow)) {
     const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (cleanKey.includes('res') && cleanKey.includes('city')) {
-      if (val !== undefined && val !== null) {
-        const strVal = String(val).trim();
-        if (strVal !== '' && strVal !== 'NULL') return strVal;
-      }
+      if (isCleanValue(val)) return String(val).trim();
     }
   }
 
@@ -347,10 +490,7 @@ export function extractActualCityName(rawRow: Record<string, any>): string {
     const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (cleanKey.includes('city') || cleanKey.includes('town') || cleanKey.includes('municipality')) {
       if (!cleanKey.includes('mail')) {
-        if (val !== undefined && val !== null) {
-          const strVal = String(val).trim();
-          if (strVal !== '' && strVal !== 'NULL') return strVal;
-        }
+        if (isCleanValue(val)) return String(val).trim();
       }
     }
   }
@@ -377,16 +517,29 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       dob: '',
       precinct_code: '',
       ncoa_flag: '',
+      house_num: '',
+      street_name: '',
+      street_type: '',
+      mail_address: '',
+      mail_city: '',
+      mail_state: '',
+      mail_zip: '',
+      precinct_name: '',
+      dist_cong: '',
+      dist_sen: '',
+      dist_rep: '',
+      dist_sup: '',
+      dist_da: '',
+      dist_sc: '',
       raw: {}
     };
   }
 
-  const activeMapping = { ...(mapping || interpretColumnMappings(Object.keys(rawRow))) };
+  const activeMapping = { ...(mapping || interpretColumnMappings(Object.keys(rawRow), [rawRow])) };
 
   const getValue = (headerKey: string, fallbackKeywords: string[], defaultVal = '') => {
-    if (headerKey && rawRow[headerKey] !== undefined && rawRow[headerKey] !== null) {
-      const v = String(rawRow[headerKey]).trim();
-      if (v !== '') return v;
+    if (headerKey && isCleanValue(rawRow[headerKey])) {
+      return String(rawRow[headerKey]).trim();
     }
     const keys = Object.keys(rawRow);
 
@@ -395,8 +548,9 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       const cleanHeader = headerKey.toLowerCase().replace(/[^a-z0-9]/g, '');
       for (const k of keys) {
         if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanHeader) {
-          const v = String(rawRow[k]).trim();
-          if (v !== '') return v;
+          if (isCleanValue(rawRow[k])) {
+            return String(rawRow[k]).trim();
+          }
         }
       }
     }
@@ -406,35 +560,49 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
       for (const k of keys) {
         const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
         if (cleanK === cleanKw) {
-          const v = String(rawRow[k]).trim();
-          if (v !== '') return v;
+          if (isCleanValue(rawRow[k])) {
+            return String(rawRow[k]).trim();
+          }
         }
       }
     }
     return defaultVal;
   };
 
-  let first = getValue(activeMapping.first_name, ['firstname', 'first', 'voterfirstname', 'fname', 'givenname'], '');
-  let middle = getValue(activeMapping.middle_name, ['middlename', 'middle', 'mname', 'midname'], '');
-  let last = getValue(activeMapping.last_name, ['lastname', 'last', 'voterlastname', 'lname', 'surname'], '');
-  let suffix = getValue(activeMapping.suffix, ['suffix', 'generation', 'nametitle'], '');
-  let fullName = getValue(activeMapping.full_name, ['fullname', 'votername', 'name', 'voterfullname', 'displayname'], '');
+  const stripClericalPrefix = (val: string) => {
+    if (!val) return '';
+    return val.replace(/^[.\s*#]+/, '').trim();
+  };
 
-  if (!first || !last) {
+  let first = stripClericalPrefix(getValue(activeMapping.first_name, ['firstname', 'first', 'voterfirstname', 'fname', 'givenname'], ''));
+  let middle = stripClericalPrefix(getValue(activeMapping.middle_name, ['middlename', 'middle', 'mname', 'midname'], ''));
+  let last = stripClericalPrefix(getValue(activeMapping.last_name, ['lastname', 'last', 'voterlastname', 'lname', 'surname'], ''));
+  let suffix = normalizeSuffix(getValue(activeMapping.suffix, ['suffix', 'generation', 'nametitle'], ''));
+  let fullName = stripClericalPrefix(getValue(activeMapping.full_name, ['fullname', 'votername', 'name', 'voterfullname', 'displayname'], ''));
+
+  if (!first || !last || !suffix) {
     for (const [k, v] of Object.entries(rawRow)) {
+      if (!isCleanValue(v)) continue;
+      const strVal = String(v).trim();
       const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (!first && (cleanK === 'first' || cleanK === 'firstname' || cleanK === 'voterfirstname')) first = String(v).trim();
-      if (!middle && (cleanK === 'middle' || cleanK === 'middlename' || cleanK === 'midname')) middle = String(v).trim();
-      if (!last && (cleanK === 'last' || cleanK === 'lastname' || cleanK === 'voterlastname')) last = String(v).trim();
-      if (!suffix && (cleanK === 'suffix' || cleanK === 'generation')) suffix = String(v).trim();
+      if (!first && (cleanK === 'first' || cleanK === 'firstname' || cleanK === 'voterfirstname')) first = stripClericalPrefix(strVal);
+      if (!middle && (cleanK === 'middle' || cleanK === 'middlename' || cleanK === 'midname')) middle = stripClericalPrefix(strVal);
+      if (!last && (cleanK === 'last' || cleanK === 'lastname' || cleanK === 'voterlastname')) last = stripClericalPrefix(strVal);
+      if (!suffix && (cleanK === 'suffix' || cleanK === 'generation')) suffix = normalizeSuffix(strVal);
     }
   }
 
   if ((!first || !last) && fullName) {
     const parts = fullName.trim().split(/\s+/);
     if (parts.length >= 2) {
-      if (!first) first = parts[0];
-      if (!last) last = parts[parts.length - 1];
+      const candidateSuffix = normalizeSuffix(parts[parts.length - 1]);
+      const isGen = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'MD', 'ESQ', 'PHD', 'DDS'].includes(candidateSuffix);
+      if (isGen) {
+        if (!suffix) suffix = candidateSuffix;
+        parts.pop();
+      }
+      if (parts.length >= 1 && !first) first = stripClericalPrefix(parts[0]);
+      if (parts.length >= 2 && !last) last = stripClericalPrefix(parts[parts.length - 1]);
     }
   }
 
@@ -447,12 +615,31 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   let exactCounty = getValue(activeMapping.county, ['county', 'rescounty', 'countyname'], '');
   if (!exactCounty) {
     exactCounty = extractActualCountyName(rawRow);
-  } else if (!exactCounty.toUpperCase().includes('COUNTY')) {
-    exactCounty = exactCounty.charAt(0).toUpperCase() + exactCounty.slice(1).toLowerCase() + ' County';
+  } else {
+    exactCounty = formatCountyName(exactCounty);
   }
 
+  const precinctCode = getValue(activeMapping.precinct_code, ['precinctcode', 'precinct_code', 'precinct', 'pct', 'precinctid'], '').trim();
+  const precinctName = getValue(activeMapping.precinct_name, ['precinctname', 'precinct_name', 'pctname', 'precinctdesc'], '').trim();
+
+  const houseNum = getValue(activeMapping.house_num, ['housenum', 'housenumber', 'house_num', 'hn'], '').trim();
+  const streetName = getValue(activeMapping.street_name, ['streetname', 'street_name', 'stname'], '').trim();
+  const streetType = getValue(activeMapping.street_type, ['streettype', 'street_type', 'sttype'], '').trim();
+
+  const mailAddress = getValue(activeMapping.mail_address, ['mailingaddress', 'mailaddress', 'mail_address', 'mailing_address', 'mailaddr'], '').trim();
+  const mailCity = getValue(activeMapping.mail_city, ['mailcity', 'mail_city', 'mailingcity'], '').trim();
+  const mailState = getValue(activeMapping.mail_state, ['mailstate', 'mail_state', 'mailingstate'], '').trim();
+  const mailZip = getValue(activeMapping.mail_zip, ['mailzipcode', 'mail_zip_code', 'mailzip', 'mail_zip', 'mailingzip'], '').trim();
+
+  const distCong = getValue(activeMapping.dist_cong, ['cong', 'dist_cong', 'congressional'], '').trim();
+  const distSen = getValue(activeMapping.dist_sen, ['sen', 'dist_sen', 'senate'], '').trim();
+  const distRep = getValue(activeMapping.dist_rep, ['rep', 'dist_rep', 'house', 'representative'], '').trim();
+  const distSup = getValue(activeMapping.dist_sup, ['sup', 'dist_sup', 'supervisor'], '').trim();
+  const distDa = getValue(activeMapping.dist_da, ['da', 'dist_da', 'districtattorney'], '').trim();
+  const distSc = getValue(activeMapping.dist_sc, ['sc', 'dist_sc', 'supremecourt'], '').trim();
+
   return {
-    voter_id: getValue(activeMapping.voter_id, ['sosvoterid', 'voterid', 'voterregistrationnumber', 'statevoterid'], 'N/A (Unlisted)'),
+    voter_id: getValue(activeMapping.voter_id, ['mappingvalue', 'mapping_value', 'sosvoterid', 'voterid', 'voterregistrationnumber', 'statevoterid'], 'N/A (Unlisted)'),
     name: fullName,
     first_name: first,
     middle_name: middle,
@@ -461,13 +648,27 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     address: getValue(activeMapping.address, ['address', 'streetaddress', 'residentialaddress', 'address1'], ''),
     city: exactCity,
     state: getValue(activeMapping.state, ['state', 'st'], 'MS'),
-    zip: getValue(activeMapping.zip, ['zip', 'zipcode'], ''),
+    zip: getValue(activeMapping.zip, ['reszipcode', 'res_zip_code', 'zip', 'zipcode'], ''),
     county: exactCounty,
     status: getValue(activeMapping.status, ['status', 'voterstatus'], 'Active'),
-    date_registered: getValue(activeMapping.date_registered, ['regdate', 'date_registered'], ''),
+    date_registered: getValue(activeMapping.date_registered, ['effectiveregndate', 'effective_regn_date', 'regdate', 'date_registered', 'registrationdate'], ''),
     dob: getValue(activeMapping.dob, ['dob', 'birthdate', 'dateofbirth', 'birth_date', 'bdate'], ''),
-    precinct_code: getValue(activeMapping.precinct_code, ['precinct', 'pct'], ''),
+    precinct_code: precinctCode,
     ncoa_flag: getValue(activeMapping.ncoa_flag, ['ncoaflag', 'ncoa'], ''),
+    house_num: houseNum,
+    street_name: streetName,
+    street_type: streetType,
+    mail_address: mailAddress,
+    mail_city: mailCity,
+    mail_state: mailState,
+    mail_zip: mailZip,
+    precinct_name: precinctName,
+    dist_cong: distCong,
+    dist_sen: distSen,
+    dist_rep: distRep,
+    dist_sup: distSup,
+    dist_da: distDa,
+    dist_sc: distSc,
     raw: { ...rawRow }
   };
 }

@@ -99,7 +99,7 @@ export function ExploreDataPanel({
       <div className="bg-red-50 border border-red-100 rounded-[12px] p-4 mb-6">
         <div className="flex items-center gap-2 mb-2 text-red-700 font-bold">
           <MarigoldIcon className="w-4 h-4" />
-          AI Conclusion
+          Forensic Statistical Finding
         </div>
         <p className="text-sm text-red-900 leading-relaxed">
           {selectedRecord.details} 

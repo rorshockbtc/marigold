@@ -82,8 +82,8 @@ export default function MariRightPanel() {
             <div className="flex items-center gap-3">
               <MarigoldIcon className="w-8 h-8 flex-shrink-0 text-[#D96B27] drop-shadow-md" />
               <div>
-                <h3 className="font-black text-foreground text-sm leading-tight">Mari AI Guidance Co-Pilot</h3>
-                <p className="text-[10px] text-[#646A7A] font-mono mt-0.5">100% Private • Non-Partisan Guide</p>
+                <h3 className="font-black text-foreground text-sm leading-tight">Mari Civic Guidance Co-Pilot</h3>
+                <p className="text-[10px] text-[#646A7A] font-mono mt-0.5">100% Private • Deterministic Guide</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">

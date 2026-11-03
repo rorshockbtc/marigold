@@ -115,7 +115,7 @@ export class MarigoldDataEngineService {
       
       // Normalize rows using active mapping
       if (result.rows.length > 0 && !activeMapping) {
-        activeMapping = interpretColumnMappings(Object.keys(result.rows[0]));
+        activeMapping = interpretColumnMappings(Object.keys(result.rows[0]), result.rows.slice(0, 50));
       }
       result.rows = result.rows.map((row: any) => normalizeRowWithMapping(row, activeMapping));
       
@@ -161,7 +161,7 @@ export class MarigoldDataEngineService {
             const rowData = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
             
             if (!activeMapping) {
-              activeMapping = interpretColumnMappings(Object.keys(rowData));
+              activeMapping = interpretColumnMappings(Object.keys(rowData), [rowData]);
             }
             
             rows.push(normalizeRowWithMapping(rowData, activeMapping));
@@ -194,7 +194,7 @@ export class MarigoldDataEngineService {
           const rowData = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
           
           if (!activeMapping) {
-            activeMapping = interpretColumnMappings(Object.keys(rowData));
+            activeMapping = interpretColumnMappings(Object.keys(rowData), [rowData]);
           }
           
           const matches = columns.some(col =>

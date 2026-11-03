@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 import Papa from 'papaparse';
-import { interpretColumnMappings, normalizeRowWithMapping } from '@/lib/csv/universalMapper';
+import { interpretColumnMappings, normalizeRowWithMapping, normalizeSuffix } from '@/lib/csv/universalMapper';
 import { profileDatasetRows } from '@/lib/csv/DataProfiler';
 
 export class DataProcessorWorker {
@@ -15,6 +15,7 @@ export class DataProcessorWorker {
     let rowsParsed = 0;
     const totalBytes = file.size;
     let columns: string[] = [];
+    let sampleRows: Record<string, unknown>[] = [];
     let hasError = false;
 
     // 1. Initialize IndexedDB
@@ -36,6 +37,7 @@ export class DataProcessorWorker {
             const chunkData = results.data;
             if (columns.length === 0 && chunkData.length > 0) {
               columns = Object.keys(chunkData[0] as object);
+              sampleRows = (chunkData as Record<string, unknown>[]).slice(0, 50);
               
               // Run AI profiling on first chunk
               try {
@@ -75,7 +77,7 @@ export class DataProcessorWorker {
         complete: () => {
           if (!hasError) {
             onProgress(100, rowsParsed, "Ingestion Complete");
-            const mapping = interpretColumnMappings(columns);
+            const mapping = interpretColumnMappings(columns, sampleRows);
             resolve({
               totalRows: rowsParsed,
               columns,
@@ -130,7 +132,9 @@ export class DataProcessorWorker {
 
     const addressCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
     const dateCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
+    const precinctCounts: Map<string, { count: number; sample: Record<string, any> }> = new Map();
     const phantomList: Array<Record<string, any>> = [];
+    const missingDormList: Array<Record<string, any>> = [];
     const ncoaList: Array<Record<string, any>> = [];
     const dupMap: Map<string, { count: number; sample: Record<string, any>; addrs: Set<string> }> = new Map();
     const typoList: Array<Record<string, any>> = [];
@@ -138,10 +142,16 @@ export class DataProcessorWorker {
     let benfordsTotal = 0;
     const filterCounty = (countyFilter || '').toLowerCase();
 
+    const CAMPUS_KEYWORD_REGEX = /\b(HALL|DORM|DORMITORY|CAMPUS|UNIVERSITY|COLLEGE|APARTMENT|APTS|TOWERS)\b/i;
+    const EXPLICIT_MULTIUNIT_KEYWORDS = ['DORM', 'DORMITORY', 'RESIDENCE HALL', 'APARTMENT', 'APTS', 'TOWERS', 'COMMONS', 'COMPLEX'];
+    const STREET_NAME_FALSE_POSITIVE_REGEX = /\b(HALL|COLLEGE|UNIVERSITY|CAMPUS)\s+(ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|CIR|CIRCLE|CT|COURT|WAY|PKWY|HWY|CV|COVE|VIEW|PL|PLACE|FERRY|TRL|TRAIL)\b/i;
+    const UNIT_REGEX = /\b(APT|UNIT|RM|ROOM|SUITE|BLDG|LOT|STE)\b|#/i;
+    const dormCandidates: Array<{ addrKey: string; record: Record<string, any>; upperAddr: string }> = [];
+
     const processRecord = (val: any) => {
       const raw = val.data !== undefined && typeof val.data === 'object' && val.data !== null ? val.data : val;
       if (!activeMapping) {
-        activeMapping = interpretColumnMappings(Object.keys(raw));
+        activeMapping = interpretColumnMappings(Object.keys(raw), [raw]);
       }
       const std = normalizeRowWithMapping(raw, activeMapping);
       const rCounty = std.county || 'Statewide';
@@ -153,35 +163,50 @@ export class DataProcessorWorker {
 
       const addr = std.address;
       if (addr) {
-        const existing = addressCounts.get(addr);
+        const normAddr = addr.toUpperCase().replace(/\s+/g, ' ').trim();
+        const normCity = (std.city || '').toUpperCase().replace(/\s+/g, ' ').trim();
+        const addrKey = `${normAddr}|${normCity}|${std.zip || ''}|${rCounty}`;
+        const existing = addressCounts.get(addrKey);
         if (existing) {
           existing.count++;
           existing.residents.push({ name: std.name, id: std.voter_id, date: std.date_registered, city: std.city, state: std.state, zip: std.zip });
         } else {
-          addressCounts.set(addr, {
+          addressCounts.set(addrKey, {
             count: 1,
             sample: { voter_id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
             residents: [{ name: std.name, id: std.voter_id, date: std.date_registered }]
           });
         }
 
-        const match = addr.match(/^[^\d]*([1-9])/);
-        if (match) {
-          benfordsLawCounts[match[1]]++;
-          benfordsTotal++;
+        if (CAMPUS_KEYWORD_REGEX.test(normAddr) && !UNIT_REGEX.test(normAddr)) {
+          dormCandidates.push({
+            addrKey,
+            upperAddr: normAddr,
+            record: {
+              id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: addr, city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'MEDIUM', details: 'Campus or multi-unit housing missing secondary room/unit identifier.', raw: std.raw
+            }
+          });
         }
       }
 
       if (std.date_registered) {
-        const dExisting = dateCounts.get(std.date_registered);
-        if (dExisting) {
-          dExisting.count++;
-        } else {
-          dateCounts.set(std.date_registered, {
-            count: 1,
-            sample: { voter_id: std.voter_id, name: `Surge Cohort (${std.date_registered})`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: `Registered on ${std.date_registered}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
-            residents: [{ name: std.name, id: std.voter_id }]
+        const dateParts = std.date_registered.includes('/') ? std.date_registered.split('/') : std.date_registered.split('-');
+        const yearVal = dateParts.length === 3 ? parseInt(dateParts[0].length === 4 ? dateParts[0] : dateParts[2], 10) : 2000;
+        if (!isNaN(yearVal) && (yearVal < 1900 || yearVal > 2027)) {
+          typoList.push({
+            id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: `Anomalous registration date (${std.date_registered}).`, raw: std.raw
           });
+        } else {
+          const dExisting = dateCounts.get(std.date_registered);
+          if (dExisting) {
+            dExisting.count++;
+          } else {
+            dateCounts.set(std.date_registered, {
+              count: 1,
+              sample: { voter_id: std.voter_id, name: `Surge Cohort (${std.date_registered})`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: `Registered on ${std.date_registered}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw },
+              residents: [{ name: std.name, id: std.voter_id }]
+            });
+          }
         }
       }
 
@@ -189,10 +214,21 @@ export class DataProcessorWorker {
         phantomList.push({
           id: std.voter_id, name: std.name, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'HIGH', details: 'Missing mandatory precinct assignment.', raw: std.raw
         });
+      } else {
+        const pctKey = `${rCounty}|${std.precinct_code}`;
+        const pEx = precinctCounts.get(pctKey);
+        if (pEx) {
+          pEx.count++;
+        } else {
+          precinctCounts.set(pctKey, {
+            count: 1,
+            sample: { voter_id: std.voter_id, name: std.precinct_name || `Precinct ${std.precinct_code}`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: `Precinct ${std.precinct_code}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw }
+          });
+        }
       }
 
       const homeState = (std.state || 'MS').trim().toUpperCase();
-      const mailState = String(std.raw?.mail_state || std.raw?.MAIL_ST || std.raw?.mailing_state || std.raw?.MAIL_STATE || '').trim().toUpperCase();
+      const mailState = String(std.mail_state || std.raw?.mail_state || std.raw?.MAIL_ST || std.raw?.mailing_state || std.raw?.MAIL_STATE || '').trim().toUpperCase();
       const ncoaFlagStr = String(std.ncoa_flag || '').trim().toUpperCase();
       const isExplicitNcoa = ncoaFlagStr === 'Y' || ncoaFlagStr === 'YES' || ncoaFlagStr === 'TRUE';
       const isOutStateMail = mailState.length === 2 && mailState !== homeState && mailState !== 'MS' && mailState !== 'NO' && mailState !== 'NA';
@@ -202,21 +238,31 @@ export class DataProcessorWorker {
         });
       }
 
-      const dupFirst = std.first_name || (std.name ? std.name.trim().split(/\s+/)[0] : '');
-      const dupLast = std.last_name || (std.name ? std.name.trim().split(/\s+/).pop() : '');
-      const dupMid = std.middle_name ? std.middle_name.toLowerCase().trim() : '';
-      const dupDob = String(std.dob || std.raw?.dob || std.raw?.DOB || std.raw?.birth_date || std.raw?.BIRTH_DATE || std.raw?.date_of_birth || '').trim().toLowerCase();
-
       // Extract Suffix (JR, SR, III, etc.) from std.suffix or full name
       const extractSuffixStr = (s: any): string => {
-        if (s.suffix && String(s.suffix).trim()) return String(s.suffix).trim();
-        const full = String(s.name || s.raw?.name || '').toUpperCase();
-        const match = full.match(/\b(JR|SR|II|III|IV|V|ESQ)\b/);
-        return match ? match[1] : '';
+        const direct = normalizeSuffix(s?.suffix);
+        if (direct) return direct;
+        const full = String(s?.name || s?.raw?.name || '').trim();
+        if (!full) return '';
+        const match = full.match(/\b(JR\.?|SR\.?|II\.?|III\.?|IV\.?|V\.?|VI\.?|VII\.?|VIII\.?|JUNIOR|SENIOR|ESQ\.?)\b/i);
+        return match ? normalizeSuffix(match[1]) : '';
       };
       const dupSuf = extractSuffixStr(std).toLowerCase();
 
-      // STRICT RULE: Require explicit Date of Birth (DOB) or Middle Name to group records as duplicates.
+      const dupFirst = std.first_name || (std.name ? std.name.trim().split(/\s+/)[0] : '');
+      let dupLast = std.last_name || '';
+      if (!dupLast && std.name) {
+        const parts = std.name.trim().split(/\s+/);
+        const lastPart = parts[parts.length - 1];
+        if (parts.length >= 2 && extractSuffixStr({ suffix: lastPart })) {
+          dupLast = parts[parts.length - 2];
+        } else {
+          dupLast = lastPart || '';
+        }
+      }
+      const dupMid = std.middle_name ? std.middle_name.toLowerCase().trim() : '';
+      const dupDob = String(std.dob || std.raw?.dob || std.raw?.DOB || std.raw?.birth_date || std.raw?.BIRTH_DATE || std.raw?.date_of_birth || '').trim().toLowerCase();
+
       // Include Suffix (JR/SR) in the key to prevent Father/Son homonym collisions!
       if (dupFirst && dupLast && std.zip && (dupDob || dupMid)) {
         const discriminator = dupDob ? dupDob : dupMid;
@@ -236,7 +282,7 @@ export class DataProcessorWorker {
 
       const fname = std.first_name || '';
       const lname = std.last_name || '';
-      if ((fname.length === 1 || lname.length === 1) && (fname.length > 0 || lname.length > 0)) {
+      if (((fname.length === 1 || lname.length === 1) && (fname.length > 0 || lname.length > 0)) || (addr && addr.toUpperCase() === 'DATAMIGRATION')) {
         typoList.push({
           id: std.voter_id, name: std.name || `${fname} ${lname}`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: std.address || 'Unlisted Domicile', city: std.city, state: std.state, zip: std.zip, county: rCounty, occupant_count: 1, risk_level: 'MEDIUM', details: 'Potential physical address truncation or malformed record.', raw: std.raw
         });
@@ -271,30 +317,47 @@ export class DataProcessorWorker {
 
     const resultMap: Record<string, Array<Record<string, any>>> = {};
 
-    const INSTITUTIONAL_KEYWORDS = ['NURSING', 'CARE CENTER', 'SENIOR LIVING', 'REHAB', 'RETIREMENT', 'CONVALESCENT', 'DORMITORY', 'HALL', 'MANOR', 'HEALTHCARE', 'ASSISTED LIVING'];
+    const INSTITUTIONAL_KEYWORDS = ['NURSING', 'CARE CENTER', 'SENIOR LIVING', 'REHAB', 'RETIREMENT', 'CONVALESCENT', 'DORMITORY', 'DORM', 'HALL', 'MANOR', 'HEALTHCARE', 'ASSISTED LIVING', 'LYNCH', 'RUST AVE', 'ASU DRIVE', 'CAMPUS', 'UNIVERSITY'];
     const isInstitutional = (a: string) => INSTITUTIONAL_KEYWORDS.some(kw => a.toUpperCase().includes(kw));
 
     const densityResults: Array<Record<string, any>> = [];
-    for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
+    for (const [, { count, sample, residents }] of addressCounts.entries()) {
       if (count >= threshold) {
-        const inst = isInstitutional(addr);
-        densityResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: inst ? 'MEDIUM' : count > 20 ? 'CRITICAL' : 'HIGH', details: inst ? `${count} voters registered at care/institutional facility.` : `${count} voters registered at residential address.`, raw: sample.raw, residentCluster: residents });
+        const dispAddr = sample.address || 'Unlisted Domicile';
+        const inst = isInstitutional(dispAddr);
+        densityResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: dispAddr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: inst ? 'MEDIUM' : count > 20 ? 'CRITICAL' : 'HIGH', details: inst ? `${count} voters registered at care/institutional facility.` : `${count} voters registered at residential address.`, raw: sample.raw, residentCluster: residents });
       }
     }
     resultMap['density'] = densityResults.sort((a, b) => b.occupant_count - a.occupant_count);
+
+    for (const cand of dormCandidates) {
+      const occCount = addressCounts.get(cand.addrKey)?.count || 1;
+      const hasExplicitBldg = EXPLICIT_MULTIUNIT_KEYWORDS.some(kw => cand.upperAddr.includes(kw));
+      const isStreetNameFp = STREET_NAME_FALSE_POSITIVE_REGEX.test(cand.upperAddr) && !hasExplicitBldg && occCount < 4;
+      if (!isStreetNameFp) {
+        missingDormList.push({
+          ...cand.record,
+          occupant_count: occCount
+        });
+      }
+    }
+    resultMap['missing-dorm'] = missingDormList;
     resultMap['out-of-state-mailing'] = ncoaList;
 
     const poBoxResults: Array<Record<string, any>> = [];
-    for (const [addr, { count, sample, residents }] of addressCounts.entries()) {
-      const upper = addr.toUpperCase();
+    for (const [, { count, sample, residents }] of addressCounts.entries()) {
+      const dispAddr = sample.address || '';
+      const upper = dispAddr.toUpperCase();
       if (upper.includes('PO BOX') || upper.includes('P O BOX') || upper.includes('P.O. BOX') || upper.includes('UPS STORE') || upper.includes('PMB') || upper.includes('FEDEX')) {
-        poBoxResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: addr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
+        poBoxResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: dispAddr, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'CRITICAL', details: 'Commercial P.O. Box or shipping drop listed as residential domicile.', raw: sample.raw, residentCluster: residents });
       }
     }
     resultMap['po-box'] = poBoxResults;
+    resultMap['commercial'] = poBoxResults;
+    resultMap['typo-names'] = typoList;
 
     const dupResults: Array<Record<string, any>> = [];
-    for (const [key, { count, sample, addrs }] of dupMap.entries()) {
+    for (const [, { count, sample, addrs }] of dupMap.entries()) {
       if (count > 1 && addrs.size > 1) {
         dupResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Intra-county duplicate name/zip across ${addrs.size} addresses.`, raw: sample.raw });
       }
@@ -302,20 +365,47 @@ export class DataProcessorWorker {
     resultMap['duplicates'] = dupResults;
 
     const spikeResults: Array<Record<string, any>> = [];
-    for (const [regDate, { count, sample, residents }] of dateCounts.entries()) {
+    for (const [regDate, { count, sample }] of dateCounts.entries()) {
       if (count >= 50) {
         spikeResults.push({ id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'HIGH', details: `Single-day registration surge: ${count} voters registered on ${regDate}.`, raw: sample.raw });
       }
     }
     resultMap['spikes'] = spikeResults;
+
+    for (const [, { count, sample }] of precinctCounts.entries()) {
+      const leadDigit = String(count).charAt(0);
+      if (benfordsLawCounts[leadDigit] !== undefined) {
+        benfordsLawCounts[leadDigit]++;
+        benfordsTotal++;
+      }
+      if (count > 3000) {
+        phantomList.push({
+          id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: count > 5000 ? 'CRITICAL' : 'HIGH', details: `Over-capacity precinct (${count} active voters).`, raw: sample.raw
+        });
+      } else if (count > 0 && count < 10) {
+        phantomList.push({
+          id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'MEDIUM', details: `Low-population phantom precinct (${count} active voters).`, raw: sample.raw
+        });
+      }
+    }
     resultMap['phantom-precincts'] = phantomList;
 
     const benfordResults: Array<Record<string, any>> = [];
+    let chiSquare = 0;
     for (let i = 1; i <= 9; i++) {
       const digit = i.toString();
       const actualCount = benfordsLawCounts[digit];
+      const expectedProb = Math.log10(1 + 1 / i);
+      const expectedPct = expectedProb * 100;
       const actualPercentage = benfordsTotal > 0 ? (actualCount / benfordsTotal) * 100 : 0;
-      benfordResults.push({ id: `BENFORD-${digit}`, name: `Leading Digit ${digit}`, address: `Actual: ${actualPercentage.toFixed(1)}%`, city: '', state: '', zip: '', county: '', occupant_count: actualCount, risk_level: 'LOW', details: `Digit ${digit} count: ${actualCount}` });
+      if (benfordsTotal > 0) {
+        const expectedCount = benfordsTotal * expectedProb;
+        chiSquare += Math.pow(actualCount - expectedCount, 2) / expectedCount;
+      }
+      benfordResults.push({ id: `BENFORD-${digit}`, name: `Leading Digit ${digit}`, address: `Actual: ${actualPercentage.toFixed(1)}% vs Expected: ${expectedPct.toFixed(1)}%`, city: '', state: '', zip: '', county: '', occupant_count: actualCount, risk_level: 'LOW', details: `Digit ${digit} count: ${actualCount} (Observed ${actualPercentage.toFixed(1)}%, Expected ${expectedPct.toFixed(1)}%)` });
+    }
+    if (benfordResults.length > 0) {
+      benfordResults[0].details += ` | Goodness-of-Fit Chi-Square: ${chiSquare.toFixed(2)} (${chiSquare < 15.51 ? 'Conforming' : 'Deviation Detected'})`;
     }
     resultMap['benfords-law'] = benfordResults;
 

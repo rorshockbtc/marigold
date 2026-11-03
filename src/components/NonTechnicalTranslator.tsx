@@ -84,7 +84,7 @@ export function NonTechnicalTranslator({
               
               <div className="mt-8 pt-6 border-t border-amber-200 flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border">
                 <div className="text-sm text-slate-600">
-                  <span className="font-bold text-slate-900">Still confusing?</span> Mari AI has been alerted and is ready to help explain it further.
+                  <span className="font-bold text-slate-900">Still confusing?</span> Our Civic Guide is ready to help explain the math in plain English.
                 </div>
                 <button 
                   onClick={() => window.dispatchEvent(new CustomEvent('open-mari-panel'))}
