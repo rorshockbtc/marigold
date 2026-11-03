@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-11-03T02:38:47.896088+00:00",
+    "generatedAt": "2026-11-03T03:35:29.933699+00:00",
     "sourceFile": "Mississippi Statewide Voter Roll (October 2026 extract)",
     "votingHistoryFile": "Mississippi Statewide Voting History (October 2026 extract)",
     "totalRecords": 2112460,
@@ -126,8 +126,8 @@
     },
     "summaryMetrics": {
       "countiesAnalyzed": 82,
-      "equilibriumConformingCounties": 45,
-      "detachedPriorityCounties": 37,
+      "equilibriumConformingCounties": 66,
+      "detachedPriorityCounties": 16,
       "meanX": 25.3,
       "meanY": 39.3,
       "meanZ": 18.8,
@@ -592,7 +592,7 @@
         "partialZ": 8.4,
         "regime": "Multi-Axis Manifold Detachment",
         "dominantDriver": "Compound Multi-Variable Convergence",
-        "plainEnglishSummary": "Oktibbeha County peels away from the normal statewide surface across multiple variables at once (Address Density X=70.6, Interstate/Identity Drift Y=81.0, Polling Strain Z=35.1). It has 86 high-density addresses, 198 active out-of-state mailings, and 3 over-capacity precincts.",
+        "plainEnglishSummary": "Oktibbeha County has higher-than-average activity across all three areas (Address Score=70.6, Mail & Duplicates=81.0, Polling Place Size=35.1). It has 86 addresses with 8+ voters, 198 active out-of-state mailings, and 3 precincts over 3,000 voters.",
         "mahalanobisDistance": 4.09,
         "inactiveRatePct": 17.4,
         "turnout2024Pct": 65.9
@@ -629,7 +629,7 @@
         "partialZ": 20.5,
         "regime": "Multi-Axis Manifold Detachment",
         "dominantDriver": "Compound Multi-Variable Convergence",
-        "plainEnglishSummary": "Hinds County peels away from the normal statewide surface across multiple variables at once (Address Density X=64.9, Interstate/Identity Drift Y=66.5, Polling Strain Z=50.9). It has 240 high-density addresses, 355 active out-of-state mailings, and 8 over-capacity precincts.",
+        "plainEnglishSummary": "Hinds County has higher-than-average activity across all three areas (Address Score=64.9, Mail & Duplicates=66.5, Polling Place Size=50.9). It has 240 addresses with 8+ voters, 355 active out-of-state mailings, and 8 precincts over 3,000 voters.",
         "mahalanobisDistance": 3.73,
         "inactiveRatePct": 4.6,
         "turnout2024Pct": 51.7
@@ -666,7 +666,7 @@
         "partialZ": 67.0,
         "regime": "Multi-Axis Manifold Detachment",
         "dominantDriver": "Compound Multi-Variable Convergence",
-        "plainEnglishSummary": "Harrison County peels away from the normal statewide surface across multiple variables at once (Address Density X=39.3, Interstate/Identity Drift Y=43.0, Polling Strain Z=89.7). It has 138 high-density addresses, 112 active out-of-state mailings, and 22 over-capacity precincts.",
+        "plainEnglishSummary": "Harrison County has higher-than-average activity across all three areas (Address Score=39.3, Mail & Duplicates=43.0, Polling Place Size=89.7). It has 138 addresses with 8+ voters, 112 active out-of-state mailings, and 22 precincts over 3,000 voters.",
         "mahalanobisDistance": 4.57,
         "inactiveRatePct": 17.7,
         "turnout2024Pct": 56.3
@@ -703,7 +703,7 @@
         "partialZ": 1.6,
         "regime": "Axis-Y Interstate Drift Ridge",
         "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 82.1% of Humphreys County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 67 active voters receiving mail out-of-state and 10 suffix-disambiguated duplicate clusters.",
+        "plainEnglishSummary": "82.1% of Humphreys County's cleanup checklist comes from mail and relocation updates: 67 active voters receiving mail out-of-state and 10 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 3.04,
         "inactiveRatePct": 2.6,
         "turnout2024Pct": 52.9
@@ -740,7 +740,7 @@
         "partialZ": 3.7,
         "regime": "Multi-Axis Manifold Detachment",
         "dominantDriver": "Compound Multi-Variable Convergence",
-        "plainEnglishSummary": "Marshall County peels away from the normal statewide surface across multiple variables at once (Address Density X=58.3, Interstate/Identity Drift Y=59.4, Polling Strain Z=17.5). It has 10 high-density addresses, 70 active out-of-state mailings, and 1 over-capacity precincts.",
+        "plainEnglishSummary": "Marshall County has higher-than-average activity across all three areas (Address Score=58.3, Mail & Duplicates=59.4, Polling Place Size=17.5). It has 10 addresses with 8+ voters, 70 active out-of-state mailings, and 1 precincts over 3,000 voters.",
         "mahalanobisDistance": 2.54,
         "inactiveRatePct": 12.7,
         "turnout2024Pct": 61.2
@@ -777,7 +777,7 @@
         "partialZ": 63.0,
         "regime": "Axis-Z Precinct Strain Ridge",
         "dominantDriver": "Mega-Precinct Capacity Overload & Surge Velocity",
-        "plainEnglishSummary": "Variable isolation shows 63.0% of Jackson County's signal is driven by Axis Z (Polling Capacity & Turnout Velocity): 14 precincts exceed the 3,000-voter benchmark (largest precinct: 7,544 voters).",
+        "plainEnglishSummary": "63.0% of Jackson County's priority score comes from large polling places: 14 precincts exceed the 3,000-voter benchmark (largest precinct: 7,544 voters).",
         "mahalanobisDistance": 3.35,
         "inactiveRatePct": 14.0,
         "turnout2024Pct": 62.1
@@ -814,7 +814,7 @@
         "partialZ": 1.7,
         "regime": "Axis-Y Interstate Drift Ridge",
         "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 96.5% of Adams County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 59 active voters receiving mail out-of-state and 28 suffix-disambiguated duplicate clusters.",
+        "plainEnglishSummary": "96.5% of Adams County's cleanup checklist comes from mail and relocation updates: 59 active voters receiving mail out-of-state and 28 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.69,
         "inactiveRatePct": 10.5,
         "turnout2024Pct": 68.3
@@ -851,7 +851,7 @@
         "partialZ": 17.8,
         "regime": "Axis-X Spatial Domicile Ridge",
         "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 47.6% of Leflore County's signal is driven by Axis X (Physical Address Crowding): 30 high-density parcels (489 voters), 241 un-unitized dorm/apartment records, and 0 P.O. Box domiciles.",
+        "plainEnglishSummary": "47.6% of Leflore County's cleanup checklist comes from multi-voter addresses: 30 addresses with 8+ voters (489 voters), 241 campus/apartment records missing unit numbers, and 0 P.O. Box residence lines.",
         "mahalanobisDistance": 2.25,
         "inactiveRatePct": 4.9,
         "turnout2024Pct": 49.3
@@ -888,7 +888,7 @@
         "partialZ": 1.8,
         "regime": "Axis-Y Interstate Drift Ridge",
         "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 95.5% of Scott County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 101 active voters receiving mail out-of-state and 6 suffix-disambiguated duplicate clusters.",
+        "plainEnglishSummary": "95.5% of Scott County's cleanup checklist comes from mail and relocation updates: 101 active voters receiving mail out-of-state and 6 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.45,
         "inactiveRatePct": 13.6,
         "turnout2024Pct": 72.2
@@ -925,7 +925,7 @@
         "partialZ": 1.1,
         "regime": "Axis-Y Interstate Drift Ridge",
         "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 85.5% of Wilkinson County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 17 active voters receiving mail out-of-state and 8 suffix-disambiguated duplicate clusters.",
+        "plainEnglishSummary": "85.5% of Wilkinson County's cleanup checklist comes from mail and relocation updates: 17 active voters receiving mail out-of-state and 8 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.08,
         "inactiveRatePct": 22.2,
         "turnout2024Pct": 69.8
@@ -962,7 +962,7 @@
         "partialZ": 1.0,
         "regime": "Axis-X Spatial Domicile Ridge",
         "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 76.3% of Claiborne County's signal is driven by Axis X (Physical Address Crowding): 15 high-density parcels (403 voters), 3 un-unitized dorm/apartment records, and 10 P.O. Box domiciles.",
+        "plainEnglishSummary": "76.3% of Claiborne County's cleanup checklist comes from multi-voter addresses: 15 addresses with 8+ voters (403 voters), 3 campus/apartment records missing unit numbers, and 10 P.O. Box residence lines.",
         "mahalanobisDistance": 2.72,
         "inactiveRatePct": 6.9,
         "turnout2024Pct": 57.4
@@ -999,7 +999,7 @@
         "partialZ": 3.9,
         "regime": "Axis-Y Interstate Drift Ridge",
         "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 95.0% of Tishomingo County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 71 active voters receiving mail out-of-state and 6 suffix-disambiguated duplicate clusters.",
+        "plainEnglishSummary": "95.0% of Tishomingo County's cleanup checklist comes from mail and relocation updates: 71 active voters receiving mail out-of-state and 6 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.37,
         "inactiveRatePct": 11.6,
         "turnout2024Pct": 71.1
@@ -1036,7 +1036,7 @@
         "partialZ": 2.0,
         "regime": "Multi-Axis Manifold Detachment",
         "dominantDriver": "Compound Multi-Variable Convergence",
-        "plainEnglishSummary": "Noxubee County peels away from the normal statewide surface across multiple variables at once (Address Density X=42.0, Interstate/Identity Drift Y=60.1, Polling Strain Z=11.4). It has 19 high-density addresses, 21 active out-of-state mailings, and 0 over-capacity precincts.",
+        "plainEnglishSummary": "Noxubee County has higher-than-average activity across all three areas (Address Score=42.0, Mail & Duplicates=60.1, Polling Place Size=11.4). It has 19 addresses with 8+ voters, 21 active out-of-state mailings, and 0 precincts over 3,000 voters.",
         "mahalanobisDistance": 1.75,
         "inactiveRatePct": 4.8,
         "turnout2024Pct": 60.5
@@ -1073,7 +1073,7 @@
         "partialZ": 65.9,
         "regime": "Axis-Z Precinct Strain Ridge",
         "dominantDriver": "Mega-Precinct Capacity Overload & Surge Velocity",
-        "plainEnglishSummary": "Variable isolation shows 65.9% of DeSoto County's signal is driven by Axis Z (Polling Capacity & Turnout Velocity): 25 precincts exceed the 3,000-voter benchmark (largest precinct: 6,409 voters).",
+        "plainEnglishSummary": "65.9% of DeSoto County's priority score comes from large polling places: 25 precincts exceed the 3,000-voter benchmark (largest precinct: 6,409 voters).",
         "mahalanobisDistance": 2.95,
         "inactiveRatePct": 18.9,
         "turnout2024Pct": 65.4
@@ -1110,7 +1110,7 @@
         "partialZ": 46.0,
         "regime": "Axis-Z Precinct Strain Ridge",
         "dominantDriver": "Mega-Precinct Capacity Overload & Surge Velocity",
-        "plainEnglishSummary": "Variable isolation shows 46.0% of Madison County's signal is driven by Axis Z (Polling Capacity & Turnout Velocity): 8 precincts exceed the 3,000-voter benchmark (largest precinct: 5,149 voters).",
+        "plainEnglishSummary": "46.0% of Madison County's priority score comes from large polling places: 8 precincts exceed the 3,000-voter benchmark (largest precinct: 5,149 voters).",
         "mahalanobisDistance": 2.22,
         "inactiveRatePct": 9.4,
         "turnout2024Pct": 73.7
@@ -1147,7 +1147,7 @@
         "partialZ": 71.3,
         "regime": "Axis-Z Precinct Strain Ridge",
         "dominantDriver": "Mega-Precinct Capacity Overload & Surge Velocity",
-        "plainEnglishSummary": "Variable isolation shows 71.3% of Rankin County's signal is driven by Axis Z (Polling Capacity & Turnout Velocity): 14 precincts exceed the 3,000-voter benchmark (largest precinct: 6,492 voters).",
+        "plainEnglishSummary": "71.3% of Rankin County's priority score comes from large polling places: 14 precincts exceed the 3,000-voter benchmark (largest precinct: 6,492 voters).",
         "mahalanobisDistance": 3.06,
         "inactiveRatePct": 11.6,
         "turnout2024Pct": 71.5
@@ -1182,9 +1182,9 @@
         "partialX": 0.3,
         "partialY": 98.9,
         "partialZ": 0.8,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 98.9% of Calhoun County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 98 active voters receiving mail out-of-state and 1 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Calhoun County sits within the normal range for its population size (Roll Health Score 74/100, Priority Score 42.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.6,
         "inactiveRatePct": 4.7,
         "turnout2024Pct": 65.5
@@ -1219,9 +1219,9 @@
         "partialX": 45.2,
         "partialY": 47.4,
         "partialZ": 7.4,
-        "regime": "Multi-Axis Manifold Detachment",
-        "dominantDriver": "Compound Multi-Variable Convergence",
-        "plainEnglishSummary": "Forrest County peels away from the normal statewide surface across multiple variables at once (Address Density X=45.9, Interstate/Identity Drift Y=48.4, Polling Strain Z=20.3). It has 66 high-density addresses, 48 active out-of-state mailings, and 2 over-capacity precincts.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Forrest County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 41.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.5,
         "inactiveRatePct": 13.5,
         "turnout2024Pct": 62.6
@@ -1256,9 +1256,9 @@
         "partialX": 1.8,
         "partialY": 97.5,
         "partialZ": 0.7,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 97.5% of Benton County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 21 active voters receiving mail out-of-state and 2 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Benton County sits within the normal range for its population size (Roll Health Score 85/100, Priority Score 39.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.15,
         "inactiveRatePct": 4.5,
         "turnout2024Pct": 64.4
@@ -1293,9 +1293,9 @@
         "partialX": 71.7,
         "partialY": 20.8,
         "partialZ": 7.5,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 71.7% of Coahoma County's signal is driven by Axis X (Physical Address Crowding): 25 high-density parcels (510 voters), 0 un-unitized dorm/apartment records, and 6 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Coahoma County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 37.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.98,
         "inactiveRatePct": 15.2,
         "turnout2024Pct": 51.9
@@ -1330,9 +1330,9 @@
         "partialX": 7.5,
         "partialY": 87.9,
         "partialZ": 4.6,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 87.9% of Holmes County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 35 active voters receiving mail out-of-state and 7 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Holmes County sits within the normal range for its population size (Roll Health Score 89/100, Priority Score 37.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.41,
         "inactiveRatePct": 1.0,
         "turnout2024Pct": 53.2
@@ -1367,9 +1367,9 @@
         "partialX": 17.1,
         "partialY": 26.0,
         "partialZ": 56.9,
-        "regime": "Axis-Z Precinct Strain Ridge",
-        "dominantDriver": "Mega-Precinct Capacity Overload & Surge Velocity",
-        "plainEnglishSummary": "Variable isolation shows 56.9% of Lafayette County's signal is driven by Axis Z (Polling Capacity & Turnout Velocity): 5 precincts exceed the 3,000-voter benchmark (largest precinct: 8,403 voters).",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Lafayette County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 37.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.06,
         "inactiveRatePct": 15.0,
         "turnout2024Pct": 70.4
@@ -1404,9 +1404,9 @@
         "partialX": 4.9,
         "partialY": 90.9,
         "partialZ": 4.2,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 90.9% of Covington County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 35 active voters receiving mail out-of-state and 4 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Covington County sits within the normal range for its population size (Roll Health Score 86/100, Priority Score 36.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.5,
         "inactiveRatePct": 1.2,
         "turnout2024Pct": 69.9
@@ -1443,7 +1443,7 @@
         "partialZ": 43.2,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Lee County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 95/100, Geodesic Detachment 13.1). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Lee County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 36.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.59,
         "inactiveRatePct": 12.9,
         "turnout2024Pct": 68.2
@@ -1478,9 +1478,9 @@
         "partialX": 18.8,
         "partialY": 79.6,
         "partialZ": 1.6,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 79.6% of Chickasaw County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 30 active voters receiving mail out-of-state and 2 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Chickasaw County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 35.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.16,
         "inactiveRatePct": 7.1,
         "turnout2024Pct": 64.5
@@ -1515,9 +1515,9 @@
         "partialX": 20.1,
         "partialY": 76.9,
         "partialZ": 3.0,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 76.9% of Clay County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 33 active voters receiving mail out-of-state and 5 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Clay County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 35.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.96,
         "inactiveRatePct": 7.0,
         "turnout2024Pct": 67.3
@@ -1552,9 +1552,9 @@
         "partialX": 76.6,
         "partialY": 21.3,
         "partialZ": 2.1,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 76.6% of Kemper County's signal is driven by Axis X (Physical Address Crowding): 14 high-density parcels (194 voters), 3 un-unitized dorm/apartment records, and 30 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Kemper County sits within the normal range for its population size (Roll Health Score 80/100, Priority Score 35.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.99,
         "inactiveRatePct": 15.5,
         "turnout2024Pct": 65.9
@@ -1589,9 +1589,9 @@
         "partialX": 22.2,
         "partialY": 76.0,
         "partialZ": 1.8,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 76.0% of Bolivar County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 31 active voters receiving mail out-of-state and 11 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Bolivar County sits within the normal range for its population size (Roll Health Score 84/100, Priority Score 34.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.99,
         "inactiveRatePct": 3.0,
         "turnout2024Pct": 61.0
@@ -1626,9 +1626,9 @@
         "partialX": 84.0,
         "partialY": 15.6,
         "partialZ": 0.4,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 84.0% of Issaquena County's signal is driven by Axis X (Physical Address Crowding): 3 high-density parcels (27 voters), 1 un-unitized dorm/apartment records, and 16 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Issaquena County sits within the normal range for its population size (Roll Health Score 72/100, Priority Score 34.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.25,
         "inactiveRatePct": 5.5,
         "turnout2024Pct": 70.3
@@ -1663,9 +1663,9 @@
         "partialX": 39.4,
         "partialY": 56.7,
         "partialZ": 3.9,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 56.7% of Jefferson County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 11 active voters receiving mail out-of-state and 2 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Jefferson County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 33.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.84,
         "inactiveRatePct": 9.1,
         "turnout2024Pct": 62.5
@@ -1702,7 +1702,7 @@
         "partialZ": 32.6,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Lowndes County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 8.2). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Lowndes County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 33.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.42,
         "inactiveRatePct": 11.8,
         "turnout2024Pct": 65.3
@@ -1737,9 +1737,9 @@
         "partialX": 43.3,
         "partialY": 53.8,
         "partialZ": 2.9,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 53.8% of Amite County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 16 active voters receiving mail out-of-state and 2 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Amite County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 32.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.91,
         "inactiveRatePct": 12.0,
         "turnout2024Pct": 75.5
@@ -1774,9 +1774,9 @@
         "partialX": 23.5,
         "partialY": 61.1,
         "partialZ": 15.4,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 61.1% of Washington County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 18 active voters receiving mail out-of-state and 32 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Washington County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 32.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.37,
         "inactiveRatePct": 15.7,
         "turnout2024Pct": 58.2
@@ -1813,7 +1813,7 @@
         "partialZ": 19.7,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Hancock County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 95/100, Geodesic Detachment 8.7). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Hancock County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 32.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.84,
         "inactiveRatePct": 4.9,
         "turnout2024Pct": 55.6
@@ -1848,9 +1848,9 @@
         "partialX": 10.4,
         "partialY": 84.3,
         "partialZ": 5.3,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 84.3% of Alcorn County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 35 active voters receiving mail out-of-state and 21 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Alcorn County sits within the normal range for its population size (Roll Health Score 89/100, Priority Score 31.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.91,
         "inactiveRatePct": 5.2,
         "turnout2024Pct": 61.8
@@ -1885,9 +1885,9 @@
         "partialX": 54.0,
         "partialY": 37.2,
         "partialZ": 8.8,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 54.0% of Panola County's signal is driven by Axis X (Physical Address Crowding): 27 high-density parcels (435 voters), 0 un-unitized dorm/apartment records, and 9 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Panola County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 30.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.95,
         "inactiveRatePct": 7.8,
         "turnout2024Pct": 65.2
@@ -1922,9 +1922,9 @@
         "partialX": 14.7,
         "partialY": 66.0,
         "partialZ": 19.3,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 66.0% of Pearl River County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 54 active voters receiving mail out-of-state and 12 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Pearl River County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 30.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.57,
         "inactiveRatePct": 10.9,
         "turnout2024Pct": 64.8
@@ -1959,9 +1959,9 @@
         "partialX": 0.8,
         "partialY": 90.0,
         "partialZ": 9.2,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 90.0% of Grenada County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 24 active voters receiving mail out-of-state and 8 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Grenada County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 29.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.52,
         "inactiveRatePct": 15.4,
         "turnout2024Pct": 75.1
@@ -1996,9 +1996,9 @@
         "partialX": 31.7,
         "partialY": 59.7,
         "partialZ": 8.6,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 59.7% of Jones County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 21 active voters receiving mail out-of-state and 40 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Jones County sits within the normal range for its population size (Roll Health Score 89/100, Priority Score 29.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.26,
         "inactiveRatePct": 6.1,
         "turnout2024Pct": 63.3
@@ -2033,9 +2033,9 @@
         "partialX": 41.7,
         "partialY": 54.7,
         "partialZ": 3.6,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 54.7% of Perry County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 11 active voters receiving mail out-of-state and 5 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Perry County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 29.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.7,
         "inactiveRatePct": 9.7,
         "turnout2024Pct": 68.5
@@ -2070,9 +2070,9 @@
         "partialX": 8.7,
         "partialY": 86.2,
         "partialZ": 5.1,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 86.2% of Attala County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 19 active voters receiving mail out-of-state and 5 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Attala County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 29.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.96,
         "inactiveRatePct": 10.7,
         "turnout2024Pct": 72.0
@@ -2107,9 +2107,9 @@
         "partialX": 27.3,
         "partialY": 70.9,
         "partialZ": 1.8,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 70.9% of Walthall County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 8 active voters receiving mail out-of-state and 12 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Walthall County sits within the normal range for its population size (Roll Health Score 86/100, Priority Score 29.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.75,
         "inactiveRatePct": 11.0,
         "turnout2024Pct": 67.1
@@ -2144,9 +2144,9 @@
         "partialX": 25.1,
         "partialY": 70.1,
         "partialZ": 4.8,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 70.1% of Wayne County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 12 active voters receiving mail out-of-state and 12 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Wayne County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 28.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.49,
         "inactiveRatePct": 8.5,
         "turnout2024Pct": 70.6
@@ -2181,9 +2181,9 @@
         "partialX": 34.4,
         "partialY": 59.7,
         "partialZ": 5.9,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 59.7% of Jasper County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 9 active voters receiving mail out-of-state and 10 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Jasper County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 27.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.44,
         "inactiveRatePct": 6.7,
         "turnout2024Pct": 72.3
@@ -2218,9 +2218,9 @@
         "partialX": 8.8,
         "partialY": 66.1,
         "partialZ": 25.1,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 66.1% of Lamar County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 54 active voters receiving mail out-of-state and 6 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Lamar County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 27.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.89,
         "inactiveRatePct": 5.8,
         "turnout2024Pct": 68.7
@@ -2255,9 +2255,9 @@
         "partialX": 33.4,
         "partialY": 64.0,
         "partialZ": 2.6,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 64.0% of Leake County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 17 active voters receiving mail out-of-state and 4 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Leake County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 27.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.68,
         "inactiveRatePct": 11.4,
         "turnout2024Pct": 68.3
@@ -2294,7 +2294,7 @@
         "partialZ": 28.4,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Yazoo County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 87/100, Geodesic Detachment 1.4). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Yazoo County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 27.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.9,
         "inactiveRatePct": 0.6,
         "turnout2024Pct": 47.1
@@ -2329,9 +2329,9 @@
         "partialX": 72.9,
         "partialY": 25.7,
         "partialZ": 1.4,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 72.9% of Sharkey County's signal is driven by Axis X (Physical Address Crowding): 7 high-density parcels (84 voters), 0 un-unitized dorm/apartment records, and 0 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Sharkey County sits within the normal range for its population size (Roll Health Score 72/100, Priority Score 27.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.54,
         "inactiveRatePct": 5.2,
         "turnout2024Pct": 59.1
@@ -2366,9 +2366,9 @@
         "partialX": 66.5,
         "partialY": 29.0,
         "partialZ": 4.5,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 66.5% of Simpson County's signal is driven by Axis X (Physical Address Crowding): 20 high-density parcels (280 voters), 1 un-unitized dorm/apartment records, and 28 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Simpson County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 26.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.27,
         "inactiveRatePct": 8.0,
         "turnout2024Pct": 66.9
@@ -2403,9 +2403,9 @@
         "partialX": 18.2,
         "partialY": 72.2,
         "partialZ": 9.6,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 72.2% of Copiah County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 22 active voters receiving mail out-of-state and 7 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Copiah County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 26.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.51,
         "inactiveRatePct": 8.5,
         "turnout2024Pct": 66.8
@@ -2440,9 +2440,9 @@
         "partialX": 7.8,
         "partialY": 69.8,
         "partialZ": 22.4,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 69.8% of Tippah County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 10 active voters receiving mail out-of-state and 11 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Tippah County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 25.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.96,
         "inactiveRatePct": 8.9,
         "turnout2024Pct": 69.5
@@ -2479,7 +2479,7 @@
         "partialZ": 7.6,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "George County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 91/100, Geodesic Detachment 12.9). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "George County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 24.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.55,
         "inactiveRatePct": 9.5,
         "turnout2024Pct": 69.7
@@ -2514,9 +2514,9 @@
         "partialX": 74.7,
         "partialY": 16.4,
         "partialZ": 8.9,
-        "regime": "Axis-X Spatial Domicile Ridge",
-        "dominantDriver": "Physical Address Density & Un-Unitized Housing",
-        "plainEnglishSummary": "Calculus variable isolation shows 74.7% of Tunica County's signal is driven by Axis X (Physical Address Crowding): 8 high-density parcels (94 voters), 0 un-unitized dorm/apartment records, and 147 P.O. Box domiciles.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Tunica County sits within the normal range for its population size (Roll Health Score 72/100, Priority Score 24.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.54,
         "inactiveRatePct": 19.2,
         "turnout2024Pct": 47.3
@@ -2551,9 +2551,9 @@
         "partialX": 10.3,
         "partialY": 85.6,
         "partialZ": 4.1,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 85.6% of Carroll County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 9 active voters receiving mail out-of-state and 5 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Carroll County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 24.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.01,
         "inactiveRatePct": 5.9,
         "turnout2024Pct": 72.7
@@ -2588,9 +2588,9 @@
         "partialX": 19.3,
         "partialY": 73.0,
         "partialZ": 7.7,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 73.0% of Winston County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 16 active voters receiving mail out-of-state and 4 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Winston County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 24.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.64,
         "inactiveRatePct": 5.9,
         "turnout2024Pct": 69.6
@@ -2625,9 +2625,9 @@
         "partialX": 15.1,
         "partialY": 76.7,
         "partialZ": 8.2,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 76.7% of Lincoln County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 19 active voters receiving mail out-of-state and 14 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Lincoln County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 24.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.76,
         "inactiveRatePct": 10.1,
         "turnout2024Pct": 74.0
@@ -2662,9 +2662,9 @@
         "partialX": 5.3,
         "partialY": 88.7,
         "partialZ": 6.0,
-        "regime": "Axis-Y Interstate Drift Ridge",
-        "dominantDriver": "Out-of-State NCOA Mailings & Duplicate Identity",
-        "plainEnglishSummary": "Variable isolation shows 88.7% of Marion County's signal comes from Axis Y (Interstate Relocation & Identity Drift): 23 active voters receiving mail out-of-state and 2 suffix-disambiguated duplicate clusters.",
+        "regime": "Equilibrium Manifold Surface",
+        "dominantDriver": "Normal Demographic Baseline",
+        "plainEnglishSummary": "Marion County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 24.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.2,
         "inactiveRatePct": 8.1,
         "turnout2024Pct": 69.2
@@ -2701,7 +2701,7 @@
         "partialZ": 7.2,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Newton County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 93/100, Geodesic Detachment 12.4). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Newton County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 23.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.72,
         "inactiveRatePct": 9.8,
         "turnout2024Pct": 73.1
@@ -2738,7 +2738,7 @@
         "partialZ": 14.0,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Greene County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 91/100, Geodesic Detachment 6.8). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Greene County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 23.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.9,
         "inactiveRatePct": 10.0,
         "turnout2024Pct": 75.8
@@ -2775,7 +2775,7 @@
         "partialZ": 9.7,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Sunflower County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 92/100, Geodesic Detachment 11.5). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Sunflower County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 23.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.77,
         "inactiveRatePct": 17.3,
         "turnout2024Pct": 70.1
@@ -2812,7 +2812,7 @@
         "partialZ": 22.1,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Warren County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 96/100, Geodesic Detachment 2.1). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Warren County sits within the normal range for its population size (Roll Health Score 96/100, Priority Score 23.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.08,
         "inactiveRatePct": 14.5,
         "turnout2024Pct": 75.7
@@ -2849,7 +2849,7 @@
         "partialZ": 8.3,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Choctaw County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 87/100, Geodesic Detachment 12.8). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Choctaw County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 22.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.94,
         "inactiveRatePct": 4.9,
         "turnout2024Pct": 76.5
@@ -2886,7 +2886,7 @@
         "partialZ": 9.1,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Pike County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 92/100, Geodesic Detachment 11.0). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Pike County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 22.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.77,
         "inactiveRatePct": 8.6,
         "turnout2024Pct": 58.7
@@ -2923,7 +2923,7 @@
         "partialZ": 11.7,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Monroe County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 95/100, Geodesic Detachment 9.7). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Monroe County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 22.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.77,
         "inactiveRatePct": 5.0,
         "turnout2024Pct": 67.5
@@ -2960,7 +2960,7 @@
         "partialZ": 21.2,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Tate County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 4.8). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Tate County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 22.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.0,
         "inactiveRatePct": 8.7,
         "turnout2024Pct": 69.9
@@ -2997,7 +2997,7 @@
         "partialZ": 10.7,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Itawamba County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 92/100, Geodesic Detachment 10.0). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Itawamba County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 22.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.79,
         "inactiveRatePct": 14.2,
         "turnout2024Pct": 73.4
@@ -3034,7 +3034,7 @@
         "partialZ": 6.8,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Pontotoc County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 13.4). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Pontotoc County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 22.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.99,
         "inactiveRatePct": 8.7,
         "turnout2024Pct": 69.1
@@ -3071,7 +3071,7 @@
         "partialZ": 9.3,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Union County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 7.5). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Union County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 21.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.51,
         "inactiveRatePct": 5.9,
         "turnout2024Pct": 71.6
@@ -3108,7 +3108,7 @@
         "partialZ": 13.7,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Lawrence County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 93/100, Geodesic Detachment 8.1). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Lawrence County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 20.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.92,
         "inactiveRatePct": 11.5,
         "turnout2024Pct": 76.8
@@ -3145,7 +3145,7 @@
         "partialZ": 11.4,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Stone County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 10.0). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Stone County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 20.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.03,
         "inactiveRatePct": 9.7,
         "turnout2024Pct": 71.1
@@ -3182,7 +3182,7 @@
         "partialZ": 31.4,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Lauderdale County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 97/100, Geodesic Detachment 0.5). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Lauderdale County sits within the normal range for its population size (Roll Health Score 97/100, Priority Score 20.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.1,
         "inactiveRatePct": 15.0,
         "turnout2024Pct": 67.9
@@ -3219,7 +3219,7 @@
         "partialZ": 10.5,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Neshoba County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 9.3). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Neshoba County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 20.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.03,
         "inactiveRatePct": 10.8,
         "turnout2024Pct": 66.7
@@ -3256,7 +3256,7 @@
         "partialZ": 16.7,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Prentiss County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 92/100, Geodesic Detachment 3.8). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Prentiss County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 20.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.48,
         "inactiveRatePct": 10.7,
         "turnout2024Pct": 74.6
@@ -3293,7 +3293,7 @@
         "partialZ": 4.9,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Jefferson Davis County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 14.8). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Jefferson Davis County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 20.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.37,
         "inactiveRatePct": 11.2,
         "turnout2024Pct": 67.9
@@ -3330,7 +3330,7 @@
         "partialZ": 14.8,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Clarke County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 6.6). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Clarke County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 18.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.27,
         "inactiveRatePct": 6.0,
         "turnout2024Pct": 67.4
@@ -3367,7 +3367,7 @@
         "partialZ": 15.6,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Yalobusha County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 94/100, Geodesic Detachment 7.4). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Yalobusha County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 17.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.27,
         "inactiveRatePct": 15.8,
         "turnout2024Pct": 71.7
@@ -3404,7 +3404,7 @@
         "partialZ": 13.2,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Franklin County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 91/100, Geodesic Detachment 8.6). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Franklin County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 16.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.37,
         "inactiveRatePct": 10.8,
         "turnout2024Pct": 75.8
@@ -3441,7 +3441,7 @@
         "partialZ": 18.0,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Tallahatchie County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 87/100, Geodesic Detachment 5.9). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Tallahatchie County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 16.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.43,
         "inactiveRatePct": 2.3,
         "turnout2024Pct": 53.4
@@ -3478,7 +3478,7 @@
         "partialZ": 5.5,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Smith County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 92/100, Geodesic Detachment 12.5). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Smith County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 16.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.51,
         "inactiveRatePct": 1.5,
         "turnout2024Pct": 67.4
@@ -3515,7 +3515,7 @@
         "partialZ": 23.0,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Montgomery County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 93/100, Geodesic Detachment 4.2). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Montgomery County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 13.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.81,
         "inactiveRatePct": 3.9,
         "turnout2024Pct": 72.8
@@ -3552,7 +3552,7 @@
         "partialZ": 9.4,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Quitman County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 91/100, Geodesic Detachment 8.0). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Quitman County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 12.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.02,
         "inactiveRatePct": 4.8,
         "turnout2024Pct": 59.4
@@ -3589,7 +3589,7 @@
         "partialZ": 54.8,
         "regime": "Equilibrium Manifold Surface",
         "dominantDriver": "Normal Demographic Baseline",
-        "plainEnglishSummary": "Webster County sits squarely on the healthy Equilibrium Manifold surface (Hygiene Score 95/100, Geodesic Detachment 0.7). Routine statutory list maintenance applies.",
+        "plainEnglishSummary": "Webster County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 10.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.35,
         "inactiveRatePct": 8.1,
         "turnout2024Pct": 78.9
@@ -4107,49 +4107,36 @@
       "subheadline": "Plain steps for talking with your Board of Supervisors, Circuit Clerk and neighboring counties.",
       "peerTiers": [
         {
-          "tier": "Main focus: out-of-state mail & duplicates (32 counties)",
+          "tier": "Main focus: out-of-state mail & duplicates (5 counties)",
           "counties": [
             "Humphreys",
             "Adams",
             "Scott",
             "Wilkinson",
-            "Tishomingo",
-            "Calhoun",
-            "Benton",
-            "Holmes",
-            "Covington",
-            "Chickasaw"
+            "Tishomingo"
           ],
           "primaryFocus": "Send address-confirmation notices to active voters with out-of-state mail; review same-ZIP duplicate pairs.",
-          "benchmarkMetric": "Average 31 active out-of-state mailings per county."
+          "benchmarkMetric": "Average 63 active out-of-state mailings per county."
         },
         {
-          "tier": "Main focus: apartment & dorm unit numbers (9 counties)",
+          "tier": "Main focus: apartment & dorm unit numbers (2 counties)",
           "counties": [
             "Leflore",
-            "Claiborne",
-            "Coahoma",
-            "Kemper",
-            "Issaquena",
-            "Panola",
-            "Sharkey",
-            "Simpson",
-            "Tunica"
+            "Claiborne"
           ],
           "primaryFocus": "Work with campus housing and apartment managers to add room and unit numbers.",
-          "benchmarkMetric": "Average 17 addresses with 8+ voters per county."
+          "benchmarkMetric": "Average 22 addresses with 8+ voters per county."
         },
         {
-          "tier": "Main focus: large precincts (5 counties)",
+          "tier": "Main focus: large precincts (4 counties)",
           "counties": [
             "Jackson",
             "DeSoto",
             "Madison",
-            "Rankin",
-            "Lafayette"
+            "Rankin"
           ],
           "primaryFocus": "Review precincts over 3,000 voters for splits or extra poll-book stations.",
-          "benchmarkMetric": "Average 13.2 precincts over 3,000 voters per county."
+          "benchmarkMetric": "Average 15.2 precincts over 3,000 voters per county."
         }
       ],
       "evangelismSteps": [
@@ -4166,7 +4153,7 @@
         {
           "step": "03",
           "title": "Compare with similar counties",
-          "detail": "Bring the 82-county table to your next district meeting. 30 counties sit in the normal range for their size; the rest each have one main task."
+          "detail": "Bring the 82-county table to your next district meeting. 66 counties sit in the normal range for their size; the rest each have one main task."
         }
       ]
     }

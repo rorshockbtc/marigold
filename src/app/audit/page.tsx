@@ -3,38 +3,45 @@ import React from "react";
 import { ChevronRight, Layers, Compass, FileText, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
+import msAudit from "@/data/mississippi_audit_results.json";
 
 export default function AuditPage() {
+  const pb = msAudit.playbooks;
+  const vh = msAudit.votingHistoryAudit;
+  const yb = pb.clericalTypos.yearBreakdown as Record<string, number>;
+  const poBoxOnly = pb.commercialPOBox.categoryBreakdown.find((c) => c.category.includes("P.O. Box"))?.count ?? 379;
+  const pmbOnly = pb.commercialPOBox.categoryBreakdown.find((c) => c.category.includes("PMB"))?.count ?? 1;
+
   const playbooks = [
     {
       id: "density",
       label: "PB-01: High-Density Occupancy",
       icon: "⚡",
-      metric: "1,598 Parcels (1,070 Active)",
+      metric: `${pb.highDensity.totalAddresses.toLocaleString()} Parcels (${pb.highDensity.activeOnlyAddresses.toLocaleString()} Active)`,
       phase: "Axis X: Physical Domicile & Multi-Unit Verification",
-      desc: "Identifies addresses with 8+ registered voters while separating 56 nursing homes/universities and 103 apartment complexes from 1,439 single-family homes.",
+      desc: `Identifies addresses with 8+ registered voters while separating ${pb.highDensity.institutionalClusters} nursing homes/universities and ${pb.highDensity.multiFamilyClusters} apartment complexes from ${pb.highDensity.singleFamilyAnomalies.toLocaleString()} single-family homes.`,
     },
     {
       id: "missing-dorm",
       label: "PB-02: Missing Dorm / Unit #",
       icon: "🏢",
-      metric: "682 Verified (502 Active)",
+      metric: `${pb.missingDorm.totalVoters.toLocaleString()} Verified (${pb.missingDorm.activeVoters.toLocaleString()} Active)`,
       phase: "Axis X: Physical Domicile & Multi-Unit Verification",
-      desc: "Uses whole-word regex matching to flag communal buildings missing room/apt numbers—eliminating 4,346 false alarms on streets like Marshall Pl and Halls Ferry Rd.",
+      desc: `Uses whole-word regex matching to flag communal buildings missing room/apt numbers—eliminating ${pb.missingDorm.streetNameFalsePositivesRemoved.toLocaleString()} false alarms on streets like Marshall Pl and Halls Ferry Rd.`,
     },
     {
       id: "po-box",
       label: "PB-04: P.O. Box in Residence Field",
       icon: "📬",
-      metric: "380 Voters (212 Active)",
+      metric: `${pb.commercialPOBox.totalVoters.toLocaleString()} Voters (${pb.commercialPOBox.activeVoters.toLocaleString()} Active)`,
       phase: "Axis X: Physical Domicile & Multi-Unit Verification",
-      desc: "Flags 337 P.O. Boxes and 2 Private Mail Boxes typed into the physical residential line instead of the mailing address field.",
+      desc: `Flags ${poBoxOnly.toLocaleString()} P.O. Boxes and ${pmbOnly.toLocaleString()} Private Mail Box typed into the physical residential line instead of the mailing address field.`,
     },
     {
       id: "out-of-state-mailing",
       label: "PB-03: Out-of-State Mail Drift",
       icon: "✈️",
-      metric: "2,444 Active (11,178 Inactive)",
+      metric: `${pb.ncoaRelocations.totalVoters.toLocaleString()} Active (${pb.ncoaRelocations.inactiveRelocatedVoters.toLocaleString()} Inactive)`,
       phase: "Axis Y: Identity, Suffix & Relocation Hygiene",
       desc: "Isolates Active voters receiving mail out-of-state from the 82.1% already moved to Inactive status awaiting their 2-cycle NVRA removal period.",
     },
@@ -42,23 +49,23 @@ export default function AuditPage() {
       id: "typo-names",
       label: "PB-05: Clerical & 1801/0001 Dates",
       icon: "⌨️",
-      metric: "5,607 Legacy Artifacts",
+      metric: `${pb.clericalTypos.totalAnomalies.toLocaleString()} Legacy Artifacts`,
       phase: "Axis Y: Identity, Suffix & Relocation Hygiene",
-      desc: "Identifies legacy paper-to-digital SEMS placeholders (1,271 Year 1801, 206 Year 0001, 113 DATAMIGRATION street strings, and 3,804 1-letter name initials).",
+      desc: `Identifies legacy paper-to-digital SEMS placeholders (${(yb["1801"] ?? 1271).toLocaleString()} Year 1801, ${(yb["0001"] ?? 206).toLocaleString()} Year 0001, ${(yb["DATAMIGRATION_ADDR"] ?? 113).toLocaleString()} DATAMIGRATION street strings, and ${(yb["TRUNCATED_INITIAL_NAME"] ?? 3804).toLocaleString()} 1-letter name initials).`,
     },
     {
       id: "duplicates",
       label: "PB-06: Suffix-Protected Duplicates",
       icon: "👯",
-      metric: "818 Active Intra-ZIP (4,404 Jr/Sr Safe)",
+      metric: `${pb.duplicates.activeActiveDuplicates.toLocaleString()} Active Intra-ZIP (${pb.duplicates.generationalPairs.toLocaleString()} Jr/Sr Safe)`,
       phase: "Axis Y: Identity, Suffix & Relocation Hygiene",
-      desc: "Protects 4,404 Jr./Sr./III father-son family pairs while isolating 818 Active–Active intra-ZIP duplicate clusters and 185 Active–Inactive move trails.",
+      desc: `Protects ${pb.duplicates.generationalPairs.toLocaleString()} Jr./Sr./III father-son family pairs while isolating ${pb.duplicates.activeActiveDuplicates.toLocaleString()} Active–Active intra-ZIP duplicate clusters and ${pb.duplicates.activeInactiveMoveTrails.toLocaleString()} Active–Inactive move trails.`,
     },
     {
       id: "spikes",
       label: "PB-07: Statutory Cutoff Surges",
       icon: "📈",
-      metric: "13,731 Peak (10/05/2020)",
+      metric: `${pb.registrationSpikes.peakDates[0].count.toLocaleString()} Peak (${pb.registrationSpikes.peakDates[0].date})`,
       phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
       desc: "Maps single-day registration spikes against Mississippi's 30-day mail-in cutoff prior to Presidential General Elections.",
     },
@@ -66,25 +73,25 @@ export default function AuditPage() {
       id: "phantom-precincts",
       label: "PB-08: Mega-Precinct Capacity",
       icon: "🏛️",
-      metric: "123 Precincts > 3,000 Voters",
+      metric: `${pb.precinctCapacity.overCapacityCount} Precincts > 3,000 Voters`,
       phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
-      desc: "Flags 123 polling places exceeding the 3,000-voter EAC benchmark (27 exceeding 5,000 voters) and 11 records with blank precinct codes.",
+      desc: `Flags ${pb.precinctCapacity.overCapacityCount} polling places exceeding the 3,000-voter EAC benchmark (${pb.precinctCapacity.severelyOverCapacityCount} exceeding 5,000 voters) and ${pb.precinctCapacity.blankPrecinctCount} records with blank precinct codes.`,
     },
     {
       id: "benfords-law",
       label: "PB-09: First-Digit Benford Test",
       icon: "📊",
-      metric: "Roll χ² = 9.16 (PASS)",
+      metric: `Roll χ² = ${pb.benfordsLaw.chiSquare} (PASS)`,
       phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
-      desc: "Demonstrates why total registration passes Benford's Law cleanly (χ² = 9.16 < 15.51) while 2024 turnout (χ² = 30.5) reflects 1,500–3,000 precinct sizing.",
+      desc: `Demonstrates why total registration passes Benford's Law cleanly (χ² = ${pb.benfordsLaw.chiSquare} < 15.51) while 2024 turnout (χ² = ${pb.benfordsLaw.turnout2024.chiSquare}) reflects 1,500–3,000 precinct sizing.`,
     },
     {
       id: "voting-history",
       label: "PB-10: 25.91M Voting History Join",
       icon: "🗳️",
-      metric: "100% Match • 88 Dup Credits",
+      metric: `100% Match • ${vh.duplicate2024SameDayCreditRows} Dup Credits`,
       phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
-      desc: "Joins all 25,911,640 historical ballots against the 2.11M Voter Roll with zero orphaned rows and isolates 88 same-day duplicate 2024 credit entries.",
+      desc: `Joins all ${vh.totalHistoryRowsScanned.toLocaleString()} historical ballots against the 2.11M Voter Roll with zero orphaned rows and isolates ${vh.duplicate2024SameDayCreditRows} same-day duplicate 2024 credit entries.`,
     },
   ];
 

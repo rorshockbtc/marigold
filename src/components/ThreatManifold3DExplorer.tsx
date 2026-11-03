@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import msAudit from "@/data/mississippi_audit_results.json";
+import { EditorialTable } from "@/components/report/EditorialTable";
 
 type ViewMode = "counties" | "clusters";
 type IsolatedAxis = "ALL" | "X" | "Y" | "Z";
@@ -221,6 +222,7 @@ export default function ThreatManifold3DExplorer({
   const prevPtrRef = useRef({ x: 0, y: 0 });
 
   const normalCountyCount = countyVectors.filter((c) => c.regime === "Equilibrium Manifold Surface").length;
+  const elevatedCountyCount = countyVectors.length - normalCountyCount;
 
   const selectedCounty = useMemo(
     () =>
@@ -524,8 +526,8 @@ export default function ThreatManifold3DExplorer({
             </h2>
             <p className="mt-2 text-sm sm:text-base text-[#2A2623] max-w-3xl leading-relaxed">
               Think of the <strong className="text-[#065F46]">smooth green net</strong> below as normal for Mississippi&apos;s population.{" "}
-              <strong>{normalCountyCount} of our 82 counties</strong> sit right on that healthy green net. The{" "}
-              <strong className="text-[#D9381E]">{82 - normalCountyCount} counties floating above the net</strong> simply have specific cleanup tasks—like adding apartment unit numbers, sending out-of-state mail postcards, or adding check-in books at busy polling places.
+              <strong>{normalCountyCount} of our {countyVectors.length} counties</strong> sit right on that healthy green net. The{" "}
+              <strong className="text-[#D9381E]">{elevatedCountyCount} counties floating above the net</strong> simply have specific cleanup tasks—like adding apartment unit numbers, sending out-of-state mail postcards, or adding check-in books at busy polling places.
             </p>
           </div>
 
@@ -1122,7 +1124,7 @@ export default function ThreatManifold3DExplorer({
                 3. What Are the Red Vertical Lines?
               </div>
               <div className="font-serif text-[#111111] text-sm mt-0.5 font-bold">
-                16 Counties With Extra Cleanup Work
+                {elevatedCountyCount} Counties With Extra Cleanup Work
               </div>
               <p className="text-[11px] text-[#2A2623] mt-1 leading-snug">
                 When a county rises above the green net on a red line, it has more address, mail, or polling-place strain than normal for its population size.
@@ -1467,57 +1469,63 @@ export default function ThreatManifold3DExplorer({
             </p>
           </div>
 
-          <div className="max-h-[460px] overflow-auto border-2 border-[#111111] rounded-xl">
-            <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                <tr className="text-[11px] font-mono uppercase tracking-wider">
-                  <th className="py-3.5 px-4">What We Compared</th>
-                  <th className="py-3.5 px-4">Connection Score (0–1.00)</th>
-                  <th className="py-3.5 px-4">Visual Link Strength</th>
-                  <th className="py-3.5 px-4">Rule of Thumb for Your Office</th>
-                  <th className="py-3.5 px-4">Plain-English Takeaway for Election Commissioners</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#D4CFC7] text-xs bg-white text-[#111111]">
-                {correlations.map((corr) => (
-                  <tr key={corr.id} className="align-top hover:bg-[#FFF8EB]">
-                    <td className="py-3.5 px-4 font-bold text-[#111111] min-w-[210px]">
-                      <div className="font-mono text-[10px] text-[#D9381E] font-extrabold">
-                        {corr.id}
-                      </div>
-                      {corr.plainTitle}
-                      <div className="text-[11px] font-medium text-[#4A4845] mt-0.5">
-                        {corr.pairLabel}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-extrabold text-sm text-[#111111] whitespace-nowrap">
-                      +{corr.pearsonR.toFixed(2)} / 1.00
-                      <div className="text-[10px] font-normal text-[#4A4845]">
-                        Rank match: +{corr.spearmanRho.toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 min-w-[130px]">
-                      <div className="h-3 w-full bg-[#E5E0D8] rounded-full overflow-hidden border border-[#111111]/20">
-                        <div
-                          className="h-full bg-[#D9381E] rounded-full"
-                          style={{ width: `${Math.min(100, Math.round(corr.pearsonR * 100))}%` }}
-                        />
-                      </div>
-                      <div className="text-[10px] font-mono font-bold text-[#2A2623] mt-1">
-                        {corr.strength}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-[#111111] font-medium min-w-[220px]">
-                      {corr.rateOfChange}
-                    </td>
-                    <td className="py-3.5 px-4 text-[#2A2623] leading-relaxed min-w-[280px]">
-                      {corr.commonManTakeaway}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <EditorialTable
+            caption="County-level correlation comparisons (size-adjusted rates per 1,000 voters where appropriate)"
+            columns={[
+              {
+                key: "pair",
+                label: "What We Compared",
+                render: (corr) => (
+                  <div>
+                    <div className="font-mono text-[10px] text-[#C2341B] font-bold">{corr.id}</div>
+                    <div className="font-semibold text-[#141413]">{corr.plainTitle}</div>
+                    <div className="text-[11px] text-[#575450] mt-0.5">{corr.pairLabel}</div>
+                  </div>
+                ),
+              },
+              {
+                key: "r",
+                label: "Connection (r)",
+                align: "right",
+                mono: true,
+                render: (corr) => (
+                  <div>
+                    <div className="font-bold text-[#141413]">
+                      {corr.pearsonR >= 0 ? `+${corr.pearsonR.toFixed(2)}` : corr.pearsonR.toFixed(2)}
+                    </div>
+                    <div className="text-[10px] text-[#6B6760]">
+                      Rank: {corr.spearmanRho >= 0 ? `+${corr.spearmanRho.toFixed(2)}` : corr.spearmanRho.toFixed(2)}
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: "strength",
+                label: "Strength",
+                render: (corr) => (
+                  <span className="font-mono text-xs font-semibold text-[#141413]">
+                    {corr.strength}
+                  </span>
+                ),
+              },
+              {
+                key: "rate",
+                label: "Measured Pattern",
+                render: (corr) => <span className="text-xs text-[#2B2926]">{corr.rateOfChange}</span>,
+              },
+              {
+                key: "takeaway",
+                label: "What It Means for Your Office",
+                render: (corr) => (
+                  <span className="text-xs text-[#3D3A36] leading-relaxed">
+                    {corr.commonManTakeaway}
+                  </span>
+                ),
+              },
+            ]}
+            rows={correlations}
+            rowKey={(corr) => corr.id}
+          />
 
           {/* Commissioner Peer Benchmarking & Evangelism Toolkit */}
           {commissionerToolkit && (

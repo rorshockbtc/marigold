@@ -7,6 +7,7 @@ import { Tooltip } from "@/components/Tooltip";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 import { usePlaybooks } from "@/lib/workspace/PlaybookContext";
 import { useFeed } from "@/lib/workspace/FeedContext";
+import msAudit from "@/data/mississippi_audit_results.json";
 
 export default function MissionControl() {
   const [playbooks, setPlaybooks] = useState<any[]>([]);
@@ -26,124 +27,128 @@ export default function MissionControl() {
   useEffect(() => {
     const fetchPlaybooks = async () => {
       try {
+        const pb = msAudit.playbooks;
+        const meta = msAudit.metadata;
+        const vh = msAudit.votingHistoryAudit;
+        const yb = pb.clericalTypos.yearBreakdown as Record<string, number>;
         const systemPlaybooks = [
           {
             id: "density",
             name: "PB-01: High-Density Residential Occupancy",
-            desc: "1,598 normalized addresses (1,070 Active-only; 56 Institutional hubs separated)",
+            desc: `${pb.highDensity.totalAddresses.toLocaleString()} normalized addresses (${pb.highDensity.activeOnlyAddresses.toLocaleString()} Active-only; ${pb.highDensity.institutionalClusters} Institutional hubs separated)`,
             description:
               "Flags residential parcels with 8+ registered voters while separating nursing homes, college dormitories, and apartment complexes from single-family homes.",
-            flaggedCount: 1070,
+            flaggedCount: pb.highDensity.activeOnlyAddresses,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "≥ 8 Active Voters",
             audit_type: "density",
           },
           {
             id: "missing-dorm",
             name: "PB-02: Missing Dormitory & Multi-Unit Designators",
-            desc: "682 verified campus/multi-unit records (4,346 street-name false alarms removed)",
+            desc: `${pb.missingDorm.totalVoters.toLocaleString()} verified campus/multi-unit records (${pb.missingDorm.streetNameFalsePositivesRemoved.toLocaleString()} street-name false alarms removed)`,
             description:
               "Uses whole-word regex boundaries to isolate dormitory and apartment registrations missing room or unit numbers without flagging streets named Marshall Pl or Halls Ferry Rd.",
-            flaggedCount: 682,
+            flaggedCount: pb.missingDorm.totalVoters,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "Whole-Word Multi-Unit Match",
             audit_type: "missing-dorm",
           },
           {
             id: "out-of-state-mailing",
             name: "PB-03: NCOA Interstate Out-of-State Mail Drift",
-            desc: "2,444 Active voters with out-of-state mail (11,178 already Inactive on NVRA clock)",
+            desc: `${pb.ncoaRelocations.totalVoters.toLocaleString()} Active voters with out-of-state mail (${pb.ncoaRelocations.inactiveRelocatedVoters.toLocaleString()} already Inactive on NVRA clock)`,
             description:
               "Separates Active voters receiving mail out-of-state from the 82.1% already moved to Inactive status awaiting their 2-cycle federal NVRA removal period.",
-            flaggedCount: 2444,
+            flaggedCount: pb.ncoaRelocations.totalVoters,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "Active Status + Mail State ≠ MS",
             audit_type: "out-of-state-mailing",
           },
           {
             id: "po-box",
             name: "PB-04: Commercial & P.O. Box in Physical Residence Line",
-            desc: "380 records (212 Active, 168 Inactive) with P.O. Box or PMB as domicile",
+            desc: `${pb.commercialPOBox.totalVoters.toLocaleString()} records (${pb.commercialPOBox.activeVoters.toLocaleString()} Active, ${pb.commercialPOBox.inactiveVoters.toLocaleString()} Inactive) with P.O. Box or PMB as domicile`,
             description:
               "Identifies records where a post office box or private mail box was entered into the physical street residence column instead of the mailing address column.",
-            flaggedCount: 380,
+            flaggedCount: pb.commercialPOBox.totalVoters,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "P.O. Box / PMB / Parcel Hub",
             audit_type: "po-box",
           },
           {
             id: "typo-names",
             name: "PB-05: Clerical Typos & Pre-1900 Migration Dates",
-            desc: "5,607 legacy database artifacts (1,271 Year 1801, 206 Year 0001, 113 DATAMIGRATION)",
+            desc: `${pb.clericalTypos.totalAnomalies.toLocaleString()} legacy database artifacts (${(yb["1801"] ?? 1271).toLocaleString()} Year 1801, ${(yb["0001"] ?? 206).toLocaleString()} Year 0001, ${(yb["DATAMIGRATION_ADDR"] ?? 113).toLocaleString()} DATAMIGRATION)`,
             description:
               "Isolates paper-to-digital SEMS migration placeholders (01/01/1801, 01/01/0001, DATAMIGRATION street strings) and 1-character truncated name fields.",
-            flaggedCount: 5607,
+            flaggedCount: pb.clericalTypos.totalAnomalies,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "Year < 1900 or Length = 1",
             audit_type: "typo-names",
           },
           {
             id: "duplicates",
             name: "PB-06: Generational Suffix & Duplicate Disambiguation",
-            desc: "4,404 Jr/Sr pairs protected • 818 Active–Active intra-ZIP duplicate clusters",
+            desc: `${pb.duplicates.generationalPairs.toLocaleString()} Jr/Sr pairs protected • ${pb.duplicates.activeActiveDuplicates.toLocaleString()} Active–Active intra-ZIP duplicate clusters`,
             description:
-              "Protects Jr./Sr./III fathers and sons living at the same family address while isolating 818 Active–Active intra-ZIP duplicates and 185 Active–Inactive move trails.",
-            flaggedCount: 818,
+              "Protects Jr./Sr./III fathers and sons living at the same family address while isolating Active–Active intra-ZIP duplicates and Active–Inactive move trails.",
+            flaggedCount: pb.duplicates.activeActiveDuplicates,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "Exact First+Middle+Last+Suffix+ZIP",
             audit_type: "duplicates",
           },
           {
             id: "spikes",
             name: "PB-07: Statutory Registration Velocity Spikes",
-            desc: "Peaks on 10/05/2020 (13,731), 10/03/2008 (11,240), and 10/07/2024 (7,867)",
+            desc: `Peaks on ${pb.registrationSpikes.peakDates[0].date} (${pb.registrationSpikes.peakDates[0].count.toLocaleString()}), ${pb.registrationSpikes.peakDates[1].date} (${pb.registrationSpikes.peakDates[1].count.toLocaleString()}), and ${pb.registrationSpikes.peakDates[2].date} (${pb.registrationSpikes.peakDates[2].count.toLocaleString()})`,
             description:
               "Correlates single-day registration surges against Mississippi's 30-day statutory mail-in cutoff dates prior to Presidential General Elections.",
-            flaggedCount: 15,
+            flaggedCount: pb.registrationSpikes.peakDates.length,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "Statutory Cutoff Calendar",
             audit_type: "spikes",
           },
           {
             id: "phantom-precincts",
             name: "PB-08: Mega-Precinct Capacity & Assignment Audit",
-            desc: "123 precincts > 3,000 voters (27 > 5,000 voters; 11 blank precinct codes)",
+            desc: `${pb.precinctCapacity.overCapacityCount} precincts > 3,000 voters (${pb.precinctCapacity.severelyOverCapacityCount} > 5,000 voters; ${pb.precinctCapacity.blankPrecinctCount} blank precinct codes)`,
             description:
               "Identifies fast-growing suburban polling places exceeding the 3,000-voter benchmark and isolates records missing a valid precinct code.",
-            flaggedCount: 123,
+            flaggedCount: pb.precinctCapacity.overCapacityCount,
             status: "verified",
-            totalScanned: 2112460,
+            totalScanned: meta.totalRecords,
             threshold: "> 3,000 Voters / Precinct",
             audit_type: "phantom-precincts",
           },
           {
             id: "benfords-law",
             name: "PB-09: Newcomb-Benford First-Digit Distribution",
-            desc: "Total Roll χ² = 9.16 (PASS < 15.51) • 2024 Turnout χ² = 30.5 (Sizing Effect)",
+            desc: `Total Roll χ² = ${pb.benfordsLaw.chiSquare} (PASS < 15.51) • 2024 Turnout χ² = ${pb.benfordsLaw.turnout2024.chiSquare} (Sizing Effect)`,
             description:
               "Tests precinct registration and 2024 turnout counts against the logarithmic Benford curve, demonstrating why 1,500–3,000 statutory precinct sizing clusters turnout at digits 2–4.",
             flaggedCount: 0,
             status: "verified",
-            totalScanned: 1742,
+            totalScanned: pb.precinctCapacity.totalPrecincts,
             threshold: "χ² < 15.51 (df = 8)",
             audit_type: "benfords-law",
           },
           {
             id: "voting-history",
             name: "PB-10: 25.91 Million Voting History Referential Audit",
-            desc: "100.00% Roll Match (0 Orphans) • 88 Same-Day 2024 Duplicate Credit Rows",
+            desc: `100.00% Roll Match (${vh.orphanedHistoryRows} Orphans) • ${vh.duplicate2024SameDayCreditRows} Same-Day 2024 Duplicate Credit Rows`,
             description:
-              "Cross-table join of all 25,911,640 historical ballots against the 2,112,460 Voter Roll, verifying 1,213,364 2024 General voters and isolating 88 duplicate credit entries.",
-            flaggedCount: 88,
+              `Cross-table join of all ${vh.totalHistoryRowsScanned.toLocaleString()} historical ballots against the ${meta.totalRecords.toLocaleString()} Voter Roll, verifying ${vh.unique2024GeneralVoters.toLocaleString()} 2024 General voters and isolating ${vh.duplicate2024SameDayCreditRows} duplicate credit entries.`,
+            flaggedCount: vh.duplicate2024SameDayCreditRows,
             status: "verified",
-            totalScanned: 25911640,
+            totalScanned: vh.totalHistoryRowsScanned,
             threshold: "25.91M Cross-Table Join",
             audit_type: "voting-history",
           },

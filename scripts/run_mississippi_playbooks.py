@@ -697,11 +697,11 @@ def main():
         # Local Gaussian/Mean Curvature proxy H
         curvature_idx = round((abs(residual_z) * threat_energy) / 100.0, 2)
 
-        if geodesic_distance >= 18.0 or threat_energy >= 52.0:
-            detached_count += 1
-
-        # Classify manifold regime & isolate primary variable driver
-        if geodesic_distance >= 22.0 and sum(1 for val in (xv, yv, zv) if val >= 42.0) >= 2:
+        # Classify manifold regime & isolate primary variable driver (elevated threshold: threat_energy >= 43.0)
+        if threat_energy < 43.0:
+            regime = "Equilibrium Manifold Surface"
+            dominant_driver = "Normal Demographic Baseline"
+        elif geodesic_distance >= 22.0 and sum(1 for val in (xv, yv, zv) if val >= 42.0) >= 2:
             regime = "Multi-Axis Manifold Detachment"
             dominant_driver = "Compound Multi-Variable Convergence"
         elif partial_x_pct >= 46.0 and xv >= 35.0:
@@ -717,37 +717,40 @@ def main():
             regime = "Equilibrium Manifold Surface"
             dominant_driver = "Normal Demographic Baseline"
 
+        if regime != "Equilibrium Manifold Surface":
+            detached_count += 1
+
         # Build plain-English non-expert explanation
         if regime == "Multi-Axis Manifold Detachment":
             plain_exp = (
-                f"{v['county']} County peels away from the normal statewide surface across multiple variables at once "
-                f"(Address Density X={xv}, Interstate/Identity Drift Y={yv}, Polling Strain Z={zv}). "
-                f"It has {v['highDensityCount']} high-density addresses, {v['ncoaCount']} active out-of-state mailings, "
-                f"and {v['overCapacityPrecincts']} over-capacity precincts."
+                f"{v['county']} County has higher-than-average activity across all three areas "
+                f"(Address Score={xv}, Mail & Duplicates={yv}, Polling Place Size={zv}). "
+                f"It has {v['highDensityCount']} addresses with 8+ voters, {v['ncoaCount']} active out-of-state mailings, "
+                f"and {v['overCapacityPrecincts']} precincts over 3,000 voters."
             )
         elif regime == "Axis-X Spatial Domicile Ridge":
             plain_exp = (
-                f"Calculus variable isolation shows {partial_x_pct}% of {v['county']} County's signal is driven by Axis X "
-                f"(Physical Address Crowding): {v['highDensityCount']} high-density parcels ({v['highDensityVoters']:,} voters), "
-                f"{v['missingDormCount']:,} un-unitized dorm/apartment records, and {v['poBoxCount']} P.O. Box domiciles."
+                f"{partial_x_pct}% of {v['county']} County's cleanup checklist comes from multi-voter addresses: "
+                f"{v['highDensityCount']} addresses with 8+ voters ({v['highDensityVoters']:,} voters), "
+                f"{v['missingDormCount']:,} campus/apartment records missing unit numbers, and {v['poBoxCount']} P.O. Box residence lines."
             )
         elif regime == "Axis-Y Interstate Drift Ridge":
             plain_exp = (
-                f"Variable isolation shows {partial_y_pct}% of {v['county']} County's signal comes from Axis Y "
-                f"(Interstate Relocation & Identity Drift): {v['ncoaCount']} active voters receiving mail out-of-state "
-                f"and {v['duplicateCount']} suffix-disambiguated duplicate clusters."
+                f"{partial_y_pct}% of {v['county']} County's cleanup checklist comes from mail and relocation updates: "
+                f"{v['ncoaCount']} active voters receiving mail out-of-state "
+                f"and {v['duplicateCount']} same-ZIP duplicate pairs."
             )
         elif regime == "Axis-Z Precinct Strain Ridge":
             plain_exp = (
-                f"Variable isolation shows {partial_z_pct}% of {v['county']} County's signal is driven by Axis Z "
-                f"(Polling Capacity & Turnout Velocity): {v['overCapacityPrecincts']} precincts exceed the 3,000-voter benchmark "
+                f"{partial_z_pct}% of {v['county']} County's priority score comes from large polling places: "
+                f"{v['overCapacityPrecincts']} precincts exceed the 3,000-voter benchmark "
                 f"(largest precinct: {v['maxPrecinctVoters']:,} voters)."
             )
         else:
             plain_exp = (
-                f"{v['county']} County sits squarely on the healthy Equilibrium Manifold surface "
-                f"(Hygiene Score {v['cleanlinessScore']}/100, Geodesic Detachment {geodesic_distance}). "
-                f"Routine statutory list maintenance applies."
+                f"{v['county']} County sits within the normal range for its population size "
+                f"(Roll Health Score {v['cleanlinessScore']}/100, Priority Score {threat_energy}). "
+                f"Standard statutory list maintenance applies."
             )
 
         county_vectors.append({
