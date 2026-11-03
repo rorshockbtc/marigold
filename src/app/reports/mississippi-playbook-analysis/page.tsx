@@ -36,13 +36,13 @@ function Kicker({ children, light = false }: { children: React.ReactNode; light?
 
 function SectionHead({ id, num, kicker, title, dek }: { id: string; num: string; kicker: string; title: string; dek?: string }) {
   return (
-    <header id={id} className="scroll-mt-24 border-t-2 border-[#111111] pt-7">
+    <header id={id} className="scroll-mt-24 border-t-2 border-[#111111] pt-8 sm:pt-10">
       <div className="flex items-baseline gap-3">
-        <span className="font-serif text-base font-bold tabular-nums text-[#8A8279]">{num}</span>
+        <span className="font-serif text-lg font-bold tabular-nums text-[#8A8279]">{num}</span>
         <Kicker>{kicker}</Kicker>
       </div>
-      <h2 className="mt-2 font-serif text-3xl sm:text-4xl font-bold leading-[1.15] tracking-tight text-[#111111]">{title}</h2>
-      {dek && <p className="mt-3 max-w-[65ch] text-base sm:text-lg leading-[1.65] text-[#3A3530]">{dek}</p>}
+      <h2 className="mt-3 font-serif text-3xl sm:text-[40px] font-bold leading-[1.18] tracking-tight text-[#111111]">{title}</h2>
+      {dek && <p className="mt-3.5 max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">{dek}</p>}
     </header>
   );
 }
@@ -192,21 +192,21 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </nav>
         </aside>
 
-        <main className="min-w-0 max-w-[1020px] space-y-16">
+        <main className="min-w-0 max-w-[1020px] space-y-20 sm:space-y-24">
           {/* ---------- Hero ---------- */}
-          <section>
+          <section className="space-y-6">
             <Kicker>Mississippi · October 26, 2026 Extract · Public Edition</Kicker>
-            <h1 className="mt-4 font-serif text-4xl sm:text-[52px] font-bold leading-[1.08] tracking-[-0.02em] text-[#111111]">
+            <h1 className="mt-4 font-serif text-4xl sm:text-[54px] font-bold leading-[1.1] tracking-[-0.025em] text-[#111111]">
               Every past ballot matched a real voter. Here&rsquo;s what&rsquo;s left to tidy up.
             </h1>
-            <p className="mt-5 max-w-[65ch] font-serif text-xl sm:text-[22px] leading-[1.6] text-[#2C2825]">
+            <p className="mt-6 max-w-[65ch] font-serif text-xl sm:text-[23px] leading-[1.75] text-[#2C2825]">
               We audited all {fmt(metadata.totalRecords)} voter registrations and {fmt(totalBallotCredits)} cumulative ballot records
               through October 26, 2026 — including <strong>+{fmt(ballotsAdded25_26)} ballots added across 2025 and 2026</strong> and{" "}
               <strong>{fmt(registrations2026)} new 2026 registrations</strong> across all 82 Mississippi counties. Every ballot traced to a registered voter.
             </p>
 
             {/* Mobile section picker */}
-            <label className="mt-6 block lg:hidden print:hidden">
+            <label className="mt-8 block lg:hidden print:hidden">
               <span className="sr-only">Jump to section</span>
               <select
                 onChange={(e) => document.getElementById(e.target.value)?.scrollIntoView({ behavior: "smooth" })}
@@ -221,26 +221,26 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </label>
 
             {/* Key figures — hairline row, Marigold amber highlight */}
-            <dl className="mt-8 grid grid-cols-1 border-y-2 border-[#111111] bg-white/60 sm:grid-cols-2 xl:grid-cols-4">
+            <dl className="mt-10 grid grid-cols-1 border-y-2 border-[#111111] bg-white sm:grid-cols-2 xl:grid-cols-4 shadow-2xs">
               {[
                 [fmt(totalBallotCredits), "past ballots verified", `+${fmt(ballotsAdded25_26)} in 2025–2026 · 0 unmatched`, true],
                 [fmt(registrations2026), "new 2026 registrations", `${fmt(peak2026Count)} on Oct 5, 2026 deadline`, false],
                 [`${normalCount} of 82`, "counties in normal range", `${priorityCount} with priority tasks`, false],
                 [`${ncoaInactivePct}%`, "of out-of-state movers", `already marked Inactive (${fmt(ncoa.inactiveRelocatedVoters)})`, false],
               ].map(([v, l, s, hi], i) => (
-                <div key={l as string} className={`p-5 ${i > 0 ? "border-t border-[#DDD6CA] sm:border-t-0 sm:border-l" : ""}`}>
-                  <dd className="font-serif text-3xl sm:text-4xl font-bold leading-none tabular-nums" style={hi ? { color: FOCUS } : undefined}>
+                <div key={l as string} className={`p-6 sm:p-7 ${i > 0 ? "border-t border-[#DDD6CA] sm:border-t-0 sm:border-l" : ""}`}>
+                  <dd className="font-serif text-3xl sm:text-[42px] font-bold leading-none tabular-nums" style={hi ? { color: FOCUS } : undefined}>
                     {v as string}
                   </dd>
-                  <dt className="mt-2.5 text-base font-bold leading-snug text-[#111111]">{l as string}</dt>
-                  <div className="mt-1 text-base leading-snug text-[#5A534A]">{s as string}</div>
+                  <dt className="mt-3 text-base font-bold leading-snug text-[#111111]">{l as string}</dt>
+                  <div className="mt-1.5 text-base leading-relaxed text-[#5A534A]">{s as string}</div>
                 </div>
               ))}
             </dl>
           </section>
 
           {/* ---------- 01 Takeaways ---------- */}
-          <section className="space-y-6">
+          <section className="space-y-8">
             <SectionHead id="takeaways" num="01" kicker="Key takeaways" title="Four things every official and voter should know" />
             <ol className="divide-y divide-[#DDD6CA] border-b border-[#DDD6CA]">
               {[
@@ -261,11 +261,11 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   `University counties mostly need apartment and dorm unit numbers (${fmt(playbooks.missingDorm.totalVoters)} records). Fast-growing suburbs mostly need large precincts split (${fmt(playbooks.precinctCapacity.overCapacityCount)} precincts over 3,000 voters).`,
                 ],
               ].map(([t, b], i) => (
-                <li key={t} className="grid grid-cols-[42px_1fr] gap-3 py-6 sm:grid-cols-[56px_1fr]">
-                  <span className="font-serif text-2xl font-bold tabular-nums" style={{ color: FOCUS }}>{String(i + 1).padStart(2, "0")}</span>
+                <li key={t} className="grid grid-cols-[44px_1fr] gap-4 py-8 sm:grid-cols-[60px_1fr] sm:gap-6">
+                  <span className="font-serif text-3xl font-bold tabular-nums" style={{ color: FOCUS }}>{String(i + 1).padStart(2, "0")}</span>
                   <div>
-                    <h3 className="font-serif text-xl sm:text-2xl font-bold leading-snug text-[#111111]">{t}</h3>
-                    <p className="mt-2 max-w-[65ch] text-base sm:text-lg leading-[1.65] text-[#3A3530]">{b}</p>
+                    <h3 className="font-serif text-2xl sm:text-[26px] font-bold leading-snug text-[#111111]">{t}</h3>
+                    <p className="mt-3 max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">{b}</p>
                   </div>
                 </li>
               ))}
@@ -273,20 +273,20 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 02 Actions ---------- */}
-          <section className="space-y-6">
+          <section className="space-y-8">
             <SectionHead id="actions" num="02" kicker="Instant county briefing" title="Look up any Mississippi county in ten seconds" dek="No account needed. Select a county to inspect its October 2026 figures, then copy a ready-to-send summary for your Circuit Clerk, Election Commission, or Board of Supervisors." />
 
-            <div className="bg-white border-y-2 border-[#111111] p-5 sm:p-7">
+            <div className="bg-white border-2 border-[#111111] p-6 sm:p-9 shadow-2xs">
               <label htmlFor="county" className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#5A534A]">Select county (all 82 available)</label>
-              <div className="mt-2.5 flex flex-col gap-3 sm:flex-row">
-                <select id="county" value={selected.county} onChange={(e) => setQuickCounty(e.target.value)} className="h-12 flex-1 border-2 border-[#111111] bg-[#F6F3EC] px-3.5 text-base font-bold">
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                <select id="county" value={selected.county} onChange={(e) => setQuickCounty(e.target.value)} className="h-14 flex-1 border-2 border-[#111111] bg-[#F6F3EC] px-4 text-lg font-bold">
                   {sortedCounties.map((c) => (
                     <option key={c.county} value={c.county}>{c.county} County ({fmt(c.total)} voters)</option>
                   ))}
                 </select>
                 <button
                   onClick={copyBrief}
-                  className="inline-flex h-12 items-center justify-center gap-2 border-2 border-[#111111] px-6 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:brightness-95 cursor-pointer"
+                  className="inline-flex h-14 items-center justify-center gap-2 border-2 border-[#111111] px-6 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:brightness-95 cursor-pointer"
                   style={{ background: FILL }}
                 >
                   {copied ? <Check className="h-5 w-5 shrink-0" /> : <Copy className="h-5 w-5 shrink-0" />}
@@ -294,13 +294,13 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 </button>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="font-serif text-2xl sm:text-3xl font-bold">{selected.county} County</h3>
-                <span className="text-base font-bold whitespace-nowrap" style={{ color: selected.regime === "Equilibrium Manifold Surface" ? INK : FOCUS }}>
+              <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3">
+                <h3 className="font-serif text-3xl sm:text-4xl font-bold">{selected.county} County</h3>
+                <span className="text-base sm:text-lg font-bold whitespace-nowrap" style={{ color: selected.regime === "Equilibrium Manifold Surface" ? INK : FOCUS }}>
                   {STATUS_LABEL[selected.regime] || selected.regime}
                 </span>
               </div>
-              <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-[#DDD6CA] pt-4 sm:grid-cols-3 lg:grid-cols-5">
+              <dl className="mt-6 grid grid-cols-2 gap-6 border-t border-[#DDD6CA] pt-6 sm:grid-cols-3 lg:grid-cols-5">
                 {[
                   [fmt(selected.total), "registered voters"],
                   [fmt(Number((selected as Record<string, unknown>).registrations2026 ?? 0)), "2026 registrations"],
@@ -310,7 +310,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 ].map(([v, l]) => (
                   <div key={l}>
                     <dd className="font-serif text-2xl sm:text-3xl font-bold tabular-nums leading-none">{v}</dd>
-                    <dt className="mt-1.5 text-base font-medium text-[#5A534A]">{l}</dt>
+                    <dt className="mt-2 text-base font-medium text-[#5A534A] leading-snug">{l}</dt>
                   </div>
                 ))}
               </dl>
@@ -318,7 +318,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 03 Map ---------- */}
-          <section className="space-y-6">
+          <section className="space-y-8">
             <SectionHead id="map" num="03" kicker="Interactive 3D geometry" title="All 82 counties mapped across three task areas" dek="Drag to rotate, click any marker to inspect that county, or open Full Screen 3D. The sky-blue net shows the normal baseline for a county's population; marigold-amber vertical stems and distinct marker shapes highlight extra cleanup work." />
             <div className="print:hidden">
               <ThreatManifold3DExplorer compact forceUnlocked />
@@ -326,7 +326,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 04 Filtering ---------- */}
-          <section className="space-y-6" style={{ contentVisibility: "auto" }}>
+          <section className="space-y-8" style={{ contentVisibility: "auto" }}>
             <SectionHead id="filtering" num="04" kicker="Signal vs. noise" title="Ordinary explanations, set aside first" dek="Basic database queries flag college dorms, nursing homes, and fathers and sons who share a name. We separate those first so election officials only review actionable records. Gray was set aside; marigold gold is what remains." />
             <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
               {[
@@ -337,18 +337,18 @@ export default function MississippiPlaybookAnalysisReportPage() {
               ].map(([t, total, left, note]) => {
                 const keep = Math.max(3, Math.round(((left as number) / (total as number)) * 100));
                 return (
-                  <div key={t as string} className="p-5 sm:p-6">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="font-serif text-xl font-bold">{t}</h3>
-                      <span className="text-base tabular-nums text-[#3A3530] whitespace-nowrap">
+                  <div key={t as string} className="p-6 sm:p-8">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <h3 className="font-serif text-2xl font-bold text-[#111111]">{t}</h3>
+                      <span className="text-base sm:text-lg tabular-nums text-[#3A3530] whitespace-nowrap">
                         <strong style={{ color: FOCUS }}>{fmt(left as number)}</strong> to review of {fmt(total as number)}
                       </span>
                     </div>
-                    <div className="mt-3 flex h-3.5 w-full">
+                    <div className="mt-4 flex h-4 w-full rounded-xs overflow-hidden border border-[#111111]/15">
                       <div className="h-full bg-[#D8D1C4]" style={{ width: `${100 - keep}%` }} />
                       <div className="h-full" style={{ width: `${keep}%`, background: FILL }} />
                     </div>
-                    <p className="mt-2 text-base leading-relaxed text-[#5A534A]">{note}</p>
+                    <p className="mt-3 text-base sm:text-lg leading-[1.75] text-[#5A534A]">{note}</p>
                   </div>
                 );
               })}
@@ -356,7 +356,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 05 Ballots ---------- */}
-          <section className="space-y-6" style={{ contentVisibility: "auto" }}>
+          <section className="space-y-8" style={{ contentVisibility: "auto" }}>
             <SectionHead
               id="ballots"
               num="05"
@@ -366,21 +366,21 @@ export default function MississippiPlaybookAnalysisReportPage() {
             />
 
             {/* 2024 vs 2025-2026 Accounting Ledger */}
-            <dl className="grid grid-cols-1 border-y-2 border-[#111111] bg-white sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#DDD6CA]">
-              <div className="p-5">
+            <dl className="grid grid-cols-1 border-2 border-[#111111] bg-white sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#DDD6CA] shadow-2xs">
+              <div className="p-6 sm:p-7">
                 <dt className="font-mono text-base font-bold uppercase tracking-wider text-[#5A534A]">Through 2024</dt>
-                <dd className="mt-1 font-serif text-3xl font-bold tabular-nums">{fmt(ballotsThrough2024)}</dd>
-                <div className="mt-1 text-base text-[#5A534A]">historical ballot records</div>
+                <dd className="mt-2 font-serif text-3xl sm:text-4xl font-bold tabular-nums text-[#111111]">{fmt(ballotsThrough2024)}</dd>
+                <div className="mt-2 text-base leading-relaxed text-[#5A534A]">historical ballot records</div>
               </div>
-              <div className="p-5 bg-[#FEF3C7]/45">
+              <div className="p-6 sm:p-7 bg-[#FEF3C7]/40">
                 <dt className="font-mono text-base font-bold uppercase tracking-wider" style={{ color: FOCUS }}>Added in 2025–2026</dt>
-                <dd className="mt-1 font-serif text-3xl font-bold tabular-nums" style={{ color: FOCUS }}>+{fmt(ballotsAdded25_26)}</dd>
-                <div className="mt-1 text-base text-[#3A3530]">{fmt(ballots2025)} in 2025 · {fmt(ballots2026)} in 2026</div>
+                <dd className="mt-2 font-serif text-3xl sm:text-4xl font-bold tabular-nums" style={{ color: FOCUS }}>+{fmt(ballotsAdded25_26)}</dd>
+                <div className="mt-2 text-base leading-relaxed text-[#3A3530]">{fmt(ballots2025)} in 2025 · {fmt(ballots2026)} in 2026</div>
               </div>
-              <div className="p-5">
+              <div className="p-6 sm:p-7">
                 <dt className="font-mono text-base font-bold uppercase tracking-wider text-[#111111]">Oct 26, 2026 Total</dt>
-                <dd className="mt-1 font-serif text-3xl font-bold tabular-nums">{fmt(totalBallotCredits)}</dd>
-                <div className="mt-1 text-base text-[#5A534A]">0 orphaned · {dup2026Primary} duplicate 2026 primary scans</div>
+                <dd className="mt-2 font-serif text-3xl sm:text-4xl font-bold tabular-nums text-[#111111]">{fmt(totalBallotCredits)}</dd>
+                <div className="mt-2 text-base leading-relaxed text-[#5A534A]">0 orphaned · {dup2026Primary} duplicate 2026 primary scans</div>
               </div>
             </dl>
 
@@ -388,13 +388,13 @@ export default function MississippiPlaybookAnalysisReportPage() {
               {votingHistoryAudit.majorElections.map((e) => {
                 const isRecent = e.date.endsWith("/2026") || e.date.endsWith("/2025");
                 return (
-                  <div key={e.date} className="grid grid-cols-1 gap-2 px-5 py-3.5 sm:grid-cols-[330px_1fr_110px] sm:items-center sm:gap-4">
-                    <div className="text-base font-bold">
+                  <div key={e.date} className="grid grid-cols-1 gap-2 px-6 py-4 sm:grid-cols-[340px_1fr_120px] sm:items-center sm:gap-6">
+                    <div className="text-base sm:text-lg font-bold">
                       {e.label.replace(" General Election", "")}{" "}
-                      <span className="font-mono text-[#5A534A]">({e.date})</span>
+                      <span className="font-mono text-[#5A534A] text-base font-normal">({e.date})</span>
                     </div>
                     <Bar value={e.ballotsRecorded} max={maxBallots} focus={isRecent} label={`${fmt(e.ballotsRecorded)} ballots`} />
-                    <div className="text-base font-mono font-bold tabular-nums sm:text-right whitespace-nowrap" style={isRecent ? { color: FOCUS } : undefined}>
+                    <div className="text-base sm:text-lg font-mono font-bold tabular-nums sm:text-right whitespace-nowrap" style={isRecent ? { color: FOCUS } : undefined}>
                       {fmt(e.ballotsRecorded)}
                     </div>
                   </div>
@@ -404,19 +404,19 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 06 Connections ---------- */}
-          <section className="space-y-6" style={{ contentVisibility: "auto" }}>
+          <section className="space-y-8" style={{ contentVisibility: "auto" }}>
             <SectionHead id="connections" num="06" kicker="Patterns across counties" title="Do these issues travel together?" dek="A score near 1 means two measures rise and fall together across counties; near 0 means no pattern. Where raw counts would simply reflect population size, we compare rates per 1,000 voters." />
             <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
               {correlations.map((c) => (
-                <li key={c.id} className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-[1fr_180px] sm:gap-8">
+                <li key={c.id} className="grid grid-cols-1 gap-5 p-6 sm:p-7 sm:grid-cols-[1fr_200px] sm:gap-10 sm:items-center">
                   <div>
-                    <h3 className="font-serif text-xl font-bold leading-snug">{c.plainTitle}</h3>
-                    <p className="mt-2 max-w-[65ch] text-base leading-[1.65] text-[#3A3530]">{c.commonManTakeaway}</p>
+                    <h3 className="font-serif text-2xl font-bold leading-snug text-[#111111]">{c.plainTitle}</h3>
+                    <p className="mt-2.5 max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">{c.commonManTakeaway}</p>
                   </div>
                   <div>
-                    <div className="font-serif text-3xl font-bold tabular-nums leading-none" style={{ color: FOCUS }}>{c.pearsonR.toFixed(2)}</div>
-                    <div className="mt-2"><Bar value={Math.abs(c.pearsonR)} max={1} focus /></div>
-                    <div className="mt-1.5 text-base text-[#5A534A] whitespace-nowrap">correlation (−1 to 1)</div>
+                    <div className="font-serif text-3xl sm:text-4xl font-bold tabular-nums leading-none" style={{ color: FOCUS }}>{c.pearsonR.toFixed(2)}</div>
+                    <div className="mt-3"><Bar value={Math.abs(c.pearsonR)} max={1} focus /></div>
+                    <div className="mt-2 text-base text-[#5A534A] whitespace-nowrap">correlation (−1 to 1)</div>
                   </div>
                 </li>
               ))}
@@ -424,22 +424,22 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 07 The 10 checks (zero scrolling tables) ---------- */}
-          <section className="space-y-10" style={{ contentVisibility: "auto" }}>
+          <section className="space-y-12" style={{ contentVisibility: "auto" }}>
             <SectionHead id="checks" num="07" kicker="The 10 checks" title="What we looked for, and what we found" dek="Every check below uses 5-digit USPS ZIP normalization and strict Zero-PII masking. Full tables appear in the printable PDF." />
 
             <div className="space-y-4">
-              <h3 className="font-serif text-2xl font-bold">Check 1 · Addresses with 8 or more voters</h3>
-              <p className="max-w-[65ch] text-base sm:text-lg leading-[1.65] text-[#3A3530]">
+              <h3 className="font-serif text-2xl sm:text-[26px] font-bold text-[#111111]">Check 1 · Addresses with 8 or more voters</h3>
+              <p className="max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">
                 {fmt(playbooks.highDensity.totalAddresses)} addresses ({fmt(playbooks.highDensity.totalVoters)} voters) have 8 or more registrations.
                 After setting aside {fmt(playbooks.highDensity.institutionalClusters)} campus and care-home sites and {fmt(playbooks.highDensity.multiFamilyClusters)} apartment complexes,{" "}
                 <strong style={{ color: FOCUS }}>{fmt(playbooks.highDensity.singleFamilyAnomalies)} single-family homes</strong> ({fmt(playbooks.highDensity.singleFamilyAnomalyVoters)} registrations) remain for county canvass review. Exact house numbers are withheld for privacy:
               </p>
               <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
                 {playbooks.highDensity.topSingleFamilyAnomalies.slice(0, 6).map((r, i) => (
-                  <li key={`${r.address}-${i}`} className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3.5">
+                  <li key={`${r.address}-${i}`} className="flex flex-wrap items-baseline justify-between gap-3 px-6 py-4">
                     <div>
-                      <span className="font-serif text-lg font-bold">{r.address}</span>
-                      <span className="ml-2 text-base text-[#5A534A]">· {r.county} County</span>
+                      <span className="font-serif text-lg sm:text-xl font-bold text-[#111111]">{r.address}</span>
+                      <span className="ml-2.5 text-base text-[#5A534A]">· {r.county} County</span>
                     </div>
                     <div className="font-mono text-base font-bold tabular-nums">
                       <span style={{ color: FOCUS }}>{r.occupantCount} voters</span>{" "}
@@ -451,8 +451,8 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-serif text-2xl font-bold">Check 2 · Dorms and apartments missing a room number</h3>
-              <p className="max-w-[65ch] text-base sm:text-lg leading-[1.65] text-[#3A3530]">
+              <h3 className="font-serif text-2xl sm:text-[26px] font-bold text-[#111111]">Check 2 · Dorms and apartments missing a room number</h3>
+              <p className="max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">
                 Searching for &ldquo;HALL&rdquo; also catches &ldquo;Mars<strong>hall</strong> Place.&rdquo; Matching whole words
                 removed {fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} street-name false alarms, leaving{" "}
                 {fmt(playbooks.missingDorm.totalVoters)} campus and apartment records ({fmt(playbooks.missingDorm.activeVoters)} active) where adding a room or apartment number prevents returned mail.
@@ -460,17 +460,17 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-serif text-2xl font-bold">Check 3 · Out-of-state mailing addresses</h3>
-              <p className="max-w-[65ch] text-base sm:text-lg leading-[1.65] text-[#3A3530]">
+              <h3 className="font-serif text-2xl sm:text-[26px] font-bold text-[#111111]">Check 3 · Out-of-state mailing addresses</h3>
+              <p className="max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">
                 {ncoaInactivePct}% ({fmt(ncoa.inactiveRelocatedVoters)} of {fmt(ncoa.totalAllStatusVoters)}) are already marked Inactive under federal rules.{" "}
                 <strong style={{ color: FOCUS }}>{fmt(ncoa.totalVoters)} active voters</strong> need an address-confirmation postcard. Top destination states:
               </p>
               <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
                 {ncoaStates.map((x) => (
-                  <div key={x.s} className="grid grid-cols-[52px_1fr_84px] items-center gap-3 px-5 py-2.5">
-                    <span className="font-mono text-base font-bold">{x.s}</span>
+                  <div key={x.s} className="grid grid-cols-[56px_1fr_96px] items-center gap-4 px-6 py-3.5">
+                    <span className="font-mono text-base sm:text-lg font-bold text-[#111111]">{x.s}</span>
                     <Bar value={x.n} max={maxState} />
-                    <span className="text-right text-base font-mono font-bold tabular-nums whitespace-nowrap">{fmt(x.n)}</span>
+                    <span className="text-right text-base sm:text-lg font-mono font-bold tabular-nums whitespace-nowrap text-[#111111]">{fmt(x.n)}</span>
                   </div>
                 ))}
               </div>
@@ -484,26 +484,26 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 ["Checks 7–8 · October 2026 deadline surge & large precincts", `${fmt(registrations2026)} voters registered in 2026 through October 26, peaking on the October 5, 2026 statutory 30-day deadline (${fmt(peak2026Count)} single-day registrations; all-time peak ${fmt(playbooks.registrationSpikes.peakDates[0].count)} on ${playbooks.registrationSpikes.peakDates[0].date}). Statewide, ${playbooks.precinctCapacity.overCapacityCount} precincts exceed 3,000 voters and ${fivePlus} exceed 5,000.`],
                 ["Check 9 · First-digit accounting test (Benford’s Law)", `Precinct registration sizes conform naturally to Benford’s first-digit distribution (chi-square ${benford.chiSquare}, well below the 15.51 critical threshold). Turnout counts deviate (chi-square ${benfordTurnout.chiSquare}) because counties cap precinct sizes around 1,500–3,000 voters — a known mathematical property of bounded precincts.`],
               ].map(([t, b]) => (
-                <li key={t} className="py-5">
-                  <h3 className="font-serif text-xl sm:text-2xl font-bold">{t}</h3>
-                  <p className="mt-2 max-w-[65ch] text-base sm:text-lg leading-[1.65] text-[#3A3530]">{b}</p>
+                <li key={t} className="py-7">
+                  <h3 className="font-serif text-2xl font-bold text-[#111111]">{t}</h3>
+                  <p className="mt-3 max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">{b}</p>
                 </li>
               ))}
             </ol>
 
             {/* Top 6 Largest Precincts — zero-scroll responsive list */}
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h4 className="font-serif text-xl font-bold">Six largest precincts statewide (over 5,000 registered voters)</h4>
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <h4 className="font-serif text-2xl font-bold text-[#111111]">Six largest precincts statewide (over 5,000 registered voters)</h4>
                 <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="text-base font-bold underline underline-offset-4" style={{ color: FOCUS }}>
                   See full list in PDF →
                 </a>
               </div>
               <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
                 {playbooks.precinctCapacity.topOverCapacity.slice(0, 6).map((p) => (
-                  <li key={`${p.county}-${p.precinctCode}`} className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3.5">
+                  <li key={`${p.county}-${p.precinctCode}`} className="flex flex-wrap items-baseline justify-between gap-3 px-6 py-4">
                     <div>
-                      <span className="font-serif text-lg font-bold">{p.precinctName}</span>{" "}
+                      <span className="font-serif text-lg sm:text-xl font-bold text-[#111111]">{p.precinctName}</span>{" "}
                       <span className="font-mono text-base text-[#5A534A]">({p.precinctCode}) · {p.county} County</span>
                     </div>
                     <div className="font-mono text-base font-bold tabular-nums">
@@ -517,7 +517,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           {/* ---------- 08 Priority Counties (no horizontal-scrolling tables) ---------- */}
-          <section className="space-y-6" style={{ contentVisibility: "auto" }}>
+          <section className="space-y-8" style={{ contentVisibility: "auto" }}>
             <SectionHead
               id="ledger"
               num="08"
@@ -529,21 +529,21 @@ export default function MississippiPlaybookAnalysisReportPage() {
               {priorityCounties.map((c, i) => {
                 const cAny = c as Record<string, unknown>;
                 return (
-                  <li key={c.county} className="grid grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-3 gap-y-1.5 px-4 py-4 sm:px-6 sm:grid-cols-[3rem_1fr_11rem_5.5rem]">
-                    <span className="font-serif text-xl font-bold tabular-nums text-[#8A8279]">{String(i + 1).padStart(2, "0")}</span>
-                    <div className="min-w-0">
-                      <div className="font-serif text-xl font-bold leading-tight text-[#111111]">{c.county} County</div>
-                      <div className="mt-1 text-base leading-snug text-[#3A3530] font-medium">
+                  <li key={c.county} className="grid grid-cols-[2.8rem_1fr_auto] items-baseline gap-x-4 gap-y-2 px-6 py-6 sm:grid-cols-[3.2rem_1fr_12rem_6rem] hover:bg-[#FAF8F5] transition-colors">
+                    <span className="font-serif text-2xl font-bold tabular-nums text-[#8A8279]">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="min-w-0 pr-2">
+                      <div className="font-serif text-2xl font-bold leading-tight text-[#111111]">{c.county} County</div>
+                      <div className="mt-1.5 text-base sm:text-lg leading-snug text-[#3A3530] font-medium">
                         {STATUS_LABEL[c.regime] || c.regime}
                       </div>
-                      <div className="mt-1 text-base leading-snug text-[#5A534A]">
+                      <div className="mt-2 text-base leading-relaxed text-[#5A534A]">
                         {fmt(c.total)} voters · {fmt(c.highDensityCount)} 8+ addr. · {fmt(c.ncoaCount)} out-of-state mail · {fmt(c.duplicateCount)} dup. pairs · {c.overCapacityPrecincts} 3,000+ prec. · +{fmt(Number(cAny.registrations2026 ?? 0))} reg. in 2026
                       </div>
                     </div>
-                    <div className="hidden sm:block self-center">
+                    <div className="hidden sm:block self-center px-2">
                       <Bar value={c.threatEnergy} max={100} focus label={`Priority score ${c.threatEnergy}`} />
                     </div>
-                    <span className="font-serif text-2xl font-bold tabular-nums leading-none text-right" style={{ color: FOCUS }}>
+                    <span className="font-serif text-3xl font-bold tabular-nums leading-none text-right" style={{ color: FOCUS }}>
                       {c.threatEnergy.toFixed(1)}
                     </span>
                   </li>
