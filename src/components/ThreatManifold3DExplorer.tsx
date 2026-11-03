@@ -30,6 +30,7 @@ import { EditorialTable } from "@/components/report/EditorialTable";
 type ViewMode = "counties" | "clusters";
 type IsolatedAxis = "ALL" | "X" | "Y" | "Z";
 type CanvasTheme = "obsidian" | "paper";
+type MarkerShape = "diamond" | "square" | "triangle" | "hexagon" | "circle";
 
 interface CountyVector {
   county: string;
@@ -83,70 +84,118 @@ interface ClusterVector {
   plainEnglishSummary: string;
 }
 
-// Concise, non-wrapping status labels for badges
+// Friendly labels for county types
 const FRIENDLY_REGIME_LABELS: Record<string, string> = {
-  "Multi-Axis Manifold Detachment": "Needs Attention in All 3 Areas",
-  "Axis-X Spatial Domicile Ridge": "Focus: Apartments & Dorm Units",
-  "Axis-Y Interstate Drift Ridge": "Focus: Out-of-State Mail & Dups",
-  "Axis-Z Precinct Strain Ridge": "Focus: Large Precincts (3,000+)",
-  "Equilibrium Manifold Surface": "On Track: Normal County Range",
+  "Multi-Axis Manifold Detachment": "◆ All 3 Areas Need Review",
+  "Axis-X Spatial Domicile Ridge": "■ Focus: Apartments & Dorm Units (X)",
+  "Axis-Y Interstate Drift Ridge": "▲ Focus: Out-of-State Mail & Dups (Y)",
+  "Axis-Z Precinct Strain Ridge": "⬢ Focus: Large Precincts 3,000+ (Z)",
+  "Equilibrium Manifold Surface": "● Normal Baseline Range",
 };
 
-const REGIME_COLORS: Record<
+/**
+ * Deuteranopia-Safe Palette aligned to Marigold & Pipes' "Accént" Design System:
+ * - Never relies on red-vs-green alone: each category has a distinct geometric shape,
+ *   a distinct SVG gradient/pattern, and an Okabe-Ito / Accént colorblind-safe hue.
+ */
+const REGIME_STYLES: Record<
   string,
-  { fill: string; stroke: string; bg: string; text: string; darkBadge: string }
+  {
+    gradId: string;
+    fill: string;
+    stroke: string;
+    shape: MarkerShape;
+    symbol: string;
+    shortTag: string;
+    bg: string;
+    text: string;
+  }
 > = {
   "Multi-Axis Manifold Detachment": {
-    fill: "#FF4D2D",
-    stroke: "#991B1B",
-    bg: "bg-red-100 border-red-400",
-    text: "text-red-950",
-    darkBadge: "bg-[#FF4D2D] text-white border-white/40",
+    gradId: "grad-multi",
+    fill: "#D44983", // Accént Brand Rose-Crimson
+    stroke: "#831843",
+    shape: "diamond",
+    symbol: "◆",
+    shortTag: "All 3",
+    bg: "bg-[#FCE8F1] border-[#B8326D]",
+    text: "text-[#6B123B]",
   },
   "Axis-X Spatial Domicile Ridge": {
-    fill: "#F59E0B",
-    stroke: "#92400E",
-    bg: "bg-amber-100 border-amber-400",
-    text: "text-amber-950",
-    darkBadge: "bg-[#D97706] text-white border-white/40",
+    gradId: "grad-axis-x",
+    fill: "#E68A00", // Marigold Amber-Gold
+    stroke: "#78350F",
+    shape: "square",
+    symbol: "■",
+    shortTag: "X",
+    bg: "bg-[#FEF3C7] border-[#D97706]",
+    text: "text-[#78350F]",
   },
   "Axis-Y Interstate Drift Ridge": {
-    fill: "#A855F7",
-    stroke: "#5B21B6",
-    bg: "bg-purple-100 border-purple-400",
-    text: "text-purple-950",
-    darkBadge: "bg-[#7C3AED] text-white border-white/40",
+    gradId: "grad-axis-y",
+    fill: "#735496", // Albers / Accént Royal Violet
+    stroke: "#3B0764",
+    shape: "triangle",
+    symbol: "▲",
+    shortTag: "Y",
+    bg: "bg-[#F3E8FF] border-[#735496]",
+    text: "text-[#3B0764]",
   },
   "Axis-Z Precinct Strain Ridge": {
-    fill: "#0EA5E9",
-    stroke: "#075985",
-    bg: "bg-sky-100 border-sky-400",
-    text: "text-sky-950",
-    darkBadge: "bg-[#0284C7] text-white border-white/40",
+    gradId: "grad-axis-z",
+    fill: "#01A9F4", // Accént Sovereign Sky Blue
+    stroke: "#0C4A6E",
+    shape: "hexagon",
+    symbol: "⬢",
+    shortTag: "Z",
+    bg: "bg-[#E0F2FE] border-[#0284C7]",
+    text: "text-[#082F49]",
   },
   "Equilibrium Manifold Surface": {
-    fill: "#10B981",
-    stroke: "#065F46",
-    bg: "bg-emerald-100 border-emerald-400",
-    text: "text-emerald-950",
-    darkBadge: "bg-[#059669] text-white border-white/30",
+    gradId: "grad-normal",
+    fill: "#8A8279", // Warm Sandstone Slate (neutral so priority shapes pop)
+    stroke: "#3A3530",
+    shape: "circle",
+    symbol: "●",
+    shortTag: "OK",
+    bg: "bg-[#EFECE6] border-[#6E675F]",
+    text: "text-[#2C2825]",
   },
 };
 
-const ALWAYS_LABELED_COUNTIES = new Set([
+// Keep only the top 8 well-spaced focal counties labeled by default so labels never collide!
+// Users can toggle "All Priority Labels" or click any marker to inspect its label.
+const DEFAULT_SPACED_LABELS = new Set([
   "Hinds",
   "Harrison",
-  "DeSoto",
-  "Rankin",
-  "Madison",
-  "Lafayette",
-  "Jackson",
-  "Forrest",
-  "Lee",
-  "Marshall",
   "Oktibbeha",
-  "Lowndes",
+  "Jackson",
+  "DeSoto",
+  "Humphreys",
+  "Adams",
+  "Marshall",
 ]);
+
+function polygonPoints(cx: number, cy: number, r: number, shape: MarkerShape): string {
+  if (shape === "diamond") {
+    const d = r * 1.28;
+    return `${cx},${cy - d} ${cx + d},${cy} ${cx},${cy + d} ${cx - d},${cy}`;
+  }
+  if (shape === "triangle") {
+    const d = r * 1.32;
+    return `${cx},${cy - d} ${cx + d * 0.95},${cy + d * 0.78} ${cx - d * 0.95},${cy + d * 0.78}`;
+  }
+  if (shape === "hexagon") {
+    const d = r * 1.18;
+    const pts: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const ang = (Math.PI / 3) * i - Math.PI / 6;
+      pts.push(`${(cx + d * Math.cos(ang)).toFixed(1)},${(cy + d * Math.sin(ang)).toFixed(1)}`);
+    }
+    return pts.join(" ");
+  }
+  return "";
+}
 
 export default function ThreatManifold3DExplorer({
   compact = false,
@@ -199,10 +248,10 @@ export default function ThreatManifold3DExplorer({
   const [isUnlocked] = useState<boolean>(forceUnlocked || isAuthenticated || true);
   const dialogTitleId = useId();
 
-  // Interactive 3D State
+  // Interactive 3D State — defaults to Accént Warm Sandstone ("paper") theme!
   const [viewMode, setViewMode] = useState<ViewMode>("counties");
   const [isolatedAxis, setIsolatedAxis] = useState<IsolatedAxis>("ALL");
-  const [canvasTheme, setCanvasTheme] = useState<CanvasTheme>("obsidian");
+  const [canvasTheme, setCanvasTheme] = useState<CanvasTheme>("paper");
   const [showEquilibriumMesh, setShowEquilibriumMesh] = useState(true);
   const [showResidualStems, setShowResidualStems] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
@@ -214,10 +263,10 @@ export default function ThreatManifold3DExplorer({
     clusterVectors[0]?.id || "CL-DOM-01"
   );
 
-  // Spherical Camera Angles (in degrees) — larger initial zoomScale (1.18) so the 3D model fills the stage
+  // Spherical Camera Angles (in degrees)
   const [thetaDeg, setThetaDeg] = useState<number>(36);
   const [phiDeg, setPhiDeg] = useState<number>(62);
-  const [zoomScale, setZoomScale] = useState<number>(1.18);
+  const [zoomScale, setZoomScale] = useState<number>(1.14);
 
   const mountRef = useRef<HTMLDivElement | null>(null);
   const fullscreenDialogRef = useRef<HTMLDialogElement | null>(null);
@@ -253,7 +302,7 @@ export default function ThreatManifold3DExplorer({
     );
   }, [countyVectors, searchQuery]);
 
-  // Native <dialog> Full Screen Modal controller (modern-web-guidance: dialog)
+  // Native <dialog> Full Screen Modal controller
   const openFullScreen = () => {
     const dlg = fullscreenDialogRef.current;
     if (dlg && !dlg.open) {
@@ -286,9 +335,9 @@ export default function ThreatManifold3DExplorer({
     if (!autoRotate || !isUnlocked) return;
     const interval = setInterval(() => {
       if (!isDraggingRef.current) {
-        setThetaDeg((prev) => (prev + 0.45) % 360);
+        setThetaDeg((prev) => (prev + 0.4) % 360);
       }
-    }, 32);
+    }, 34);
     return () => clearInterval(interval);
   }, [autoRotate, isUnlocked]);
 
@@ -315,7 +364,7 @@ export default function ThreatManifold3DExplorer({
       scene.add(ambient);
       renderer.render(scene, camera);
     } catch {
-      // Fallback handled seamlessly by the precision 3D Vector Projection Engine below
+      // Fallback handled by the 3D Vector Projection Engine below
     }
 
     return () => {
@@ -325,11 +374,11 @@ export default function ThreatManifold3DExplorer({
     };
   }, []);
 
-  // Deterministic 3D-to-2D Perspective Projection Math (wider 1000x640 stage with larger fovScale)
+  // Deterministic 3D-to-2D Perspective Projection Math
   const project3DPoint = useMemo(() => {
     const radTheta = (thetaDeg * Math.PI) / 180;
     const radPhi = (phiDeg * Math.PI) / 180;
-    const camR = 175 / zoomScale;
+    const camR = 178 / zoomScale;
 
     const camX = camR * Math.sin(radPhi) * Math.sin(radTheta);
     const camY = camR * Math.cos(radPhi) + 8;
@@ -359,14 +408,14 @@ export default function ThreatManifold3DExplorer({
     const uy = rz * fx - rx * fz;
     const uz = rx * fy - ry * fx;
 
-    const fovScale = 640 * zoomScale;
+    const fovScale = 620 * zoomScale;
     const centerX = 500;
-    const centerY = 330;
+    const centerY = 335;
 
     return (dataX: number, dataY: number, dataZ: number) => {
-      const wx = (dataX - 50) * 1.15;
-      const wy = (dataZ - 34) * 1.02;
-      const wz = (dataY - 50) * 1.15;
+      const wx = (dataX - 50) * 1.14;
+      const wy = (dataZ - 34) * 1.0;
+      const wz = (dataY - 50) * 1.14;
 
       const dx = wx - camX;
       const dy = wy - camY;
@@ -384,7 +433,7 @@ export default function ThreatManifold3DExplorer({
     };
   }, [thetaDeg, phiDeg, zoomScale]);
 
-  // Build 3D Expected County Baseline Grid Lines
+  // Build 3D Expected County Baseline Grid Lines (Sovereign Sky Blue net for Deuteranopia safety)
   const manifoldGridLines = useMemo(() => {
     const lines: Array<{ d: string; isMajor: boolean }> = [];
     const steps = 10;
@@ -437,77 +486,102 @@ export default function ThreatManifold3DExplorer({
     return { origin, xEnd, yEnd, zEnd };
   }, [project3DPoint]);
 
-  // Project and depth-sort all active 3D nodes (larger sphere radii and readable 13-15px labels)
+  // Project, depth-sort, and run 2D collision-avoidance on labels so labels NEVER overlap!
   const projectedNodes = useMemo(() => {
-    if (viewMode === "counties") {
-      return countyVectors
-        .map((cv) => {
-          const tx = isolatedAxis === "ALL" || isolatedAxis === "X" ? cv.x : 14;
-          const ty = isolatedAxis === "ALL" || isolatedAxis === "Y" ? cv.y : 14;
-          const tz = isolatedAxis === "ALL" || isolatedAxis === "Z" ? cv.z : cv.manifoldZ;
+    const rawNodes =
+      viewMode === "counties"
+        ? countyVectors.map((cv) => {
+            const tx = isolatedAxis === "ALL" || isolatedAxis === "X" ? cv.x : 14;
+            const ty = isolatedAxis === "ALL" || isolatedAxis === "Y" ? cv.y : 14;
+            const tz = isolatedAxis === "ALL" || isolatedAxis === "Z" ? cv.z : cv.manifoldZ;
 
-          const topPt = project3DPoint(tx, ty, tz);
-          const basePt = project3DPoint(tx, ty, cv.manifoldZ);
-          const isSelected = cv.county.toLowerCase() === selectedCountyName.toLowerCase();
-          const radius = Math.max(
-            7.0,
-            Math.min(18.5, 4.8 + Math.log10(Math.max(1000, cv.total)) * 2.5)
-          );
-          const colors =
-            REGIME_COLORS[cv.regime] || REGIME_COLORS["Equilibrium Manifold Surface"];
+            const topPt = project3DPoint(tx, ty, tz);
+            const basePt = project3DPoint(tx, ty, cv.manifoldZ);
+            const isSelected = cv.county.toLowerCase() === selectedCountyName.toLowerCase();
+            const isNormal = cv.regime === "Equilibrium Manifold Surface";
+            const radius = isNormal
+              ? Math.max(6.2, Math.min(12.0, 4.0 + Math.log10(Math.max(1000, cv.total)) * 1.7))
+              : Math.max(8.5, Math.min(16.5, 5.2 + Math.log10(Math.max(1000, cv.total)) * 2.2));
+            const style = REGIME_STYLES[cv.regime] || REGIME_STYLES["Equilibrium Manifold Surface"];
 
-          return {
-            id: cv.county,
-            label: cv.county,
-            score: cv.threatEnergy,
-            residual: cv.manifoldResidual,
-            regime: cv.regime,
-            topPt,
-            basePt,
-            radius: isSelected ? radius * 1.35 : radius,
-            isSelected,
-            showLabel:
-              isSelected ||
-              (showLabels &&
-                (ALWAYS_LABELED_COUNTIES.has(cv.county) || cv.threatEnergy >= 43)),
-            colors,
-          };
-        })
-        .sort((a, b) => b.topPt.depth - a.topPt.depth);
-    } else {
-      return clusterVectors
-        .map((cl) => {
-          const tx = isolatedAxis === "ALL" || isolatedAxis === "X" ? cl.x : 14;
-          const ty = isolatedAxis === "ALL" || isolatedAxis === "Y" ? cl.y : 14;
-          const tz = isolatedAxis === "ALL" || isolatedAxis === "Z" ? cl.z : cl.manifoldZ;
+            return {
+              id: cv.county,
+              label: cv.county,
+              score: cv.threatEnergy,
+              residual: cv.manifoldResidual,
+              regime: cv.regime,
+              topPt,
+              basePt,
+              radius: isSelected ? radius * 1.32 : radius,
+              isSelected,
+              wantsLabel:
+                isSelected ||
+                (showLabels && (DEFAULT_SPACED_LABELS.has(cv.county) || cv.threatEnergy >= 46)),
+              style,
+            };
+          })
+        : clusterVectors.map((cl) => {
+            const tx = isolatedAxis === "ALL" || isolatedAxis === "X" ? cl.x : 14;
+            const ty = isolatedAxis === "ALL" || isolatedAxis === "Y" ? cl.y : 14;
+            const tz = isolatedAxis === "ALL" || isolatedAxis === "Z" ? cl.z : cl.manifoldZ;
 
-          const topPt = project3DPoint(tx, ty, tz);
-          const basePt = project3DPoint(tx, ty, cl.manifoldZ);
-          const isSelected = cl.id === selectedClusterId;
-          const radius = Math.max(8.0, Math.min(17, cl.threatEnergy / 5.5));
-          const regimeKey = cl.category.includes("PB-01")
-            ? "Axis-X Spatial Domicile Ridge"
-            : cl.category.includes("PB-06")
-            ? "Axis-Y Interstate Drift Ridge"
-            : "Multi-Axis Manifold Detachment";
-          const colors = REGIME_COLORS[regimeKey];
+            const topPt = project3DPoint(tx, ty, tz);
+            const basePt = project3DPoint(tx, ty, cl.manifoldZ);
+            const isSelected = cl.id === selectedClusterId;
+            const radius = Math.max(8.0, Math.min(16, cl.threatEnergy / 5.6));
+            const regimeKey = cl.category.includes("PB-01")
+              ? "Axis-X Spatial Domicile Ridge"
+              : cl.category.includes("PB-06")
+              ? "Axis-Y Interstate Drift Ridge"
+              : "Multi-Axis Manifold Detachment";
+            const style = REGIME_STYLES[regimeKey];
 
-          return {
-            id: cl.id,
-            label: `${cl.id} (${cl.county})`,
-            score: cl.threatEnergy,
-            residual: cl.z - cl.manifoldZ,
-            regime: cl.category,
-            topPt,
-            basePt,
-            radius: isSelected ? radius * 1.35 : radius,
-            isSelected,
-            showLabel: isSelected || (showLabels && cl.threatEnergy >= 68),
-            colors,
-          };
-        })
-        .sort((a, b) => b.topPt.depth - a.topPt.depth);
+            return {
+              id: cl.id,
+              label: `${cl.id} (${cl.county})`,
+              score: cl.threatEnergy,
+              residual: cl.z - cl.manifoldZ,
+              regime: cl.category,
+              topPt,
+              basePt,
+              radius: isSelected ? radius * 1.32 : radius,
+              isSelected,
+              wantsLabel: isSelected || (showLabels && cl.threatEnergy >= 72),
+              style,
+            };
+          });
+
+    // Greedy 2D bounding-box de-confliction (priority: selected first, then highest score)
+    const labelPriority = [...rawNodes]
+      .filter((n) => n.wantsLabel)
+      .sort((a, b) => (a.isSelected ? -1 : b.isSelected ? 1 : b.score - a.score));
+
+    const placedBoxes: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+    const approvedLabels = new Set<string>();
+
+    for (const n of labelPriority) {
+      const text = `${n.style.symbol} ${n.label} (${n.score})`;
+      const w = Math.max(116, text.length * 8.2 + 24);
+      const h = 26;
+      const cx = Math.max(w / 2 + 12, Math.min(1000 - w / 2 - 12, n.topPt.sx));
+      const cy = Math.max(28, Math.min(610, n.topPt.sy - n.radius - 16));
+      const box = { x1: cx - w / 2 - 6, y1: cy - h - 4, x2: cx + w / 2 + 6, y2: cy + 4 };
+
+      const collides = placedBoxes.some(
+        (b) => !(box.x2 < b.x1 || box.x1 > b.x2 || box.y2 < b.y1 || box.y1 > b.y2)
+      );
+      if (n.isSelected || !collides) {
+        approvedLabels.add(n.id);
+        placedBoxes.push(box);
+      }
     }
+
+    return rawNodes
+      .map((n) => ({
+        ...n,
+        showLabel: approvedLabels.has(n.id),
+      }))
+      .sort((a, b) => b.topPt.depth - a.topPt.depth);
   }, [
     viewMode,
     countyVectors,
@@ -545,7 +619,66 @@ export default function ThreatManifold3DExplorer({
 
   const isDark = canvasTheme === "obsidian";
 
-  // Reusable 3D SVG Canvas Renderer (used in both Main Stage and Full Screen Dialog)
+  // Helper to render Deuteranopia-safe geometric shape + gradient fill for each node
+  const renderMarkerShape = (
+    node: (typeof projectedNodes)[number],
+    idSuffix: string
+  ) => {
+    const { sx, sy } = node.topPt;
+    const r = node.radius;
+    const fillUrl = `url(#${node.style.gradId}-${idSuffix})`;
+    const strokeColor = node.isSelected ? "#111111" : isDark ? "#111827" : "#FFFFFF";
+    const strokeW = node.isSelected ? "2.8" : "1.8";
+    const filterUrl = `url(#sphereShadow-${idSuffix})`;
+
+    if (node.style.shape === "square") {
+      const side = r * 1.75;
+      return (
+        <rect
+          x={sx - side / 2}
+          y={sy - side / 2}
+          width={side}
+          height={side}
+          rx={3.5}
+          fill={fillUrl}
+          stroke={strokeColor}
+          strokeWidth={strokeW}
+          filter={filterUrl}
+        />
+      );
+    }
+
+    if (
+      node.style.shape === "diamond" ||
+      node.style.shape === "triangle" ||
+      node.style.shape === "hexagon"
+    ) {
+      return (
+        <polygon
+          points={polygonPoints(sx, sy, r, node.style.shape)}
+          fill={fillUrl}
+          stroke={strokeColor}
+          strokeWidth={strokeW}
+          strokeLinejoin="round"
+          filter={filterUrl}
+        />
+      );
+    }
+
+    return (
+      <circle
+        cx={sx}
+        cy={sy}
+        r={r}
+        fill={fillUrl}
+        stroke={strokeColor}
+        strokeWidth={strokeW}
+        filter={filterUrl}
+      />
+    );
+  };
+
+  // Reusable 3D SVG Canvas Renderer (Accént Warm Sandstone + Colorblind-Safe Gradients & Shapes)
   const render3DCanvasSvg = (idSuffix: string) => (
     <svg
       viewBox="0 0 1000 640"
@@ -556,20 +689,53 @@ export default function ThreatManifold3DExplorer({
       onPointerLeave={handlePointerUp}
     >
       <defs>
-        <radialGradient id={`stageGlow-${idSuffix}`} cx="50%" cy="50%" r="58%">
+        {/* Warm Sandstone ("paper") or Deep Slate ("obsidian") Studio Backdrop */}
+        <radialGradient id={`stageGlow-${idSuffix}`} cx="50%" cy="48%" r="60%">
           <stop
             offset="0%"
-            stopColor={isDark ? "#2D241C" : "#EFE9D9"}
-            stopOpacity={isDark ? "0.95" : "0.7"}
+            stopColor={isDark ? "#1E293B" : "#F8F5EE"}
+            stopOpacity="1"
           />
           <stop
             offset="100%"
-            stopColor={isDark ? "#12100E" : "#F7F4EC"}
+            stopColor={isDark ? "#0F172A" : "#E8E2D5"}
             stopOpacity="1"
           />
         </radialGradient>
+
+        {/* Deuteranopia-Safe Rich 3D Linear/Radial Gradients for the 5 Categories */}
+        <linearGradient id={`grad-multi-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#F472B6" />
+          <stop offset="55%" stopColor="#D44983" />
+          <stop offset="100%" stopColor="#831843" />
+        </linearGradient>
+
+        <linearGradient id={`grad-axis-x-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FCD34D" />
+          <stop offset="55%" stopColor="#E68A00" />
+          <stop offset="100%" stopColor="#92400E" />
+        </linearGradient>
+
+        <linearGradient id={`grad-axis-y-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#C084FC" />
+          <stop offset="55%" stopColor="#735496" />
+          <stop offset="100%" stopColor="#3B0764" />
+        </linearGradient>
+
+        <linearGradient id={`grad-axis-z-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#7DD3FC" />
+          <stop offset="55%" stopColor="#01A9F4" />
+          <stop offset="100%" stopColor="#0369A1" />
+        </linearGradient>
+
+        <radialGradient id={`grad-normal-${idSuffix}`} cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stopColor={isDark ? "#CBD5E1" : "#B8B0A4"} />
+          <stop offset="70%" stopColor={isDark ? "#64748B" : "#8A8279"} />
+          <stop offset="100%" stopColor={isDark ? "#334155" : "#5A534A"} />
+        </radialGradient>
+
         <filter id={`sphereShadow-${idSuffix}`} x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.45" />
+          <feDropShadow dx="0" dy="2" stdDeviation="2.2" floodColor="#111111" floodOpacity="0.32" />
         </filter>
       </defs>
 
@@ -582,14 +748,14 @@ export default function ThreatManifold3DExplorer({
           <path
             key={`floor-${idSuffix}-${idx}`}
             d={d}
-            stroke={isDark ? "rgba(255,255,255,0.13)" : "rgba(17,17,17,0.16)"}
+            stroke={isDark ? "rgba(255,255,255,0.12)" : "rgba(17,24,39,0.12)"}
             strokeWidth="1.2"
             fill="none"
           />
         ))}
       </g>
 
-      {/* 2. Green Normal County Surface Grid */}
+      {/* 2. Sovereign Sky Blue Normal Baseline Net (Deuteranopia-safe instead of red-vs-green) */}
       {showEquilibriumMesh && (
         <g>
           {manifoldGridLines.map((line, idx) => (
@@ -599,124 +765,130 @@ export default function ThreatManifold3DExplorer({
               stroke={
                 isDark
                   ? line.isMajor
-                    ? "#10B981"
-                    : "rgba(16, 185, 129, 0.45)"
+                    ? "#38BDF8"
+                    : "rgba(56, 189, 248, 0.42)"
                   : line.isMajor
-                  ? "#047857"
-                  : "rgba(4, 120, 87, 0.4)"
+                  ? "#0284C7"
+                  : "rgba(2, 132, 199, 0.36)"
               }
               strokeWidth={line.isMajor ? "2.4" : "1.3"}
-              strokeDasharray={line.isMajor ? undefined : "4 3"}
+              strokeDasharray={line.isMajor ? undefined : "5 3"}
               fill="none"
             />
           ))}
         </g>
       )}
 
-      {/* 3. Bold X, Y, Z Coordinate Axes & Readable 13px Non-Wrapping Labels */}
+      {/* 3. Bold X, Y, Z Coordinate Axes & Shape-Coded Labels */}
       <g>
-        {/* X Axis: Apartment & House Addresses */}
+        {/* X Axis: Apartment & House Addresses (Amber Square ■) */}
         <line
           x1={axes3D.origin.sx}
           y1={axes3D.origin.sy}
           x2={axes3D.xEnd.sx}
           y2={axes3D.xEnd.sy}
-          stroke="#F59E0B"
+          stroke="#D97706"
           strokeWidth="3.5"
         />
         <rect
-          x={axes3D.xEnd.sx - 108}
+          x={axes3D.xEnd.sx - 116}
           y={axes3D.xEnd.sy - 15}
-          width="216"
+          width="232"
           height="28"
           rx="6"
-          fill={isDark ? "#1C1917" : "#FFFFFF"}
-          stroke="#F59E0B"
+          fill={isDark ? "#1E293B" : "#FFFBEB"}
+          stroke="#D97706"
           strokeWidth="2"
         />
         <text
           x={axes3D.xEnd.sx}
           y={axes3D.xEnd.sy + 4}
           textAnchor="middle"
-          fill={isDark ? "#FCD34D" : "#92400E"}
+          fill={isDark ? "#FCD34D" : "#78350F"}
           fontSize="13"
           fontWeight="800"
           fontFamily="monospace"
         >
-          1. ADDRESSES &amp; UNITS (X)
+          ■ 1. ADDRESSES &amp; UNITS (X)
         </text>
 
-        {/* Y Axis: Out-of-State Mail & Duplicates */}
+        {/* Y Axis: Out-of-State Mail & Duplicates (Violet Triangle ▲) */}
         <line
           x1={axes3D.origin.sx}
           y1={axes3D.origin.sy}
           x2={axes3D.yEnd.sx}
           y2={axes3D.yEnd.sy}
-          stroke="#A855F7"
+          stroke="#735496"
           strokeWidth="3.5"
         />
         <rect
-          x={axes3D.yEnd.sx - 108}
+          x={axes3D.yEnd.sx - 116}
           y={axes3D.yEnd.sy - 15}
-          width="216"
+          width="232"
           height="28"
           rx="6"
-          fill={isDark ? "#1C1917" : "#FFFFFF"}
-          stroke="#A855F7"
+          fill={isDark ? "#1E293B" : "#FAF5FF"}
+          stroke="#735496"
           strokeWidth="2"
         />
         <text
           x={axes3D.yEnd.sx}
           y={axes3D.yEnd.sy + 4}
           textAnchor="middle"
-          fill={isDark ? "#D8B4FE" : "#5B21B6"}
+          fill={isDark ? "#E9D5FF" : "#3B0764"}
           fontSize="13"
           fontWeight="800"
           fontFamily="monospace"
         >
-          2. MAIL &amp; DUPLICATES (Y)
+          ▲ 2. MAIL &amp; DUPLICATES (Y)
         </text>
 
-        {/* Z Axis: Busy Polling Places */}
+        {/* Z Axis: Busy Polling Places (Sky Blue Hexagon ⬢) */}
         <line
           x1={axes3D.origin.sx}
           y1={axes3D.origin.sy}
           x2={axes3D.zEnd.sx}
           y2={axes3D.zEnd.sy}
-          stroke="#0EA5E9"
+          stroke="#0284C7"
           strokeWidth="3.5"
         />
         <rect
-          x={axes3D.zEnd.sx - 108}
+          x={axes3D.zEnd.sx - 116}
           y={axes3D.zEnd.sy - 28}
-          width="216"
+          width="232"
           height="28"
           rx="6"
-          fill={isDark ? "#1C1917" : "#FFFFFF"}
-          stroke="#0EA5E9"
+          fill={isDark ? "#1E293B" : "#F0F9FF"}
+          stroke="#0284C7"
           strokeWidth="2"
         />
         <text
           x={axes3D.zEnd.sx}
           y={axes3D.zEnd.sy - 10}
           textAnchor="middle"
-          fill={isDark ? "#7DD3FC" : "#075985"}
+          fill={isDark ? "#7DD3FC" : "#0C4A6E"}
           fontSize="13"
           fontWeight="800"
           fontFamily="monospace"
         >
-          ↑ 3. POLLING PLACES (Z)
+          ⬢ 3. POLLING PLACES (Z)
         </text>
       </g>
 
-      {/* 4. Red Height Stems + 3D County Circles + Labels */}
+      {/* 4. Height Stems + Shape-Coded 3D County Markers + De-Conflicted Labels */}
       {projectedNodes.map((node) => {
         const showStem =
           showResidualStems &&
           isolatedAxis === "ALL" &&
           (Math.abs(node.residual) > 2.5 || node.isSelected);
-        const labelText = `${node.label} (${node.score})`;
-        const pillWidth = Math.max(110, labelText.length * 8.4 + 28);
+        const labelText = `${node.style.symbol} ${node.label} (${node.score})`;
+        const pillWidth = Math.max(118, labelText.length * 8.2 + 24);
+        // Clamp label inside the 1000x640 SVG viewport so it never clips off the top or sides!
+        const clampedX = Math.max(
+          pillWidth / 2 + 12,
+          Math.min(1000 - pillWidth / 2 - 12, node.topPt.sx)
+        );
+        const clampedY = Math.max(28, Math.min(610, node.topPt.sy - node.radius - 14));
 
         return (
           <g
@@ -738,16 +910,16 @@ export default function ThreatManifold3DExplorer({
                   y1={node.basePt.sy}
                   x2={node.topPt.sx}
                   y2={node.topPt.sy}
-                  stroke={node.residual >= 0 ? "#FF4D2D" : "#0EA5E9"}
-                  strokeWidth={node.isSelected ? "3.5" : "2.1"}
-                  strokeDasharray={node.isSelected ? undefined : "4 3"}
+                  stroke={node.residual >= 0 ? "#B8326D" : "#0284C7"}
+                  strokeWidth={node.isSelected ? "3.5" : "2.2"}
+                  strokeDasharray={node.isSelected ? undefined : "5 3"}
                   opacity={node.isSelected ? "1" : "0.85"}
                 />
                 <circle
                   cx={node.basePt.sx}
                   cy={node.basePt.sy}
                   r="3.2"
-                  fill={isDark ? "#10B981" : "#047857"}
+                  fill={isDark ? "#38BDF8" : "#0284C7"}
                 />
               </>
             )}
@@ -757,16 +929,16 @@ export default function ThreatManifold3DExplorer({
                 <circle
                   cx={node.topPt.sx}
                   cy={node.topPt.sy}
-                  r={node.radius + 10}
+                  r={node.radius + 11}
                   fill="none"
-                  stroke="#FF4D2D"
-                  strokeWidth="2.8"
+                  stroke="#B8326D"
+                  strokeWidth="3"
                   strokeDasharray="5 3"
                 />
                 <circle
                   cx={node.topPt.sx}
                   cy={node.topPt.sy}
-                  r={node.radius + 4.5}
+                  r={node.radius + 5}
                   fill="none"
                   stroke={isDark ? "#FFFFFF" : "#111111"}
                   strokeWidth="2.2"
@@ -774,54 +946,44 @@ export default function ThreatManifold3DExplorer({
               </>
             )}
 
-            <circle
-              cx={node.topPt.sx}
-              cy={node.topPt.sy}
-              r={node.radius}
-              fill={node.colors.fill}
-              stroke={node.isSelected ? "#FFFFFF" : isDark ? "#12100E" : "#FFFFFF"}
-              strokeWidth={node.isSelected ? "2.8" : "1.6"}
-              filter={`url(#sphereShadow-${idSuffix})`}
-            />
+            {/* Shape-coded + gradient-filled 3D marker */}
+            {renderMarkerShape(node, idSuffix)}
 
+            {/* Inner specular highlight for depth */}
             <circle
-              cx={node.topPt.sx - node.radius * 0.3}
-              cy={node.topPt.sy - node.radius * 0.3}
-              r={Math.max(1.8, node.radius * 0.28)}
-              fill="rgba(255,255,255,0.68)"
+              cx={node.topPt.sx - node.radius * 0.25}
+              cy={node.topPt.sy - node.radius * 0.25}
+              r={Math.max(1.6, node.radius * 0.22)}
+              fill="rgba(255,255,255,0.65)"
             />
 
             {node.showLabel && (
-              <g
-                transform={`translate(${node.topPt.sx}, ${
-                  node.topPt.sy - node.radius - 13
-                })`}
-              >
+              <g transform={`translate(${clampedX}, ${clampedY})`}>
                 <rect
                   x={-pillWidth / 2}
-                  y="-19"
+                  y="-20"
                   width={pillWidth}
-                  height="25"
-                  rx="5"
+                  height="26"
+                  rx="6"
                   fill={
                     node.isSelected
-                      ? "#C2341B"
+                      ? "#B8326D"
                       : isDark
-                      ? "rgba(18, 16, 14, 0.94)"
+                      ? "rgba(15, 23, 42, 0.94)"
                       : "rgba(255, 255, 255, 0.97)"
                   }
                   stroke={
                     node.isSelected
                       ? "#FFFFFF"
                       : isDark
-                      ? "rgba(255,255,255,0.5)"
+                      ? "rgba(255,255,255,0.55)"
                       : "#111111"
                   }
-                  strokeWidth={node.isSelected ? "2" : "1.3"}
+                  strokeWidth={node.isSelected ? "2.2" : "1.5"}
                 />
                 <text
                   x="0"
-                  y="-2"
+                  y="-3"
                   textAnchor="middle"
                   fill={
                     node.isSelected
@@ -844,36 +1006,36 @@ export default function ThreatManifold3DExplorer({
     </svg>
   );
 
-  // Reusable Control Toolbar (non-wrapping buttons, >=16px text-base font)
+  // Clean 2-Row Accént Control Bar (Row 1: Topic Filter, Row 2: View & Camera Controls)
   const renderControlBar = (inModal = false) => (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      {/* Topic Filter Pills */}
+    <div className="space-y-3">
+      {/* Row 1: Topic Filter with Shape + Color Differentiators */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-base font-mono font-bold uppercase tracking-wider text-[#111111] mr-1 inline-flex items-center gap-1.5 whitespace-nowrap">
-          <Sliders className="w-4 h-4 text-[#C2341B] shrink-0" />
-          Topic Filter:
+          <Sliders className="w-4 h-4 text-[#B8326D] shrink-0" />
+          Filter by Task:
         </span>
         {(
           [
             {
               id: "ALL",
-              label: "All 3 Topics",
+              label: "All 3 Tasks Together",
               activeClass: "bg-[#111111] text-white border-[#111111]",
             },
             {
               id: "X",
-              label: "1. Addresses & Units",
-              activeClass: "bg-[#B45309] text-white border-[#B45309]",
+              label: "■ 1. Addresses & Units (X)",
+              activeClass: "bg-[#B45309] text-white border-[#78350F]",
             },
             {
               id: "Y",
-              label: "2. Mail & Duplicates",
-              activeClass: "bg-[#6D28D9] text-white border-[#6D28D9]",
+              label: "▲ 2. Mail & Duplicates (Y)",
+              activeClass: "bg-[#735496] text-white border-[#3B0764]",
             },
             {
               id: "Z",
-              label: "3. Precincts (3,000+)",
-              activeClass: "bg-[#0369A1] text-white border-[#0369A1]",
+              label: "⬢ 3. Precincts 3,000+ (Z)",
+              activeClass: "bg-[#0369A1] text-white border-[#082F49]",
             },
           ] as const
         ).map((btn) => (
@@ -881,10 +1043,10 @@ export default function ThreatManifold3DExplorer({
             type="button"
             key={btn.id}
             onClick={() => setIsolatedAxis(btn.id)}
-            className={`px-3.5 py-2 rounded-xl text-base font-bold border-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-2 rounded-lg text-base font-bold border-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               isolatedAxis === btn.id
-                ? `${btn.activeClass} shadow-sm`
-                : "bg-white border-[#111111]/35 text-[#111111] hover:border-[#111111]"
+                ? `${btn.activeClass} shadow-xs`
+                : "bg-white border-[#111111]/30 text-[#111111] hover:border-[#111111]"
             }`}
           >
             {btn.label}
@@ -892,452 +1054,456 @@ export default function ThreatManifold3DExplorer({
         ))}
       </div>
 
-      {/* Layer & Camera Controls */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowEquilibriumMesh((v) => !v)}
-          className={`px-3.5 py-2 rounded-xl border-2 text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-            showEquilibriumMesh
-              ? "border-[#065F46] bg-[#D1FAE5] text-[#065F46]"
-              : "border-[#111111]/35 bg-white text-[#111111]"
-          }`}
-        >
-          Green Net: {showEquilibriumMesh ? "ON" : "OFF"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowResidualStems((v) => !v)}
-          className={`px-3.5 py-2 rounded-xl border-2 text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-            showResidualStems
-              ? "border-[#991B1B] bg-[#FEE2E2] text-[#991B1B]"
-              : "border-[#111111]/35 bg-white text-[#111111]"
-          }`}
-        >
-          Red Lines: {showResidualStems ? "ON" : "OFF"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowLabels((v) => !v)}
-          className={`px-3.5 py-2 rounded-xl border-2 text-base font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-            showLabels
-              ? "border-[#111111] bg-[#F3EFE6] text-[#111111]"
-              : "border-[#111111]/35 bg-white text-[#4A4845]"
-          }`}
-        >
-          <Eye className="w-4 h-4 shrink-0" />
-          Names: {showLabels ? "ON" : "OFF"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setAutoRotate((v) => !v)}
-          className="px-3.5 py-2 rounded-xl border-2 border-[#111111] bg-white text-[#111111] hover:bg-[#F3EFE6] inline-flex items-center gap-1.5 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
-        >
-          {autoRotate ? <Pause className="w-4 h-4 shrink-0" /> : <Play className="w-4 h-4 shrink-0" />}
-          {autoRotate ? "Pause Spin" : "Spin Map"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setZoomScale((z) => Math.min(1.75, +(z + 0.14).toFixed(2)))}
-          className="px-3 py-2 rounded-xl border-2 border-[#111111]/45 bg-white text-[#111111] hover:border-[#111111] inline-flex items-center gap-1 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
-          title="Zoom In"
-        >
-          <ZoomIn className="w-4 h-4 shrink-0" /> Zoom +
-        </button>
-        <button
-          type="button"
-          onClick={() => setZoomScale((z) => Math.max(0.8, +(z - 0.14).toFixed(2)))}
-          className="px-3 py-2 rounded-xl border-2 border-[#111111]/45 bg-white text-[#111111] hover:border-[#111111] inline-flex items-center gap-1 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
-          title="Zoom Out"
-        >
-          <ZoomOut className="w-4 h-4 shrink-0" /> Zoom −
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setThetaDeg(36);
-            setPhiDeg(62);
-            setZoomScale(1.18);
-            setIsolatedAxis("ALL");
-          }}
-          className="px-3 py-2 rounded-xl border-2 border-[#111111]/45 bg-white text-[#111111] hover:border-[#111111] inline-flex items-center gap-1 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
-          title="Reset 3D View"
-        >
-          <RotateCcw className="w-4 h-4 shrink-0" /> Reset
-        </button>
-        {!inModal ? (
+      {/* Row 2: Layer Toggles + Camera Controls + Prominent Full Screen Button */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#DDD6CA]">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={openFullScreen}
-            className="px-4 py-2 rounded-xl border-2 border-[#111111] bg-[#C2341B] hover:bg-[#A52A15] text-white inline-flex items-center gap-2 text-base font-bold shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+            onClick={() => setShowEquilibriumMesh((v) => !v)}
+            className={`px-3.5 py-2 rounded-lg border-2 text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+              showEquilibriumMesh
+                ? "border-[#0369A1] bg-[#E0F2FE] text-[#082F49]"
+                : "border-[#111111]/30 bg-white text-[#111111]"
+            }`}
           >
-            <Maximize2 className="w-4 h-4 shrink-0" />
-            Full Screen 3D
+            Sky-Blue Net: {showEquilibriumMesh ? "ON" : "OFF"}
           </button>
-        ) : (
           <button
             type="button"
-            onClick={closeFullScreen}
-            className="px-4 py-2 rounded-xl border-2 border-[#111111] bg-[#111111] hover:bg-[#2B2926] text-white inline-flex items-center gap-2 text-base font-bold shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+            onClick={() => setShowResidualStems((v) => !v)}
+            className={`px-3.5 py-2 rounded-lg border-2 text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+              showResidualStems
+                ? "border-[#B8326D] bg-[#FCE8F1] text-[#6B123B]"
+                : "border-[#111111]/30 bg-white text-[#111111]"
+            }`}
           >
-            <Minimize2 className="w-4 h-4 shrink-0" />
-            Exit Full Screen (Esc)
+            Height Stems: {showResidualStems ? "ON" : "OFF"}
           </button>
-        )}
+          <button
+            type="button"
+            onClick={() => setShowLabels((v) => !v)}
+            className={`px-3.5 py-2 rounded-lg border-2 text-base font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+              showLabels
+                ? "border-[#111111] bg-[#E8E2D5] text-[#111111]"
+                : "border-[#111111]/30 bg-white text-[#4A4845]"
+            }`}
+          >
+            <Eye className="w-4 h-4 shrink-0" />
+            Labels: {showLabels ? "ON" : "OFF"}
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setAutoRotate((v) => !v)}
+            className="px-3.5 py-2 rounded-lg border-2 border-[#111111] bg-white text-[#111111] hover:bg-[#E8E2D5] inline-flex items-center gap-1.5 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
+          >
+            {autoRotate ? <Pause className="w-4 h-4 shrink-0" /> : <Play className="w-4 h-4 shrink-0" />}
+            {autoRotate ? "Pause Spin" : "Spin Map"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomScale((z) => Math.min(1.75, +(z + 0.14).toFixed(2)))}
+            className="px-3 py-2 rounded-lg border-2 border-[#111111]/40 bg-white text-[#111111] hover:border-[#111111] inline-flex items-center gap-1 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
+            title="Zoom In"
+          >
+            <ZoomIn className="w-4 h-4 shrink-0" /> Zoom +
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomScale((z) => Math.max(0.8, +(z - 0.14).toFixed(2)))}
+            className="px-3 py-2 rounded-lg border-2 border-[#111111]/40 bg-white text-[#111111] hover:border-[#111111] inline-flex items-center gap-1 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-4 h-4 shrink-0" /> Zoom −
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setThetaDeg(36);
+              setPhiDeg(62);
+              setZoomScale(1.14);
+              setIsolatedAxis("ALL");
+            }}
+            className="px-3 py-2 rounded-lg border-2 border-[#111111]/40 bg-white text-[#111111] hover:border-[#111111] inline-flex items-center gap-1 text-base font-bold cursor-pointer whitespace-nowrap shrink-0"
+            title="Reset 3D View"
+          >
+            <RotateCcw className="w-4 h-4 shrink-0" /> Reset
+          </button>
+          {!inModal ? (
+            <button
+              type="button"
+              onClick={openFullScreen}
+              className="px-4 py-2 rounded-lg border-2 border-[#111111] bg-[#B8326D] hover:bg-[#9D265B] text-white inline-flex items-center gap-2 text-base font-bold shadow-xs cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <Maximize2 className="w-4 h-4 shrink-0" />
+              Full Screen 3D
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={closeFullScreen}
+              className="px-4 py-2 rounded-lg border-2 border-[#111111] bg-[#111111] hover:bg-[#2B2926] text-white inline-flex items-center gap-2 text-base font-bold shadow-xs cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <Minimize2 className="w-4 h-4 shrink-0" />
+              Exit Full Screen (Esc)
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 
-  // Reusable County & Cluster Inspector Panel (16px minimum font, non-wrapping badges)
-  const renderInspectorPanel = (isModal = false) => (
-    <div className="bg-white p-5 sm:p-6 flex flex-col justify-between text-[#111111] h-full">
-      {viewMode === "counties" ? (
-        <div>
-          {/* County Search & Dropdown */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#4A4845] absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search county (e.g. Hinds, Lee, DeSoto)..."
-                className="w-full h-11 rounded-xl border-2 border-[#111111]/35 bg-[#FCFBF8] pl-10 pr-3 text-base text-[#111111] font-medium placeholder:text-[#6E6A64] focus:outline-none focus:border-[#111111]"
-              />
-            </div>
-            <select
-              aria-label="Select Mississippi County"
-              value={selectedCounty.county}
-              onChange={(e) => setSelectedCountyName(e.target.value)}
-              className="h-11 rounded-xl border-2 border-[#111111] bg-[#FCFBF8] px-3.5 text-base text-[#111111] font-bold focus:outline-none cursor-pointer whitespace-nowrap shrink-0"
-            >
-              {countyVectors.map((c) => (
-                <option key={c.county} value={c.county}>
-                  {c.county} County (Score: {c.threatEnergy})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Selected County Card */}
-          <div className="rounded-2xl border-2 border-[#111111] bg-[#FCFBF8] p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-base font-bold whitespace-nowrap ${
-                    REGIME_COLORS[selectedCounty.regime]?.bg || "bg-slate-200"
-                  } ${REGIME_COLORS[selectedCounty.regime]?.text || "text-slate-950"}`}
-                >
-                  {FRIENDLY_REGIME_LABELS[selectedCounty.regime] || selectedCounty.regime}
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111] mt-2">
-                  {selectedCounty.county} County, MS
-                </h3>
-                <p className="text-base text-[#2A2623] mt-1">
-                  Top Priority:{" "}
-                  <span className="text-[#111111] font-bold">{selectedCounty.dominantDriver}</span>
-                </p>
+  // Reusable County & Cluster Inspector Panel (Hairline Accént dividers, zero nested cards)
+  const renderInspectorPanel = (isModal = false) => {
+    const selStyle =
+      REGIME_STYLES[selectedCounty.regime] || REGIME_STYLES["Equilibrium Manifold Surface"];
+    return (
+      <div className="bg-[#FAF8F5] p-5 sm:p-6 flex flex-col justify-between text-[#111111] h-full">
+        {viewMode === "counties" ? (
+          <div>
+            {/* County Search & Dropdown */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-5 border-b border-[#DDD6CA]">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[#5A534A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search county (e.g. Hinds, Lee, DeSoto)..."
+                  className="w-full h-11 rounded-lg border-2 border-[#111111]/35 bg-white pl-10 pr-3 text-base text-[#111111] font-medium placeholder:text-[#6E6A64] focus:outline-none focus:border-[#111111]"
+                />
               </div>
-              <div className="text-left sm:text-right">
-                <div className="text-base font-mono uppercase text-[#2A2623] font-bold whitespace-nowrap">
-                  Priority Score (0–100)
-                </div>
-                <div className="text-3xl sm:text-4xl font-mono font-extrabold text-[#C2341B]">
-                  {selectedCounty.threatEnergy}
-                </div>
-                <div className="text-base font-mono font-semibold text-[#2A2623] whitespace-nowrap">
-                  {selectedCounty.manifoldResidual > 0
-                    ? `+${selectedCounty.manifoldResidual} pts above normal`
-                    : "Within normal range"}
-                </div>
-              </div>
+              <select
+                aria-label="Select Mississippi County"
+                value={selectedCounty.county}
+                onChange={(e) => setSelectedCountyName(e.target.value)}
+                className="h-11 rounded-lg border-2 border-[#111111] bg-white px-3.5 text-base text-[#111111] font-bold focus:outline-none cursor-pointer whitespace-nowrap shrink-0"
+              >
+                {countyVectors.map((c) => {
+                  const st =
+                    REGIME_STYLES[c.regime] || REGIME_STYLES["Equilibrium Manifold Surface"];
+                  return (
+                    <option key={c.county} value={c.county}>
+                      {st.symbol} {c.county} County (Score: {c.threatEnergy})
+                    </option>
+                  );
+                })}
+              </select>
             </div>
 
-            {/* Plain-English Explanation Box */}
-            <div className="mt-4 rounded-xl border border-[#111111]/30 bg-white p-4 text-base text-[#111111] leading-relaxed">
-              <div className="text-base font-mono uppercase tracking-wider text-[#92400E] font-extrabold mb-1.5 flex items-center gap-2 whitespace-nowrap">
-                <Info className="w-4 h-4 text-[#C2341B] shrink-0" /> Plain-English County Summary
+            {/* Selected County Header (Accént Hairline Architecture, No Nested Box) */}
+            <div className="py-5 border-b border-[#DDD6CA]">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={`inline-flex items-center gap-2 rounded-md border px-3 py-1 text-base font-bold ${selStyle.bg} ${selStyle.text}`}
+                  >
+                    {FRIENDLY_REGIME_LABELS[selectedCounty.regime] || selectedCounty.regime}
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111] mt-2">
+                    {selectedCounty.county} County, MS
+                  </h3>
+                  <p className="text-base text-[#2A2623] mt-1">
+                    Primary Focus:{" "}
+                    <span className="text-[#111111] font-bold">
+                      {selectedCounty.dominantDriver}
+                    </span>
+                  </p>
+                </div>
+                <div className="text-left sm:text-right shrink-0">
+                  <div className="text-base font-mono uppercase text-[#5A534A] font-bold whitespace-nowrap">
+                    Priority Score
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-serif font-bold tabular-nums text-[#B8326D]">
+                    {selectedCounty.threatEnergy}
+                    <span className="text-lg text-[#5A534A] font-normal"> / 100</span>
+                  </div>
+                  <div className="text-base font-mono font-semibold text-[#2A2623] whitespace-nowrap">
+                    {selectedCounty.manifoldResidual > 0
+                      ? `+${selectedCounty.manifoldResidual} pts above baseline`
+                      : "On baseline net"}
+                  </div>
+                </div>
               </div>
-              {selectedCounty.plainEnglishSummary}
+
+              {/* Plain-English Summary */}
+              <div className="mt-4 border-l-4 border-[#B8326D] bg-[#F3EFE9] pl-4 pr-3 py-3 text-base text-[#111111] leading-relaxed">
+                <div className="font-mono text-base uppercase tracking-wider text-[#B8326D] font-bold mb-1 flex items-center gap-2">
+                  <Info className="w-4 h-4 shrink-0" /> Plain-English County Summary
+                </div>
+                {selectedCounty.plainEnglishSummary}
+              </div>
             </div>
 
-            {/* Workload Breakdown Bars */}
-            <div className="mt-5">
+            {/* Workload Breakdown Bars with Distinct Shapes + Color Gradients */}
+            <div className="py-5 border-b border-[#DDD6CA]">
               <div className="flex flex-wrap items-center justify-between gap-2 text-base font-mono font-bold text-[#111111] mb-3">
-                <span className="whitespace-nowrap">
-                  {selectedCounty.county.toUpperCase()} WORKLOAD MIX
-                </span>
-                <span className="text-[#065F46] whitespace-nowrap">100% Breakdown</span>
+                <span>{selectedCounty.county.toUpperCase()} TASK BREAKDOWN</span>
+                <span className="text-[#5A534A]">100% Share</span>
               </div>
 
               <div className="space-y-3.5">
                 <div>
                   <div className="flex justify-between gap-2 text-base mb-1">
-                    <span className="text-[#111111] font-bold whitespace-nowrap">
-                      1. Addresses &amp; Unit Numbers
+                    <span className="text-[#111111] font-bold">
+                      ■ 1. Addresses &amp; Unit Numbers (X)
                     </span>
                     <span className="font-mono font-extrabold text-[#92400E] whitespace-nowrap">
                       {selectedCounty.partialX}%
                     </span>
                   </div>
-                  <div className="h-3 rounded-full bg-[#E5E0D8] overflow-hidden border border-[#111111]/20">
+                  <div className="h-3.5 rounded-sm bg-[#E5E0D8] overflow-hidden border border-[#111111]/25">
                     <div
-                      className="h-full bg-[#D97706] rounded-full transition-all duration-300"
-                      style={{ width: `${selectedCounty.partialX}%` }}
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${selectedCounty.partialX}%`,
+                        background: "linear-gradient(90deg, #F59E0B 0%, #B45309 100%)",
+                      }}
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between gap-2 text-base mb-1">
-                    <span className="text-[#111111] font-bold whitespace-nowrap">
-                      2. Out-of-State Mail &amp; Duplicates
+                    <span className="text-[#111111] font-bold">
+                      ▲ 2. Out-of-State Mail &amp; Duplicates (Y)
                     </span>
                     <span className="font-mono font-extrabold text-[#5B21B6] whitespace-nowrap">
                       {selectedCounty.partialY}%
                     </span>
                   </div>
-                  <div className="h-3 rounded-full bg-[#E5E0D8] overflow-hidden border border-[#111111]/20">
+                  <div className="h-3.5 rounded-sm bg-[#E5E0D8] overflow-hidden border border-[#111111]/25">
                     <div
-                      className="h-full bg-[#7C3AED] rounded-full transition-all duration-300"
-                      style={{ width: `${selectedCounty.partialY}%` }}
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${selectedCounty.partialY}%`,
+                        background: "linear-gradient(90deg, #A855F7 0%, #5B21B6 100%)",
+                      }}
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between gap-2 text-base mb-1">
-                    <span className="text-[#111111] font-bold whitespace-nowrap">
-                      3. Large Precincts (3,000+)
+                    <span className="text-[#111111] font-bold">
+                      ⬢ 3. Large Precincts 3,000+ (Z)
                     </span>
-                    <span className="font-mono font-extrabold text-[#075985] whitespace-nowrap">
+                    <span className="font-mono font-extrabold text-[#0369A1] whitespace-nowrap">
                       {selectedCounty.partialZ}%
                     </span>
                   </div>
-                  <div className="h-3 rounded-full bg-[#E5E0D8] overflow-hidden border border-[#111111]/20">
+                  <div className="h-3.5 rounded-sm bg-[#E5E0D8] overflow-hidden border border-[#111111]/25">
                     <div
-                      className="h-full bg-[#0284C7] rounded-full transition-all duration-300"
-                      style={{ width: `${selectedCounty.partialZ}%` }}
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${selectedCounty.partialZ}%`,
+                        background: "linear-gradient(90deg, #38BDF8 0%, #0369A1 100%)",
+                      }}
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Exact County Numbers Grid (2 columns so labels never wrap awkwardly) */}
-            <div className="mt-5 pt-4 border-t border-[#111111]/20 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white border border-[#111111]/25 p-3">
-                <div className="text-base font-bold text-[#2A2623] whitespace-nowrap">
-                  Registered Voters
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#111111] mt-0.5">
+            {/* Exact County Numbers Hairline Grid */}
+            <dl className="py-5 border-b border-[#DDD6CA] grid grid-cols-2 gap-x-6 gap-y-4">
+              <div>
+                <dt className="text-base font-semibold text-[#5A534A]">Registered Voters</dt>
+                <dd className="text-2xl font-serif font-bold tabular-nums text-[#111111] mt-0.5">
                   {selectedCounty.total.toLocaleString()}
-                </div>
-                <div className="text-base text-[#065F46] font-bold whitespace-nowrap">
+                </dd>
+                <div className="text-base text-[#0369A1] font-bold">
                   {selectedCounty.active.toLocaleString()} Active
                 </div>
               </div>
-              <div className="rounded-xl bg-white border border-[#111111]/25 p-3">
-                <div className="text-base font-bold text-[#2A2623] whitespace-nowrap">
-                  8+ Voter Addresses
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#92400E] mt-0.5">
+              <div>
+                <dt className="text-base font-semibold text-[#5A534A]">■ 8+ Voter Addresses</dt>
+                <dd className="text-2xl font-serif font-bold tabular-nums text-[#92400E] mt-0.5">
                   {selectedCounty.highDensityCount.toLocaleString()}
-                </div>
-                <div className="text-base text-[#2A2623] font-semibold whitespace-nowrap">
+                </dd>
+                <div className="text-base text-[#2A2623] font-medium">
                   {selectedCounty.highDensityVoters.toLocaleString()} Voters
                 </div>
               </div>
-              <div className="rounded-xl bg-white border border-[#111111]/25 p-3">
-                <div className="text-base font-bold text-[#2A2623] whitespace-nowrap">
-                  Out-of-State / Dups
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#5B21B6] mt-0.5">
+              <div>
+                <dt className="text-base font-semibold text-[#5A534A]">▲ Out-of-State / Dups</dt>
+                <dd className="text-2xl font-serif font-bold tabular-nums text-[#5B21B6] mt-0.5">
                   {selectedCounty.ncoaCount} / {selectedCounty.duplicateCount}
-                </div>
-                <div className="text-base text-[#2A2623] font-semibold whitespace-nowrap">
-                  Active Mail / Dup Pairs
+                </dd>
+                <div className="text-base text-[#2A2623] font-medium">Active Mail / Dup Pairs</div>
+              </div>
+              <div>
+                <dt className="text-base font-semibold text-[#5A534A]">⬢ 3,000+ Precincts</dt>
+                <dd className="text-2xl font-serif font-bold tabular-nums text-[#0369A1] mt-0.5">
+                  {selectedCounty.overCapacityPrecincts}
+                </dd>
+                <div className="text-base text-[#2A2623] font-medium">
+                  Max: {selectedCounty.maxPrecinctVoters.toLocaleString()}
                 </div>
               </div>
-              <div className="rounded-xl bg-white border border-[#111111]/25 p-3">
-                <div className="text-base font-bold text-[#2A2623] whitespace-nowrap">
-                  3,000+ Precincts
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#075985] mt-0.5">
-                  {selectedCounty.overCapacityPrecincts}
-                </div>
-                <div className="text-base text-[#2A2623] font-semibold whitespace-nowrap">
-                  Largest: {selectedCounty.maxPrecinctVoters.toLocaleString()}
-                </div>
+            </dl>
+
+            {/* Quick County Selector Pills */}
+            <div className="pt-5">
+              <div className="text-base font-mono uppercase tracking-wider text-[#111111] font-bold mb-2.5">
+                Quick-Select County ({filteredCounties.length} shown):
+              </div>
+              <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
+                {filteredCounties.slice(0, isModal ? 40 : 24).map((c) => {
+                  const st =
+                    REGIME_STYLES[c.regime] || REGIME_STYLES["Equilibrium Manifold Surface"];
+                  return (
+                    <button
+                      type="button"
+                      key={c.county}
+                      onClick={() => setSelectedCountyName(c.county)}
+                      className={`px-3 py-1.5 rounded-lg text-base font-bold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                        selectedCounty.county === c.county
+                          ? "bg-[#111111] border-[#111111] text-white shadow-xs"
+                          : "bg-white border-[#111111]/30 text-[#111111] hover:border-[#111111]"
+                      }`}
+                    >
+                      <span aria-hidden="true">{st.symbol}</span> {c.county}{" "}
+                      <span className="font-mono opacity-80">({c.threatEnergy})</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
-
-          {/* Quick County Selector Pills */}
-          <div className="mt-5">
-            <div className="text-base font-mono uppercase tracking-wider text-[#111111] font-bold mb-2.5 whitespace-nowrap">
-              Quick-Select a County ({filteredCounties.length} shown):
+        ) : (
+          /* Cluster Mode Inspector */
+          <div>
+            <div className="pb-4 mb-4 border-b border-[#DDD6CA] flex flex-wrap items-center justify-between gap-2">
+              <span className="text-base font-mono uppercase tracking-wider text-[#B8326D] font-extrabold">
+                32 Specific Locations (Zero-PII)
+              </span>
+              <select
+                aria-label="Select Specific Location"
+                value={selectedCluster.id}
+                onChange={(e) => setSelectedClusterId(e.target.value)}
+                className="h-11 rounded-lg border-2 border-[#111111] bg-white px-3.5 text-base text-[#111111] font-bold"
+              >
+                {clusterVectors.map((cl) => (
+                  <option key={cl.id} value={cl.id}>
+                    {cl.id}: {cl.county} ({cl.threatEnergy})
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
-              {filteredCounties.slice(0, isModal ? 40 : 24).map((c) => (
+
+            <div className="pb-5 border-b border-[#DDD6CA]">
+              <div className="text-base font-mono uppercase tracking-wider text-[#B8326D] font-extrabold">
+                {selectedCluster.category}
+              </div>
+              <h3 className="text-xl font-serif font-bold text-[#111111] mt-1">
+                {selectedCluster.label}
+              </h3>
+              <div className="text-base text-[#2A2623] mt-1">
+                {selectedCluster.county} County •{" "}
+                <span className="text-[#111111] font-bold">{selectedCluster.metricLabel}</span>
+              </div>
+
+              <div className="mt-4 border-l-4 border-[#B8326D] bg-[#F3EFE9] pl-4 pr-3 py-3 text-base text-[#111111] leading-relaxed">
+                {selectedCluster.plainEnglishSummary}
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                <div className="bg-white border border-[#DDD6CA] p-3 rounded-lg">
+                  <div className="text-base text-[#92400E] font-mono font-bold">■ Addr (X)</div>
+                  <div className="text-lg font-mono font-extrabold text-[#111111]">
+                    {selectedCluster.x}
+                  </div>
+                </div>
+                <div className="bg-white border border-[#DDD6CA] p-3 rounded-lg">
+                  <div className="text-base text-[#5B21B6] font-mono font-bold">▲ Mail (Y)</div>
+                  <div className="text-lg font-mono font-extrabold text-[#111111]">
+                    {selectedCluster.y}
+                  </div>
+                </div>
+                <div className="bg-white border border-[#DDD6CA] p-3 rounded-lg">
+                  <div className="text-base text-[#0369A1] font-mono font-bold">⬢ Poll (Z)</div>
+                  <div className="text-lg font-mono font-extrabold text-[#111111]">
+                    {selectedCluster.z}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 max-h-56 overflow-y-auto divide-y divide-[#DDD6CA] border-y border-[#DDD6CA] bg-white">
+              {clusterVectors.map((cl) => (
                 <button
                   type="button"
-                  key={c.county}
-                  onClick={() => setSelectedCountyName(c.county)}
-                  className={`px-3 py-1.5 rounded-xl text-base font-bold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                    selectedCounty.county === c.county
-                      ? "bg-[#111111] border-[#111111] text-white shadow-xs"
-                      : "bg-[#FCFBF8] border-[#111111]/35 text-[#111111] hover:border-[#111111]"
+                  key={cl.id}
+                  onClick={() => setSelectedClusterId(cl.id)}
+                  className={`w-full text-left px-3.5 py-2.5 text-base flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                    selectedCluster.id === cl.id
+                      ? "bg-[#111111] text-white font-bold"
+                      : "bg-white text-[#111111] hover:bg-[#F3EFE9]"
                   }`}
                 >
-                  {c.county} <span className="font-mono opacity-85">({c.threatEnergy})</span>
+                  <span className="truncate">
+                    <strong className="font-mono">{cl.id}</strong> • {cl.label}
+                  </span>
+                  <span className="font-mono text-base shrink-0 font-bold whitespace-nowrap">
+                    {cl.metricLabel}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
-        </div>
-      ) : (
-        /* Cluster Mode Inspector */
-        <div>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <span className="text-base font-mono uppercase tracking-wider text-[#92400E] font-extrabold whitespace-nowrap">
-              32 Specific Locations (Zero-PII)
+        )}
+
+        {/* Bottom Link Bar */}
+        {!compact && (
+          <div className="mt-5 pt-4 border-t border-[#DDD6CA] flex flex-wrap items-center justify-between gap-3 text-base">
+            <span className="text-[#111111] flex items-center gap-2 font-bold">
+              <CheckCircle2 className="w-5 h-5 text-[#0369A1] shrink-0" />
+              100% Privacy Safe: Zero personal names or house numbers
             </span>
-            <select
-              aria-label="Select Specific Location"
-              value={selectedCluster.id}
-              onChange={(e) => setSelectedClusterId(e.target.value)}
-              className="h-11 rounded-xl border-2 border-[#111111] bg-[#FCFBF8] px-3.5 text-base text-[#111111] font-bold whitespace-nowrap"
+            <Link
+              href="/reports/mississippi-playbook-analysis"
+              className="inline-flex items-center gap-1.5 text-[#B8326D] hover:underline font-extrabold whitespace-nowrap"
             >
-              {clusterVectors.map((cl) => (
-                <option key={cl.id} value={cl.id}>
-                  {cl.id}: {cl.county} ({cl.threatEnergy})
-                </option>
-              ))}
-            </select>
+              Read Full Statewide Report <ArrowUpRight className="w-4 h-4 shrink-0" />
+            </Link>
           </div>
-
-          <div className="rounded-2xl border-2 border-[#111111] bg-[#FCFBF8] p-5">
-            <div className="text-base font-mono uppercase tracking-wider text-[#C2341B] font-extrabold">
-              {selectedCluster.category}
-            </div>
-            <h3 className="text-xl font-serif font-bold text-[#111111] mt-1">
-              {selectedCluster.label}
-            </h3>
-            <div className="text-base text-[#2A2623] mt-1">
-              {selectedCluster.county} County •{" "}
-              <span className="text-[#111111] font-bold">{selectedCluster.metricLabel}</span>
-            </div>
-
-            <div className="mt-4 rounded-xl border border-[#111111]/30 bg-white p-4 text-base text-[#111111] leading-relaxed">
-              {selectedCluster.plainEnglishSummary}
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2.5 text-center">
-              <div className="rounded-xl bg-white border border-[#111111]/30 p-3">
-                <div className="text-base text-[#92400E] font-mono font-bold whitespace-nowrap">
-                  Addresses (X)
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#111111]">
-                  {selectedCluster.x}
-                </div>
-              </div>
-              <div className="rounded-xl bg-white border border-[#111111]/30 p-3">
-                <div className="text-base text-[#5B21B6] font-mono font-bold whitespace-nowrap">
-                  Mail/Dups (Y)
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#111111]">
-                  {selectedCluster.y}
-                </div>
-              </div>
-              <div className="rounded-xl bg-white border border-[#111111]/30 p-3">
-                <div className="text-base text-[#075985] font-mono font-bold whitespace-nowrap">
-                  Polling (Z)
-                </div>
-                <div className="text-lg font-mono font-extrabold text-[#111111]">
-                  {selectedCluster.z}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 max-h-56 overflow-y-auto space-y-2 pr-1">
-            {clusterVectors.map((cl) => (
-              <button
-                type="button"
-                key={cl.id}
-                onClick={() => setSelectedClusterId(cl.id)}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl border text-base flex items-center justify-between gap-2 transition-all cursor-pointer ${
-                  selectedCluster.id === cl.id
-                    ? "bg-[#111111] border-[#111111] text-white font-bold"
-                    : "bg-[#FCFBF8] border-[#111111]/35 text-[#111111] hover:border-[#111111]"
-                }`}
-              >
-                <span className="truncate">
-                  <strong className="font-mono">{cl.id}</strong> • {cl.label}
-                </span>
-                <span className="font-mono text-base shrink-0 font-bold whitespace-nowrap">
-                  {cl.metricLabel}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Link Bar */}
-      {!compact && (
-        <div className="mt-5 pt-4 border-t border-[#111111]/20 flex flex-wrap items-center justify-between gap-3 text-base">
-          <span className="text-[#111111] flex items-center gap-2 font-bold">
-            <CheckCircle2 className="w-5 h-5 text-[#065F46] shrink-0" />
-            100% Privacy Safe: Zero personal names or house numbers
-          </span>
-          <Link
-            href="/reports/mississippi-playbook-analysis"
-            className="inline-flex items-center gap-1.5 text-[#C2341B] hover:underline font-extrabold whitespace-nowrap"
-          >
-            Read Full Statewide Report <ArrowUpRight className="w-4 h-4 shrink-0" />
-          </Link>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   return (
-    <section className="rounded-2xl border-2 border-[#111111] bg-[#FCFBF8] text-[#111111] shadow-xl overflow-hidden">
-      {/* Top Plain-English Header Banner */}
-      <div className="border-b-2 border-[#111111] bg-white px-5 py-6 md:px-8">
+    <section className="border-y-2 border-[#111111] bg-[#FAF8F5] text-[#111111]">
+      {/* Top Plain-English Header & Accént Hairline Guide */}
+      <div className="border-b-2 border-[#111111] bg-[#FAF8F5] px-5 py-6 md:px-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#111111] bg-[#FFF8EB] px-3.5 py-1.5 text-base font-mono font-bold uppercase tracking-wider text-[#92400E] mb-3 whitespace-nowrap">
-              <Sparkles className="w-4 h-4 text-[#C2341B] shrink-0" />
-              Interactive 3D County Map • Built for Election Officials
+          <div className="max-w-3xl">
+            <div className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#B8326D] mb-2 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 shrink-0" />
+              Accént 3D Manifold Studio • Deuteranopia-Safe Shapes &amp; Gradients
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-tight text-[#111111]">
-              See Your County&apos;s Exact Voter Roll Checklist in 3D
+              What Is a &ldquo;Manifold&rdquo; and How Do I Read This 3D Map?
             </h2>
-            <p className="mt-2.5 text-base sm:text-lg text-[#2A2623] max-w-3xl leading-relaxed">
-              Think of the <strong className="text-[#065F46]">smooth green net</strong> below as normal for Mississippi&apos;s population.{" "}
-              <strong>
-                {normalCountyCount} of our {countyVectors.length} counties
-              </strong>{" "}
-              sit right on that healthy green net. The{" "}
-              <strong className="text-[#C2341B]">
-                {elevatedCountyCount} counties floating above the net
-              </strong>{" "}
-              simply have specific cleanup tasks—like adding apartment unit numbers, sending out-of-state mail postcards, or adding check-in books at busy polling places.
+            <p className="mt-3 text-base sm:text-lg text-[#2C2825] leading-relaxed">
+              In everyday terms, a <strong>manifold</strong> is simply a{" "}
+              <strong>smooth curved surface—like a topographical terrain map or a stretched safety net</strong>. Because large counties naturally have more apartments, more mail forwardings, and larger polling places than small rural counties, a single flat threshold would unfairly penalize larger counties. The{" "}
+              <strong className="text-[#0369A1]">sky-blue baseline net</strong> curves upward with county population to show what is <em>normal</em> for a county of any size.
             </p>
           </div>
 
-          {/* Mode, Theme & Full Screen Controls */}
+          {/* Mode & Studio Theme Controls */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="inline-flex rounded-xl border-2 border-[#111111] bg-[#F3EFE6] p-1">
+            <div className="inline-flex rounded-lg border-2 border-[#111111] bg-[#E8E2D5] p-1">
               <button
                 type="button"
                 onClick={() => setViewMode("counties")}
-                className={`px-4 py-2 rounded-lg text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                className={`px-4 py-2 rounded-md text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   viewMode === "counties"
-                    ? "bg-[#111111] text-white shadow-sm"
+                    ? "bg-[#111111] text-white shadow-xs"
                     : "text-[#111111] hover:bg-black/5"
                 }`}
               >
@@ -1346,9 +1512,9 @@ export default function ThreatManifold3DExplorer({
               <button
                 type="button"
                 onClick={() => setViewMode("clusters")}
-                className={`px-4 py-2 rounded-lg text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                className={`px-4 py-2 rounded-md text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   viewMode === "clusters"
-                    ? "bg-[#111111] text-white shadow-sm"
+                    ? "bg-[#111111] text-white shadow-xs"
                     : "text-[#111111] hover:bg-black/5"
                 }`}
               >
@@ -1359,200 +1525,141 @@ export default function ThreatManifold3DExplorer({
             <button
               type="button"
               onClick={() => setCanvasTheme((t) => (t === "obsidian" ? "paper" : "obsidian"))}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-[#111111] bg-white hover:bg-[#F3EFE6] text-base font-bold text-[#111111] cursor-pointer whitespace-nowrap shrink-0"
-              title="Switch 3D Map Background Between Dark and Light"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[#111111] bg-white hover:bg-[#E8E2D5] text-base font-bold text-[#111111] cursor-pointer whitespace-nowrap shrink-0"
+              title="Switch 3D Map Background Between Warm Sandstone and Dark Slate"
             >
               {isDark ? (
                 <Sun className="w-4 h-4 text-amber-600 shrink-0" />
               ) : (
                 <Moon className="w-4 h-4 shrink-0" />
               )}
-              {isDark ? "Light Background" : "Dark 3D Studio"}
+              {isDark ? "Warm Sandstone Studio" : "Dark Slate Studio"}
             </button>
           </div>
         </div>
 
-        {/* Plain-English Primer: "What Is a 3D Manifold & How Do I Read It?" */}
-        <div className="mt-5 rounded-xl border-2 border-[#111111] bg-[#FFFDF9] p-5 text-base">
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-[#D4CFC7]">
-            <div>
-              <div className="font-mono text-base font-bold uppercase tracking-wider text-[#C2341B]">
-                Plain-English Visual Guide
-              </div>
-              <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-0.5">
-                What Is a &ldquo;Manifold&rdquo; and How Do I Read This 3D Map?
-              </h3>
+        {/* Accént Hairline 3-Column Visual Guide (No Nested Boxes, Zero Truncated Headings!) */}
+        <ol className="mt-6 grid grid-cols-1 md:grid-cols-3 border-y-2 border-[#111111] bg-[#F3EFE9] divide-y md:divide-y-0 md:divide-x divide-[#CFC8BC]">
+          <li className="p-5">
+            <div className="font-mono text-base font-bold uppercase tracking-wider text-[#0369A1]">
+              01 · The Sky-Blue Net
             </div>
-            <span className="px-3 py-1 rounded-full bg-[#E8F5E9] border border-[#065F46]/30 text-base font-bold text-[#065F46] whitespace-nowrap">
-              No Math Background Needed
-            </span>
-          </div>
+            <h3 className="mt-1 font-serif text-xl font-bold text-[#111111] leading-snug">
+              Normal Baseline ({normalCountyCount} of 82 Counties)
+            </h3>
+            <p className="mt-2 text-base text-[#2C2825] leading-relaxed">
+              Counties marked with a <strong>neutral circle (●)</strong> sit on the sky-blue net. Their address, mail, and precinct counts are normal for their population size.
+            </p>
+          </li>
 
-          <p className="text-base text-[#2A2623] leading-relaxed mb-4">
-            In everyday terms, a <strong>manifold</strong> is just a <strong>smooth curved surface—like a topographical terrain map or a stretched green safety net</strong>. Because big counties naturally have more apartments, more mail forwardings, and larger polling places than small rural counties, a single flat score would unfairly penalize larger counties. The <strong>green net</strong> curves upward with county population to show what is <em>normal</em> for a county of any size.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-xl border border-[#111111]/25 bg-white p-4">
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <span className="w-7 h-7 rounded-full bg-[#065F46] text-white font-mono text-base font-bold flex items-center justify-center shrink-0">
-                  1
-                </span>
-                <div className="font-serif text-lg font-bold text-[#111111] whitespace-nowrap">
-                  The Green Net = Normal
-                </div>
-              </div>
-              <p className="text-base text-[#3A3530] leading-relaxed">
-                <strong>{normalCountyCount} of 82 counties</strong> sit right on the smooth green net. Their address, mail, and precinct numbers match what we expect for their population.
-              </p>
+          <li className="p-5">
+            <div className="font-mono text-base font-bold uppercase tracking-wider text-[#B8326D]">
+              02 · Vertical Height Stems
             </div>
+            <h3 className="mt-1 font-serif text-xl font-bold text-[#111111] leading-snug">
+              Extra Cleanup Work ({elevatedCountyCount} Counties)
+            </h3>
+            <p className="mt-2 text-base text-[#2C2825] leading-relaxed">
+              When a county rises <strong>above the net on a vertical dashed stem</strong>, the height of that line shows how much extra cleanup work remains compared to peers.
+            </p>
+          </li>
 
-            <div className="rounded-xl border border-[#111111]/25 bg-white p-4">
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <span className="w-7 h-7 rounded-full bg-[#C2341B] text-white font-mono text-base font-bold flex items-center justify-center shrink-0">
-                  2
-                </span>
-                <div className="font-serif text-lg font-bold text-[#111111] whitespace-nowrap">
-                  Red Vertical Lines = Extra Work
-                </div>
-              </div>
-              <p className="text-base text-[#3A3530] leading-relaxed">
-                When a circle floats <strong>above the green net on a red vertical stem</strong> ({elevatedCountyCount} counties), the height of that red line shows how much extra cleanup work that county has.
-              </p>
+          <li className="p-5">
+            <div className="font-mono text-base font-bold uppercase tracking-wider text-[#78350F]">
+              03 · Shape + Color Key
             </div>
+            <h3 className="mt-1 font-serif text-xl font-bold text-[#111111] leading-snug">
+              Colorblind-Safe Task Shapes
+            </h3>
+            <p className="mt-2 text-base text-[#2C2825] leading-relaxed">
+              Every category has its own geometric shape and gradient: <strong>◆ Diamond</strong> = All 3 areas; <strong>■ Square</strong> = Addresses (X); <strong>▲ Triangle</strong> = Mail/Dups (Y); <strong>⬢ Hexagon</strong> = Precincts (Z).
+            </p>
+          </li>
+        </ol>
 
-            <div className="rounded-xl border border-[#111111]/25 bg-white p-4">
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <span className="w-7 h-7 rounded-full bg-[#111111] text-white font-mono text-base font-bold flex items-center justify-center shrink-0">
-                  3
-                </span>
-                <div className="font-serif text-lg font-bold text-[#111111] whitespace-nowrap">
-                  Circle Color = Which Task
-                </div>
-              </div>
-              <p className="text-base text-[#3A3530] leading-relaxed">
-                <strong>Orange (X)</strong> = apartment/dorm units; <strong>Purple (Y)</strong> = out-of-state mail &amp; duplicates; <strong>Blue (Z)</strong> = 3,000+ precincts; <strong>Red</strong> = all three at once.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* One-Click Issue Focus Filter Bar */}
-        <div className="mt-5 pt-4 border-t border-[#D4CFC7]">{renderControlBar(false)}</div>
+        {/* Clean 2-Row Accént Control Bar */}
+        <div className="mt-5">{renderControlBar(false)}</div>
       </div>
 
-      {/* Main 3D Viewport + Inspector Split (Full-width in compact report mode so 3D map is much larger!) */}
+      {/* Main 3D Viewport + Inspector Split */}
       <div className={`grid grid-cols-1 ${compact ? "" : "xl:grid-cols-12"}`}>
-        {/* High-Contrast 3D Manifold Viewport */}
+        {/* 3D Manifold Viewport */}
         <div
           className={`${
             compact ? "" : "xl:col-span-8 xl:border-r-2"
           } relative border-b-2 border-[#111111] flex flex-col justify-between ${
-            isDark ? "bg-[#12100E] text-white" : "bg-[#F7F4EC] text-[#111111]"
+            isDark ? "bg-[#0F172A] text-white" : "bg-[#E8E2D5] text-[#111111]"
           }`}
         >
-          {/* Top Color-Key Legend */}
-          <div className="px-5 pt-4 flex flex-wrap items-center justify-between gap-3 text-base z-10">
-            <div
-              className={`flex flex-wrap items-center gap-3.5 px-4 py-2 rounded-2xl border font-semibold text-base ${
-                isDark
-                  ? "bg-[#1E1B18]/95 border-white/20 text-white"
-                  : "bg-white border-[#111111] text-[#111111]"
-              }`}
-            >
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                <span className="w-3.5 h-3.5 rounded-full bg-[#FF4D2D] border border-white/50 shrink-0" />{" "}
-                High Priority
+          {/* Dedicated Top Legend Strip (Outside SVG so it never covers 3D nodes!) */}
+          <div
+            className={`px-5 py-3 border-b flex flex-wrap items-center justify-between gap-3 text-base ${
+              isDark
+                ? "bg-[#1E293B] border-white/15 text-white"
+                : "bg-[#F3EFE9] border-[#CFC8BC] text-[#111111]"
+            }`}
+          >
+            <div className="flex flex-wrap items-center gap-4 font-semibold text-base">
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-[#D44983] text-lg leading-none" aria-hidden="true">
+                  ◆
+                </span>{" "}
+                All 3 Areas (6)
               </span>
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                <span className="w-3.5 h-3.5 rounded-full bg-[#F59E0B] border border-white/50 shrink-0" />{" "}
-                Apartments/Dorms
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-[#E68A00] text-lg leading-none" aria-hidden="true">
+                  ■
+                </span>{" "}
+                Addresses/Dorms (2)
               </span>
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                <span className="w-3.5 h-3.5 rounded-full bg-[#A855F7] border border-white/50 shrink-0" />{" "}
-                Mail/Duplicates
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-[#735496] text-lg leading-none" aria-hidden="true">
+                  ▲
+                </span>{" "}
+                Mail/Duplicates (4)
               </span>
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                <span className="w-3.5 h-3.5 rounded-full bg-[#0EA5E9] border border-white/50 shrink-0" />{" "}
-                Large Precincts
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-[#01A9F4] text-lg leading-none" aria-hidden="true">
+                  ⬢
+                </span>{" "}
+                3,000+ Precincts (4)
               </span>
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                <span className="w-3.5 h-3.5 rounded-full bg-[#10B981] border border-white/50 shrink-0" />{" "}
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-[#8A8279] text-lg leading-none" aria-hidden="true">
+                  ●
+                </span>{" "}
                 Normal Range ({normalCountyCount})
               </span>
             </div>
             <span
-              className={`font-mono text-base font-bold px-3.5 py-1.5 rounded-xl inline-flex items-center gap-2 whitespace-nowrap ${
-                isDark ? "bg-white/10 text-amber-300" : "bg-[#111111] text-white"
+              className={`font-mono text-base font-bold px-3 py-1 rounded-md inline-flex items-center gap-2 whitespace-nowrap ${
+                isDark ? "bg-white/10 text-sky-300" : "bg-[#111111] text-white"
               }`}
             >
-              <MousePointerClick className="w-4 h-4 shrink-0" /> Drag to Turn • Click Any County
+              <MousePointerClick className="w-4 h-4 shrink-0" /> Drag to Rotate • Click Any Shape
             </span>
           </div>
 
-          {/* 3D Interactive Stage — Significantly Taller & Larger */}
+          {/* 3D Interactive Stage — Unobstructed 680px Canvas */}
           <div className="relative w-full h-[500px] sm:h-[600px] md:h-[680px] select-none overflow-hidden">
             <div ref={mountRef} className="absolute inset-0 pointer-events-none opacity-10" />
             {render3DCanvasSvg("inline")}
-
-            {/* Bottom Helper Banner Inside Map */}
-            <div className="absolute bottom-3 left-4 right-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-20">
-              <div
-                className={`px-3.5 py-2 rounded-xl border text-base font-mono font-bold whitespace-nowrap ${
-                  isDark
-                    ? "bg-[#1C1917]/90 border-white/20 text-emerald-300"
-                    : "bg-white/95 border-[#111111] text-[#065F46]"
-                }`}
-              >
-                Green Net = Normal County Pattern • Red Line = Extra Cleanup
-              </div>
-              <div
-                className={`px-3.5 py-2 rounded-xl border text-base font-mono font-bold whitespace-nowrap ${
-                  isDark
-                    ? "bg-[#1C1917]/90 border-white/20 text-amber-300"
-                    : "bg-white/95 border-[#111111] text-[#111111]"
-                }`}
-              >
-                Angle: {Math.round(thetaDeg)}° • Tilt: {Math.round(phiDeg)}° • Zoom:{" "}
-                {Math.round(zoomScale * 100)}%
-              </div>
-            </div>
           </div>
 
-          {/* Bottom Plain-English Explanation Cards */}
-          <div className="border-t-2 border-[#111111] bg-white text-[#111111] px-5 py-5 grid grid-cols-1 md:grid-cols-3 gap-4 text-base">
-            <div className="rounded-xl border border-[#111111]/25 bg-[#FCFBF8] p-4">
-              <div className="text-base font-mono uppercase text-[#92400E] font-extrabold whitespace-nowrap">
-                1. Why 3 Directions?
-              </div>
-              <div className="font-serif text-[#111111] text-lg mt-1 font-bold">
-                Addresses (X) • Mail (Y) • Polling Places (Z)
-              </div>
-              <p className="text-base text-[#2A2623] mt-1.5 leading-relaxed">
-                A college town needs apartment unit numbers (X), while a fast-growing suburb needs more polling places (Z). Separating the three shows what to fix first.
-              </p>
+          {/* Dedicated Bottom Telemetry Footer Strip (Outside SVG so it never covers bottom county labels!) */}
+          <div
+            className={`px-5 py-3 border-t flex flex-wrap items-center justify-between gap-3 text-base font-mono font-bold ${
+              isDark
+                ? "bg-[#1E293B] border-white/15 text-sky-300"
+                : "bg-[#F3EFE9] border-[#CFC8BC] text-[#111111]"
+            }`}
+          >
+            <div>
+              Sky-Blue Net = Population-Adjusted Baseline • Dashed Stem = Extra Cleanup Workload
             </div>
-            <div className="rounded-xl border border-[#111111]/25 bg-[#FCFBF8] p-4">
-              <div className="text-base font-mono uppercase text-[#065F46] font-extrabold whitespace-nowrap">
-                2. What Is the Green Net?
-              </div>
-              <div className="font-serif text-[#111111] text-lg mt-1 font-bold">
-                Normal County Baseline ({normalCountyCount} Counties)
-              </div>
-              <p className="text-base text-[#2A2623] mt-1.5 leading-relaxed">
-                Larger counties naturally have more apartments and mail moves. The green net adjusts for county size so big counties aren&apos;t unfairly penalized.
-              </p>
-            </div>
-            <div className="rounded-xl border border-[#111111]/25 bg-[#FCFBF8] p-4">
-              <div className="text-base font-mono uppercase text-[#991B1B] font-extrabold whitespace-nowrap">
-                3. What Are the Red Lines?
-              </div>
-              <div className="font-serif text-[#111111] text-lg mt-1 font-bold">
-                {elevatedCountyCount} Counties With Extra Cleanup Work
-              </div>
-              <p className="text-base text-[#2A2623] mt-1.5 leading-relaxed">
-                When a county rises above the green net on a red line, it has more address, mail, or polling-place strain than normal for its population size.
-              </p>
+            <div className="whitespace-nowrap">
+              Angle: {Math.round(thetaDeg)}° • Tilt: {Math.round(phiDeg)}° • Zoom:{" "}
+              {Math.round(zoomScale * 100)}%
             </div>
           </div>
         </div>
@@ -1561,40 +1668,40 @@ export default function ThreatManifold3DExplorer({
         <div className={compact ? "" : "xl:col-span-4"}>{renderInspectorPanel(false)}</div>
       </div>
 
-      {/* Native Top-Layer Full Screen Modal Dialog (modern-web-guidance: dialog & prevent-page-scroll-under-modal-dialog) */}
+      {/* Native Top-Layer Full Screen Modal Dialog */}
       <dialog
         ref={fullscreenDialogRef}
         aria-labelledby={dialogTitleId}
-        className="m-0 p-0 w-screen h-screen max-w-none max-h-none bg-[#FCFBF8] text-[#111111] open:flex open:flex-col overflow-hidden"
+        className="m-0 p-0 w-screen h-screen max-w-none max-h-none bg-[#FAF8F5] text-[#111111] open:flex open:flex-col overflow-hidden"
       >
         {/* Top Full Screen Header Bar */}
-        <div className="border-b-2 border-[#111111] bg-white px-6 py-4 flex flex-wrap items-center justify-between gap-4 shrink-0">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#111111] bg-[#FFF8EB] px-3.5 py-1 text-base font-mono font-bold text-[#92400E] whitespace-nowrap">
-              <Sparkles className="w-4 h-4 text-[#C2341B] shrink-0" />
+        <div className="border-b-2 border-[#111111] bg-[#FAF8F5] px-6 py-4 flex flex-wrap items-center justify-between gap-4 shrink-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-md border border-[#111111] bg-[#FCE8F1] px-3.5 py-1 text-base font-mono font-bold text-[#6B123B] whitespace-nowrap">
+              <Sparkles className="w-4 h-4 text-[#B8326D] shrink-0" />
               Full Screen 3D Studio
             </span>
             <h2 id={dialogTitleId} className="text-xl sm:text-2xl font-serif font-bold text-[#111111]">
-              Mississippi 82-County 3D Voter Roll Map — {selectedCounty.county} County Selected
+              Mississippi 82-County 3D Manifold — {selectedCounty.county} County Selected
             </h2>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setCanvasTheme((t) => (t === "obsidian" ? "paper" : "obsidian"))}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-[#111111] bg-white hover:bg-[#F3EFE6] text-base font-bold text-[#111111] cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[#111111] bg-white hover:bg-[#E8E2D5] text-base font-bold text-[#111111] cursor-pointer whitespace-nowrap"
             >
               {isDark ? (
                 <Sun className="w-4 h-4 text-amber-600 shrink-0" />
               ) : (
                 <Moon className="w-4 h-4 shrink-0" />
               )}
-              {isDark ? "Light Background" : "Dark 3D Studio"}
+              {isDark ? "Warm Sandstone Studio" : "Dark Slate Studio"}
             </button>
             <button
               type="button"
               onClick={closeFullScreen}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-[#111111] bg-[#111111] hover:bg-[#2B2926] text-white text-base font-bold cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[#111111] bg-[#111111] hover:bg-[#2B2926] text-white text-base font-bold cursor-pointer whitespace-nowrap"
             >
               <X className="w-5 h-5 shrink-0" />
               Close Full Screen (Esc)
@@ -1603,7 +1710,7 @@ export default function ThreatManifold3DExplorer({
         </div>
 
         {/* Full Screen Control Bar */}
-        <div className="border-b-2 border-[#111111] bg-[#FCFBF8] px-6 py-3 shrink-0">
+        <div className="border-b-2 border-[#111111] bg-[#F3EFE9] px-6 py-3 shrink-0">
           {renderControlBar(true)}
         </div>
 
@@ -1611,31 +1718,25 @@ export default function ThreatManifold3DExplorer({
         <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 overflow-auto lg:overflow-hidden">
           <div
             className={`lg:col-span-8 relative flex flex-col justify-between border-b-2 lg:border-b-0 lg:border-r-2 border-[#111111] min-h-[540px] ${
-              isDark ? "bg-[#12100E] text-white" : "bg-[#F7F4EC] text-[#111111]"
+              isDark ? "bg-[#0F172A] text-white" : "bg-[#E8E2D5] text-[#111111]"
             }`}
           >
             <div className="w-full h-full flex-1 relative overflow-hidden">
               {isFullScreen && render3DCanvasSvg("fullscreen")}
-              <div className="absolute bottom-4 left-6 right-6 flex flex-wrap items-center justify-between gap-3 pointer-events-none z-20">
-                <div
-                  className={`px-4 py-2 rounded-xl border text-base font-mono font-bold whitespace-nowrap ${
-                    isDark
-                      ? "bg-[#1C1917]/90 border-white/20 text-emerald-300"
-                      : "bg-white/95 border-[#111111] text-[#065F46]"
-                  }`}
-                >
-                  Drag Anywhere to Rotate • Click Any Circle to Inspect County
-                </div>
-                <div
-                  className={`px-4 py-2 rounded-xl border text-base font-mono font-bold whitespace-nowrap ${
-                    isDark
-                      ? "bg-[#1C1917]/90 border-white/20 text-amber-300"
-                      : "bg-white/95 border-[#111111] text-[#111111]"
-                  }`}
-                >
-                  Angle: {Math.round(thetaDeg)}° • Tilt: {Math.round(phiDeg)}° • Zoom:{" "}
-                  {Math.round(zoomScale * 100)}%
-                </div>
+            </div>
+            <div
+              className={`px-6 py-3 border-t flex flex-wrap items-center justify-between gap-3 text-base font-mono font-bold ${
+                isDark
+                  ? "bg-[#1E293B] border-white/15 text-sky-300"
+                  : "bg-[#F3EFE9] border-[#CFC8BC] text-[#111111]"
+              }`}
+            >
+              <div>
+                ◆ All 3 Areas • ■ Addresses (X) • ▲ Mail/Dups (Y) • ⬢ Precincts (Z) • ● Normal Baseline
+              </div>
+              <div className="whitespace-nowrap">
+                Angle: {Math.round(thetaDeg)}° • Tilt: {Math.round(phiDeg)}° • Zoom:{" "}
+                {Math.round(zoomScale * 100)}%
               </div>
             </div>
           </div>
@@ -1645,9 +1746,9 @@ export default function ThreatManifold3DExplorer({
 
       {/* Plain-English Connections & County Peer Guide (When not compact) */}
       {!compact && correlations && (
-        <div className="border-t-2 border-[#111111] bg-white px-6 py-8 md:px-8">
+        <div className="border-t-2 border-[#111111] bg-[#FAF8F5] px-6 py-8 md:px-8">
           <div className="max-w-3xl mb-6">
-            <div className="text-base font-mono uppercase tracking-widest text-[#C2341B] font-extrabold mb-1">
+            <div className="text-base font-mono uppercase tracking-widest text-[#B8326D] font-extrabold mb-1">
               How Different Voter Roll Tasks Connect Across All 82 Counties
             </div>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
@@ -1667,7 +1768,7 @@ export default function ThreatManifold3DExplorer({
                 label: "What We Compared",
                 render: (corr) => (
                   <div>
-                    <div className="font-mono text-base text-[#C2341B] font-bold">{corr.id}</div>
+                    <div className="font-mono text-base text-[#B8326D] font-bold">{corr.id}</div>
                     <div className="font-semibold text-base text-[#141413]">{corr.plainTitle}</div>
                     <div className="text-base text-[#575450] mt-0.5">{corr.pairLabel}</div>
                   </div>
@@ -1725,7 +1826,7 @@ export default function ThreatManifold3DExplorer({
             <div className="mt-10 pt-8 border-t-2 border-[#111111]">
               <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
                 <div>
-                  <div className="text-base font-mono uppercase tracking-widest text-[#C2341B] font-extrabold mb-1">
+                  <div className="text-base font-mono uppercase tracking-widest text-[#B8326D] font-extrabold mb-1">
                     County-to-County Neighbor Guide
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
@@ -1735,27 +1836,21 @@ export default function ThreatManifold3DExplorer({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <ol className="grid grid-cols-1 md:grid-cols-3 border-y-2 border-[#111111] bg-[#F3EFE9] divide-y md:divide-y-0 md:divide-x divide-[#CFC8BC] mb-8">
                 {commissionerToolkit.evangelismSteps.map((st) => (
-                  <div
-                    key={st.step}
-                    className="border-t-4 border-[#111111] bg-[#FCFBF8] p-5 rounded-b-xl border-x border-b border-x-[#111111]/25 border-b-[#111111]/25"
-                  >
-                    <div className="text-base font-mono font-extrabold text-[#C2341B]">
+                  <li key={st.step} className="p-5">
+                    <div className="text-base font-mono font-extrabold text-[#B8326D]">
                       STEP {st.step}
                     </div>
                     <h4 className="text-xl font-serif font-bold text-[#111111] mt-1">{st.title}</h4>
                     <p className="text-base text-[#2A2623] mt-2 leading-relaxed">{st.detail}</p>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 border-y-2 border-[#111111] bg-white divide-y md:divide-y-0 md:divide-x divide-[#DDD6CA]">
                 {commissionerToolkit.peerTiers.map((tier) => (
-                  <div
-                    key={tier.tier}
-                    className="rounded-xl border-2 border-[#111111] bg-[#FCFBF8] p-5"
-                  >
+                  <div key={tier.tier} className="p-5">
                     <div className="text-lg font-serif font-bold text-[#111111]">{tier.tier}</div>
                     <div className="text-base font-mono font-bold text-[#92400E] mt-1">
                       {tier.benchmarkMetric}
@@ -1773,7 +1868,7 @@ export default function ThreatManifold3DExplorer({
                             setViewMode("counties");
                             setSelectedCountyName(co);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-white border border-[#111111] text-base font-bold text-[#111111] hover:bg-[#111111] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+                          className="px-3 py-1.5 rounded-md bg-[#FAF8F5] border border-[#111111] text-base font-bold text-[#111111] hover:bg-[#111111] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
                         >
                           {co}
                         </button>

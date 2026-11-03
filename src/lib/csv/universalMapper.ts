@@ -79,6 +79,17 @@ const MISSISSIPPI_82_COUNTIES = [
   "WILKINSON", "WINSTON", "YALOBUSHA", "YAZOO"
 ];
 
+const COUNTY_ALIASES: Record<string, string> = {
+  'JEFF DAVIS': 'JEFFERSON DAVIS'
+};
+
+export function cleanZip5(rawZip: unknown): string {
+  if (rawZip === undefined || rawZip === null) return '';
+  const s = String(rawZip).trim();
+  const m = s.match(/^(\d{5})(?:\s*-?\s*\d*)?$/);
+  return m ? m[1] : s;
+}
+
 export function isCleanValue(val: any): boolean {
   if (val === undefined || val === null) return false;
   const s = String(val).trim();
@@ -91,7 +102,8 @@ export function formatCountyName(rawCounty: string): string {
   if (!rawCounty || !isCleanValue(rawCounty)) return 'Hinds County';
   const clean = String(rawCounty).trim().replace(/\s+County$/i, '').trim();
   if (!clean || !isCleanValue(clean)) return 'Hinds County';
-  const upper = clean.toUpperCase();
+  const rawUpper = clean.toUpperCase();
+  const upper = COUNTY_ALIASES[rawUpper] || rawUpper;
   const matched = MISSISSIPPI_82_COUNTIES.find(c => c === upper);
   if (matched) {
     if (matched === 'DESOTO') return 'DeSoto County';
@@ -230,7 +242,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'rep', 'house', 'representative', 'housedistrict', 'dist_rep', 'hd', 'repdist', 'statedist'
   ],
   dist_sup: [
-    'sup', 'supervisor', 'supervisordistrict', 'dist_sup', 'supervisordist', 'beat'
+    'sup', 'supr', 'supervisor', 'supervisordistrict', 'dist_sup', 'supervisordist', 'beat'
   ],
   dist_da: [
     'da', 'districtattorney', 'dist_da', 'dadistrict', 'prosecutor'
@@ -301,7 +313,7 @@ export function evaluateSemanticMatchScore(sampleValues: string[], fieldKey: key
     switch (fieldKey) {
       case 'zip':
       case 'mail_zip':
-        if (/^\d{5}(-\d{4})?$/.test(val)) matches++;
+        if (/^\d{5}(\s*-?\s*\d{0,4})?$/.test(val)) matches++;
         break;
       case 'state':
       case 'mail_state':
@@ -370,10 +382,12 @@ export function interpretColumnMappings(headers: string[], sampleRows: Record<st
     dist_sc: ''
   };
 
-  const cleanMap = headers.map(h => ({
-    original: h,
-    clean: h.toLowerCase().replace(/[^a-z0-9]/g, '')
-  }));
+  const cleanMap = headers
+    .map(h => ({
+      original: h,
+      clean: h.toLowerCase().replace(/[^a-z0-9]/g, '')
+    }))
+    .filter(item => item.clean.length > 0);
 
   const mappedCols = new Set<string>();
 
@@ -446,7 +460,8 @@ export function extractActualCountyName(rawRow: Record<string, any>): string {
 
   for (const [, val] of Object.entries(rawRow)) {
     if (isCleanValue(val)) {
-      const strVal = String(val).trim().toUpperCase();
+      const rawUpper = String(val).trim().toUpperCase().replace(/\s+COUNTY$/, '');
+      const strVal = COUNTY_ALIASES[rawUpper] || rawUpper;
       if (strVal.startsWith('SC0') || strVal.startsWith('SC1') || strVal.startsWith('CD0') || strVal.startsWith('SD0') || strVal.startsWith('HD0')) {
         continue;
       }
@@ -629,12 +644,12 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   const mailAddress = getValue(activeMapping.mail_address, ['mailingaddress', 'mailaddress', 'mail_address', 'mailing_address', 'mailaddr'], '').trim();
   const mailCity = getValue(activeMapping.mail_city, ['mailcity', 'mail_city', 'mailingcity'], '').trim();
   const mailState = getValue(activeMapping.mail_state, ['mailstate', 'mail_state', 'mailingstate'], '').trim();
-  const mailZip = getValue(activeMapping.mail_zip, ['mailzipcode', 'mail_zip_code', 'mailzip', 'mail_zip', 'mailingzip'], '').trim();
+  const mailZip = cleanZip5(getValue(activeMapping.mail_zip, ['mailzipcode', 'mail_zip_code', 'mailzip', 'mail_zip', 'mailingzip'], '').trim());
 
   const distCong = getValue(activeMapping.dist_cong, ['cong', 'dist_cong', 'congressional'], '').trim();
   const distSen = getValue(activeMapping.dist_sen, ['sen', 'dist_sen', 'senate'], '').trim();
   const distRep = getValue(activeMapping.dist_rep, ['rep', 'dist_rep', 'house', 'representative'], '').trim();
-  const distSup = getValue(activeMapping.dist_sup, ['sup', 'dist_sup', 'supervisor'], '').trim();
+  const distSup = getValue(activeMapping.dist_sup, ['supr', 'sup', 'dist_sup', 'supervisor'], '').trim();
   const distDa = getValue(activeMapping.dist_da, ['da', 'dist_da', 'districtattorney'], '').trim();
   const distSc = getValue(activeMapping.dist_sc, ['sc', 'dist_sc', 'supremecourt'], '').trim();
 
@@ -648,7 +663,7 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     address: getValue(activeMapping.address, ['address', 'streetaddress', 'residentialaddress', 'address1'], ''),
     city: exactCity,
     state: getValue(activeMapping.state, ['state', 'st'], 'MS'),
-    zip: getValue(activeMapping.zip, ['reszipcode', 'res_zip_code', 'zip', 'zipcode'], ''),
+    zip: cleanZip5(getValue(activeMapping.zip, ['reszipcode', 'res_zip_code', 'zip', 'zipcode'], '')),
     county: exactCounty,
     status: getValue(activeMapping.status, ['status', 'voterstatus'], 'Active'),
     date_registered: getValue(activeMapping.date_registered, ['effectiveregndate', 'effective_regn_date', 'regdate', 'date_registered', 'registrationdate'], ''),

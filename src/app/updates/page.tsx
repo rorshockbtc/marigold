@@ -41,11 +41,13 @@ export default function UpdatesReleasePostPage() {
     ],
     [
       "03",
-      "Every past ballot checked",
+      "Every past ballot checked through October 2026",
       <>
-        All {fmt(vh.totalHistoryRowsScanned)} ballot records in the statewide history file were matched to the voter roll.{" "}
-        {fmt(vh.orphanedHistoryRows)} could not be matched. In the November 2024 general election, {fmt(vh.duplicate2024SameDayCreditRows)}{" "}
-        records were credited twice on the same day out of {fmt(vh.unique2024GeneralVoters)} voters — a scanning slip clerks can fix quickly.
+        All {fmt(vh.totalHistoryRowsScanned)} ballot records in the October 26, 2026 statewide history extract — including{" "}
+        {fmt((vh as any).ballots2026 ?? 330474)} ballots in 2026 and {fmt((vh as any).ballots2025 ?? 504968)} in 2025 — were matched to the voter roll.{" "}
+        {fmt(vh.orphanedHistoryRows)} could not be matched. In the March 10, 2026 U.S. Congressional Primary,{" "}
+        {fmt((vh as any).duplicate2026PrimarySameDayCreditRows ?? 64)} records were credited twice on the same day out of{" "}
+        {fmt((vh as any).unique2026PrimaryVoters ?? 309807)} voters ({fmt(vh.duplicate2024SameDayCreditRows)} in the November 2024 general) — a scanning slip clerks can fix quickly.
       </>,
     ],
     [
@@ -69,21 +71,21 @@ export default function UpdatesReleasePostPage() {
 
   return (
     <div className="min-h-screen bg-[#F6F3EC] text-[#111111]">
-      <article className="mx-auto max-w-[720px] px-5 py-12 sm:py-16">
-        <div className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#C2341B]">What&rsquo;s new</div>
+      <article className="mx-auto max-w-[760px] px-5 py-12 sm:py-16 text-base">
+        <div className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#C2341B]">What&rsquo;s new</div>
         <h1 className="mt-4 font-serif text-[36px] sm:text-[48px] font-bold leading-[1.05] tracking-tight">
           Clearer, fairer voter roll numbers for every Mississippi county
         </h1>
-        <p className="mt-5 font-serif text-[19px] leading-relaxed text-[#2C2825]">
+        <p className="mt-5 font-serif text-xl leading-relaxed text-[#2C2825]">
           We reviewed {fmt(md.totalRecords)} registrations and {fmt(vh.totalHistoryRowsScanned)} past ballot records across all 82
           counties. Here is what changed, in plain English.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/reports/mississippi-playbook-analysis" className="inline-flex h-11 items-center gap-2 bg-[#111111] px-4 text-[14px] font-semibold text-white">
-            Read the report <ArrowRight className="h-4 w-4" />
+          <Link href="/reports/mississippi-playbook-analysis" className="inline-flex h-11 items-center gap-2 bg-[#111111] px-4 text-base font-bold text-white whitespace-nowrap">
+            Read the report <ArrowRight className="h-4 w-4 shrink-0" />
           </Link>
-          <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="inline-flex h-11 items-center gap-2 border border-[#111111] bg-white px-4 text-[14px] font-semibold">
-            <Download className="h-4 w-4" /> Printable guide
+          <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-white px-4 text-base font-bold whitespace-nowrap">
+            <Download className="h-4 w-4 shrink-0" /> Printable guide
           </a>
         </div>
 

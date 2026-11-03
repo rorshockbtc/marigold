@@ -60,6 +60,11 @@ WHITESPACE_RE = re.compile(r"\s+")
 
 # Raw SEMS extract abbreviates some county names; map them to canonical names.
 COUNTY_ALIASES = {"JEFF DAVIS": "JEFFERSON DAVIS"}
+ZIP5_RE = re.compile(r"^\s*(\d{5})")
+
+def clean_zip5(z: str) -> str:
+    m = ZIP5_RE.match(z or "")
+    return m.group(1) if m else (z or "").strip()[:5]
 
 def normalize_addr(addr: str) -> str:
     return WHITESPACE_RE.sub(" ", addr.upper()).strip()
@@ -99,6 +104,7 @@ def main():
     county_stats = {
         c: {
             "total": 0, "active": 0, "inactive": 0,
+            "registrations2026": 0, "votes2026Primary": 0, "dup2026PrimaryCreditCount": 0, "ballots2026": 0,
             "highDensityCount": 0, "highDensityVoters": 0,
             "ncoaCount": 0, "duplicateCount": 0, "activeDuplicateCount": 0,
             "missingDormCount": 0, "poBoxCount": 0, "clericalCount": 0,
@@ -142,6 +148,9 @@ def main():
     statewide_name_map = defaultdict(list)
 
     reg_date_counts = Counter()
+    reg_2026_date_counts = Counter()
+    registrations_2026_total = 0
+    registrations_2025_total = 0
     precinct_counts = Counter()
     precinct_active_counts = Counter()
     blank_precinct_count = 0
@@ -151,7 +160,16 @@ def main():
 
     with open(VOTER_FILE, "r", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
-        headers = next(reader)
+        headers = [h.strip().lstrip("\ufeff") for h in next(reader)]
+        expected_voter_cols = {
+            0: "Mapping Value", 1: "FIRST_NAME", 2: "MIDDLE_NAME", 3: "LAST_NAME", 4: "SUFFIX",
+            5: "RESIDENTIAL_ADDRESS", 11: "RES_CITY", 12: "RES_STATE", 13: "RES_ZIP_CODE",
+            14: "RES_COUNTY", 15: "PRECINCT_CODE", 16: "PRECINCT_NAME", 17: "MAILING_ADDRESS",
+            18: "MAIL_CITY", 19: "MAIL_STATE", 20: "MAIL_ZIP_CODE", 21: "EFFECTIVE_REGN_DATE", 22: "STATUS"
+        }
+        for col_idx, col_name in expected_voter_cols.items():
+            if col_idx >= len(headers) or headers[col_idx] != col_name:
+                raise ValueError(f"Voter CSV column mismatch at index {col_idx}: expected {col_name!r}, got {headers[col_idx] if col_idx < len(headers) else None!r}")
         for row in reader:
             if len(row) < 23:
                 continue
@@ -164,14 +182,14 @@ def main():
             res_addr = row[5].strip()
             res_city = row[11].strip()
             res_state = row[12].strip() or "MS"
-            res_zip = row[13].strip()
+            res_zip = clean_zip5(row[13])
             res_county_raw = COUNTY_ALIASES.get(row[14].strip().upper(), row[14].strip().upper())
             precinct_code = row[15].strip()
             precinct_name = row[16].strip()
             mail_addr = row[17].strip()
             mail_city = row[18].strip()
             mail_state = row[19].strip().upper()
-            mail_zip = row[20].strip()
+            mail_zip = clean_zip5(row[20])
             reg_date = row[21].strip()
             status = row[22].strip()
 
@@ -258,6 +276,13 @@ def main():
                         is_clerical = True
                     else:
                         reg_date_counts[reg_date] += 1
+                        if yr == "2026":
+                            registrations_2026_total += 1
+                            reg_2026_date_counts[reg_date] += 1
+                            if c_key:
+                                county_stats[c_key]["registrations2026"] += 1
+                        elif yr == "2025":
+                            registrations_2025_total += 1
             if upper_addr == "DATAMIGRATION" or len(first) <= 1 or len(last) <= 1 or row[3].strip().startswith("."):
                 clerical_total += 1
                 if upper_addr == "DATAMIGRATION":
@@ -387,7 +412,7 @@ def main():
             missing_dorm_verified_total += 1
             if is_active:
                 missing_dorm_active_total += 1
-            campus_breakdown[(disp_addr, disp_city, res_county_raw)] += 1
+            campus_breakdown[(upper_addr, norm_city, res_county_raw)] += 1
             if c_key:
                 county_stats[c_key]["missingDormCount"] += 1
 
@@ -455,15 +480,25 @@ def main():
     election_type_counts = Counter()
     party_primary_counts = Counter()
     precinct_2024_ballots = Counter()
+    precinct_2026_ballots = Counter()
+    ballots_2026_total = 0
+    ballots_2025_total = 0
 
-    # Track same-day duplicate vote credits on 11/05/2024
+    # Track same-day duplicate vote credits in 2026 (03/10/2026 Federal Primary) and 2024 (11/05/2024 General)
+    voters_2026_primary = set()
+    duplicate_2026_primary_credit_rows = 0
+    duplicate_2026_primary_unique_voters = set()
     voters_2024_general = set()
     duplicate_2024_credit_rows = 0
     duplicate_2024_unique_voters = set()
 
     with open(HISTORY_FILE, "r", encoding="utf-8", errors="replace") as hf:
         h_reader = csv.reader(hf)
-        h_headers = next(h_reader)
+        h_headers = [h.strip().lstrip("\ufeff") for h in next(h_reader)]
+        expected_hist_cols = {0: "Mapping Value", 5: "ELECTION NAME", 6: "ELECTION TYPE", 7: "ELECTION DATE", 8: "POLITICAL PARTY"}
+        for col_idx, col_name in expected_hist_cols.items():
+            if col_idx >= len(h_headers) or h_headers[col_idx] != col_name:
+                raise ValueError(f"History CSV column mismatch at index {col_idx}: expected {col_name!r}, got {h_headers[col_idx] if col_idx < len(h_headers) else None!r}")
         for row in h_reader:
             if len(row) < 8:
                 continue
@@ -477,12 +512,30 @@ def main():
             election_type_counts[el_type] += 1
             if party:
                 party_primary_counts[party] += 1
+            if el_date.endswith("/2026"):
+                ballots_2026_total += 1
+            elif el_date.endswith("/2025"):
+                ballots_2025_total += 1
 
             v_info = voter_lookup.get(vid)
             if v_info is not None:
                 matched_history_rows += 1
                 unique_voters_with_history.add(vid)
                 c_key, prec_code, is_act = v_info
+                if el_date.endswith("/2026") and c_key:
+                    county_stats[c_key]["ballots2026"] += 1
+                if el_date == "03/10/2026":
+                    if vid in voters_2026_primary:
+                        duplicate_2026_primary_credit_rows += 1
+                        duplicate_2026_primary_unique_voters.add(vid)
+                        if c_key:
+                            county_stats[c_key]["dup2026PrimaryCreditCount"] += 1
+                    else:
+                        voters_2026_primary.add(vid)
+                        if c_key:
+                            county_stats[c_key]["votes2026Primary"] += 1
+                        if c_key and prec_code:
+                            precinct_2026_ballots[(c_key, prec_code)] += 1
                 if el_date == "11/05/2024":
                     if vid in voters_2024_general:
                         duplicate_2024_credit_rows += 1
@@ -498,6 +551,12 @@ def main():
             else:
                 orphaned_history_rows += 1
                 orphaned_voter_ids.add(vid)
+                if el_date == "03/10/2026":
+                    if vid in voters_2026_primary:
+                        duplicate_2026_primary_credit_rows += 1
+                        duplicate_2026_primary_unique_voters.add(vid)
+                    else:
+                        voters_2026_primary.add(vid)
                 if el_date == "11/05/2024":
                     if vid in voters_2024_general:
                         duplicate_2024_credit_rows += 1
@@ -614,6 +673,10 @@ def main():
             "total": st["total"],
             "active": st["active"],
             "inactive": st["inactive"],
+            "registrations2026": st["registrations2026"],
+            "votes2026Primary": st["votes2026Primary"],
+            "ballots2026": st["ballots2026"],
+            "dup2026PrimaryCreditCount": st["dup2026PrimaryCreditCount"],
             "votes2024General": st["votes2024General"],
             "highDensityCount": st["highDensityCount"],
             "highDensityVoters": st["highDensityVoters"],
@@ -637,6 +700,9 @@ def main():
             "total": st["total"],
             "active": st["active"],
             "inactive": st["inactive"],
+            "registrations2026": st["registrations2026"],
+            "votes2026Primary": st["votes2026Primary"],
+            "ballots2026": st["ballots2026"],
             "votes2024General": st["votes2024General"],
             "highDensityCount": st["highDensityCount"],
             "ncoaCount": st["ncoaCount"],
@@ -848,25 +914,30 @@ def main():
         })
 
     major_elections = [
+        {"date": "03/10/2026", "label": "2026 U.S. Congressional Primary Election", "ballotsRecorded": election_date_counts["03/10/2026"]},
+        {"date": "11/04/2025", "label": "2025 Mississippi Special & Legislative General Election", "ballotsRecorded": election_date_counts["11/04/2025"]},
+        {"date": "06/03/2025", "label": "2025 Mississippi Municipal General Election", "ballotsRecorded": election_date_counts["06/03/2025"]},
+        {"date": "04/01/2025", "label": "2025 Mississippi Municipal Primary Election", "ballotsRecorded": election_date_counts["04/01/2025"]},
         {"date": "11/05/2024", "label": "2024 U.S. Presidential General Election", "ballotsRecorded": election_date_counts["11/05/2024"]},
         {"date": "11/07/2023", "label": "2023 Mississippi Gubernatorial General Election", "ballotsRecorded": election_date_counts["11/07/2023"]},
         {"date": "11/08/2022", "label": "2022 U.S. Midterm General Election", "ballotsRecorded": election_date_counts["11/08/2022"]},
         {"date": "11/03/2020", "label": "2020 U.S. Presidential General Election", "ballotsRecorded": election_date_counts["11/03/2020"]},
         {"date": "11/05/2019", "label": "2019 Mississippi Statewide General Election", "ballotsRecorded": election_date_counts["11/05/2019"]},
         {"date": "11/06/2018", "label": "2018 U.S. Midterm General Election", "ballotsRecorded": election_date_counts["11/06/2018"]},
-        {"date": "11/08/2016", "label": "2016 U.S. Presidential General Election", "ballotsRecorded": election_date_counts["11/08/2016"]},
-        {"date": "11/06/2012", "label": "2012 U.S. Presidential General Election", "ballotsRecorded": election_date_counts["11/06/2012"]},
-        {"date": "11/04/2008", "label": "2008 U.S. Presidential General Election", "ballotsRecorded": election_date_counts["11/04/2008"]}
+        {"date": "11/08/2016", "label": "2016 U.S. Presidential General Election", "ballotsRecorded": election_date_counts["11/08/2016"]}
     ]
 
     output = {
         "metadata": {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
-            "sourceFile": "Mississippi Statewide Voter Roll (October 2026 extract)",
-            "votingHistoryFile": "Mississippi Statewide Voting History (October 2026 extract)",
+            "sourceFile": "Mississippi Statewide Voter Roll (October 26, 2026 extract)",
+            "votingHistoryFile": "Mississippi Statewide Voting History (October 26, 2026 extract)",
+            "extractDate": "2026-10-26",
             "totalRecords": total_records,
             "activeVoters": active_voters,
             "inactiveVoters": inactive_voters,
+            "registrations2026": registrations_2026_total,
+            "registrations2025": registrations_2025_total,
             "totalCounties": 82,
             "votingHistoryRecords": history_total_rows,
             "zeroPiiCompliant": True,
@@ -879,6 +950,11 @@ def main():
             "uniqueVotersWithHistory": len(unique_voters_with_history),
             "orphanedUniqueVoterIds": len(orphaned_voter_ids),
             "votersWithZeroHistory": total_records - len(unique_voters_with_history),
+            "ballots2026": ballots_2026_total,
+            "ballots2025": ballots_2025_total,
+            "unique2026PrimaryVoters": len(voters_2026_primary),
+            "duplicate2026PrimarySameDayCreditRows": duplicate_2026_primary_credit_rows,
+            "duplicate2026PrimarySameDayUniqueVoters": len(duplicate_2026_primary_unique_voters),
             "unique2024GeneralVoters": len(voters_2024_general),
             "duplicate2024SameDayCreditRows": duplicate_2024_credit_rows,
             "duplicate2024SameDayUniqueVoters": len(duplicate_2024_unique_voters),
@@ -993,6 +1069,11 @@ def main():
                 "sampleClusters": sample_dup_clusters
             },
             "registrationSpikes": {
+                "registrations2026": registrations_2026_total,
+                "registrations2025": registrations_2025_total,
+                "peak2026Dates": [
+                    {"date": dt, "count": cnt} for dt, cnt in reg_2026_date_counts.most_common(10)
+                ],
                 "peakDates": [
                     {"date": dt, "count": cnt} for dt, cnt in reg_date_counts.most_common(15)
                 ],

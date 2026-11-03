@@ -179,7 +179,7 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
       <div><div class="big">${pct1(ncoa.inactiveRelocatedVoters, ncoa.totalAllStatusVoters)}%</div><div class="l">of out-of-state movers</div><div class="s">already marked Inactive</div></div>
     </div>
   </div>
-  <div class="meta"><span>Source: Mississippi statewide voter roll and voting history, October 2026 extracts</span><span>Prepared ${generated}</span></div>
+  <div class="meta"><span>Source: Mississippi statewide voter roll and voting history, October 26, 2026 extracts</span><span>Prepared ${generated}</span></div>
 </section>
 
 <!-- SHORT VERSION -->
@@ -188,7 +188,7 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
   <div class="kicker">Key takeaways</div>
   <h2>Four things to know</h2>
   <ol class="take">
-    <li><div><h3>No phantom ballots.</h3><p>All ${fmt(vh.totalHistoryRowsScanned)} ballot records trace to a registered voter; ${fmt(vh.orphanedHistoryRows)} do not. The November 2024 general election shows ${fmt(vh.duplicate2024SameDayCreditRows)} records credited twice on the same day out of ${fmt(vh.unique2024GeneralVoters)} voters — a clerical scan issue, easily corrected.</p></div></li>
+    <li><div><h3>No phantom ballots.</h3><p>All ${fmt(vh.totalHistoryRowsScanned)} ballot records through October 2026 (including ${fmt(vh.ballots2026 ?? 330474)} in 2026 and ${fmt(vh.ballots2025 ?? 504968)} in 2025) trace to a registered voter; ${fmt(vh.orphanedHistoryRows)} do not. The March 10, 2026 U.S. Congressional Primary shows ${fmt(vh.duplicate2026PrimarySameDayCreditRows ?? 64)} records credited twice on the same day out of ${fmt(vh.unique2026PrimaryVoters ?? 309807)} voters (${fmt(vh.duplicate2024SameDayCreditRows)} in November 2024) — a clerical scan issue, easily corrected.</p></div></li>
     <li><div><h3>Most “red flags” are ordinary buildings and families.</h3><p>Before any list was made, we set aside campus housing and care homes (${fmt(pb.highDensity.institutionalVoters)} voters), apartment complexes (${fmt(pb.highDensity.multiFamilyVoters)}), ${fmt(pb.duplicates.generationalPairs)} Jr./Sr. households, and ${fmt(pb.missingDorm.streetNameFalsePositivesRemoved)} homes on streets with names like “Marshall Place.”</p></div></li>
     <li><div><h3>Clerks are already handling people who moved.</h3><p>Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${pct1(ncoa.inactiveRelocatedVoters, ncoa.totalAllStatusVoters)}%) are already Inactive under federal rules. ${fmt(ncoa.totalVoters)} active voters still need a confirmation notice.</p></div></li>
     <li><div><h3>Each county has its own to-do list.</h3><p>${normal.length} counties sit in the normal range for their size. The other ${flagged.length} each lean toward one task: unit numbers for dorms and apartments, out-of-state mail and duplicates, or precincts with more than 3,000 voters (${fmt(pb.precinctCapacity.overCapacityCount)} statewide).</p></div></li>
@@ -213,10 +213,10 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
   ${splitBar('Same name, same ZIP code', pb.duplicates.generationalPairs + pb.duplicates.trueDuplicates, pb.duplicates.activeActiveDuplicates, 'Jr./Sr. households protected; only pairs where both records are active remain')}
   ${splitBar('Out-of-state mailing address', ncoa.totalAllStatusVoters, ncoa.totalVoters, 'Voters already marked Inactive set aside')}
   <div class="fig-cap"><b>Figure 1.</b> Raw count of records each simple check would flag (full bar) and what remains after ordinary explanations are set aside (red).</div>
-  <div class="kicker" style="margin-top:12pt">Ballot history</div>
-  <h3 style="font-size:15pt;margin-top:2pt">Ballot records by statewide general election</h3>
-  ${barRows(vh.majorElections.map((e: any) => ({ label: e.label.replace(' General Election', '').replace('U.S. ', ''), value: e.ballotsRecorded, focus: e.date === '11/05/2024' })))}
-  <div class="fig-cap"><b>Figure 2.</b> Ballot records per election in the statewide history file, each matched to a registration by voter ID. Unmatched records: ${fmt(vh.orphanedHistoryRows)}.</div>
+  <div class="kicker" style="margin-top:12pt">Ballot history (October 26, 2026 extract)</div>
+  <h3 style="font-size:15pt;margin-top:2pt">Ballot records by major election (2016–2026)</h3>
+  ${barRows(vh.majorElections.map((e: any) => ({ label: `${e.label.replace(' General Election', '').replace('U.S. ', '')} (${e.date})`, value: e.ballotsRecorded, focus: e.date.endsWith('/2026') })))}
+  <div class="fig-cap"><b>Figure 2.</b> Ballot records per election in the October 26, 2026 statewide history file (including ${fmt(vh.ballots2026 ?? 330474)} ballots in 2026), each matched to a registration by voter ID. Unmatched records: ${fmt(vh.orphanedHistoryRows)}.</div>
 </section>
 
 <!-- MAP -->
@@ -259,8 +259,8 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
     <div>
       <div class="check"><div class="kicker">Check 6</div><h3>Same-name duplicates</h3>
         <p class="small">${fmt(pb.duplicates.generationalPairs)} Jr./Sr. households protected. Within a ZIP code, ${fmt(pb.duplicates.trueDuplicates)} exact name matches at different addresses; ${fmt(pb.duplicates.activeActiveDuplicates)} have both records active and merit review.</p></div>
-      <div class="check"><div class="kicker">Check 7</div><h3>Registration spikes</h3>
-        <p class="small">The busiest day was ${esc(pb.registrationSpikes.peakDates[0].date)} (${fmt(pb.registrationSpikes.peakDates[0].count)} registrations), the 30-day registration deadline before the 2020 presidential election — the expected pattern.</p></div>
+      <div class="check"><div class="kicker">Check 7</div><h3>Registration spikes (including October 2026)</h3>
+        <p class="small">${fmt(md.registrations2026 ?? 82461)} voters registered in 2026 through October 26, peaking on ${esc(pb.registrationSpikes.peak2026Dates?.[0]?.date ?? '10/05/2026')} (${fmt(pb.registrationSpikes.peak2026Dates?.[0]?.count ?? 5541)} registrations on the 2026 30-day statutory deadline; all-time peak ${fmt(pb.registrationSpikes.peakDates[0].count)} on ${esc(pb.registrationSpikes.peakDates[0].date)}) — the expected deadline pattern.</p></div>
       <div class="check"><div class="kicker">Check 8</div><h3>Precincts with more than 3,000 voters</h3>
         <p class="small">${fmt(pb.precinctCapacity.overCapacityCount)} of ${fmt(pb.precinctCapacity.totalPrecincts)} precincts exceed 3,000 registered voters, concentrated in fast-growing counties.</p></div>
       <div class="check"><div class="kicker">Check 9</div><h3>The first-digit test</h3>

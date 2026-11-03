@@ -295,7 +295,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- 03 Map ---------- */}
           <section className="space-y-6">
-            <SectionHead id="map" num="03" kicker="Interactive" title="All 82 counties in 3D" dek="Drag to turn the map, tap a circle to inspect that county, or click Full Screen 3D for a full-window view. The green net shows normal for a county's size; red vertical lines show extra cleanup work." />
+            <SectionHead id="map" num="03" kicker="Interactive" title="All 82 counties in 3D" dek="Drag to turn the map, tap any county marker to inspect its checklist, or click Full Screen 3D for a full-window view. The sky-blue net shows normal for a county's size; rose-crimson vertical stems and distinct marker shapes show extra cleanup work." />
             <div className="print:hidden">
               <ThreatManifold3DExplorer compact forceUnlocked />
             </div>
@@ -344,12 +344,12 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- 05 Ballots ---------- */}
           <section className="space-y-6">
-            <SectionHead id="ballots" num="05" kicker="Ballot history" title="Every past ballot matches a real voter" dek={`${fmt(votingHistoryAudit.totalHistoryRowsScanned)} ballot records, matched one by one to the voter roll. Unmatched: 0. Double-scanned 2024 credits: ${votingHistoryAudit.duplicate2024SameDayCreditRows}.`} />
+            <SectionHead id="ballots" num="05" kicker="Ballot history (October 26, 2026 extract)" title="Every past ballot matches a real voter" dek={`${fmt(votingHistoryAudit.totalHistoryRowsScanned)} ballot records through October 2026 — including ${fmt((votingHistoryAudit as any).ballots2026 ?? 330474)} ballots in 2026 and ${fmt((votingHistoryAudit as any).ballots2025 ?? 504968)} in 2025 — matched one by one to the voter roll. Unmatched: 0. Double-scanned 2026 primary credits: ${(votingHistoryAudit as any).duplicate2026PrimarySameDayCreditRows ?? 64}.`} />
             <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
               {votingHistoryAudit.majorElections.map((e) => (
-                <div key={e.date} className="grid grid-cols-1 gap-2 px-5 py-3.5 sm:grid-cols-[260px_1fr_110px] sm:items-center sm:gap-4">
-                  <div className="text-base font-bold">{e.label.replace(" General Election", "")}</div>
-                  <Bar value={e.ballotsRecorded} max={maxBallots} focus={e.date === "11/05/2024"} label={`${fmt(e.ballotsRecorded)} ballots`} />
+                <div key={e.date} className="grid grid-cols-1 gap-2 px-5 py-3.5 sm:grid-cols-[310px_1fr_110px] sm:items-center sm:gap-4">
+                  <div className="text-base font-bold">{e.label.replace(" General Election", "")} <span className="font-mono text-[#5A534A]">({e.date})</span></div>
+                  <Bar value={e.ballotsRecorded} max={maxBallots} focus={e.date.endsWith("/2026")} label={`${fmt(e.ballotsRecorded)} ballots`} />
                   <div className="text-base font-mono font-bold tabular-nums sm:text-right whitespace-nowrap">{fmt(e.ballotsRecorded)}</div>
                 </div>
               ))}
@@ -431,7 +431,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 ["Check 4 · P.O. boxes typed as a home address", `${fmt(playbooks.commercialPOBox.totalVoters)} records statewide. A home address is needed to assign the right precinct; box numbers are not shown.`],
                 ["Check 5 · Old placeholder dates like 1801", `${fmt(playbooks.clericalTypos.totalAnomalies)} records carry default dates from the early-2000s move off paper. These are clerical, not fraud.`],
                 ["Check 6 · Same-name duplicates", `${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households protected. ${fmt(playbooks.duplicates.activeActiveDuplicates)} same-ZIP pairs where both records are active should be reviewed.`],
-                ["Checks 7–8 · Deadline spikes and busy precincts", `Sign-ups peak at the 30-day deadline before presidential elections — expected. ${playbooks.precinctCapacity.overCapacityCount} precincts exceed 3,000 voters; ${fivePlus} of the largest exceed 5,000.`],
+                ["Checks 7–8 · October 2026 deadline spike and busy precincts", `${fmt((metadata as any).registrations2026 ?? 82461)} voters registered in 2026 through the October 26, 2026 extract, peaking on the October 5, 2026 30-day statutory deadline (${fmt((playbooks.registrationSpikes as any).peak2026Dates?.[0]?.count ?? 5541)} registrations on 10/05/2026; all-time peak ${fmt(playbooks.registrationSpikes.peakDates[0].count)} on ${playbooks.registrationSpikes.peakDates[0].date}). ${playbooks.precinctCapacity.overCapacityCount} precincts exceed 3,000 voters; ${fivePlus} of the largest exceed 5,000.`],
                 ["Check 9 · Accounting pattern test", `Registration totals across precincts follow the natural first-digit pattern auditors expect (score ${benford.chiSquare}, ${benford.conforming ? "pass" : "review"}). Turnout counts deviate (score ${benfordTurnout.chiSquare}) because counties deliberately size precincts — this is a known limitation of the test, not a red flag.`],
               ].map(([t, b]) => (
                 <li key={t} className="py-5">
