@@ -518,7 +518,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
             />
 
             {/* Expandable County Directory Bar (Priority 18 / Top 25 / All 82 + Search) */}
-            <div className="border-2 border-[#111111] bg-white p-5 sm:p-6 space-y-4">
+            <div className="rounded-2xl border border-[#111111]/20 bg-white p-5 sm:p-6 space-y-4 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DDD6CA] pb-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#5A534A] mr-1">
@@ -538,10 +538,10 @@ export default function MississippiPlaybookAnalysisReportPage() {
                           setCountyViewMode(mode as "priority" | "top25" | "all82");
                           setCountySearch("");
                         }}
-                        className={`px-3.5 py-1.5 text-sm font-bold border transition-colors cursor-pointer ${
+                        className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all cursor-pointer ${
                           active
-                            ? "bg-[#111111] text-white border-[#111111]"
-                            : "bg-[#F6F3EC] text-[#111111] border-[#111111]/30 hover:border-[#111111]"
+                            ? "bg-[#111111] text-white shadow-xs"
+                            : "bg-[#F6F3EC] text-[#2C2825] hover:bg-[#EAE4D8]"
                         }`}
                       >
                         {label}
@@ -556,7 +556,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                     onChange={(e) => setCountySearch(e.target.value)}
                     placeholder="Filter 82 counties by name…"
                     aria-label="Filter counties by name"
-                    className="h-9 w-full sm:w-56 border border-[#111111]/40 bg-[#FAF8F5] px-3 text-sm font-medium text-[#111111] placeholder:text-[#78716C] focus:border-[#B45309] focus:outline-none"
+                    className="h-10 w-full sm:w-60 rounded-lg border border-[#111111]/25 bg-[#FAF8F5] px-3.5 text-sm font-medium text-[#111111] placeholder:text-[#78716C] focus:border-[#B45309] focus:ring-1 focus:ring-[#B45309] focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -570,16 +570,16 @@ export default function MississippiPlaybookAnalysisReportPage() {
                       key={c.county}
                       type="button"
                       onClick={() => setQuickCounty(c.county)}
-                      className={`px-3 py-1.5 text-sm font-bold border transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-2xs ${
                         isCur
-                          ? "bg-[#111111] text-white border-[#111111]"
+                          ? "bg-[#111111] text-white shadow-xs"
                           : isPrio
-                          ? "bg-[#FEF3C7]/45 text-[#111111] border-[#F59E0B] hover:border-[#111111]"
-                          : "bg-white text-[#111111] border-[#111111]/25 hover:border-[#111111]"
+                          ? "bg-[#FEF3C7] text-[#92400E] border border-[#F59E0B]/50 hover:bg-[#FDE68A]"
+                          : "bg-white text-[#2C2825] border border-stone-200 hover:bg-stone-50"
                       }`}
                     >
                       <span>{c.county}</span>
-                      <span className={`font-mono text-xs font-normal ${isCur ? "text-[#F59E0B]" : "text-[#5A534A]"}`}>
+                      <span className={`font-mono text-xs font-normal ${isCur ? "text-[#FCD34D]" : "text-[#78716C]"}`}>
                         ({fmt(c.total)})
                       </span>
                     </button>
@@ -588,17 +588,17 @@ export default function MississippiPlaybookAnalysisReportPage() {
               </div>
             </div>
 
-            <div className="bg-white border-2 border-[#111111] p-6 sm:p-9 shadow-2xs space-y-8">
+            <div className="rounded-2xl border border-[#111111]/20 bg-white p-6 sm:p-9 shadow-sm space-y-8">
               <div>
                 <label htmlFor="county" className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#5A534A]">
                   Selected county dropdown (all 82 Mississippi counties)
                 </label>
-                <div className="mt-3 flex flex-col gap-3 lg:flex-row">
+                <div className="mt-3 flex flex-col gap-3">
                   <select
                     id="county"
                     value={selected.county}
                     onChange={(e) => setQuickCounty(e.target.value)}
-                    className="h-14 flex-1 border-2 border-[#111111] bg-[#F6F3EC] px-4 text-lg font-bold"
+                    className="h-12 w-full rounded-xl border border-[#111111]/25 bg-[#FAF8F5] px-4 text-base font-bold text-[#111111] focus:border-[#B45309] focus:ring-1 focus:ring-[#B45309] focus:outline-none transition-all"
                   >
                     {sortedCounties.map((c) => (
                       <option key={c.county} value={c.county}>
@@ -606,21 +606,24 @@ export default function MississippiPlaybookAnalysisReportPage() {
                       </option>
                     ))}
                   </select>
-                  <button
-                    onClick={copyBrief}
-                    className="inline-flex h-14 items-center justify-center gap-2 border-2 border-[#111111] px-5 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:bg-[#FAF8F5] cursor-pointer"
-                  >
-                    {copied ? <Check className="h-5 w-5 shrink-0 text-[#B45309]" /> : <Copy className="h-5 w-5 shrink-0" />}
-                    {copied ? "Copied briefing" : "Copy briefing text"}
-                  </button>
-                  <button
-                    onClick={printCountyBrief}
-                    className="inline-flex h-14 items-center justify-center gap-2 border-2 border-[#111111] px-6 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:brightness-95 cursor-pointer"
-                    style={{ background: FILL }}
-                  >
-                    <Download className="h-5 w-5 shrink-0" />
-                    Print / Export County PDF
-                  </button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={copyBrief}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white px-5 text-sm font-bold text-stone-800 shadow-2xs hover:bg-stone-50 active:scale-[0.99] transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      {copied ? <Check className="h-4 w-4 shrink-0 text-emerald-600" /> : <Copy className="h-4 w-4 shrink-0 text-stone-500" />}
+                      {copied ? "Copied briefing" : "Copy briefing text"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={printCountyBrief}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#B45309] hover:bg-[#92400E] text-white px-6 text-sm font-bold shadow-sm active:scale-[0.99] transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      <Download className="h-4 w-4 shrink-0" />
+                      Print / Export County PDF
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -637,26 +640,26 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span
-                      className="px-3.5 py-1.5 text-sm sm:text-base font-bold border whitespace-nowrap"
+                      className="rounded-lg px-3.5 py-1.5 text-sm sm:text-base font-bold whitespace-nowrap"
                       style={
                         selected.regime === "Equilibrium Manifold Surface"
-                          ? { background: "#F3F4F6", borderColor: "#D1D5DB", color: "#374151" }
-                          : { background: "#FEF3C7", borderColor: "#F59E0B", color: "#92400E" }
+                          ? { background: "#F3F4F6", color: "#374151" }
+                          : { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" }
                       }
                     >
                       {STATUS_LABEL[selected.regime] || selected.regime}
                     </span>
-                    <span className="font-mono text-sm font-bold text-[#5A534A] border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
+                    <span className="font-mono text-sm font-bold text-[#5A534A] rounded-lg border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
                       Priority Score: <strong style={{ color: FOCUS }}>{selected.threatEnergy.toFixed(1)} / 100</strong>
                     </span>
-                    <span className="font-mono text-sm font-bold text-[#5A534A] border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
+                    <span className="font-mono text-sm font-bold text-[#5A534A] rounded-lg border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
                       Roll Cleanliness: <strong>{selected.cleanlinessScore} / 100</strong>
                     </span>
                   </div>
                 </div>
 
                 {/* Plain-English Assessment */}
-                <div className="mt-4 bg-[#FAF8F5] border-l-4 border-[#F59E0B] p-4 text-base sm:text-lg leading-[1.75] text-[#2C2825]">
+                <div className="mt-4 rounded-xl bg-[#FAF8F5] border-l-4 border-[#B45309] p-4 text-base sm:text-lg leading-[1.75] text-[#2C2825]">
                   <strong>Executive Summary:</strong> {selected.plainEnglishSummary || `${selected.county} County sits within standard baseline parameters.`}
                 </div>
               </div>
@@ -713,7 +716,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                     true,
                   ],
                 ].map(([v, l, sub, hi]) => (
-                  <div key={l as string} className="border border-[#DDD6CA] bg-[#FAF8F5] p-4">
+                  <div key={l as string} className="rounded-xl border border-stone-200 bg-[#FAF8F5] p-4 shadow-2xs">
                     <dt className="font-mono text-xs font-bold uppercase tracking-wider text-[#5A534A]">{l as string}</dt>
                     <dd className="mt-1.5 font-serif text-2xl font-bold tabular-nums leading-snug" style={hi ? { color: FOCUS } : undefined}>
                       {v as string}
@@ -724,11 +727,11 @@ export default function MississippiPlaybookAnalysisReportPage() {
               </dl>
 
               {/* Official Canvass & Logged-In App Scanner Parity Container */}
-              <div className="rounded-xs border-2 border-[#111111] bg-[#111111] p-6 text-[#F6F3EC] sm:p-7">
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="rounded-2xl border border-stone-800 bg-[#1A1614] p-6 text-[#FAF8F5] sm:p-8 shadow-sm">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                   <div className="max-w-[58ch] space-y-2">
-                    <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-[#F59E0B]">
-                      <ShieldCheck className="h-5 w-5 shrink-0" />
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
+                      <ShieldCheck className="h-4 w-4 shrink-0 text-[#F59E0B]" />
                       Zero-PII Public Policy · Official Canvass &amp; Live App Scanner
                     </div>
                     <h4 className="font-serif text-xl sm:text-2xl font-bold leading-snug text-white">
@@ -741,22 +744,22 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
                     <Link
                       href={`/contact?county=${encodeURIComponent(selected.county)}&topic=canvass_audit`}
-                      className="inline-flex h-12 items-center justify-center gap-2 px-6 text-base font-bold text-[#111111] hover:brightness-95 whitespace-nowrap shadow-xs"
-                      style={{ background: FILL }}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#B45309] hover:bg-[#92400E] px-6 text-sm font-bold text-white whitespace-nowrap shadow-sm transition-all"
                     >
-                      Request Canvass List for {selected.county} <ArrowRight className="h-5 w-5 shrink-0" />
+                      Request Canvass List for {selected.county} <ArrowRight className="h-4 w-4 shrink-0" />
                     </Link>
                     <Link
                       href="/explore"
-                      className="inline-flex h-12 items-center justify-center gap-2 border-2 border-[#F59E0B] bg-[#111111] px-5 text-base font-bold text-[#F59E0B] hover:bg-[#F59E0B] hover:text-[#111111] whitespace-nowrap"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-stone-900 px-5 text-sm font-bold text-[#FBBF24] hover:bg-stone-800 whitespace-nowrap transition-all"
                     >
                       Open 14-Check App Scanner <ArrowRight className="h-4 w-4 shrink-0" />
                     </Link>
                     <button
+                      type="button"
                       onClick={printCountyBrief}
-                      className="inline-flex h-11 items-center justify-center gap-2 border border-[#F6F3EC]/50 px-5 text-sm font-bold text-[#F6F3EC] hover:bg-[#F6F3EC] hover:text-[#111111] whitespace-nowrap cursor-pointer"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-stone-600 px-4 text-xs font-semibold text-stone-300 hover:bg-stone-800 hover:text-white whitespace-nowrap transition-all cursor-pointer"
                     >
-                      <Download className="h-4 w-4 shrink-0" /> Download {selected.county} County PDF
+                      <Download className="h-3.5 w-3.5 shrink-0" /> Download {selected.county} County PDF
                     </button>
                   </div>
                 </div>
