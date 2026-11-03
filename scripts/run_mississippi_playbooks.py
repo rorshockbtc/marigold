@@ -1,12 +1,15 @@
-import glob
 #!/usr/bin/env python3
+import glob
 import csv
+import sys
 import json
 import math
 import os
 import re
 from collections import defaultdict, Counter
 from datetime import datetime, timezone
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from state_schema import canonical_reader, VOTER_FIELDS, HISTORY_FIELDS
 
 # Raw extracts stay outside git (see .gitignore). Override with MS_VOTER_FILE / MS_HISTORY_FILE.
 MS_DATA_DIR = os.environ.get("MS_DATA_DIR", os.path.expanduser("~/Developer/marigold/mississippi voter files most recent Octoer 2026"))
@@ -151,6 +154,7 @@ def main():
     reg_2026_date_counts = Counter()
     registrations_2026_total = 0
     registrations_2025_total = 0
+    roll_recent_voted_2025_2026 = {}
     precinct_counts = Counter()
     precinct_active_counts = Counter()
     blank_precinct_count = 0
@@ -159,17 +163,7 @@ def main():
     dorm_candidate_rows = []
 
     with open(VOTER_FILE, "r", encoding="utf-8", errors="replace") as f:
-        reader = csv.reader(f)
-        headers = [h.strip().lstrip("\ufeff") for h in next(reader)]
-        expected_voter_cols = {
-            0: "Mapping Value", 1: "FIRST_NAME", 2: "MIDDLE_NAME", 3: "LAST_NAME", 4: "SUFFIX",
-            5: "RESIDENTIAL_ADDRESS", 11: "RES_CITY", 12: "RES_STATE", 13: "RES_ZIP_CODE",
-            14: "RES_COUNTY", 15: "PRECINCT_CODE", 16: "PRECINCT_NAME", 17: "MAILING_ADDRESS",
-            18: "MAIL_CITY", 19: "MAIL_STATE", 20: "MAIL_ZIP_CODE", 21: "EFFECTIVE_REGN_DATE", 22: "STATUS"
-        }
-        for col_idx, col_name in expected_voter_cols.items():
-            if col_idx >= len(headers) or headers[col_idx] != col_name:
-                raise ValueError(f"Voter CSV column mismatch at index {col_idx}: expected {col_name!r}, got {headers[col_idx] if col_idx < len(headers) else None!r}")
+        reader = canonical_reader(f, VOTER_FIELDS)
         for row in reader:
             if len(row) < 23:
                 continue
@@ -192,6 +186,9 @@ def main():
             mail_zip = clean_zip5(row[20])
             reg_date = row[21].strip()
             status = row[22].strip()
+            date_voted = row[23].strip() if len(row) > 23 else ""
+            if date_voted and (date_voted.endswith("/2025") or date_voted.endswith("/2026")):
+                roll_recent_voted_2025_2026[voter_id] = (date_voted, c_key)
 
             is_active = (status == "Active")
             if is_active:
@@ -483,6 +480,7 @@ def main():
     precinct_2026_ballots = Counter()
     ballots_2026_total = 0
     ballots_2025_total = 0
+    seen_recent_hist_pairs = set()
 
     # Track same-day duplicate vote credits in 2026 (03/10/2026 Federal Primary) and 2024 (11/05/2024 General)
     voters_2026_primary = set()
@@ -493,12 +491,7 @@ def main():
     duplicate_2024_unique_voters = set()
 
     with open(HISTORY_FILE, "r", encoding="utf-8", errors="replace") as hf:
-        h_reader = csv.reader(hf)
-        h_headers = [h.strip().lstrip("\ufeff") for h in next(h_reader)]
-        expected_hist_cols = {0: "Mapping Value", 5: "ELECTION NAME", 6: "ELECTION TYPE", 7: "ELECTION DATE", 8: "POLITICAL PARTY"}
-        for col_idx, col_name in expected_hist_cols.items():
-            if col_idx >= len(h_headers) or h_headers[col_idx] != col_name:
-                raise ValueError(f"History CSV column mismatch at index {col_idx}: expected {col_name!r}, got {h_headers[col_idx] if col_idx < len(h_headers) else None!r}")
+        h_reader = canonical_reader(hf, HISTORY_FIELDS)
         for row in h_reader:
             if len(row) < 8:
                 continue
@@ -514,8 +507,10 @@ def main():
                 party_primary_counts[party] += 1
             if el_date.endswith("/2026"):
                 ballots_2026_total += 1
+                seen_recent_hist_pairs.add((vid, el_date))
             elif el_date.endswith("/2025"):
                 ballots_2025_total += 1
+                seen_recent_hist_pairs.add((vid, el_date))
 
             v_info = voter_lookup.get(vid)
             if v_info is not None:
@@ -563,6 +558,29 @@ def main():
                         duplicate_2024_unique_voters.add(vid)
                     else:
                         voters_2024_general.add(vid)
+
+    # Reconcile 2025-2026 DATE_VOTED stamps on the Voter Roll that are not yet appended to VotingHistory.csv
+    roll_only_2025_2026_credits = 0
+    roll_only_2026_credits = 0
+    roll_only_2025_credits = 0
+    for vid, (dv, ck) in roll_recent_voted_2025_2026.items():
+        if (vid, dv) not in seen_recent_hist_pairs:
+            roll_only_2025_2026_credits += 1
+            unique_voters_with_history.add(vid)
+            if dv.endswith("/2026"):
+                roll_only_2026_credits += 1
+                if ck:
+                    county_stats[ck]["ballots2026"] += 1
+            else:
+                roll_only_2025_credits += 1
+            if dv == "03/10/2026" and vid not in voters_2026_primary:
+                voters_2026_primary.add(vid)
+                if ck:
+                    county_stats[ck]["votes2026Primary"] += 1
+
+    ballots_through_2024 = history_total_rows - ballots_2025_total - ballots_2026_total
+    ballots_added_2025_2026 = ballots_2025_total + ballots_2026_total + roll_only_2025_2026_credits
+    total_verified_ballot_credits = history_total_rows + roll_only_2025_2026_credits
 
     # Post-process Playbook 8 & 9: Precincts & Benford's Law (Registration + 2024 Turnout)
     total_precincts = len(precinct_counts)
@@ -940,18 +958,25 @@ def main():
             "registrations2025": registrations_2025_total,
             "totalCounties": 82,
             "votingHistoryRecords": history_total_rows,
+            "ballotsThrough2024": ballots_through_2024,
+            "ballotsAdded2025_2026": ballots_added_2025_2026,
+            "totalVerifiedBallotCredits": total_verified_ballot_credits,
             "zeroPiiCompliant": True,
             "privacyStandard": "Strict Zero-PII Public Aggregation (All names removed, voter IDs masked, single-family residential numbers block-masked)"
         },
         "votingHistoryAudit": {
             "totalHistoryRowsScanned": history_total_rows,
+            "ballotsThrough2024": ballots_through_2024,
+            "ballotsAdded2025_2026": ballots_added_2025_2026,
+            "rollOnlyRecentVoted2025_2026": roll_only_2025_2026_credits,
+            "totalVerifiedBallotCredits": total_verified_ballot_credits,
             "matchedRollHistoryRows": matched_history_rows,
             "orphanedHistoryRows": orphaned_history_rows,
             "uniqueVotersWithHistory": len(unique_voters_with_history),
             "orphanedUniqueVoterIds": len(orphaned_voter_ids),
             "votersWithZeroHistory": total_records - len(unique_voters_with_history),
-            "ballots2026": ballots_2026_total,
-            "ballots2025": ballots_2025_total,
+            "ballots2026": ballots_2026_total + roll_only_2026_credits,
+            "ballots2025": ballots_2025_total + roll_only_2025_credits,
             "unique2026PrimaryVoters": len(voters_2026_primary),
             "duplicate2026PrimarySameDayCreditRows": duplicate_2026_primary_credit_rows,
             "duplicate2026PrimarySameDayUniqueVoters": len(duplicate_2026_primary_unique_voters),

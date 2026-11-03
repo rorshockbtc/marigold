@@ -17,6 +17,9 @@ export default function UpdatesReleasePostPage() {
   const normal = counties.filter((c) => c.regime === "Equilibrium Manifold Surface").length;
   const ncoa = pb.ncoaRelocations;
   const inactivePct = ((ncoa.inactiveRelocatedVoters / ncoa.totalAllStatusVoters) * 100).toFixed(1);
+  const ballotsThrough2024 = (vh as any).ballotsThrough2024 ?? 25076198;
+  const ballotsAdded2025_2026 = (vh as any).ballotsAdded2025_2026 ?? 835571;
+  const totalVerifiedBallots = (vh as any).totalVerifiedBallotCredits ?? 25911769;
 
   const sections: [string, string, React.ReactNode][] = [
     [
@@ -41,10 +44,13 @@ export default function UpdatesReleasePostPage() {
     ],
     [
       "03",
-      "Every past ballot checked through October 2026",
+      `+${fmt(ballotsAdded2025_2026)} new 2025–2026 ballots added (${fmt(totalVerifiedBallots)} total verified)`,
       <>
-        All {fmt(vh.totalHistoryRowsScanned)} ballot records in the October 26, 2026 statewide history extract — including{" "}
-        {fmt((vh as any).ballots2026 ?? 330474)} ballots in 2026 and {fmt((vh as any).ballots2025 ?? 504968)} in 2025 — were matched to the voter roll.{" "}
+        Cumulative ballot history grew from <strong>{fmt(ballotsThrough2024)}</strong> through 2024 by{" "}
+        <strong className="text-[#B45309]">+{fmt(ballotsAdded2025_2026)} new ballot records in 2025–2026</strong> (
+        {fmt((vh as any).ballots2025 ?? 504968)} in 2025, {fmt((vh as any).ballots2026 ?? 330474)} in 2026 in the history file, plus{" "}
+        {fmt((vh as any).voterRoll2025_2026AdditionalBallots ?? 129)} recent 2025–2026 voter-roll ballot stamps) to{" "}
+        <strong>{fmt(totalVerifiedBallots)} verified ballot credits</strong>.{" "}
         {fmt(vh.orphanedHistoryRows)} could not be matched. In the March 10, 2026 U.S. Congressional Primary,{" "}
         {fmt((vh as any).duplicate2026PrimarySameDayCreditRows ?? 64)} records were credited twice on the same day out of{" "}
         {fmt((vh as any).unique2026PrimaryVoters ?? 309807)} voters ({fmt(vh.duplicate2024SameDayCreditRows)} in the November 2024 general) — a scanning slip clerks can fix quickly.
@@ -63,7 +69,7 @@ export default function UpdatesReleasePostPage() {
       "05",
       "Built to print, safe to share",
       <>
-        The printable guide uses black ink on white paper with a single accent color. It contains no names, birth dates, voter IDs,
+        The printable guide uses black ink on white paper with a single marigold-amber accent color. It contains no names, birth dates, voter IDs,
         P.O. Box numbers or house numbers — homes are shown by city only — so it can be handed out at a public meeting.
       </>,
     ],
@@ -72,19 +78,20 @@ export default function UpdatesReleasePostPage() {
   return (
     <div className="min-h-screen bg-[#F6F3EC] text-[#111111]">
       <article className="mx-auto max-w-[760px] px-5 py-12 sm:py-16 text-base">
-        <div className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#C2341B]">What&rsquo;s new</div>
+        <div className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#B45309]">What&rsquo;s new</div>
         <h1 className="mt-4 font-serif text-[36px] sm:text-[48px] font-bold leading-[1.05] tracking-tight">
           Clearer, fairer voter roll numbers for every Mississippi county
         </h1>
         <p className="mt-5 font-serif text-xl leading-relaxed text-[#2C2825]">
-          We reviewed {fmt(md.totalRecords)} registrations and {fmt(vh.totalHistoryRowsScanned)} past ballot records across all 82
+          We reviewed {fmt(md.totalRecords)} registrations and {fmt(totalVerifiedBallots)} verified past ballot records (including{" "}
+          <strong className="text-[#B45309]">+{fmt(ballotsAdded2025_2026)} added in 2025–2026</strong>) across all 82
           counties. Here is what changed, in plain English.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/reports/mississippi-playbook-analysis" className="inline-flex h-11 items-center gap-2 bg-[#111111] px-4 text-base font-bold text-white whitespace-nowrap">
             Read the report <ArrowRight className="h-4 w-4 shrink-0" />
           </Link>
-          <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-white px-4 text-base font-bold whitespace-nowrap">
+          <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-[#F59E0B] px-4 text-base font-bold text-[#111111] whitespace-nowrap">
             <Download className="h-4 w-4 shrink-0" /> Printable guide
           </a>
         </div>
@@ -92,7 +99,7 @@ export default function UpdatesReleasePostPage() {
         <ol className="mt-12 divide-y divide-[#DDD6CA] border-y-2 border-[#111111]">
           {sections.map(([n, t, body]) => (
             <li key={n} className="grid grid-cols-[40px_1fr] gap-2 py-7">
-              <span className="font-serif text-[22px] font-bold text-[#C2341B]">{n}</span>
+              <span className="font-serif text-[22px] font-bold text-[#B45309]">{n}</span>
               <div>
                 <h2 className="font-serif text-[24px] font-bold leading-snug">{t}</h2>
                 <p className="mt-2 text-[16px] leading-relaxed text-[#3A3530]">{body}</p>

@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import msAudit from "@/data/mississippi_audit_results.json";
-import { EditorialTable } from "@/components/report/EditorialTable";
 
 type ViewMode = "counties" | "clusters";
 type IsolatedAxis = "ALL" | "X" | "Y" | "Z";
@@ -113,22 +112,22 @@ const REGIME_STYLES: Record<
 > = {
   "Multi-Axis Manifold Detachment": {
     gradId: "grad-multi",
-    fill: "#D44983", // Accént Brand Rose-Crimson
-    stroke: "#831843",
+    fill: "#F59E0B", // Marigold Brand Orange-Gold
+    stroke: "#78350F",
     shape: "diamond",
     symbol: "◆",
     shortTag: "All 3",
-    bg: "bg-[#FCE8F1] border-[#B8326D]",
-    text: "text-[#6B123B]",
+    bg: "bg-[#FEF3C7] border-[#B45309]",
+    text: "text-[#78350F]",
   },
   "Axis-X Spatial Domicile Ridge": {
     gradId: "grad-axis-x",
-    fill: "#E68A00", // Marigold Amber-Gold
+    fill: "#D97706", // Warm Bronze-Amber
     stroke: "#78350F",
     shape: "square",
     symbol: "■",
     shortTag: "X",
-    bg: "bg-[#FEF3C7] border-[#D97706]",
+    bg: "bg-[#FDE68A]/60 border-[#92400E]",
     text: "text-[#78350F]",
   },
   "Axis-Y Interstate Drift Ridge": {
@@ -703,17 +702,17 @@ export default function ThreatManifold3DExplorer({
           />
         </radialGradient>
 
-        {/* Deuteranopia-Safe Rich 3D Linear/Radial Gradients for the 5 Categories */}
+        {/* Deuteranopia-Safe Rich 3D Linear/Radial Gradients for the 5 Categories (Marigold Gold-Amber palette, zero red) */}
         <linearGradient id={`grad-multi-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F472B6" />
-          <stop offset="55%" stopColor="#D44983" />
-          <stop offset="100%" stopColor="#831843" />
+          <stop offset="0%" stopColor="#FDE68A" />
+          <stop offset="50%" stopColor="#F59E0B" />
+          <stop offset="100%" stopColor="#B45309" />
         </linearGradient>
 
         <linearGradient id={`grad-axis-x-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FCD34D" />
-          <stop offset="55%" stopColor="#E68A00" />
-          <stop offset="100%" stopColor="#92400E" />
+          <stop offset="55%" stopColor="#D97706" />
+          <stop offset="100%" stopColor="#78350F" />
         </linearGradient>
 
         <linearGradient id={`grad-axis-y-${idSuffix}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -910,7 +909,7 @@ export default function ThreatManifold3DExplorer({
                   y1={node.basePt.sy}
                   x2={node.topPt.sx}
                   y2={node.topPt.sy}
-                  stroke={node.residual >= 0 ? "#B8326D" : "#0284C7"}
+                  stroke={node.residual >= 0 ? "#D97706" : "#0284C7"}
                   strokeWidth={node.isSelected ? "3.5" : "2.2"}
                   strokeDasharray={node.isSelected ? undefined : "5 3"}
                   opacity={node.isSelected ? "1" : "0.85"}
@@ -931,7 +930,7 @@ export default function ThreatManifold3DExplorer({
                   cy={node.topPt.sy}
                   r={node.radius + 11}
                   fill="none"
-                  stroke="#B8326D"
+                  stroke="#F59E0B"
                   strokeWidth="3"
                   strokeDasharray="5 3"
                 />
@@ -967,7 +966,7 @@ export default function ThreatManifold3DExplorer({
                   rx="6"
                   fill={
                     node.isSelected
-                      ? "#B8326D"
+                      ? "#B45309"
                       : isDark
                       ? "rgba(15, 23, 42, 0.94)"
                       : "rgba(255, 255, 255, 0.97)"
@@ -1012,7 +1011,7 @@ export default function ThreatManifold3DExplorer({
       {/* Row 1: Topic Filter with Shape + Color Differentiators */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-base font-mono font-bold uppercase tracking-wider text-[#111111] mr-1 inline-flex items-center gap-1.5 whitespace-nowrap">
-          <Sliders className="w-4 h-4 text-[#B8326D] shrink-0" />
+          <Sliders className="w-4 h-4 text-[#B45309] shrink-0" />
           Filter by Task:
         </span>
         {(
@@ -1073,11 +1072,11 @@ export default function ThreatManifold3DExplorer({
             onClick={() => setShowResidualStems((v) => !v)}
             className={`px-3.5 py-2 rounded-lg border-2 text-base font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               showResidualStems
-                ? "border-[#B8326D] bg-[#FCE8F1] text-[#6B123B]"
+                ? "border-[#B45309] bg-[#FEF3C7] text-[#78350F]"
                 : "border-[#111111]/30 bg-white text-[#111111]"
             }`}
           >
-            Height Stems: {showResidualStems ? "ON" : "OFF"}
+            Amber Stems: {showResidualStems ? "ON" : "OFF"}
           </button>
           <button
             type="button"
@@ -1135,7 +1134,7 @@ export default function ThreatManifold3DExplorer({
             <button
               type="button"
               onClick={openFullScreen}
-              className="px-4 py-2 rounded-lg border-2 border-[#111111] bg-[#B8326D] hover:bg-[#9D265B] text-white inline-flex items-center gap-2 text-base font-bold shadow-xs cursor-pointer whitespace-nowrap shrink-0"
+              className="px-4 py-2 rounded-lg border-2 border-[#111111] bg-[#F59E0B] hover:bg-[#D97706] text-[#111111] inline-flex items-center gap-2 text-base font-bold shadow-xs cursor-pointer whitespace-nowrap shrink-0"
             >
               <Maximize2 className="w-4 h-4 shrink-0" />
               Full Screen 3D
@@ -1216,7 +1215,7 @@ export default function ThreatManifold3DExplorer({
                   <div className="text-base font-mono uppercase text-[#5A534A] font-bold whitespace-nowrap">
                     Priority Score
                   </div>
-                  <div className="text-3xl sm:text-4xl font-serif font-bold tabular-nums text-[#B8326D]">
+                  <div className="text-3xl sm:text-4xl font-serif font-bold tabular-nums text-[#B45309]">
                     {selectedCounty.threatEnergy}
                     <span className="text-lg text-[#5A534A] font-normal"> / 100</span>
                   </div>
@@ -1229,8 +1228,8 @@ export default function ThreatManifold3DExplorer({
               </div>
 
               {/* Plain-English Summary */}
-              <div className="mt-4 border-l-4 border-[#B8326D] bg-[#F3EFE9] pl-4 pr-3 py-3 text-base text-[#111111] leading-relaxed">
-                <div className="font-mono text-base uppercase tracking-wider text-[#B8326D] font-bold mb-1 flex items-center gap-2">
+              <div className="mt-4 border-l-4 border-[#F59E0B] bg-[#F3EFE9] pl-4 pr-3 py-3 text-base text-[#111111] leading-relaxed">
+                <div className="font-mono text-base uppercase tracking-wider text-[#B45309] font-bold mb-1 flex items-center gap-2">
                   <Info className="w-4 h-4 shrink-0" /> Plain-English County Summary
                 </div>
                 {selectedCounty.plainEnglishSummary}
@@ -1377,7 +1376,7 @@ export default function ThreatManifold3DExplorer({
           /* Cluster Mode Inspector */
           <div>
             <div className="pb-4 mb-4 border-b border-[#DDD6CA] flex flex-wrap items-center justify-between gap-2">
-              <span className="text-base font-mono uppercase tracking-wider text-[#B8326D] font-extrabold">
+              <span className="text-base font-mono uppercase tracking-wider text-[#B45309] font-extrabold">
                 32 Specific Locations (Zero-PII)
               </span>
               <select
@@ -1395,7 +1394,7 @@ export default function ThreatManifold3DExplorer({
             </div>
 
             <div className="pb-5 border-b border-[#DDD6CA]">
-              <div className="text-base font-mono uppercase tracking-wider text-[#B8326D] font-extrabold">
+              <div className="text-base font-mono uppercase tracking-wider text-[#B45309] font-extrabold">
                 {selectedCluster.category}
               </div>
               <h3 className="text-xl font-serif font-bold text-[#111111] mt-1">
@@ -1406,7 +1405,7 @@ export default function ThreatManifold3DExplorer({
                 <span className="text-[#111111] font-bold">{selectedCluster.metricLabel}</span>
               </div>
 
-              <div className="mt-4 border-l-4 border-[#B8326D] bg-[#F3EFE9] pl-4 pr-3 py-3 text-base text-[#111111] leading-relaxed">
+              <div className="mt-4 border-l-4 border-[#F59E0B] bg-[#F3EFE9] pl-4 pr-3 py-3 text-base text-[#111111] leading-relaxed">
                 {selectedCluster.plainEnglishSummary}
               </div>
 
@@ -1465,7 +1464,7 @@ export default function ThreatManifold3DExplorer({
             </span>
             <Link
               href="/reports/mississippi-playbook-analysis"
-              className="inline-flex items-center gap-1.5 text-[#B8326D] hover:underline font-extrabold whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 text-[#B45309] hover:underline font-extrabold whitespace-nowrap"
             >
               Read Full Statewide Report <ArrowUpRight className="w-4 h-4 shrink-0" />
             </Link>
@@ -1481,9 +1480,9 @@ export default function ThreatManifold3DExplorer({
       <div className="border-b-2 border-[#111111] bg-[#FAF8F5] px-5 py-6 md:px-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
-            <div className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#B8326D] mb-2 flex items-center gap-2">
+            <div className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#B45309] mb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4 shrink-0" />
-              Accént 3D Manifold Studio • Deuteranopia-Safe Shapes &amp; Gradients
+              Marigold 3D Manifold Studio • Deuteranopia-Safe Shapes &amp; Gradients
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-tight text-[#111111]">
               What Is a &ldquo;Manifold&rdquo; and How Do I Read This 3D Map?
@@ -1553,14 +1552,14 @@ export default function ThreatManifold3DExplorer({
           </li>
 
           <li className="p-5">
-            <div className="font-mono text-base font-bold uppercase tracking-wider text-[#B8326D]">
+            <div className="font-mono text-base font-bold uppercase tracking-wider text-[#B45309]">
               02 · Vertical Height Stems
             </div>
             <h3 className="mt-1 font-serif text-xl font-bold text-[#111111] leading-snug">
               Extra Cleanup Work ({elevatedCountyCount} Counties)
             </h3>
             <p className="mt-2 text-base text-[#2C2825] leading-relaxed">
-              When a county rises <strong>above the net on a vertical dashed stem</strong>, the height of that line shows how much extra cleanup work remains compared to peers.
+              When a county rises <strong>above the net on a marigold-amber dashed stem</strong>, the height of that line shows how much extra cleanup work remains compared to peers.
             </p>
           </li>
 
@@ -1601,13 +1600,13 @@ export default function ThreatManifold3DExplorer({
           >
             <div className="flex flex-wrap items-center gap-4 font-semibold text-base">
               <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <span className="text-[#D44983] text-lg leading-none" aria-hidden="true">
+                <span className="text-[#F59E0B] text-lg leading-none" aria-hidden="true">
                   ◆
                 </span>{" "}
                 All 3 Areas (6)
               </span>
               <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <span className="text-[#E68A00] text-lg leading-none" aria-hidden="true">
+                <span className="text-[#D97706] text-lg leading-none" aria-hidden="true">
                   ■
                 </span>{" "}
                 Addresses/Dorms (2)
@@ -1677,8 +1676,8 @@ export default function ThreatManifold3DExplorer({
         {/* Top Full Screen Header Bar */}
         <div className="border-b-2 border-[#111111] bg-[#FAF8F5] px-6 py-4 flex flex-wrap items-center justify-between gap-4 shrink-0">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-md border border-[#111111] bg-[#FCE8F1] px-3.5 py-1 text-base font-mono font-bold text-[#6B123B] whitespace-nowrap">
-              <Sparkles className="w-4 h-4 text-[#B8326D] shrink-0" />
+            <span className="inline-flex items-center gap-2 rounded-md border border-[#111111] bg-[#FEF3C7] px-3.5 py-1 text-base font-mono font-bold text-[#78350F] whitespace-nowrap">
+              <Sparkles className="w-4 h-4 text-[#B45309] shrink-0" />
               Full Screen 3D Studio
             </span>
             <h2 id={dialogTitleId} className="text-xl sm:text-2xl font-serif font-bold text-[#111111]">
@@ -1748,7 +1747,7 @@ export default function ThreatManifold3DExplorer({
       {!compact && correlations && (
         <div className="border-t-2 border-[#111111] bg-[#FAF8F5] px-6 py-8 md:px-8">
           <div className="max-w-3xl mb-6">
-            <div className="text-base font-mono uppercase tracking-widest text-[#B8326D] font-extrabold mb-1">
+            <div className="text-base font-mono uppercase tracking-widest text-[#B45309] font-extrabold mb-1">
               How Different Voter Roll Tasks Connect Across All 82 Counties
             </div>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
@@ -1760,73 +1759,41 @@ export default function ThreatManifold3DExplorer({
             </p>
           </div>
 
-          <EditorialTable
-            caption="County-level correlation comparisons (size-adjusted rates per 1,000 voters where appropriate)"
-            columns={[
-              {
-                key: "pair",
-                label: "What We Compared",
-                render: (corr) => (
-                  <div>
-                    <div className="font-mono text-base text-[#B8326D] font-bold">{corr.id}</div>
-                    <div className="font-semibold text-base text-[#141413]">{corr.plainTitle}</div>
-                    <div className="text-base text-[#575450] mt-0.5">{corr.pairLabel}</div>
+          <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111]">
+            {correlations.map((corr) => (
+              <li
+                key={corr.id}
+                className="py-5 grid grid-cols-1 md:grid-cols-[120px_1fr] gap-3 md:gap-6 items-start"
+              >
+                <div>
+                  <div className="font-serif text-[26px] font-bold tabular-nums leading-none text-[#B45309]">
+                    {corr.pearsonR >= 0 ? `+${corr.pearsonR.toFixed(2)}` : corr.pearsonR.toFixed(2)}
                   </div>
-                ),
-              },
-              {
-                key: "r",
-                label: "Connection (r)",
-                align: "right",
-                mono: true,
-                render: (corr) => (
-                  <div>
-                    <div className="font-bold text-base text-[#141413]">
-                      {corr.pearsonR >= 0 ? `+${corr.pearsonR.toFixed(2)}` : corr.pearsonR.toFixed(2)}
-                    </div>
-                    <div className="text-base text-[#6B6760]">
-                      Rank:{" "}
-                      {corr.spearmanRho >= 0
-                        ? `+${corr.spearmanRho.toFixed(2)}`
-                        : corr.spearmanRho.toFixed(2)}
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: "strength",
-                label: "Strength",
-                render: (corr) => (
-                  <span className="font-mono text-base font-semibold text-[#141413] whitespace-nowrap">
+                  <div className="mt-1 font-mono text-sm font-bold text-[#5A534A]">
                     {corr.strength}
-                  </span>
-                ),
-              },
-              {
-                key: "rate",
-                label: "Measured Pattern",
-                render: (corr) => <span className="text-base text-[#2B2926]">{corr.rateOfChange}</span>,
-              },
-              {
-                key: "takeaway",
-                label: "What It Means for Your Office",
-                render: (corr) => (
-                  <span className="text-base text-[#3D3A36] leading-relaxed">
-                    {corr.commonManTakeaway}
-                  </span>
-                ),
-              },
-            ]}
-            rows={correlations}
-            rowKey={(corr) => corr.id}
-          />
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-serif text-xl font-bold text-[#111111]">
+                    {corr.plainTitle}{" "}
+                    <span className="font-sans text-sm font-normal text-[#5A534A]">
+                      ({corr.pairLabel})
+                    </span>
+                  </h4>
+                  <p className="mt-1.5 text-base leading-relaxed text-[#2C2825]">
+                    {corr.rateOfChange} {corr.commonManTakeaway}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
 
           {/* Commissioner Peer Benchmarking & Evangelism Toolkit */}
           {commissionerToolkit && (
             <div className="mt-10 pt-8 border-t-2 border-[#111111]">
               <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
                 <div>
-                  <div className="text-base font-mono uppercase tracking-widest text-[#B8326D] font-extrabold mb-1">
+                  <div className="text-base font-mono uppercase tracking-widest text-[#B45309] font-extrabold mb-1">
                     County-to-County Neighbor Guide
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
@@ -1839,7 +1806,7 @@ export default function ThreatManifold3DExplorer({
               <ol className="grid grid-cols-1 md:grid-cols-3 border-y-2 border-[#111111] bg-[#F3EFE9] divide-y md:divide-y-0 md:divide-x divide-[#CFC8BC] mb-8">
                 {commissionerToolkit.evangelismSteps.map((st) => (
                   <li key={st.step} className="p-5">
-                    <div className="text-base font-mono font-extrabold text-[#B8326D]">
+                    <div className="text-base font-mono font-extrabold text-[#B45309]">
                       STEP {st.step}
                     </div>
                     <h4 className="text-xl font-serif font-bold text-[#111111] mt-1">{st.title}</h4>

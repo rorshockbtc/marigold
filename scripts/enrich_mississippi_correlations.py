@@ -6,6 +6,9 @@ import json
 import math
 import re
 from collections import Counter
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from state_schema import canonical_reader, VOTER_FIELDS
 
 # Raw extracts stay outside git (see .gitignore). Override with MS_VOTER_FILE / MS_HISTORY_FILE.
 MS_DATA_DIR = os.environ.get("MS_DATA_DIR", os.path.expanduser("~/Developer/marigold/mississippi voter files most recent Octoer 2026"))
@@ -62,8 +65,7 @@ def main():
     county_dorm_counts = Counter()
 
     with open(VOTER_FILE, "r", encoding="utf-8", errors="replace") as vf:
-        reader = csv.reader(vf)
-        header = next(reader, None)
+        reader = canonical_reader(vf, VOTER_FIELDS)
         for row in reader:
             if len(row) < 23:
                 continue

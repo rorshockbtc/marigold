@@ -31,9 +31,12 @@ const counties = tm.countyVectors.filter((c: any) => c.total > 0);
 const normal = counties.filter((c: any) => c.regime === 'Equilibrium Manifold Surface');
 const flagged = counties.filter((c: any) => c.regime !== 'Equilibrium Manifold Surface');
 const ncoa = pb.ncoaRelocations;
+const ballotsThrough2024 = vh.ballotsThrough2024 ?? 25076198;
+const ballotsAdded2025_2026 = vh.ballotsAdded2025_2026 ?? 835571;
+const totalVerifiedBallots = vh.totalVerifiedBallotCredits ?? 25911769;
 const generated = new Date(md.generatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-/* ---------- Figures (pure SVG, ink-only) ---------- */
+/* ---------- Figures (pure SVG, ink + Marigold amber) ---------- */
 function barRows(rows: { label: string; value: number; focus?: boolean }[], width = 600) {
   const max = Math.max(...rows.map((r) => r.value));
   const rowH = 21, labelW = 210, valW = 90, barW = width - labelW - valW;
@@ -43,7 +46,7 @@ function barRows(rows: { label: string; value: number; focus?: boolean }[], widt
       const y = i * rowH;
       return `<text x="0" y="${y + 17}" class="fl">${esc(r.label)}</text>
         <rect x="${labelW}" y="${y + 7}" width="${barW}" height="12" fill="#EEEAE2"/>
-        <rect x="${labelW}" y="${y + 7}" width="${w}" height="12" fill="${r.focus ? '#B5301A' : '#141414'}"/>
+        <rect x="${labelW}" y="${y + 7}" width="${w}" height="12" fill="${r.focus ? '#D97706' : '#141414'}"/>
         <text x="${width}" y="${y + 17}" class="fv" text-anchor="end">${fmt(r.value)}</text>`;
     })
     .join('')}</svg>`;
@@ -72,7 +75,7 @@ function scatter() {
     .map((c: any) => {
       const r = 3 + Math.sqrt(c.total / maxT) * 13;
       const isN = c.regime === 'Equilibrium Manifold Surface';
-      return `<circle cx="${sx(c.x)}" cy="${sy(c.y)}" r="${r.toFixed(1)}" fill="${isN ? '#FFFFFF' : top.has(c.county) ? '#B5301A' : '#141414'}" fill-opacity="${isN ? 1 : 0.85}" stroke="#141414" stroke-width="0.8"/>`;
+      return `<circle cx="${sx(c.x)}" cy="${sy(c.y)}" r="${r.toFixed(1)}" fill="${isN ? '#FFFFFF' : top.has(c.county) ? '#D97706' : '#141414'}" fill-opacity="${isN ? 1 : 0.85}" stroke="#141414" stroke-width="0.8"/>`;
     })
     .join('');
   const labels = counties
@@ -112,7 +115,7 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"/>
 <style>
 @page { size: Letter; margin: 0.7in 0.75in 0.8in; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-:root { --ink:#141414; --mute:#5E5850; --rule:#D9D3C8; --accent:#B5301A; }
+:root { --ink:#141414; --mute:#5E5850; --rule:#D9D3C8; --accent:#B45309; }
 html { font-family: 'Newsreader', Georgia, serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5;
   font-variant-numeric: oldstyle-nums proportional-nums; font-optical-sizing: auto; hyphens: auto; }
 .page { page-break-after: always; break-after: page; }
@@ -172,9 +175,9 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
   <div>
     <div class="kicker">Marigold · Mississippi · Public edition</div>
     <h1>Every past ballot matched a&nbsp;real voter.</h1>
-    <p class="dek" style="margin-top:16pt">A plain-language review of Mississippi’s ${fmt(md.totalRecords)} voter registrations and ${fmt(vh.totalHistoryRowsScanned)} past ballot records — and the routine list maintenance that remains in each of the state’s 82 counties.</p>
+    <p class="dek" style="margin-top:16pt">A plain-language review of Mississippi’s ${fmt(md.totalRecords)} voter registrations and ${fmt(totalVerifiedBallots)} verified past ballot records (including +${fmt(ballotsAdded2025_2026)} added in 2025–2026) — and the routine list maintenance that remains in each of the state’s 82 counties.</p>
     <div class="figures">
-      <div><div class="big">${fmt(vh.orphanedHistoryRows)}</div><div class="l">unmatched ballot records</div><div class="s">of ${fmt(vh.totalHistoryRowsScanned)} checked</div></div>
+      <div><div class="big">${fmt(vh.orphanedHistoryRows)}</div><div class="l">unmatched ballot records</div><div class="s">of ${fmt(totalVerifiedBallots)} checked (+${fmt(ballotsAdded2025_2026)} in 2025–26)</div></div>
       <div><div class="big accent">${normal.length} of ${counties.length}</div><div class="l">counties in the normal range</div><div class="s">the rest each have one main task</div></div>
       <div><div class="big">${pct1(ncoa.inactiveRelocatedVoters, ncoa.totalAllStatusVoters)}%</div><div class="l">of out-of-state movers</div><div class="s">already marked Inactive</div></div>
     </div>
@@ -188,7 +191,7 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
   <div class="kicker">Key takeaways</div>
   <h2>Four things to know</h2>
   <ol class="take">
-    <li><div><h3>No phantom ballots.</h3><p>All ${fmt(vh.totalHistoryRowsScanned)} ballot records through October 2026 (including ${fmt(vh.ballots2026 ?? 330474)} in 2026 and ${fmt(vh.ballots2025 ?? 504968)} in 2025) trace to a registered voter; ${fmt(vh.orphanedHistoryRows)} do not. The March 10, 2026 U.S. Congressional Primary shows ${fmt(vh.duplicate2026PrimarySameDayCreditRows ?? 64)} records credited twice on the same day out of ${fmt(vh.unique2026PrimaryVoters ?? 309807)} voters (${fmt(vh.duplicate2024SameDayCreditRows)} in November 2024) — a clerical scan issue, easily corrected.</p></div></li>
+    <li><div><h3>No phantom ballots (+${fmt(ballotsAdded2025_2026)} added in 2025–2026).</h3><p>Cumulative ballot records grew from ${fmt(ballotsThrough2024)} through 2024 by +${fmt(ballotsAdded2025_2026)} in 2025–2026 (${fmt(vh.ballots2025 ?? 504968)} in 2025, ${fmt(vh.ballots2026 ?? 330474)} in 2026 in the history file, plus ${fmt(vh.voterRoll2025_2026AdditionalBallots ?? 129)} recent voter-roll stamps) to ${fmt(totalVerifiedBallots)} verified ballot credits; ${fmt(vh.orphanedHistoryRows)} are unmatched. The March 10, 2026 U.S. Congressional Primary shows ${fmt(vh.duplicate2026PrimarySameDayCreditRows ?? 64)} records credited twice on the same day out of ${fmt(vh.unique2026PrimaryVoters ?? 309807)} voters (${fmt(vh.duplicate2024SameDayCreditRows)} in November 2024) — a clerical scan issue, easily corrected.</p></div></li>
     <li><div><h3>Most “red flags” are ordinary buildings and families.</h3><p>Before any list was made, we set aside campus housing and care homes (${fmt(pb.highDensity.institutionalVoters)} voters), apartment complexes (${fmt(pb.highDensity.multiFamilyVoters)}), ${fmt(pb.duplicates.generationalPairs)} Jr./Sr. households, and ${fmt(pb.missingDorm.streetNameFalsePositivesRemoved)} homes on streets with names like “Marshall Place.”</p></div></li>
     <li><div><h3>Clerks are already handling people who moved.</h3><p>Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${pct1(ncoa.inactiveRelocatedVoters, ncoa.totalAllStatusVoters)}%) are already Inactive under federal rules. ${fmt(ncoa.totalVoters)} active voters still need a confirmation notice.</p></div></li>
     <li><div><h3>Each county has its own to-do list.</h3><p>${normal.length} counties sit in the normal range for their size. The other ${flagged.length} each lean toward one task: unit numbers for dorms and apartments, out-of-state mail and duplicates, or precincts with more than 3,000 voters (${fmt(pb.precinctCapacity.overCapacityCount)} statewide).</p></div></li>
@@ -207,16 +210,16 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
   <div class="folio"><span>Signal and noise</span><span>Marigold · Mississippi</span></div>
   <div class="kicker">How the lists were made</div>
   <h2>Ordinary explanations, set aside first</h2>
-  <p class="lede">Simple computer searches flag college dorms, nursing homes, fathers and sons who share a name, and streets that happen to contain the word “hall.” Each check below starts with that raw count, removes the ordinary explanations, and leaves only what a clerk would actually review. Gray is what was set aside; red is what remains.</p>
+  <p class="lede">Simple computer searches flag college dorms, nursing homes, fathers and sons who share a name, and streets that happen to contain the word “hall.” Each check below starts with that raw count, removes the ordinary explanations, and leaves only what a clerk would actually review. Gray is what was set aside; marigold amber is what remains.</p>
   ${splitBar('Dorms & apartments missing a unit number', pb.missingDorm.totalVoters + pb.missingDorm.streetNameFalsePositivesRemoved, pb.missingDorm.activeVoters, 'Street-name matches removed; inactive records excluded')}
   ${splitBar('Voters at addresses with 8 or more voters', pb.highDensity.totalVoters, pb.highDensity.singleFamilyAnomalyVoters, 'Campuses, care homes and apartment complexes set aside')}
   ${splitBar('Same name, same ZIP code', pb.duplicates.generationalPairs + pb.duplicates.trueDuplicates, pb.duplicates.activeActiveDuplicates, 'Jr./Sr. households protected; only pairs where both records are active remain')}
   ${splitBar('Out-of-state mailing address', ncoa.totalAllStatusVoters, ncoa.totalVoters, 'Voters already marked Inactive set aside')}
-  <div class="fig-cap"><b>Figure 1.</b> Raw count of records each simple check would flag (full bar) and what remains after ordinary explanations are set aside (red).</div>
+  <div class="fig-cap"><b>Figure 1.</b> Raw count of records each simple check would flag (full bar) and what remains after ordinary explanations are set aside (marigold amber).</div>
   <div class="kicker" style="margin-top:12pt">Ballot history (October 26, 2026 extract)</div>
   <h3 style="font-size:15pt;margin-top:2pt">Ballot records by major election (2016–2026)</h3>
   ${barRows(vh.majorElections.map((e: any) => ({ label: `${e.label.replace(' General Election', '').replace('U.S. ', '')} (${e.date})`, value: e.ballotsRecorded, focus: e.date.endsWith('/2026') })))}
-  <div class="fig-cap"><b>Figure 2.</b> Ballot records per election in the October 26, 2026 statewide history file (including ${fmt(vh.ballots2026 ?? 330474)} ballots in 2026), each matched to a registration by voter ID. Unmatched records: ${fmt(vh.orphanedHistoryRows)}.</div>
+  <div class="fig-cap"><b>Figure 2.</b> Ballot records per election in the October 26, 2026 statewide history file (${fmt(totalVerifiedBallots)} total verified ballots, including +${fmt(ballotsAdded2025_2026)} added in 2025–2026), each matched to a registration by voter ID. Unmatched records: ${fmt(vh.orphanedHistoryRows)}.</div>
 </section>
 
 <!-- MAP -->
@@ -224,7 +227,7 @@ table.ledger td, table.ledger th { padding-top: 1.7pt; padding-bottom: 1.7pt; li
   <div class="folio"><span>The county picture</span><span>Marigold · Mississippi</span></div>
   <div class="kicker">82 counties at a glance</div>
   <h2>Where each county’s work lies</h2>
-  <p>Each circle is a county, sized by registered voters. Further right means more address work (dorms, apartments, crowded homes); higher means more out-of-state mail and duplicate records. Open circles are in the normal range for their size. The ten highest-scoring counties are labeled in red.</p>
+  <p>Each circle is a county, sized by registered voters. Further right means more address work (dorms, apartments, crowded homes); higher means more out-of-state mail and duplicate records. Open circles are in the normal range for their size. The ten highest-scoring counties are labeled in marigold amber.</p>
   ${scatter()}
   <div class="fig-cap"><b>Figure 3.</b> Scores are 0–100 relative to other Mississippi counties. The interactive 3D version, which adds precinct size as a third direction, is at marigoldinsights.org/manifold. Table: the eight highest-scoring of the ${flagged.length} counties outside the normal range; all 82 are listed at the back.</div>
   ${table([

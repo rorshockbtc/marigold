@@ -51,6 +51,7 @@ def main():
     county = Counter(); ncoa_all = ncoa_act = 0; pobox = 0
     precinct = Counter(); ids = set(); names = set()
     addr_counts = Counter(); dup_map = defaultdict(list); fam_suffix = defaultdict(set)
+    roll_dv_2025_2026 = {}
     pob_re = re.compile(r"\bP\.?\s?O\.?\s?BOX\b|\bPMB\b|UPS STORE|FEDEX")
     zip5_re = re.compile(r"^\s*(\d{5})")
     ws_re = re.compile(r"\s+")
@@ -86,6 +87,10 @@ def main():
                 pobox += 1
             if row[15].strip():
                 precinct[(c, row[15].strip())] += 1
+            if len(row) > 23:
+                dv = row[23].strip()
+                if dv and (dv.endswith("/2025") or dv.endswith("/2026")):
+                    roll_dv_2025_2026[vid] = dv
             ids.add(vid)
             if len(fn) > 1 and len(ln) > 1:
                 names.add(f"{fn} {ln}")
@@ -123,6 +128,7 @@ def main():
     print("\n== Accuracy: voting history (October 26, 2026 extract) ==")
     rows = orphans = ballots_2026 = ballots_2025 = 0
     v2026_prim = set(); dup2026_prim = 0
+    seen_recent = set()
     v2024 = set()
     with open(HIST, newline="", encoding="utf-8", errors="replace") as f:
         r = csv.reader(f); next(r)
@@ -137,8 +143,10 @@ def main():
                 ed = row[7].strip()
                 if ed.endswith("/2026"):
                     ballots_2026 += 1
+                    seen_recent.add((vid, ed))
                 elif ed.endswith("/2025"):
                     ballots_2025 += 1
+                    seen_recent.add((vid, ed))
                 if ed == "03/10/2026":
                     if vid in v2026_prim:
                         dup2026_prim += 1
@@ -146,10 +154,18 @@ def main():
                         v2026_prim.add(vid)
                 if ed == "11/05/2024" and row[6].strip() == "General":
                     v2024.add(vid)
+    roll_only_2026 = sum(1 for vid, dv in roll_dv_2025_2026.items() if dv.endswith("/2026") and (vid, dv) not in seen_recent)
+    roll_only_2025 = sum(1 for vid, dv in roll_dv_2025_2026.items() if dv.endswith("/2025") and (vid, dv) not in seen_recent)
+    for vid, dv in roll_dv_2025_2026.items():
+        if dv == "03/10/2026" and (vid, dv) not in seen_recent:
+            v2026_prim.add(vid)
     check("history rows", rows, vh["totalHistoryRowsScanned"])
+    check("ballots through 2024", rows - ballots_2026 - ballots_2025, vh["ballotsThrough2024"])
+    check("ballots added in 2025-2026 (history + roll DATE_VOTED)", ballots_2026 + ballots_2025 + roll_only_2026 + roll_only_2025, vh["ballotsAdded2025_2026"])
+    check("total verified ballot credits (through Oct 26, 2026)", rows + roll_only_2026 + roll_only_2025, vh["totalVerifiedBallotCredits"])
     check("unmatched (orphan) ballots", orphans, vh["orphanedHistoryRows"])
-    check("2026 ballots recorded", ballots_2026, vh["ballots2026"])
-    check("2025 ballots recorded", ballots_2025, vh["ballots2025"])
+    check("2026 ballots recorded", ballots_2026 + roll_only_2026, vh["ballots2026"])
+    check("2025 ballots recorded", ballots_2025 + roll_only_2025, vh["ballots2025"])
     check("03/10/2026 U.S. Congressional Primary unique voters", len(v2026_prim), vh["unique2026PrimaryVoters"])
     check("03/10/2026 U.S. Congressional Primary same-day duplicate credits", dup2026_prim, vh["duplicate2026PrimarySameDayCreditRows"])
     print(f"  [info] unique 2024 general voters recomputed={len(v2024):,} report={vh['unique2024GeneralVoters']:,}")

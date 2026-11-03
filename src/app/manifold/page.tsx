@@ -6,7 +6,7 @@ import { ArrowLeft, FileText, Download, ShieldCheck, Sparkles } from "lucide-rea
 export const metadata = {
   title: "Interactive 3D County Map & Checklist | Marigold Mississippi Voter Roll Guide",
   description:
-    "Plain-English 3D county map and single-issue filter across all 82 Mississippi counties (2,112,460 Voter Roll records and 25,911,640 past ballots). 100% Voter Privacy Safe.",
+    "Plain-English 3D county map and single-issue filter across all 82 Mississippi counties (2,112,460 Voter Roll records and 25,911,769 verified past ballots, including +835,571 added in 2025–2026). 100% Voter Privacy Safe.",
 };
 
 export default function ManifoldPage() {
@@ -18,7 +18,7 @@ export default function ManifoldPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/reports/mississippi-playbook-analysis"
-              className="inline-flex items-center gap-2 text-base font-bold text-[#111111] hover:text-[#C2341B] bg-white border-2 border-[#111111] px-4 py-2.5 rounded-xl shadow-2xs transition-colors whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-2 text-base font-bold text-[#111111] hover:text-[#B45309] bg-white border-2 border-[#111111] px-4 py-2.5 rounded-xl shadow-2xs transition-colors whitespace-nowrap shrink-0"
             >
               <ArrowLeft className="w-4 h-4 shrink-0" />
               Back to Mississippi Report
@@ -34,14 +34,14 @@ export default function ManifoldPage() {
               href="/updates"
               className="inline-flex items-center gap-2 text-base font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border-2 border-[#111111] px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shrink-0"
             >
-              <Sparkles className="w-4 h-4 text-[#C2341B] shrink-0" />
+              <Sparkles className="w-4 h-4 text-[#B45309] shrink-0" />
               What&apos;s New
             </Link>
             <Link
               href="/reports/mississippi-playbook-analysis"
               className="inline-flex items-center gap-2 text-base font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border-2 border-[#111111] px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shrink-0"
             >
-              <FileText className="w-4 h-4 text-[#C2341B] shrink-0" />
+              <FileText className="w-4 h-4 text-[#B45309] shrink-0" />
               Full 82-County Guide
             </Link>
             <a
