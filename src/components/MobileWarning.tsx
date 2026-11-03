@@ -9,12 +9,15 @@ export default function MobileWarning() {
   const [isVisible, setIsVisible] = useState(false);
   const [hasDismissed, setHasDismissed] = useState(false);
 
-  const isOverviewPage = pathname.startsWith('/overview') || pathname.startsWith('/onepager') || pathname.startsWith('/one-pager');
+  const isHeavyWorkspacePage =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/audit') ||
+    pathname.startsWith('/data-prep') ||
+    pathname.startsWith('/sandbox');
 
   useEffect(() => {
     const checkMobile = () => {
-      // Show warning if viewport is narrower than standard tablet (768px)
-      if (window.innerWidth < 768 && !hasDismissed) {
+      if (window.innerWidth < 768 && !hasDismissed && isHeavyWorkspacePage) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -24,9 +27,9 @@ export default function MobileWarning() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [hasDismissed]);
+  }, [hasDismissed, isHeavyWorkspacePage]);
 
-  if (!isVisible || isOverviewPage) return null;
+  if (!isVisible || !isHeavyWorkspacePage) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">

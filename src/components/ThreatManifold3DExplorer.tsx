@@ -768,7 +768,7 @@ export default function ThreatManifold3DExplorer({
           </div>
 
           {/* 3D Interactive Stage */}
-          <div className="relative w-full h-[480px] md:h-[550px] select-none overflow-hidden">
+          <div className="relative w-full h-[360px] sm:h-[460px] md:h-[540px] select-none overflow-hidden">
             {/* Hidden/Background WebGL Mount */}
             <div ref={mountRef} className="absolute inset-0 pointer-events-none opacity-10" />
 

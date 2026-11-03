@@ -1,15 +1,15 @@
 {
   "metadata": {
     "generatedAt": "2026-11-02T23:47:41.896797+00:00",
-    "sourceFile": "Weekly Distribution_kkirkpatrick_10262026_94.csv",
-    "votingHistoryFile": "Weekly Distribution_kkirkpatrick_10262026_94VotingHistory.csv",
+    "sourceFile": "Mississippi Statewide Master Voter Roll (Oct 2026 Extract)",
+    "votingHistoryFile": "Mississippi Statewide Master Voting History (Oct 2026 Extract)",
     "totalRecords": 2112460,
     "activeVoters": 1882353,
     "inactiveVoters": 230107,
     "totalCounties": 82,
     "votingHistoryRecords": 25911640,
     "zeroPiiCompliant": true,
-    "privacyStandard": "Strict Zero-PII Public Aggregation (All names removed, voter IDs masked, single-family residential numbers block-masked)"
+    "privacyStandard": "Strict Zero-PII Public Aggregation (Zero voter names, zero unmasked voter IDs, zero exact PO Box numbers, and 100-block masking on all residential addresses)"
   },
   "votingHistoryAudit": {
     "totalHistoryRowsScanned": 25911640,
@@ -4233,7 +4233,7 @@
           "address": "1400 J R LYNCH ST",
           "city": "JACKSON",
           "county": "Hinds",
-          "zip": "39217-0002",
+          "zip": "39217",
           "occupantCount": 156,
           "activeOccupantCount": 150,
           "inactiveOccupantCount": 6,
@@ -4241,7 +4241,7 @@
           "riskLevel": "MEDIUM"
         },
         {
-          "address": "3300 20 TH ST",
+          "address": "3300 BLOCK 20 TH ST",
           "city": "GULFPORT",
           "county": "Harrison",
           "zip": "39501",
@@ -4296,7 +4296,7 @@
           "riskLevel": "MEDIUM"
         },
         {
-          "address": "5712 U S HIGHWAY 49",
+          "address": "5700 BLOCK U S HIGHWAY 49",
           "city": "HATTIESBURG",
           "county": "Forrest",
           "zip": "39401",
@@ -4329,7 +4329,7 @@
           "riskLevel": "MEDIUM"
         },
         {
-          "address": "400 HARMONY RD",
+          "address": "400 BLOCK HARMONY RD",
           "city": "CRYSTAL SPRINGS",
           "county": "Copiah",
           "zip": "39059",
@@ -4351,7 +4351,7 @@
           "riskLevel": "MEDIUM"
         },
         {
-          "address": "2901 W 4 TH ST",
+          "address": "2900 BLOCK W 4 TH ST",
           "city": "HATTIESBURG",
           "county": "Forrest",
           "zip": "39401",
@@ -4384,7 +4384,7 @@
           "riskLevel": "MEDIUM"
         },
         {
-          "address": "1530 BROAD AVE",
+          "address": "1500 BLOCK BROAD AVE",
           "city": "GULFPORT",
           "county": "Harrison",
           "zip": "39501",
@@ -4406,7 +4406,7 @@
           "riskLevel": "MEDIUM"
         },
         {
-          "address": "14605 PARKER RD",
+          "address": "14600 BLOCK PARKER RD",
           "city": "BILOXI",
           "county": "Jackson",
           "zip": "39532",
@@ -4417,7 +4417,7 @@
           "riskLevel": "CRITICAL"
         },
         {
-          "address": "1600 INDIAN POINT PKWY",
+          "address": "1600 BLOCK INDIAN POINT PKWY",
           "city": "GAUTIER",
           "county": "Jackson",
           "zip": "39553",
@@ -4428,7 +4428,7 @@
           "riskLevel": "CRITICAL"
         },
         {
-          "address": "7577 E OAKLAWN RD",
+          "address": "7500 BLOCK E OAKLAWN RD",
           "city": "BILOXI",
           "county": "Harrison",
           "zip": "39532",
@@ -4439,7 +4439,7 @@
           "riskLevel": "CRITICAL"
         },
         {
-          "address": "1279 N WEST ST",
+          "address": "1200 BLOCK N WEST ST",
           "city": "JACKSON",
           "county": "Hinds",
           "zip": "39202",
@@ -4450,7 +4450,7 @@
           "riskLevel": "CRITICAL"
         },
         {
-          "address": "1100 COWAN RD",
+          "address": "1100 BLOCK COWAN RD",
           "city": "GULFPORT",
           "county": "Harrison",
           "zip": "39507",
@@ -4696,31 +4696,31 @@
           "voterCount": 16
         },
         {
-          "address": "111 COLLEGE ST",
+          "address": "100 BLOCK COLLEGE ST",
           "city": "ITTA BENA",
           "county": "Leflore",
           "voterCount": 6
         },
         {
-          "address": "6010 COLLEGE BLUFF CV",
+          "address": "6000 BLOCK COLLEGE BLUFF CV",
           "city": "OLIVE BRANCH",
           "county": "DeSoto",
           "voterCount": 5
         },
         {
-          "address": "213 COLLEGE ST",
+          "address": "200 BLOCK COLLEGE ST",
           "city": "ITTA BENA",
           "county": "Leflore",
           "voterCount": 5
         },
         {
-          "address": "52 HALL'S DR",
+          "address": "100 BLOCK HALL'S DR",
           "city": "COLLINS",
           "county": "Covington",
           "voterCount": 4
         },
         {
-          "address": "3705 COLLEGE BLUFF",
+          "address": "3700 BLOCK COLLEGE BLUFF",
           "city": "OLIVE BRANCH",
           "county": "DeSoto",
           "voterCount": 4
@@ -4765,153 +4765,153 @@
       ],
       "samples": [
         {
-          "voterId": "MS-REC-XXXX5835",
+          "voterId": "MS-REC-REDACTED-01",
           "recordToken": "MS-POB-01",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 1421",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-1421",
+          "zip": "38676",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX1117",
+          "voterId": "MS-REC-REDACTED-02",
           "recordToken": "MS-POB-02",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 182",
+          "address": "P.O. BOX [REDACTED]",
           "city": "ROBINSONVILLE",
           "county": "Tunica",
-          "zip": "38664-0182",
+          "zip": "38664",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX7975",
+          "voterId": "MS-REC-REDACTED-03",
           "recordToken": "MS-POB-03",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 1439",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-1439",
+          "zip": "38676",
           "status": "Active"
         },
         {
-          "voterId": "MS-REC-XXXX3028",
+          "voterId": "MS-REC-REDACTED-04",
           "recordToken": "MS-POB-04",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 631",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-0631",
+          "zip": "38676",
           "status": "Active"
         },
         {
-          "voterId": "MS-REC-XXXX4660",
+          "voterId": "MS-REC-REDACTED-05",
           "recordToken": "MS-POB-05",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 1492",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-1492",
+          "zip": "38676",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX4581",
+          "voterId": "MS-REC-REDACTED-06",
           "recordToken": "MS-POB-06",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 71",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-0071",
+          "zip": "38676",
           "status": "Active"
         },
         {
-          "voterId": "MS-REC-XXXX2987",
+          "voterId": "MS-REC-REDACTED-07",
           "recordToken": "MS-POB-07",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 6",
+          "address": "P.O. BOX [REDACTED]",
           "city": "DUNDEE",
           "county": "Tunica",
-          "zip": "38626-0006",
+          "zip": "38626",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX3782",
+          "voterId": "MS-REC-REDACTED-08",
           "recordToken": "MS-POB-08",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 1817",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-1817",
+          "zip": "38676",
           "status": "Active"
         },
         {
-          "voterId": "MS-REC-XXXX1156",
+          "voterId": "MS-REC-REDACTED-09",
           "recordToken": "MS-POB-09",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 19",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-0019",
+          "zip": "38676",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX2296",
+          "voterId": "MS-REC-REDACTED-10",
           "recordToken": "MS-POB-10",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "P.O. BOX 363",
+          "address": "P.O. BOX [REDACTED]",
           "city": "SCOOBA",
           "county": "Kemper",
           "zip": "39358",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX8346",
+          "voterId": "MS-REC-REDACTED-11",
           "recordToken": "MS-POB-11",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 533",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-0533",
+          "zip": "38676",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX8582",
+          "voterId": "MS-REC-REDACTED-12",
           "recordToken": "MS-POB-12",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO BOX 26",
+          "address": "P.O. BOX [REDACTED]",
           "city": "NEW AUGUSTA",
           "county": "Perry",
-          "zip": "39462-0026",
+          "zip": "39462",
           "status": "Inactive"
         },
         {
-          "voterId": "MS-REC-XXXX0116",
+          "voterId": "MS-REC-REDACTED-13",
           "recordToken": "MS-POB-13",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "P O BOX 536",
+          "address": "P.O. BOX [REDACTED]",
           "city": "DATAMIGRATION",
           "county": "Perry",
           "zip": "",
           "status": "Active"
         },
         {
-          "voterId": "MS-REC-XXXX1308",
+          "voterId": "MS-REC-REDACTED-14",
           "recordToken": "MS-POB-14",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "P.O. BOX 702",
+          "address": "P.O. BOX [REDACTED]",
           "city": "MAGEE",
           "county": "Smith",
           "zip": "39111",
           "status": "Active"
         },
         {
-          "voterId": "MS-REC-XXXX2386",
+          "voterId": "MS-REC-REDACTED-15",
           "recordToken": "MS-POB-15",
           "category": "U.S. Post Office Box (P.O. Box)",
-          "address": "PO Box 792",
+          "address": "P.O. BOX [REDACTED]",
           "city": "TUNICA",
           "county": "Tunica",
-          "zip": "38676-0792",
+          "zip": "38676",
           "status": "Inactive"
         }
       ]
@@ -4956,8 +4956,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Inactive Relocation Trail",
           "voterIds": [
-            "MS-REC-XXXX0968",
-            "MS-REC-XXXX7451"
+            "MS-DUP-REC-01A",
+            "MS-DUP-REC-01B"
           ]
         },
         {
@@ -4972,8 +4972,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX7963",
-            "MS-REC-XXXX5921"
+            "MS-DUP-REC-02A",
+            "MS-DUP-REC-02B"
           ]
         },
         {
@@ -4988,8 +4988,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX7501",
-            "MS-REC-XXXX7871"
+            "MS-DUP-REC-03A",
+            "MS-DUP-REC-03B"
           ]
         },
         {
@@ -5004,8 +5004,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX3859",
-            "MS-REC-XXXX2613"
+            "MS-DUP-REC-04A",
+            "MS-DUP-REC-04B"
           ]
         },
         {
@@ -5020,8 +5020,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX1641",
-            "MS-REC-XXXX3140"
+            "MS-DUP-REC-05A",
+            "MS-DUP-REC-05B"
           ]
         },
         {
@@ -5036,8 +5036,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX6134",
-            "MS-REC-XXXX2706"
+            "MS-DUP-REC-06A",
+            "MS-DUP-REC-06B"
           ]
         },
         {
@@ -5052,8 +5052,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX2125",
-            "MS-REC-XXXX8903"
+            "MS-DUP-REC-07A",
+            "MS-DUP-REC-07B"
           ]
         },
         {
@@ -5068,8 +5068,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Inactive Relocation Trail",
           "voterIds": [
-            "MS-REC-XXXX5940",
-            "MS-REC-XXXX4517"
+            "MS-DUP-REC-08A",
+            "MS-DUP-REC-08B"
           ]
         },
         {
@@ -5084,8 +5084,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX4414",
-            "MS-REC-XXXX3039"
+            "MS-DUP-REC-09A",
+            "MS-DUP-REC-09B"
           ]
         },
         {
@@ -5100,8 +5100,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX9521",
-            "MS-REC-XXXX4173"
+            "MS-DUP-REC-10A",
+            "MS-DUP-REC-10B"
           ]
         },
         {
@@ -5116,8 +5116,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX4818",
-            "MS-REC-XXXX5009"
+            "MS-DUP-REC-11A",
+            "MS-DUP-REC-11B"
           ]
         },
         {
@@ -5132,8 +5132,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Inactive Relocation Trail",
           "voterIds": [
-            "MS-REC-XXXX3888",
-            "MS-REC-XXXX9695"
+            "MS-DUP-REC-12A",
+            "MS-DUP-REC-12B"
           ]
         },
         {
@@ -5148,8 +5148,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX0707",
-            "MS-REC-XXXX6147"
+            "MS-DUP-REC-13A",
+            "MS-DUP-REC-13B"
           ]
         },
         {
@@ -5164,8 +5164,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Active Duplicate Registration",
           "voterIds": [
-            "MS-REC-XXXX5247",
-            "MS-REC-XXXX6509"
+            "MS-DUP-REC-14A",
+            "MS-DUP-REC-14B"
           ]
         },
         {
@@ -5180,8 +5180,8 @@
           "distinctAddresses": 2,
           "classification": "Active\u2013Inactive Relocation Trail",
           "voterIds": [
-            "MS-REC-XXXX6232",
-            "MS-REC-XXXX4822"
+            "MS-DUP-REC-15A",
+            "MS-DUP-REC-15B"
           ]
         }
       ]
