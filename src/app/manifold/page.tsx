@@ -1,58 +1,63 @@
 import React from "react";
 import Link from "next/link";
-import { Navbar } from "@/components/Navbar";
 import ThreatManifold3DExplorer from "@/components/ThreatManifold3DExplorer";
-import { ArrowLeft, FileText, Download, ShieldCheck, Compass } from "lucide-react";
+import { ArrowLeft, FileText, Download, ShieldCheck, Sparkles } from "lucide-react";
 
 export const metadata = {
-  title: "3D Threat Manifold & Variable Isolation | Marigold Mississippi Election Audit",
+  title: "Interactive 3D County Map & Checklist | Marigold Mississippi Voter Roll Guide",
   description:
-    "Interactive Three.js 3D geometric manifold and variable isolation explorer across all 82 Mississippi counties (2,112,460 Voter Roll records and 25,911,640 Voting History records). 100% Zero-PII.",
+    "Plain-English 3D county map and single-issue filter across all 82 Mississippi counties (2,112,460 Voter Roll records and 25,911,640 past ballots). 100% Voter Privacy Safe.",
 };
 
 export default function ManifoldPage() {
   return (
-    <div className="min-h-screen bg-[#FCFBF8] text-slate-900">
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+    <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 pt-4 pb-20">
         {/* Top Breadcrumb & Quick Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E5E0D8]">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b-2 border-[#111111]">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/reports/mississippi-playbook-analysis"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white border border-[#E5E0D8] px-3 py-1.5 rounded-lg"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] hover:text-[#D9381E] bg-white border border-[#111111] px-3.5 py-2 rounded-lg shadow-2xs transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Mississippi Playbook Report
+              Back to Full Mississippi Report
             </Link>
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#0F5132] bg-[#E8F5E9] border border-[#0F5132]/30 px-3 py-1.5 rounded-full">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Zero-PII • 82 Counties • 28.02M Total Records
+              100% Privacy Safe • All 82 Counties • Written in Plain English
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/updates"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border border-[#111111] px-3.5 py-2 rounded-lg transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#D9381E]" />
+              What&apos;s New (Plain-English Post)
+            </Link>
             <Link
               href="/reports/mississippi-playbook-analysis"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border border-[#111111] px-3.5 py-2 rounded-lg transition-colors"
             >
-              <FileText className="w-3.5 h-3.5 text-amber-800" />
-              Read Full Editorial Report
+              <FileText className="w-3.5 h-3.5 text-[#D9381E]" />
+              Full 82-County Guide
             </Link>
             <a
               href="/Marigold-Mississippi-Playbook-Analysis.pdf"
-              download
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 px-3.5 py-2 rounded-xl shadow-xs"
+              download="Marigold-Mississippi-Playbook-Analysis.pdf"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#111111] hover:bg-[#2A2927] px-4 py-2 rounded-lg shadow-xs transition-colors"
             >
-              <Download className="w-3.5 h-3.5 text-amber-400" />
+              <Download className="w-3.5 h-3.5 text-[#F59E0B]" />
               Download Printable PDF
             </a>
           </div>
         </div>
 
-        {/* Interactive Three.js 3D Manifold Explorer */}
-        <ThreatManifold3DExplorer />
-      </main>
+        {/* Interactive 3D County Map Explorer (Unlocked by default) */}
+        <ThreatManifold3DExplorer forceUnlocked={true} />
+      </div>
     </div>
   );
 }

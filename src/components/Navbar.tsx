@@ -33,9 +33,10 @@ export function Navbar() {
 
           {/* Center Navigation Links (Hidden on Mobile) */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-            <Link href="/sandbox" className="text-secondary hover:text-primary transition-colors">Public Sandbox</Link>
-            <Link href="/store" className="text-secondary hover:text-primary transition-colors">Audit Checklists</Link>
-            <Link href="/registry" className="text-secondary hover:text-primary transition-colors">State Registry</Link>
+            <Link href="/reports/mississippi-playbook-analysis" className="text-primary font-bold hover:opacity-80 transition-colors">MS 82-County Report</Link>
+            <Link href="/manifold" className="text-secondary hover:text-primary transition-colors">3D Manifold</Link>
+            <Link href="/playbooks" className="text-secondary hover:text-primary transition-colors">10 Playbooks</Link>
+            <Link href="/updates" className="text-secondary hover:text-primary transition-colors">What&apos;s New</Link>
             
             {/* More Resources Dropdown */}
             <div 
@@ -54,10 +55,30 @@ export function Navbar() {
               </button>
               
               {moreDropdownOpen && (
-                <div className="absolute right-0 top-full mt-1 w-60 bg-white border border-border-soft rounded-xl shadow-lg py-2 z-50 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-border-soft rounded-xl shadow-lg py-2 z-50 text-sm animate-in fade-in slide-in-from-top-2 duration-200">
                   <Link href="/overview" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-primary font-bold hover:bg-muted transition-colors flex items-center gap-2 border-b border-border-soft bg-amber-50/50">
                     <FileText className="w-4 h-4 text-amber-600 flex-shrink-0" />
                     <span>Overview &amp; One-Pager</span>
+                  </Link>
+                  <Link href="/reports/mississippi-playbook-analysis" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <span className="font-semibold">MS Playbook Report (Draft 2)</span>
+                  </Link>
+                  <Link href="/manifold" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <span className="font-semibold">Three.js 3D Threat Manifold</span>
+                  </Link>
+                  <Link href="/updates" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span className="font-semibold">Release Notes (Plain English)</span>
+                  </Link>
+                  <Link href="/sandbox" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                    <span>Public Sandbox</span>
+                  </Link>
+                  <Link href="/registry" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
+                    <Map className="w-4 h-4 flex-shrink-0" />
+                    <span>State Registry</span>
                   </Link>
                   <Link href="/developers" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Code className="w-4 h-4 text-emerald-400" />
@@ -69,7 +90,7 @@ export function Navbar() {
                   </Link>
                   <Link href="/compliance" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Shield className="w-4 h-4 flex-shrink-0" />
-                    <span>FEMA Compliance</span>
+                  <span>FEMA Compliance</span>
                   </Link>
                   <Link href="/perspectives" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Globe className="w-4 h-4 flex-shrink-0" />
@@ -82,14 +103,6 @@ export function Navbar() {
                   <Link href="/deploy" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Shield className="w-4 h-4 flex-shrink-0" />
                     <span>Bring to Your State</span>
-                  </Link>
-                  <Link href="/contact" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
-                    <Globe className="w-4 h-4 flex-shrink-0" />
-                    <span>Contact Architecture Desk</span>
-                  </Link>
-                  <Link href="/partnership" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
-                    <Shield className="w-4 h-4 flex-shrink-0" />
-                    <span>Partner With Us</span>
                   </Link>
                   <div className="border-t border-border-soft my-1"></div>
                   <Link href="/anniversary" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-primary font-bold hover:bg-muted transition-colors flex items-center gap-2">
@@ -139,32 +152,31 @@ export function Navbar() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <nav className="lg:hidden mt-4 pt-4 border-t border-border-soft flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <Link href="/overview" onClick={() => setMobileMenuOpen(false)} className="text-primary font-bold px-2 py-1.5 transition-colors flex items-center gap-2 bg-amber-50/60 rounded-lg">
+            <Link href="/reports/mississippi-playbook-analysis" onClick={() => setMobileMenuOpen(false)} className="text-primary font-bold px-2 py-1.5 transition-colors flex items-center gap-2 bg-amber-50/60 rounded-lg">
               <FileText className="w-4 h-4 text-amber-600" />
-              <span>Overview &amp; One-Pager</span>
+              <span>Mississippi 82-County Report (Draft 2)</span>
             </Link>
+            <Link href="/manifold" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">3D Threat Manifold Explorer</Link>
+            <Link href="/playbooks" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">10 Guided Playbooks</Link>
+            <Link href="/updates" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">What&apos;s New (Release Post)</Link>
+            <Link href="/overview" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Overview &amp; One-Pager</Link>
             <Link href="/sandbox" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Public Sandbox</Link>
-            <Link href="/store" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Audit Checklists</Link>
             <Link href="/registry" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">State Registry</Link>
-            <Link href="/developers" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Developer Docs</Link>
-            <Link href="/compliance" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">FEMA Compliance</Link>
-            <Link href="/perspectives" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Worldviews &amp; FAQ</Link>
-            <Link href="/roadmap" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Technical Roadmap</Link>
-            <Link href="/deploy" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Bring to Your State</Link>
-            <Link href="/anniversary" className="text-primary font-bold px-2 py-1 transition-colors">250th Celebration</Link>
           </nav>
         )}
       </header>
 
-      {/* Persistent Disclaimer Banner */}
+          {/* Persistent Disclaimer Banner */}
       <div className="bg-card-bg border-b border-border text-foreground px-6 py-2.5 text-xs md:text-sm font-medium flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 max-w-7xl mx-auto w-full">
           <span className="w-2 h-2 rounded-full bg-accent inline-block animate-pulse"></span>
           <span>
-            <strong className="font-bold">Architecture Notice:</strong> This execution engine processes all civic records 100% locally inside client memory. Zero citizen files are ever uploaded or transmitted.
+            <strong className="font-bold">100% Voter Privacy Safe:</strong> All analysis runs locally with zero personal voter names, birth dates, or private single-family house numbers ever displayed or shared.
           </span>
         </div>
       </div>
     </>
   );
 }
+
+export default Navbar;

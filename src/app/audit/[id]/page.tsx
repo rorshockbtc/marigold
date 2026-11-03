@@ -1,194 +1,246 @@
 "use client";
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowLeft, Play, ShieldCheck, FileText, CheckCircle2, BookOpen, Newspaper } from "lucide-react";
+import {
+  ArrowLeft,
+  Play,
+  ShieldCheck,
+  FileText,
+  CheckCircle2,
+  Compass,
+} from "lucide-react";
 import Link from "next/link";
 
 const PLAYBOOK_DETAILS: Record<string, any> = {
-  'density': {
-    title: "High-Density Residential Occupancy",
+  density: {
+    title: "PB-01: High-Density Residential Occupancy (≥8 Voters)",
     icon: "⚡",
-    subtitle: "Identify 12+ voters registered to a single residential address.",
-    story: "Imagine a single suburban family home with 14 adults registered to vote. Unless it's a dormitory, nursing home, or fraternity, that high occupancy usually indicates outdated registrations from former tenants who moved away without canceling their voter registration. This playbook automatically finds these anomalies so you can investigate them.",
+    subtitle:
+      "Mississippi Benchmark: 1,598 normalized addresses (1,070 Active-only; 56 Institutional hubs & 103 Apartment complexes separated from 1,439 Single-Family houses).",
+    story:
+      "When someone sees '15 voters registered at one address,' it usually is not 15 people living in a house today. Either it is a nursing home, college dormitory, or apartment complex, OR it is a single-family rental house where three different families lived over the past 12 years and never cancelled their old registration when they moved. Separating Active from Inactive voters and filtering out nursing homes and dorms first lets Election Commissioners focus strictly on true single-family backlogs.",
     steps: [
-      "Scans the entire jurisdiction for identical street addresses.",
-      "Filters out known commercial properties and university dorms.",
-      "Flags any remaining single-family homes or standard apartments with more than 8 active registered voters."
+      "Normalizes street strings (collapsing extra spaces like '1400 J  R LYNCH ST' at Jackson State University).",
+      "Separates 56 Institutional/University hubs (6,788 voters) and 103 Multi-Family apartment complexes (2,555 voters).",
+      "Isolates 1,439 Single-Family residential parcels (100-block masked for Zero-PII privacy) for routine NVRA confirmation cards.",
     ],
-    technical: "Uses standard SQL GROUP BY operations on the standardized residence_address_line_1 column, joined with the zoning dataset to exclude multi-unit or commercial exemptions. Threshold set to >8.",
-    resources: [
-      { title: "U.S. Census Bureau - Understanding Group Quarters", url: "#" },
-      { title: "USPS Address Management System Guidelines", url: "#" }
-    ],
-    newsArticles: [
-      { title: "Investigating High-Density Voter Registration Anomalies", source: "Civic Tech Monthly, 2024", url: "#" },
-      { title: "How Data Science Uncovers Phantom Voters", source: "The Election Auditor, 2023", url: "#" }
-    ]
+    technical:
+      "Deterministic whitespace normalization + facility taxonomy classification + Active/Inactive status stratification across 2,112,460 records.",
   },
-  'missing-dorm': {
-    title: "Missing Dorm / Unit #",
+  "missing-dorm": {
+    title: "PB-02: Missing Dormitory & Multi-Unit Designators",
     icon: "🏢",
-    subtitle: "Flag large communal buildings missing apartment or room numbers.",
-    story: "When living in an apartment building, a voter must include their apartment number to receive mail (like an absentee ballot) securely. This playbook finds voters registered to large known apartment complexes or college dorms who failed to include their specific unit number.",
+    subtitle:
+      "Mississippi Benchmark: 682 verified campus/multi-unit records (502 Active) after removing 4,346 street-name false positives.",
+    story:
+      "Older computer scripts searched for the letters 'HALL' or 'UNIVERSITY' anywhere in an address—which accidentally flagged thousands of regular family houses on streets named 'Marshall Place', 'Halls Ferry Road', 'Halle Cove', and 'University Avenue'. We fixed that with whole-word matching so only genuine campus dorms and multi-unit buildings missing a room or apartment number are highlighted.",
     steps: [
-      "Identifies addresses known to contain multiple independent living units.",
-      "Checks registered voters at those addresses for a missing Unit, Apt, or Room number.",
-      "Flags records for clerical review or mail-forwarding verification."
+      "Applies whole-word regular expression boundaries: \\b(HALL|DORM|DORMITORY|CAMPUS|UNIVERSITY|COLLEGE|APARTMENT|APTS|TOWERS)\\b.",
+      "Excludes residential thoroughfares (e.g., Marshall Pl, Halls Ferry Rd, University Ave, College Hill Rd) unless a multi-unit building keyword is present.",
+      "Isolates 682 verified dormitory and student apartment registrations (led by USM, MGCCC, MUW, MVSU, and MSU).",
     ],
-    technical: "Cross-references the USPS Address Management System (AMS) data for buildings marked as 'Multi-Tenant' and filters out records where the secondary_address_designator is null.",
-    resources: [
-      { title: "USPS DPV (Delivery Point Validation) Standards", url: "#" },
-      { title: "NENA Standard for Civic Location Data Exchange", url: "#" }
-    ],
-    newsArticles: [
-      { title: "The Challenge of Multi-Tenant Voter Registration", source: "Civic Data Review, 2025", url: "#" },
-      { title: "Fixing Apartment Registration Errors in the Digital Age", source: "Tech & Elections, 2024", url: "#" }
-    ]
+    technical:
+      "Whole-word regex boundary evaluation + municipal vs. street-suffix disambiguation across all 82 counties.",
   },
-  'duplicates': {
-    title: "Intra-County Duplicates",
-    icon: "👯",
-    subtitle: "Identify exact Name & Zip matches residing at different addresses.",
-    story: "Our Fellegi-Sunter math compares names and birthdays across the entire county. If two registrations have identical birthdays and almost identical names (like 'Robert Smith Jr' at two different addresses), our system highlights them so you can merge the duplicate.",
+  "out-of-state-mailing": {
+    title: "PB-03: NCOA Interstate Out-of-State Mail Drift",
+    icon: "✈️",
+    subtitle:
+      "Mississippi Benchmark: 2,444 Active voters with out-of-state mailing addresses (11,178 already marked Inactive on the federal NVRA clock).",
+    story:
+      "When a voter moves to Tennessee, Texas, or Alabama and files a forwarding address, federal law (the National Voter Registration Act) does not allow a county to delete them the next morning. Instead, the county marks them 'Inactive' and waits two federal general election cycles. In Mississippi, 82.1% of all out-of-state mail records (11,178 of 13,622) are ALREADY marked Inactive—leaving only 2,444 Active records that need a confirmation postcard.",
     steps: [
-      "Analyzes the full dataset using probabilistic linkage (Fellegi-Sunter).",
-      "Calculates log-odds weights for Name, DOB, and Address similarity.",
-      "Flags pairs of records with a high confidence match score."
+      "Scans all 2,112,460 records for mailing states outside Mississippi (led by TN, TX, AL, LA, FL, and GA).",
+      "Separates the 11,178 Inactive records already undergoing statutory NVRA waiting periods.",
+      "Produces the exact list of 2,444 Active out-of-state mail records for Circuit Clerk review.",
     ],
-    technical: "Executes a record linkage algorithm. Standardizes strings using Jaro-Winkler distance and applies a tunable confidence threshold to catch OCR/clerical typos.",
-    resources: [
-      { title: "Fellegi-Sunter Model of Record Linkage (JASA, 1969)", url: "#" },
-      { title: "Jaro-Winkler String Metric Optimization", url: "#" }
+    technical:
+      "Cross-checks mail_state != 'MS' stratified by status == 'Active' vs. 'Inactive' (Pearson correlation r = +0.674 with intra-ZIP duplicate clusters).",
+  },
+  "po-box": {
+    title: "PB-04: P.O. Box & PMB in Physical Residence Line",
+    icon: "📬",
+    subtitle:
+      "Mississippi Benchmark: 339 records statewide (186 Active, 153 Inactive; 337 P.O. Boxes and 2 Private Mail Boxes).",
+    story:
+      "You cannot live inside a post office box. Mississippi law requires a physical residential address so the county knows which precinct ballot to give you, while your P.O. Box belongs in the Mailing Address column. Only 339 voters statewide have a P.O. Box accidentally typed into their physical residence line—an easy clerical fix for County Election Commissioners.",
+    steps: [
+      "Scans the physical residential address column for P.O. Box, PMB, and commercial mail hub strings.",
+      "Separates Active (186) from Inactive (153) records and assigns Zero-PII audit tokens (MS-POB-01 through MS-POB-15).",
+      "Provides a clean county-by-county list so clerks can move the P.O. Box to the mailing field and record the 911 physical address.",
     ],
-    newsArticles: [
-      { title: "Probabilistic Matching Catches Thousands of Duplicates", source: "Data Governance Today, 2023", url: "#" },
-      { title: "Why Exact Matching Fails in Civic Audits", source: "Open Source Civic, 2024", url: "#" }
-    ]
-  }
+    technical:
+      "Deterministic pattern scan on standardized residence_address_1 for PO BOX / P.O. BOX / PMB / UPS STORE tokens.",
+  },
+  "typo-names": {
+    title: "PB-05: Clerical Typos & Pre-1900 Migration Dates",
+    icon: "⌨️",
+    subtitle:
+      "Mississippi Benchmark: 5,607 legacy database artifacts (3,804 1-letter names, 1,271 Year 1801, 206 Year 0001, 113 DATAMIGRATION street strings).",
+    story:
+      "No voter in Mississippi was registered in the year 1801 or 0001. When counties converted old paper registration ledgers into the statewide computer system in the early 2000s, records with missing or faded registration dates were given placeholder dates like '01/01/1801', and 113 records in Warren and Simpson Counties were given the street address 'DATAMIGRATION'.",
+    steps: [
+      "Flags registration dates prior to 1900 (1,271 in 1801; 206 in 0001; 7 in 1800) and future typos.",
+      "Isolates 3,804 records where a voter's first or last name was entered as a single letter initial.",
+      "Highlights 113 records containing the literal word 'DATAMIGRATION' in the street address column.",
+    ],
+    technical:
+      "Date-range validation + string length inspection + legacy migration token detection.",
+  },
+  duplicates: {
+    title: "PB-06: Generational Suffix Protection & Duplicate Audit",
+    icon: "👯",
+    subtitle:
+      "Mississippi Benchmark: 4,404 Jr./Sr. pairs protected • 818 Active–Active intra-ZIP clusters • 185 Active–Inactive move trails.",
+    story:
+      "In thousands of Mississippi households, a father ('John Smith Sr.') and son ('John Smith Jr.') live at the same address or in the same town. Basic scripts flag them as duplicate voters! Our playbook protects all 4,404 generational family pairs first, and then separates intra-ZIP duplicates into Active–Active (818 clusters where a voter moved across town and registered twice) and Active–Inactive move trails (185 clusters where the old address is already Inactive).",
+    steps: [
+      "Normalizes generational suffixes (JR, SR, II, III, IV) and protects 4,404 multi-generational family households.",
+      "Identifies 1,026 intra-ZIP clusters where the exact same First, Middle, Last, and Suffix appear at different addresses.",
+      "Separates 818 Active–Active clusters from 185 Active–Inactive relocation trails and 19,122 statewide cross-county matches.",
+    ],
+    technical:
+      "Exact First+Middle+Last+Suffix+ZIP linkage with Active/Inactive status matrix decomposition.",
+  },
+  spikes: {
+    title: "PB-07: Statutory Registration Velocity Spikes",
+    icon: "📈",
+    subtitle:
+      "Mississippi Benchmark: Peak single-day batches on 10/05/2020 (13,731), 10/03/2008 (11,240), and 10/07/2024 (7,867).",
+    story:
+      "Mississippi requires citizens to register at least 30 days before an election. Every four years, right on that October deadline before a Presidential Election, County Circuit Clerks enter thousands of mail-in applications on the same day. Mapping those dates proves that single-day registration surges are normal statutory deadline batches—not mysterious intrusions.",
+    steps: [
+      "Aggregates all 2,112,460 voter registrations by exact registration date.",
+      "Overlays Mississippi's 30-day statutory cutoff calendar for the 2008, 2012, 2016, 2020, and 2024 Presidential cycles.",
+      "Confirms that all top peak dates align with statutory registration deadlines or legacy county batch imports.",
+    ],
+    technical:
+      "Time-series aggregation on registration_date matched against MS Code § 23-15-37 cutoff dates.",
+  },
+  "phantom-precincts": {
+    title: "PB-08: Mega-Precinct Capacity & Assignment Audit",
+    icon: "🏛️",
+    subtitle:
+      "Mississippi Benchmark: 1,742 precincts • 123 exceed 3,000 voters • 27 exceed 5,000 voters • 11 blank precinct codes.",
+    story:
+      "When a fast-growing suburb in DeSoto, Madison, Rankin, or Harrison County builds new neighborhoods without splitting its local polling place, a single precinct can balloon to 6,000 or 9,000 voters—creating long Election Day lines and pollbook bottlenecks. This playbook gives County Election Commissioners the exact list of 123 overloaded precincts so they can plan precinct splits with their Board of Supervisors.",
+    steps: [
+      "Counts total and Active registered voters across all 1,742 Mississippi precincts.",
+      "Flags 123 precincts exceeding the 3,000-voter benchmark and 27 mega-precincts exceeding 5,000 voters.",
+      "Identifies 11 voter records with a blank precinct code so clerks can assign them via 911 GIS boundaries.",
+    ],
+    technical:
+      "Precinct-level roll aggregation joined with 2024 General Election turnout counts.",
+  },
+  "benfords-law": {
+    title: "PB-09: Newcomb-Benford First-Digit Distribution",
+    icon: "📊",
+    subtitle:
+      "Mississippi Benchmark: Total Roll χ² = 6.94 (PASS < 15.51) • 2024 Turnout χ² = 71.15 (Statutory Precinct Sizing Effect).",
+    story:
+      "Benford's Law tests whether the first digits of numbers (1 through 9) follow a natural logarithmic curve. Importantly, Benford's Law only works when numbers span several orders of magnitude (from 10 to 9,000). Mississippi's total precinct registration spans four orders of magnitude and passes with flying colors (χ² = 6.94). Meanwhile, 2024 Election Day turnout clusters around 200 to 499 voters per precinct (digits 2, 3, and 4) simply because counties design precincts to hold roughly 1,500 voters!",
+    steps: [
+      "Extracts leading digits (1–9) across all 1,742 precincts for both Total Registration and 2024 General Turnout.",
+      "Computes Pearson's Chi-Square goodness-of-fit against log10(1 + 1/d).",
+      "Explains why total registration passes (χ² = 6.94) while bounded turnout reflects statutory precinct sizing.",
+    ],
+    technical:
+      "Logarithmic first-digit distribution test (df = 8, α = 0.05 critical value = 15.51).",
+  },
+  "voting-history": {
+    title: "PB-10: 25.91 Million Voting History Referential Audit",
+    icon: "🗳️",
+    subtitle:
+      "Mississippi Benchmark: 25,911,640 ballots joined • 100.00% Roll Match (0 Orphans) • 1,213,364 2024 General Voters • 88 Same-Day Duplicate Credit Rows.",
+    story:
+      "We cross-checked every single ballot in Mississippi's 25.91-million-row Voting History file against the 2.11-million-row Master Voter Roll. Every single ballot matched a valid registered Voter ID—meaning there are zero 'phantom' or orphaned ballots in the file. Out of 1,213,364 citizens who voted in the November 2024 General Election, 87 Voter IDs (88 extra rows) had their vote credit scanned twice on the same day, which clerks can easily deduplicate.",
+    steps: [
+      "Streams all 25,911,640 rows of the statewide Voting History CSV and joins each row by Voter ID against the Master Voter Roll.",
+      "Verifies 100.00% referential integrity (25,911,640 matched, 0 orphaned ballots).",
+      "Isolates 88 duplicate same-day 2024 General Election credit rows and 424,177 registered voters with zero ballot history.",
+    ],
+    technical:
+      "Full hash-indexed relational join across 28,024,100 combined voter and ballot history rows.",
+  },
 };
 
 export default function PlaybookDetailPage() {
   const params = useParams();
-  const id = typeof params?.id === 'string' ? params.id : '';
-  const data = PLAYBOOK_DETAILS[id] || {
-    title: "Playbook Details",
-    icon: "📘",
-    subtitle: "Learn how this verification process works.",
-    story: "This playbook is designed to help you verify civic data and ensure the highest standards of integrity. It uses established statistical methods and cross-references authoritative datasets.",
-    steps: [
-      "Analyzes your loaded dataset for specific anomalies.",
-      "Cross-references records against trusted civic/postal databases.",
-      "Flags records for your review."
-    ],
-    technical: "Standard statistical analysis and relational joins.",
-    resources: [],
-    newsArticles: []
-  };
+  const id = typeof params?.id === "string" ? params.id : "";
+  const data = PLAYBOOK_DETAILS[id] || PLAYBOOK_DETAILS["density"];
 
   return (
     <div className="flex flex-col h-full font-sans max-w-4xl mx-auto px-4 sm:px-6 py-6">
-      <Link href="/audit" className="flex items-center gap-2 text-sm text-[#646A7A] hover:text-[#D96B27] mb-6 font-bold transition-colors w-fit">
+      <Link
+        href="/audit"
+        className="flex items-center gap-2 text-sm text-[#646A7A] hover:text-[#D96B27] mb-6 font-bold transition-colors w-fit"
+      >
         <ArrowLeft className="w-4 h-4" />
-        Back to Playbooks
+        Back to All 10 Playbooks
       </Link>
-      
+
       <PageHeader
         title={data.title}
         subtitle={data.subtitle}
         icon={<span>{data.icon}</span>}
         actions={
-          <Link 
-            href={`/explore?playbook=${id}`}
-            className="btn-primary flex items-center gap-2 font-bold px-6 py-3"
-          >
-            <Play className="w-4 h-4" />
-            Run Playbook
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/explore?playbook=${id}`}
+              className="btn-primary flex items-center gap-2 font-bold px-5 py-2.5 text-xs"
+            >
+              <Play className="w-4 h-4" />
+              Run in Scanner
+            </Link>
+            <Link
+              href="/reports/mississippi-playbook-analysis"
+              className="bg-slate-900 text-white rounded-xl flex items-center gap-2 font-bold px-4 py-2.5 text-xs"
+            >
+              <FileText className="w-4 h-4" />
+              View in MS Report
+            </Link>
+          </div>
         }
       />
 
-      <div className="space-y-8 mt-4 animate-in fade-in duration-500 slide-in-from-bottom-4">
-        {/* The Narrative Trust Section */}
-        <div className="bg-white p-8 rounded-2xl border border-border shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-wider">
-            <ShieldCheck className="w-5 h-5" />
-            Why this matters (ELI5)
+      <div className="space-y-6 mt-4">
+        <div className="bg-white p-7 rounded-2xl border border-border shadow-sm space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4" />
+            Plain-English Explanation for Election Commissioners &amp; Citizens
           </div>
-          <p className="text-lg text-text-body leading-relaxed">
-            {data.story}
-          </p>
+          <p className="text-base text-text-body leading-relaxed">{data.story}</p>
         </div>
 
-        {/* Stepwise Process */}
-        <div className="bg-[#FAF8F5] p-8 rounded-2xl border border-border shadow-sm">
-          <div className="flex items-center gap-2 text-sm font-bold text-[#646A7A] uppercase tracking-wider mb-6">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            How it works
+        <div className="bg-[#FAF8F5] p-7 rounded-2xl border border-border shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#646A7A] uppercase tracking-wider mb-5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            Step-by-Step Verification Protocol
           </div>
-          <ul className="space-y-4">
+          <ul className="space-y-3.5">
             {data.steps.map((step: string, index: number) => (
-              <li key={index} className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0">
+              <li key={index} className="flex gap-3.5 items-start">
+                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
                   {index + 1}
                 </div>
-                <p className="text-text-body mt-1">{step}</p>
+                <p className="text-sm text-text-body leading-relaxed">{step}</p>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Research & Media Expansion */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Resources */}
-          {data.resources && data.resources.length > 0 && (
-            <div className="bg-white p-6 rounded-2xl border border-border shadow-sm">
-              <div className="flex items-center gap-2 text-sm font-bold text-[#646A7A] uppercase tracking-wider mb-4">
-                <BookOpen className="w-4 h-4" />
-                Technical Resources
-              </div>
-              <ul className="space-y-3">
-                {data.resources.map((res: any, idx: number) => (
-                  <li key={idx}>
-                    <a href={res.url} className="text-primary hover:underline text-sm font-medium leading-relaxed block">
-                      {res.title} ↗
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* News Articles */}
-          {data.newsArticles && data.newsArticles.length > 0 && (
-            <div className="bg-white p-6 rounded-2xl border border-border shadow-sm">
-              <div className="flex items-center gap-2 text-sm font-bold text-[#646A7A] uppercase tracking-wider mb-4">
-                <Newspaper className="w-4 h-4" />
-                In The News
-              </div>
-              <ul className="space-y-4">
-                {data.newsArticles.map((article: any, idx: number) => (
-                  <li key={idx} className="group cursor-pointer">
-                    <a href={article.url} className="block">
-                      <h4 className="text-sm font-bold text-text-header group-hover:text-primary transition-colors leading-relaxed">
-                        {article.title}
-                      </h4>
-                      <p className="text-xs text-text-body mt-1">{article.source}</p>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Technical Details */}
         <div className="border border-border-soft rounded-2xl overflow-hidden shadow-sm">
-          <div className="bg-muted px-6 py-4 border-b border-border-soft flex items-center gap-2 font-mono text-sm font-bold text-[#646A7A]">
-            <FileText className="w-4 h-4" />
-            Technical / Academic Specifications
+          <div className="bg-muted px-6 py-3.5 border-b border-border-soft flex items-center justify-between font-mono text-xs font-bold text-[#646A7A]">
+            <span className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Deterministic Mathematical Specification (Zero-PII)
+            </span>
+            <Link href="/manifold" className="text-amber-800 hover:underline flex items-center gap-1">
+              <Compass className="w-3.5 h-3.5" /> View on 3D Manifold
+            </Link>
           </div>
-          <div className="bg-white p-6 font-mono text-xs text-[#4A5060] leading-relaxed">
+          <div className="bg-white p-5 font-mono text-xs text-[#4A5060] leading-relaxed">
             {data.technical}
           </div>
         </div>

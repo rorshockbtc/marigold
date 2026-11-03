@@ -283,6 +283,42 @@ export default function OverviewClient() {
             </div>
           </section>
 
+          {/* Section: Featured Case Study — Mississippi 82-County Audit */}
+          <section className="border-t-2 border-[#1A1614] pt-6 mb-8 font-sans">
+            <div className="text-xs font-mono font-bold uppercase tracking-widest text-[#B45309] mb-1">
+              Featured Statewide Benchmark · 100% Zero-PII
+            </div>
+            <h2 className="text-2xl font-serif font-bold text-[#1A1614]">
+              Mississippi 82-County Voter Roll &amp; 25.91 Million Voting History Audit
+            </h2>
+            <p className="text-sm text-[#3A322D] mt-1.5 leading-relaxed">
+              See how Marigold analyzed <strong>2,112,460 voter registrations</strong> and{" "}
+              <strong>25,911,640 historical ballots</strong> across all 82 Mississippi counties—separating nursing homes, university dorms, and father-son Jr./Sr. pairs from actionable cleanup items, and mapping every county in an interactive Three.js 3D Threat Manifold.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link
+                href="/reports/mississippi-playbook-analysis"
+                className="inline-flex items-center gap-1.5 bg-[#1A1614] hover:bg-stone-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                Read Accént Editorial Report (Draft 2)
+              </Link>
+              <Link
+                href="/manifold"
+                className="inline-flex items-center gap-1.5 bg-[#B45309] hover:bg-[#92400E] text-white text-xs font-bold px-4 py-2.5 rounded-lg"
+              >
+                <span>Open Three.js 3D Manifold Explorer</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                href="/updates"
+                className="inline-flex items-center gap-1.5 bg-white hover:bg-stone-100 border border-stone-300 text-[#1A1614] text-xs font-bold px-4 py-2.5 rounded-lg"
+              >
+                <span>Read Plain-English Release Notes</span>
+              </Link>
+            </div>
+          </section>
+
           {/* Section: Better Together: Marigold + Pipes */}
           <section className="bg-[#1A1614] text-[#FAF8F5] p-6 sm:p-8 rounded-xl font-sans mb-8">
             <h2 className="text-[#F5B54A] font-bold text-sm tracking-wider uppercase mb-2">
@@ -294,7 +330,7 @@ export default function OverviewClient() {
             <ul className="space-y-2.5 text-sm text-stone-300">
               <li className="flex items-start gap-2">
                 <span className="text-[#F5B54A] font-bold mt-0.5">•</span>
-                <span><b className="text-white">Publish once, reach everywhere:</b> turn local findings into a verified Pipes story that readers, mobile apps, and AI assistants can reliably cite.</span>
+                <span><b className="text-white">Publish once, reach everywhere:</b> turn local findings into a verified Pipes publication that readers, Election Commissioners, and researchers can reliably cite.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#F5B54A] font-bold mt-0.5">•</span>
@@ -302,7 +338,7 @@ export default function OverviewClient() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#F5B54A] font-bold mt-0.5">•</span>
-                <span><b className="text-white">Get paid for your work:</b> domain curators and analysts earn credit royalties each time their verified data canon is referenced by AI or subscribers.</span>
+                <span><b className="text-white">Get rewarded for your work:</b> domain curators and analysts earn credit royalties each time their verified data canon is referenced by subscribers.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#F5B54A] font-bold mt-0.5">•</span>

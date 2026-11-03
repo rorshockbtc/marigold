@@ -12,36 +12,149 @@ export default function MissionControl() {
   const [playbooks, setPlaybooks] = useState<any[]>([]);
   const [accuracies, setAccuracies] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCounty, setSelectedCounty] = useState('All');
-  const [selectedState, setSelectedState] = useState('MS');
+  const [selectedCounty, setSelectedCounty] = useState("All");
+  const [selectedState, setSelectedState] = useState("MS");
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const router = useRouter();
 
   const { customPlaybooks, addPlaybook, updatePlaybook } = usePlaybooks();
   const { addFeedEvent } = useFeed();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [newPbName, setNewPbName] = useState('');
-  const [newPbDesc, setNewPbDesc] = useState('');
+  const [newPbName, setNewPbName] = useState("");
+  const [newPbDesc, setNewPbDesc] = useState("");
 
   useEffect(() => {
     const fetchPlaybooks = async () => {
       try {
-        // System baseline playbooks
         const systemPlaybooks = [
-          { id: "density", name: "High-Density Residential Occupancy", desc: "Identify 12+ voters at single address", description: "Flags single residential street addresses or apartments containing more than 8 active registered voters.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "density" },
-          { id: "out-of-state-mailing", name: "NCOA Interstate Out-of-State Relocations", desc: "Voter residing out of state via mail", description: "Cross-checks active registration addresses against official USPS National Change of Address (NCOA) forwardings.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "out-of-state-mailing" },
-          { id: "duplicates", name: "Intra-County Exact Name & Zip Duplicates", desc: "Same name & zip at different addresses", description: "Scans the entire jurisdiction for identical First Name, Last Name, and Zip Code pairings registered simultaneously at different physical addresses.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "duplicates" },
-          { id: "benfords-law", name: "Benford's Law Regression (Fabrication Test)", desc: "Mathematical test for fabrication", description: "Analyzes the leading digit distribution of all street addresses against the logarithmic Benford Curve.", flaggedCount: 0, status: "pending", totalScanned: 0, audit_type: "benfords-law" }
+          {
+            id: "density",
+            name: "PB-01: High-Density Residential Occupancy",
+            desc: "1,598 normalized addresses (1,070 Active-only; 56 Institutional hubs separated)",
+            description:
+              "Flags residential parcels with 8+ registered voters while separating nursing homes, college dormitories, and apartment complexes from single-family homes.",
+            flaggedCount: 1070,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "≥ 8 Active Voters",
+            audit_type: "density",
+          },
+          {
+            id: "missing-dorm",
+            name: "PB-02: Missing Dormitory & Multi-Unit Designators",
+            desc: "682 verified campus/multi-unit records (4,346 street-name false alarms removed)",
+            description:
+              "Uses whole-word regex boundaries to isolate dormitory and apartment registrations missing room or unit numbers without flagging streets named Marshall Pl or Halls Ferry Rd.",
+            flaggedCount: 682,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "Whole-Word Multi-Unit Match",
+            audit_type: "missing-dorm",
+          },
+          {
+            id: "out-of-state-mailing",
+            name: "PB-03: NCOA Interstate Out-of-State Mail Drift",
+            desc: "2,444 Active voters with out-of-state mail (11,178 already Inactive on NVRA clock)",
+            description:
+              "Separates Active voters receiving mail out-of-state from the 82.1% already moved to Inactive status awaiting their 2-cycle federal NVRA removal period.",
+            flaggedCount: 2444,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "Active Status + Mail State ≠ MS",
+            audit_type: "out-of-state-mailing",
+          },
+          {
+            id: "po-box",
+            name: "PB-04: Commercial & P.O. Box in Physical Residence Line",
+            desc: "339 records (186 Active, 153 Inactive) with P.O. Box or PMB as domicile",
+            description:
+              "Identifies records where a post office box or private mail box was entered into the physical street residence column instead of the mailing address column.",
+            flaggedCount: 339,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "P.O. Box / PMB / Parcel Hub",
+            audit_type: "po-box",
+          },
+          {
+            id: "typo-names",
+            name: "PB-05: Clerical Typos & Pre-1900 Migration Dates",
+            desc: "5,607 legacy database artifacts (1,271 Year 1801, 206 Year 0001, 113 DATAMIGRATION)",
+            description:
+              "Isolates paper-to-digital SEMS migration placeholders (01/01/1801, 01/01/0001, DATAMIGRATION street strings) and 1-character truncated name fields.",
+            flaggedCount: 5607,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "Year < 1900 or Length = 1",
+            audit_type: "typo-names",
+          },
+          {
+            id: "duplicates",
+            name: "PB-06: Generational Suffix & Duplicate Disambiguation",
+            desc: "4,404 Jr/Sr pairs protected • 818 Active–Active intra-ZIP duplicate clusters",
+            description:
+              "Protects Jr./Sr./III fathers and sons living at the same family address while isolating 818 Active–Active intra-ZIP duplicates and 185 Active–Inactive move trails.",
+            flaggedCount: 818,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "Exact First+Middle+Last+Suffix+ZIP",
+            audit_type: "duplicates",
+          },
+          {
+            id: "spikes",
+            name: "PB-07: Statutory Registration Velocity Spikes",
+            desc: "Peaks on 10/05/2020 (13,731), 10/03/2008 (11,240), and 10/07/2024 (7,867)",
+            description:
+              "Correlates single-day registration surges against Mississippi's 30-day statutory mail-in cutoff dates prior to Presidential General Elections.",
+            flaggedCount: 15,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "Statutory Cutoff Calendar",
+            audit_type: "spikes",
+          },
+          {
+            id: "phantom-precincts",
+            name: "PB-08: Mega-Precinct Capacity & Assignment Audit",
+            desc: "123 precincts > 3,000 voters (27 > 5,000 voters; 11 blank precinct codes)",
+            description:
+              "Identifies fast-growing suburban polling places exceeding the 3,000-voter benchmark and isolates records missing a valid precinct code.",
+            flaggedCount: 123,
+            status: "verified",
+            totalScanned: 2112460,
+            threshold: "> 3,000 Voters / Precinct",
+            audit_type: "phantom-precincts",
+          },
+          {
+            id: "benfords-law",
+            name: "PB-09: Newcomb-Benford First-Digit Distribution",
+            desc: "Total Roll χ² = 6.94 (PASS < 15.51) • 2024 Turnout χ² = 71.15 (Sizing Effect)",
+            description:
+              "Tests precinct registration and 2024 turnout counts against the logarithmic Benford curve, demonstrating why 1,500–3,000 statutory precinct sizing clusters turnout at digits 2–4.",
+            flaggedCount: 0,
+            status: "verified",
+            totalScanned: 1742,
+            threshold: "χ² < 15.51 (df = 8)",
+            audit_type: "benfords-law",
+          },
+          {
+            id: "voting-history",
+            name: "PB-10: 25.91 Million Voting History Referential Audit",
+            desc: "100.00% Roll Match (0 Orphans) • 88 Same-Day 2024 Duplicate Credit Rows",
+            description:
+              "Cross-table join of all 25,911,640 historical ballots against the 2,112,460 Voter Roll, verifying 1,213,364 2024 General voters and isolating 88 duplicate credit entries.",
+            flaggedCount: 88,
+            status: "verified",
+            totalScanned: 25911640,
+            threshold: "25.91M Cross-Table Join",
+            audit_type: "voting-history",
+          },
         ];
-        
-        // Merge system + custom playbooks
+
         const allPlaybooks = [...systemPlaybooks, ...customPlaybooks];
         setPlaybooks(allPlaybooks);
-        
-        // Fetch accuracy for all unique audit types
+
         const uniqueAudits = Array.from(new Set(allPlaybooks.map((p: any) => p.audit_type)));
         const newAccuracies: Record<string, number> = {};
-        
+
         for (const audit of uniqueAudits) {
           try {
             const accRes = await fetch(`/api/feedback?auditType=${audit}`);
@@ -49,7 +162,7 @@ export default function MissionControl() {
               const accData = await accRes.json();
               newAccuracies[audit as string] = accData.accuracy;
             }
-          } catch (e) {} // ignore if feedback api fails
+          } catch {}
         }
         setAccuracies(newAccuracies);
       } catch (e) {
@@ -63,51 +176,77 @@ export default function MissionControl() {
 
   const getAuditLabel = (type: string) => {
     const labels: Record<string, string> = {
-      'density': 'High-Density Occupancy',
-      'missing-dorm': 'Missing Unit/Dorm',
-      'po-box': 'P.O. Box in Residence',
-      'typo-names': 'Clerical Typo',
-      'duplicates': 'Intra-County Duplicates',
-      'commercial': 'Commercial Disguises',
-      'spikes': 'Registration Spikes',
-      'phantom-precincts': 'Phantom Precincts',
-      'out-of-state-mailing': 'Out-of-State Mailing'
+      density: "High-Density Occupancy (Normalized)",
+      "missing-dorm": "Whole-Word Multi-Unit Regex",
+      "po-box": "P.O. Box in Residence Field",
+      "typo-names": "Legacy Migration & Clerical Check",
+      duplicates: "Suffix-Protected Identity Linkage",
+      commercial: "Commercial Mail Receiver Check",
+      spikes: "Statutory Cutoff Velocity",
+      "phantom-precincts": "Precinct Capacity & Code Check",
+      "out-of-state-mailing": "Active vs. Inactive NCOA Split",
+      "benfords-law": "Logarithmic Chi-Square Goodness-of-Fit",
+      "voting-history": "25.91M Ballot History Referential Join",
     };
     return labels[type] || type;
   };
 
   const getPlaybookSource = (name: string, type: string) => {
-    if (name.includes("Quantile Model") || name.includes("IQR")) return <>🧮 Source: <GlossaryTooltip term="Tukey">Tukey&apos;s Fences</GlossaryTooltip> &amp; Mathematical Outlier Benchmarks</>;
-    if (name.includes("Poisson")) return <>📊 Source: <GlossaryTooltip term="Poisson" /> Rare Event Probability Theory</>;
-    if (name.includes("Good Governance") || name.includes("Suspense")) return "🏛️ Source: EAC Administrative Efficiency Guidelines";
-    if (name.includes("Relocation") || name.includes("Merge")) return "📋 Source: Interstate Voter Registration Crosscheck Standards";
-    if (name.includes("Voting Rights") || name.includes("Urban Precinct")) return "⚖️ Source: Brennan Center for Justice Polling Place Wait Time Study";
-    if (name.includes("Campus Housing") || name.includes("Dorm")) return "🎓 Source: ACLU / Fair Fight Student Voting Rights Guide";
-    if (name.includes("Purge Surge") || name.includes("Inactive")) return "🛡️ Source: League of Women Voters / Voter Purge Project";
-    if (type === "density") return "📚 Source: Heritage Foundation / Voter Roll Audit Standards";
-    if (type === "spikes") return "📈 Source: Seth Keshel Statistical Trend Analysis";
-    if (type === "po-box" || type === "commercial") return <>📬 Source: USPS <GlossaryTooltip term="NCOA" /> Commercial Address Registry</>;
-    if (type === "missing-dorm") return "🏛️ Source: EAC (Election Assistance Commission) Housing Guidelines";
-    if (type === "typo-names") return <>🔍 Source: State Auditor <GlossaryTooltip term="OCR" /> Data Validation Benchmarks</>;
-    if (type === "duplicates") return <>📋 Source: <GlossaryTooltip term="NVRA" /> Title 8 &amp; <GlossaryTooltip term="Fellegi-Sunter" /></>;
-    if (type === "phantom-precincts") return "🗺️ Source: Public Interest Legal Foundation (PILF)";
-    if (type === "out-of-state-mailing") return <>📬 Source: Interstate Crosscheck / <GlossaryTooltip term="ERIC" /> Standards</>;
-    return "💡 Source: Non-Partisan Election Integrity Standard";
+    if (type === "density") return "📚 Source: EAC Group Quarters & Single-Family Separation Standard";
+    if (type === "spikes") return "📈 Source: MS Code § 23-15-37 (30-Day Mail-In Cutoff Calendar)";
+    if (type === "po-box" || type === "commercial")
+      return (
+        <>
+          📬 Source: USPS <GlossaryTooltip term="NCOA" /> &amp; MS Physical Domicile Statute
+        </>
+      );
+    if (type === "missing-dorm") return "🏛️ Source: EAC Multi-Unit & Campus Housing Delivery Guidelines";
+    if (type === "typo-names") return "🔍 Source: SEMS Legacy Paper-to-Digital Migration Validation";
+    if (type === "duplicates")
+      return (
+        <>
+          📋 Source: <GlossaryTooltip term="NVRA" /> Section 8 &amp; Generational Suffix Protection
+        </>
+      );
+    if (type === "phantom-precincts") return "🗺️ Source: EAC 3,000-Voter Polling Place Capacity Benchmark";
+    if (type === "out-of-state-mailing")
+      return (
+        <>
+          📬 Source: National Change of Address (<GlossaryTooltip term="NCOA" />) &amp; NVRA 2-Cycle Clock
+        </>
+      );
+    if (type === "voting-history") return "🗳️ Source: Statewide SEMS Voting History Cross-Table Join (25.91M Rows)";
+    return "💡 Source: Non-Partisan Election Administration Standard";
   };
 
-  const statePlaybooks = playbooks.filter(p => {
-    if (selectedState === 'MS') return !p.name.includes('[NC ');
-    if (selectedState === 'NC') return p.name.includes('[NC ');
+  const statePlaybooks = playbooks.filter((p) => {
+    if (selectedState === "MS") return !p.name.includes("[NC ");
+    if (selectedState === "NC") return p.name.includes("[NC ");
     return true;
   });
 
-  const filteredPlaybooks = selectedCounty === 'All' 
-    ? statePlaybooks 
-    : statePlaybooks.filter(p => (selectedCounty === 'Statewide' ? !p.county : p.county === selectedCounty));
+  const filteredPlaybooks =
+    selectedCounty === "All"
+      ? statePlaybooks
+      : statePlaybooks.filter((p) =>
+          selectedCounty === "Statewide" ? !p.county : p.county === selectedCounty
+        );
 
-  const msCounties = ['All', 'Statewide', 'Hinds', 'DeSoto', 'Harrison', 'Madison', 'Rankin', 'Jackson', 'Lee'];
-  const ncCounties = ['All', 'Statewide', 'Wake', 'Mecklenburg', 'Guilford', 'Durham', 'New Hanover'];
-  const currentCounties = selectedState === 'NC' ? ncCounties : msCounties;
+  const msCounties = [
+    "All",
+    "Statewide",
+    "Hinds",
+    "DeSoto",
+    "Harrison",
+    "Madison",
+    "Rankin",
+    "Jackson",
+    "Lee",
+    "Lafayette",
+    "Oktibbeha",
+  ];
+  const ncCounties = ["All", "Statewide", "Wake", "Mecklenburg", "Guilford", "Durham", "New Hanover"];
+  const currentCounties = selectedState === "NC" ? ncCounties : msCounties;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
@@ -116,73 +255,97 @@ export default function MissionControl() {
           <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 bg-amber-100 text-amber-950 rounded-full text-xs font-extrabold uppercase tracking-wider">
-                🏛️ Multi-State Mission Control
+                🏛️ 82-County Commissioner Mission Control
               </span>
-              <span className="text-xs font-mono text-muted-foreground">Calibrated Statistical Audits</span>
+              <span className="text-xs font-mono text-muted-foreground">
+                2,112,460 Voter Roll + 25,911,640 Voting History Rows
+              </span>
               <span className="text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded border border-emerald-300 flex items-center gap-1">
-                <span>✓ Data Parity Verified</span>
+                <span>✓ 100% Zero-PII Verified</span>
               </span>
             </div>
 
             {/* State Selector */}
             <div className="flex bg-slate-200 p-1 rounded-xl gap-1">
               <button
-                onClick={() => { setSelectedState('MS'); setSelectedCounty('All'); }}
-                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${selectedState === 'MS' ? 'bg-primary text-white shadow' : 'text-slate-700 hover:bg-slate-300'}`}
+                onClick={() => {
+                  setSelectedState("MS");
+                  setSelectedCounty("All");
+                }}
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${
+                  selectedState === "MS"
+                    ? "bg-primary text-white shadow"
+                    : "text-slate-700 hover:bg-slate-300"
+                }`}
               >
-                📍 Mississippi (MS)
+                📍 Mississippi (MS — 82 Counties)
               </button>
               <button
-                onClick={() => { setSelectedState('NC'); setSelectedCounty('All'); }}
-                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${selectedState === 'NC' ? 'bg-emerald-700 text-white shadow' : 'text-slate-700 hover:bg-slate-300'}`}
+                onClick={() => {
+                  setSelectedState("NC");
+                  setSelectedCounty("All");
+                }}
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${
+                  selectedState === "NC"
+                    ? "bg-emerald-700 text-white shadow"
+                    : "text-slate-700 hover:bg-slate-300"
+                }`}
               >
                 🌲 North Carolina (NC)
               </button>
             </div>
           </div>
 
-          {/* Collaborative Parity & Dataset Governance Banner */}
-          <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-emerald-950 shadow-sm mb-4">
-            <div className="space-y-0.5">
-              <strong className="font-bold text-sm block">Shared Playbook Protocol Active</strong>
-              <p className="text-xs text-emerald-900">
-                Playbook missions execute strictly inside your browser memory. If your state file differs from your group standard, download the latest version below.
-              </p>
-            </div>
-            <a
-              href={typeof window !== 'undefined' && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox"))) ? "/api/demo-dataset" : "/registry"}
-              download={typeof window !== 'undefined' && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox"))) ? "DEMO_roosevelt_statewide_voter_roll.csv" : undefined}
-              className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-400 font-bold text-xs px-3 py-2 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-1"
-            >
-              <span>{typeof window !== 'undefined' && (((localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("demo") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("acme") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("roosevelt") || (localStorage.getItem("marigold_active_group") || "").toLowerCase().includes("sandbox"))) ? "📥 Download Roosevelt Demo Dataset (.csv)" : "🌐 Download Official State Dataset ↗"}</span>
-            </a>
-          </div>
-
-          <h1 className="text-3xl font-bold text-foreground">{selectedState === 'MS' ? 'Mississippi' : 'North Carolina'} Mission Playbooks</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            {selectedState === "MS" ? "Mississippi 10-Playbook" : "North Carolina"} Forensic Suite
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Pre-configured statistical audits calibrated specifically for {selectedState === 'MS' ? 'Mississippi counties (Hinds, DeSoto, Harrison, etc.)' : 'North Carolina counties (Wake, Mecklenburg, Guilford, etc.)'}. Click a playbook below to launch an instant scan. False positives are automatically filtered out, and our non-partisan models learn from your verification feedback.
-            Need help understanding the data? <Tooltip content="If the data looks confusing, hover over the ℹ️ icons or ask the AI Chat Guide to explain the math for you."><span className="text-primary font-semibold underline decoration-dotted">Hover here for a tip.</span></Tooltip>
+            Pre-configured deterministic audits calibrated for County Election Commissioners and Circuit Clerks. False alarms from nursing homes, college dormitories, Jr./Sr. fathers and sons, and street names like{" "}
+            <em>Marshall Place</em> are automatically filtered out.{" "}
+            <Tooltip content="Hover over any glossary term or open the Plain-English Guide in the right panel to see step-by-step explanations of the math.">
+              <span className="text-primary font-semibold underline decoration-dotted">
+                Hover here for a plain-English tip.
+              </span>
+            </Tooltip>
           </p>
 
-          {/* Executive 360° Audit Launch Banner */}
-          <div className="pt-4">
+          {/* Flagship Action Buttons: Report, 3D Manifold, Explore */}
+          <div className="pt-4 flex flex-wrap gap-3">
+            <Link
+              href="/reports/mississippi-playbook-analysis"
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-3.5 rounded-xl shadow-sm transition-all text-xs inline-flex items-center gap-2"
+            >
+              <span>📄 Read Accént Editorial Mississippi Report (Draft 2) →</span>
+            </Link>
+            <Link
+              href="/manifold"
+              className="bg-amber-700 hover:bg-amber-800 text-white font-bold px-5 py-3.5 rounded-xl shadow-sm transition-all text-xs inline-flex items-center gap-2"
+            >
+              <span>🧭 Open Interactive Three.js 3D Threat Manifold →</span>
+            </Link>
             <Link
               href="/explore?autoRun=true"
-              className="w-full sm:w-auto bg-gradient-to-r from-[#2D3142] to-[#1E212D] hover:from-[#1E212D] hover:to-black text-amber-300 font-extrabold px-6 py-4 rounded-xl shadow-md transition-all text-sm inline-flex items-center justify-center gap-2 border border-slate-700"
+              className="bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-bold px-5 py-3.5 rounded-xl shadow-xs transition-all text-xs inline-flex items-center gap-2"
             >
-              <span>🚀 Launch 360° Comprehensive Jurisdiction Audit across all 9 Playbooks →</span>
+              <span>🚀 Launch Interactive DuckDB Scanner →</span>
             </Link>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-          {currentCounties.map(c => (
+          {currentCounties.map((c) => (
             <button
               key={c}
               onClick={() => setSelectedCounty(c)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedCounty === c ? (selectedState === 'NC' ? 'bg-emerald-700 text-white shadow' : 'bg-primary text-white shadow') : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                selectedCounty === c
+                  ? selectedState === "NC"
+                    ? "bg-emerald-700 text-white shadow"
+                    : "bg-primary text-white shadow"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
             >
-              {c === 'All' ? '🌐 All Playbooks' : c === 'Statewide' ? '🏛️ Statewide General' : `📍 ${c} County`}
+              {c === "All" ? "🌐 All 10 Playbooks" : c === "Statewide" ? "🏛️ Statewide" : `📍 ${c} County`}
             </button>
           ))}
           <div className="flex-1" />
@@ -200,95 +363,78 @@ export default function MissionControl() {
       ) : filteredPlaybooks.length === 0 ? (
         <div className="card text-center py-12">
           <h2 className="text-xl font-bold mb-2">No Playbooks Found</h2>
-          <p className="text-muted-foreground mb-6">No playbooks found for {selectedCounty}. Click below to create one!</p>
-          <Link href="/explore" className="btn-primary">
-            Go to Pro Mode to create one
-          </Link>
+          <p className="text-muted-foreground mb-6">
+            No playbooks found for {selectedCounty}. Click below to view all statewide playbooks!
+          </p>
+          <button onClick={() => setSelectedCounty("All")} className="btn-primary">
+            Show All Statewide Playbooks
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPlaybooks.map((p) => (
-            <div key={p.id} className="card flex flex-col justify-between group hover:border-primary/50 transition-colors">
+            <div
+              key={p.id}
+              className="card flex flex-col justify-between group hover:border-primary/50 transition-colors"
+            >
               <div>
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{p.name}</h3>
-                  {accuracies[p.audit_type] && (
-                    <span className="bg-secondary/20 text-secondary-foreground text-xs px-2 py-1 rounded-md font-bold border border-secondary/30">
-                      🎯 {accuracies[p.audit_type]}% Acc
-                    </span>
-                  )}
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
+                    {p.name}
+                  </h3>
+                  <span className="bg-amber-50 text-amber-900 text-[11px] font-mono px-2 py-0.5 rounded border border-amber-200 shrink-0 font-bold">
+                    {typeof p.flaggedCount === "number" ? p.flaggedCount.toLocaleString() : "Verified"}
+                  </span>
                 </div>
-                <div className="space-y-1 mb-6">
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span className="font-medium">Algorithm:</span> {getAuditLabel(p.audit_type)}
+                <p className="text-xs font-semibold text-slate-800 mb-2">{p.desc}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-4">{p.description}</p>
+                <div className="space-y-1 mb-4 text-xs">
+                  <p className="text-muted-foreground flex items-center gap-2">
+                    <span className="font-medium text-slate-800">Method:</span>{" "}
+                    {getAuditLabel(p.audit_type)}
                   </p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span className="font-medium">Threshold:</span> {p.threshold || 'N/A'}
+                  <p className="text-muted-foreground flex items-center gap-2">
+                    <span className="font-medium text-slate-800">Rule:</span> {p.threshold || "Standard"}
                   </p>
-                  {p.county && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="font-medium">County:</span> {p.county}
-                    </p>
-                  )}
-                  {p.audit_type === 'custom' && (
-                    <div className="pt-2 mt-2 border-t border-slate-100">
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Visibility</p>
-                      {p.promotedGroups?.includes(typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") || "" : "") ? (
-                        <div className="inline-flex items-center gap-1 text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
-                          👁️ Shared with Group
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded border border-amber-200">
-                            🔒 Private
-                          </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const grp = typeof window !== 'undefined' ? localStorage.getItem("marigold_active_group") || "" : "";
-                              if (grp) {
-                                updatePlaybook(p.id, { promotedGroups: [...(p.promotedGroups || []), grp] });
-                                addFeedEvent({
-                                  type: "playbook_promoted",
-                                  message: `shared the "${p.name}" playbook with the group.`,
-                                  meta: { playbookId: p.id, playbookName: p.name }
-                                });
-                              }
-                            }}
-                            className="text-xs py-1 px-2 rounded border border-primary text-primary hover:bg-primary/5 transition-colors font-bold"
-                          >
-                            Promote to Group
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 <div className="bg-slate-100 border border-slate-200 rounded-lg p-2.5 mb-4 text-xs text-slate-800">
-                  <span className="font-bold text-slate-900 block mb-0.5">Citation / Legal Standard:</span>
-                  <span className="font-medium text-slate-700">{getPlaybookSource(p.name, p.audit_type)}</span>
+                  <span className="font-bold text-slate-900 block mb-0.5">
+                    Statutory / Technical Standard:
+                  </span>
+                  <span className="font-medium text-slate-700">
+                    {getPlaybookSource(p.name, p.audit_type)}
+                  </span>
                 </div>
               </div>
-              
-              <button
-                type="button"
-                onClick={() => {
-                  setLaunchingId(p.id);
-                  router.push(`/explore?audit=${p.audit_type}&county=${encodeURIComponent(p.county)}&threshold=${p.threshold}`);
-                }}
-                disabled={launchingId === p.id}
-                className="btn-primary w-full justify-center bg-primary/90 disabled:opacity-75 disabled:cursor-wait flex items-center gap-2"
-              >
-                {launchingId === p.id ? (
-                  <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full inline-block"></span>
-                    <span>⏳ Launching Scan...</span>
-                  </>
-                ) : (
-                  "Launch Mission"
-                )}
-              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (p.id === "voting-history") {
+                      router.push("/reports/mississippi-playbook-analysis#voting-history-forensics");
+                      return;
+                    }
+                    setLaunchingId(p.id);
+                    router.push(
+                      `/explore?audit=${p.audit_type}&county=${encodeURIComponent(
+                        p.county || "All"
+                      )}&threshold=${encodeURIComponent(p.threshold || "")}`
+                    );
+                  }}
+                  disabled={launchingId === p.id}
+                  className="btn-primary flex-1 justify-center bg-primary/90 text-xs py-2.5 flex items-center gap-1.5"
+                >
+                  {launchingId === p.id ? "Launching..." : "Launch Playbook"}
+                </button>
+                <Link
+                  href={`/audit/${p.id}`}
+                  className="px-3 py-2.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center"
+                >
+                  Guide
+                </Link>
+              </div>
             </div>
           ))}
         </div>
@@ -300,60 +446,60 @@ export default function MissionControl() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-200">
             <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
               <h3 className="font-bold text-lg text-slate-900">✨ Create Custom Playbook</h3>
-              <button onClick={() => setIsWizardOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">✕</button>
+              <button
+                onClick={() => setIsWizardOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                ✕
+              </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Playbook Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={newPbName}
                   onChange={(e) => setNewPbName(e.target.value)}
                   className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder="e.g. Dormitory Anomaly Scanner"
+                  placeholder="e.g. Dormitory Unit Verification"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Description / Goal</label>
-                <textarea 
+                <label className="block text-sm font-bold text-slate-700 mb-1">
+                  Description / Goal
+                </label>
+                <textarea
                   value={newPbDesc}
                   onChange={(e) => setNewPbDesc(e.target.value)}
                   className="w-full border border-slate-300 rounded-lg p-2 text-sm h-24 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder="Describe what this playbook aims to find..."
+                  placeholder="Describe what this playbook aims to verify..."
                 />
               </div>
-              
-              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-2">
-                <span className="text-amber-500 mt-0.5">💡</span>
-                <p className="text-xs text-amber-900 font-medium leading-relaxed">
-                  Tip: It is often easier to create a playbook directly from the Explore & Review page after you have filtered your data perfectly. Look for the "Save as Playbook" button there.
-                </p>
-              </div>
             </div>
-            
+
             <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button 
+              <button
                 onClick={() => setIsWizardOpen(false)}
                 className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => {
                   if (newPbName.trim()) {
                     addPlaybook({
                       id: crypto.randomUUID(),
                       name: newPbName,
-                      desc: newPbDesc.slice(0, 50) + (newPbDesc.length > 50 ? '...' : ''),
+                      desc: newPbDesc.slice(0, 50) + (newPbDesc.length > 50 ? "..." : ""),
                       description: newPbDesc,
-                      audit_type: 'custom',
-                      promotedGroups: []
+                      audit_type: "custom",
+                      promotedGroups: [],
                     });
                     setIsWizardOpen(false);
-                    setNewPbName('');
-                    setNewPbDesc('');
+                    setNewPbName("");
+                    setNewPbDesc("");
                   }
                 }}
                 disabled={!newPbName.trim()}
