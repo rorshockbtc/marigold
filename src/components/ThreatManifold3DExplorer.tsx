@@ -220,6 +220,8 @@ export default function ThreatManifold3DExplorer({
   const dragDistRef = useRef(0);
   const prevPtrRef = useRef({ x: 0, y: 0 });
 
+  const normalCountyCount = countyVectors.filter((c) => c.regime === "Equilibrium Manifold Surface").length;
+
   const selectedCounty = useMemo(
     () =>
       countyVectors.find((c) => c.county.toLowerCase() === selectedCountyName.toLowerCase()) ||
@@ -522,8 +524,8 @@ export default function ThreatManifold3DExplorer({
             </h2>
             <p className="mt-2 text-sm sm:text-base text-[#2A2623] max-w-3xl leading-relaxed">
               Think of the <strong className="text-[#065F46]">smooth green net</strong> below as normal for Mississippi&apos;s population.{" "}
-              <strong>66 of our 82 counties</strong> sit right on that healthy green net. The{" "}
-              <strong className="text-[#D9381E]">16 counties floating above the net on red stems</strong> simply have specific cleanup tasks—like adding apartment unit numbers, sending out-of-state mail postcards, or adding check-in books at busy polling places.
+              <strong>{normalCountyCount} of our 82 counties</strong> sit right on that healthy green net. The{" "}
+              <strong className="text-[#D9381E]">{82 - normalCountyCount} counties floating above the net</strong> simply have specific cleanup tasks—like adding apartment unit numbers, sending out-of-state mail postcards, or adding check-in books at busy polling places.
             </p>
           </div>
 
@@ -755,7 +757,7 @@ export default function ThreatManifold3DExplorer({
                 <span className="w-3 h-3 rounded-full bg-[#0EA5E9] border border-white/50" /> Large Precincts
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-[#10B981] border border-white/50" /> Normal Pattern (66)
+                <span className="w-3 h-3 rounded-full bg-[#10B981] border border-white/50" /> Normal Pattern ({normalCountyCount})
               </span>
             </div>
             <span
@@ -1109,7 +1111,7 @@ export default function ThreatManifold3DExplorer({
                 2. What Is the Green Net?
               </div>
               <div className="font-serif text-[#111111] text-sm mt-0.5 font-bold">
-                Normal County Baseline (66 Counties)
+                Normal County Baseline ({normalCountyCount} Counties)
               </div>
               <p className="text-[11px] text-[#2A2623] mt-1 leading-snug">
                 Larger counties naturally have more apartments and mail moves. The green net adjusts for county size so big counties aren&apos;t unfairly penalized.

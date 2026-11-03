@@ -179,7 +179,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           <section>
             <Kicker>Mississippi · Public edition · No login required</Kicker>
             <h1 className="mt-4 font-serif text-[38px] sm:text-[56px] font-bold leading-[1.03] tracking-[-0.02em]">
-              Mississippi&rsquo;s voter roll is in good shape. Here&rsquo;s where to tidy up.
+              Every past ballot matched a real voter. Here&rsquo;s what&rsquo;s left to tidy up.
             </h1>
             <p className="mt-5 max-w-[60ch] font-serif text-[19px] sm:text-[21px] leading-[1.55] text-[#2C2825]">
               We checked {fmt(metadata.totalRecords)} registrations and {fmt(votingHistoryAudit.totalHistoryRowsScanned)} past
