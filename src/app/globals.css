@@ -122,3 +122,15 @@ h1, h2, h3, h4, h5, h6 {
     margin: 2cm;
   }
 }
+
+/* Native modal dialog scroll containment (modern-web-guidance: dialog & prevent-page-scroll-under-modal-dialog) */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgba(17, 17, 17, 0.82);
+  backdrop-filter: blur(4px);
+}

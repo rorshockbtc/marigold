@@ -12,45 +12,45 @@ export const metadata = {
 export default function ManifoldPage() {
   return (
     <div className="min-h-screen bg-[#FCFBF8] text-[#111111]">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 pt-4 pb-20">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 pt-5 pb-20">
         {/* Top Breadcrumb & Quick Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b-2 border-[#111111]">
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/reports/mississippi-playbook-analysis"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] hover:text-[#D9381E] bg-white border border-[#111111] px-3.5 py-2 rounded-lg shadow-2xs transition-colors"
+              className="inline-flex items-center gap-2 text-base font-bold text-[#111111] hover:text-[#C2341B] bg-white border-2 border-[#111111] px-4 py-2.5 rounded-xl shadow-2xs transition-colors whitespace-nowrap shrink-0"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Full Mississippi Report
+              <ArrowLeft className="w-4 h-4 shrink-0" />
+              Back to Mississippi Report
             </Link>
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#0F5132] bg-[#E8F5E9] border border-[#0F5132]/30 px-3 py-1.5 rounded-full">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              100% Privacy Safe • All 82 Counties • Written in Plain English
+            <span className="inline-flex items-center gap-2 text-base font-mono font-bold text-[#0F5132] bg-[#E8F5E9] border border-[#0F5132]/30 px-4 py-2 rounded-full whitespace-nowrap">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              100% Privacy Safe • All 82 Counties • Plain English
             </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             <Link
               href="/updates"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border border-[#111111] px-3.5 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 text-base font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border-2 border-[#111111] px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#D9381E]" />
-              What&apos;s New (Plain-English Post)
+              <Sparkles className="w-4 h-4 text-[#C2341B] shrink-0" />
+              What&apos;s New
             </Link>
             <Link
               href="/reports/mississippi-playbook-analysis"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border border-[#111111] px-3.5 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 text-base font-bold text-[#111111] bg-white hover:bg-[#F5F2EB] border-2 border-[#111111] px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap shrink-0"
             >
-              <FileText className="w-3.5 h-3.5 text-[#D9381E]" />
+              <FileText className="w-4 h-4 text-[#C2341B] shrink-0" />
               Full 82-County Guide
             </Link>
             <a
               href="/Marigold-Mississippi-Playbook-Analysis.pdf"
               download="Marigold-Mississippi-Playbook-Analysis.pdf"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#111111] hover:bg-[#2A2927] px-4 py-2 rounded-lg shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 text-base font-bold text-white bg-[#111111] hover:bg-[#2A2927] px-4 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap shrink-0"
             >
-              <Download className="w-3.5 h-3.5 text-[#F59E0B]" />
-              Download Printable PDF
+              <Download className="w-4 h-4 text-[#F59E0B] shrink-0" />
+              Download PDF
             </a>
           </div>
         </div>
