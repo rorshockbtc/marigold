@@ -1,1334 +1,517 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import ThreatManifold3DExplorer from "@/components/ThreatManifold3DExplorer";
+import { EditorialTable } from "@/components/report/EditorialTable";
 import msAudit from "@/data/mississippi_audit_results.json";
-import {
-  Printer,
-  Download,
-  ArrowLeft,
-  Compass,
-  Search,
-  ArrowUpRight,
-  BarChart3,
-  CheckCircle2,
-  BookOpen,
-  Share2,
-  ClipboardCheck,
-  MapPin,
-  ShieldCheck,
-  ChevronDown,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Compass, Download, Printer, Search, Copy, Check, ShieldCheck } from "lucide-react";
 
-const FRIENDLY_REGIME_MAP: Record<string, string> = {
-  "Multi-Axis Manifold Detachment": "Needs Attention in All 3 Areas",
-  "Axis-X Spatial Domicile Ridge": "Focus 1: Apartment & Dorm Unit #s",
-  "Axis-Y Interstate Drift Ridge": "Focus 2: Out-of-State Mail & Dups",
-  "Axis-Z Precinct Strain Ridge": "Focus 3: Large Precincts (3,000+)",
-  "Equilibrium Manifold Surface": "On Track: Normal County Range",
+/* ---------- Design tokens (one focal color: vermilion) ---------- */
+const INK = "#111111";
+const FOCUS = "#C2341B";
+
+const STATUS_LABEL: Record<string, string> = {
+  "Multi-Axis Manifold Detachment": "Needs attention in all 3 areas",
+  "Axis-X Spatial Domicile Ridge": "Main focus: apartment & dorm unit numbers",
+  "Axis-Y Interstate Drift Ridge": "Main focus: out-of-state mail & duplicates",
+  "Axis-Z Precinct Strain Ridge": "Main focus: large precincts (3,000+)",
+  "Equilibrium Manifold Surface": "On track — normal range",
 };
 
+const fmt = (n: number) => n.toLocaleString("en-US");
+const pct = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 10 : 0);
+
+/* ---------- Small editorial primitives ---------- */
+function Kicker({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="font-mono text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: FOCUS }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHead({ id, num, kicker, title, dek }: { id: string; num: string; kicker: string; title: string; dek?: string }) {
+  return (
+    <header id={id} className="scroll-mt-24 border-t-2 border-[#111111] pt-6">
+      <div className="flex items-baseline gap-3">
+        <span className="font-serif text-[15px] font-bold tabular-nums text-[#8A8279]">{num}</span>
+        <Kicker>{kicker}</Kicker>
+      </div>
+      <h2 className="mt-2 font-serif text-[26px] sm:text-[32px] font-bold leading-[1.15] tracking-tight text-[#111111]">{title}</h2>
+      {dek && <p className="mt-2 max-w-[62ch] text-[16px] leading-relaxed text-[#3A3530]">{dek}</p>}
+    </header>
+  );
+}
+
+function Bar({ value, max, focus = false, label }: { value: number; max: number; focus?: boolean; label?: string }) {
+  const w = Math.max(2, Math.round((value / Math.max(max, 1)) * 100));
+  return (
+    <div className="h-2.5 w-full bg-[#E9E4DA]" aria-label={label} role="img">
+      <div className="h-full" style={{ width: `${w}%`, background: focus ? FOCUS : INK }} />
+    </div>
+  );
+}
+
 export default function MississippiPlaybookAnalysisReportPage() {
-  const [countySearch, setCountySearch] = useState("");
-  const [tierFilter, setTierFilter] = useState<"ALL" | "DETACHED" | "BASELINE">("ALL");
-  const [quickCountyName, setQuickCountyName] = useState("Hinds");
-  const [copiedSummary, setCopiedSummary] = useState(false);
-
   const { metadata, votingHistoryAudit, threatManifold, playbooks } = msAudit;
+  const counties = threatManifold.countyVectors;
   const correlations = (threatManifold as Record<string, unknown>).correlations as Array<{
-    id: string;
-    pairLabel: string;
-    plainTitle: string;
-    pearsonR: number;
-    spearmanRho: number;
-    strength: string;
-    rateOfChange: string;
-    commonManTakeaway: string;
+    id: string; plainTitle: string; pearsonR: number; rateOfChange: string; commonManTakeaway: string;
   }>;
-  const commissionerToolkit = (threatManifold as Record<string, unknown>).commissionerToolkit as {
-    headline: string;
-    subheadline: string;
-    peerTiers: Array<{
-      tier: string;
-      counties: string[];
-      primaryFocus: string;
-      benchmarkMetric: string;
-    }>;
-    evangelismSteps: Array<{
-      step: string;
-      title: string;
-      detail: string;
-    }>;
+  const toolkit = (threatManifold as Record<string, unknown>).commissionerToolkit as {
+    headline: string; evangelismSteps: Array<{ step: string; title: string; detail: string }>;
   };
 
-  const selectedQuickCounty = useMemo(() => {
-    return (
-      threatManifold.countyVectors.find(
-        (c) => c.county.toLowerCase() === quickCountyName.toLowerCase()
-      ) || threatManifold.countyVectors[0]
-    );
-  }, [threatManifold.countyVectors, quickCountyName]);
+  /* ---------- Derived, data-bound figures (no hardcoded statistics) ---------- */
+  const priorityCount = counties.filter((c) => c.regime !== "Equilibrium Manifold Surface").length;
+  const normalCount = counties.length - priorityCount;
+  const falseAlarms =
+    playbooks.missingDorm.streetNameFalsePositivesRemoved +
+    playbooks.duplicates.generationalPairs +
+    playbooks.highDensity.institutionalVoters +
+    playbooks.highDensity.multiFamilyVoters;
+  const ncoa = playbooks.ncoaRelocations;
+  const ncoaInactivePct = pct(ncoa.inactiveRelocatedVoters, ncoa.totalAllStatusVoters);
+  const benford = playbooks.benfordsLaw;
+  const benfordTurnout = benford.turnout2024;
+  const fivePlus = playbooks.precinctCapacity.topOverCapacity.filter((p) => p.voterCount > 5000).length;
 
-  const filteredCountyVectors = useMemo(() => {
-    return threatManifold.countyVectors.filter((c) => {
-      const matchesQuery =
-        !countySearch.trim() ||
-        c.county.toLowerCase().includes(countySearch.toLowerCase()) ||
-        c.regime.toLowerCase().includes(countySearch.toLowerCase()) ||
-        c.dominantDriver.toLowerCase().includes(countySearch.toLowerCase());
-      const matchesTier =
-        tierFilter === "ALL" ||
-        (tierFilter === "DETACHED" && c.regime !== "Equilibrium Manifold Surface") ||
-        (tierFilter === "BASELINE" && c.regime === "Equilibrium Manifold Surface");
-      return matchesQuery && matchesTier;
-    });
-  }, [threatManifold.countyVectors, countySearch, tierFilter]);
+  /* ---------- State ---------- */
+  const [quickCounty, setQuickCounty] = useState("Hinds");
+  const [copied, setCopied] = useState(false);
+  const [search, setSearch] = useState("");
+  const [tier, setTier] = useState<"ALL" | "PRIORITY" | "NORMAL">("ALL");
 
-  const maxElectionVotes = useMemo(() => {
-    return Math.max(...votingHistoryAudit.majorElections.map((e) => e.ballotsRecorded), 1);
-  }, [votingHistoryAudit.majorElections]);
+  const selected = useMemo(
+    () => counties.find((c) => c.county === quickCounty) || counties[0],
+    [counties, quickCounty]
+  );
+  const sortedCounties = useMemo(() => [...counties].sort((a, b) => a.county.localeCompare(b.county)), [counties]);
+  const ledger = useMemo(
+    () =>
+      counties.filter((c) => {
+        const q = search.trim().toLowerCase();
+        const okQ = !q || c.county.toLowerCase().includes(q);
+        const isNormal = c.regime === "Equilibrium Manifold Surface";
+        return okQ && (tier === "ALL" || (tier === "NORMAL" ? isNormal : !isNormal));
+      }),
+    [counties, search, tier]
+  );
+  const maxBallots = Math.max(...votingHistoryAudit.majorElections.map((e) => e.ballotsRecorded));
+  const ncoaStates = Object.entries(ncoa.stateBreakdown).slice(0, 8).map(([s, n]) => ({ s, n: Number(n) }));
+  const maxState = Math.max(...ncoaStates.map((x) => x.n));
 
-  const topNcoaStates = useMemo(() => {
-    return Object.entries(playbooks.ncoaRelocations.stateBreakdown)
-      .slice(0, 8)
-      .map(([state, count]) => ({ state, count: Number(count) }));
-  }, [playbooks.ncoaRelocations.stateBreakdown]);
-
-  const maxNcoaStateCount = useMemo(() => {
-    return Math.max(...topNcoaStates.map((s) => s.count), 1);
-  }, [topNcoaStates]);
-
-  const handleCopyBrief = () => {
+  const copyBrief = () => {
     const text = [
-      `MISSISSIPPI 82-COUNTY VOTER ROLL SUMMARY (${selectedQuickCounty.county.toUpperCase()} COUNTY)`,
-      `• Statewide Roll Checked: 2,112,460 Voters + 25,911,640 Past Ballots (100% Matched, 0 Unmatched Ballots)`,
-      `• False Alarms Filtered Out: 18,093 (Nursing homes, dorms, Jr./Sr. families & street names removed)`,
-      `• ${selectedQuickCounty.county} County Registered Voters: ${selectedQuickCounty.total.toLocaleString()} (${selectedQuickCounty.active.toLocaleString()} Active)`,
-      `• ${selectedQuickCounty.county} County Status: ${FRIENDLY_REGIME_MAP[selectedQuickCounty.regime] || selectedQuickCounty.regime}`,
-      `• ${selectedQuickCounty.county} County Checklist: ${selectedQuickCounty.highDensityCount} high-density addresses, ${selectedQuickCounty.ncoaCount} active out-of-state mailings, ${selectedQuickCounty.overCapacityPrecincts} precincts over 3,000 voters.`,
-      `• Full Public Report (100% Zero-PII): https://marigoldinsights.org/reports/mississippi-playbook-analysis`,
+      `${selected.county} County, Mississippi — Voter Roll Summary`,
+      `Status: ${STATUS_LABEL[selected.regime] || selected.regime}`,
+      `Registered voters: ${fmt(selected.total)} (${fmt(selected.active)} active)`,
+      `Addresses with 8+ voters: ${fmt(selected.highDensityCount)}`,
+      `Active voters with out-of-state mail: ${fmt(selected.ncoaCount)}`,
+      `Precincts over 3,000 voters: ${selected.overCapacityPrecincts}`,
+      `Statewide: ${fmt(votingHistoryAudit.totalHistoryRowsScanned)} past ballots checked, 0 unmatched.`,
+      `Full public report (no personal data): https://marigoldinsights.org/reports/mississippi-playbook-analysis`,
     ].join("\n");
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      setCopiedSummary(true);
-      setTimeout(() => setCopiedSummary(false), 2500);
-    }
+    navigator.clipboard?.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    });
   };
+
+  const navItems = [
+    ["takeaways", "01", "Key takeaways"],
+    ["actions", "02", "What you can do"],
+    ["map", "03", "3D county map"],
+    ["filtering", "04", "False alarms removed"],
+    ["ballots", "05", "Ballot history check"],
+    ["connections", "06", "2-for-1 fixes"],
+    ["checks", "07", "The 10 checks"],
+    ["ledger", "08", "All 82 counties"],
+  ] as const;
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-[#111111] selection:bg-[#D9381E]/15 selection:text-[#D9381E] print:bg-white overflow-x-hidden">
-      {/* Clean, Mobile-First Top Bar (Zero Overflow on 390px Phones) */}
-      <header className="sticky top-0 z-40 border-b-2 border-[#111111] bg-[#FCFBF9]/95 backdrop-blur print:hidden">
-        <div className="max-w-[1440px] mx-auto px-3 sm:px-8 py-2.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/overview"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] hover:text-[#D9381E] transition-colors shrink-0"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Marigold Home</span>
+    <div className="w-full max-w-[100vw] overflow-x-clip min-h-screen bg-[#F6F3EC] text-[#111111] print:bg-white">
+      {/* ---------- Single sticky top bar ---------- */}
+      <header className="sticky top-0 z-40 h-14 border-b border-[#111111] bg-[#F6F3EC]/95 backdrop-blur print:hidden">
+        <div className="mx-auto flex h-full max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-8">
+          <Link href="/overview" className="inline-flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap hover:text-[#C2341B]">
+            <ArrowLeft className="h-4 w-4" /> Marigold
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/manifold" className="inline-flex h-10 items-center gap-1.5 border border-[#111111] bg-white px-3 text-[13px] font-semibold whitespace-nowrap hover:bg-[#EFEAE0]">
+              <Compass className="h-4 w-4" /> 3D map
             </Link>
-            <span className="hidden md:inline text-[#BDB6AC]">|</span>
-            <Link
-              href="/updates"
-              className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-[#3A3530] hover:text-[#D9381E] shrink-0"
-            >
-              What&apos;s New
-            </Link>
-            <span className="hidden xl:inline text-[#BDB6AC]">|</span>
-            <span className="hidden xl:inline font-mono text-[11px] uppercase tracking-widest text-[#15803D] font-bold truncate">
-              100% Zero-PII Public Edition • No Login Required
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            <Link
-              href="/manifold"
-              className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#111111] border-2 border-[#111111] bg-white hover:bg-[#F5F2EB] px-2.5 sm:px-3 py-1.5 rounded transition-colors"
-            >
-              <Compass className="w-3.5 h-3.5 text-[#D9381E] shrink-0" />
-              <span className="hidden sm:inline">Full-Screen</span> 3D Map
-            </Link>
-            <button
-              onClick={() => window.print()}
-              className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold text-[#111111] border border-[#111111] bg-white hover:bg-[#F5F2EB] px-3 py-1.5 rounded cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              Print
+            <button onClick={() => window.print()} className="hidden md:inline-flex h-10 items-center gap-1.5 border border-[#111111] bg-white px-3 text-[13px] font-semibold hover:bg-[#EFEAE0]">
+              <Printer className="h-4 w-4" /> Print
             </button>
-            <a
-              href="/Marigold-Mississippi-Playbook-Analysis.pdf"
-              download="Marigold-Mississippi-Playbook-Analysis.pdf"
-              className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-white bg-[#111111] hover:bg-[#2A2927] px-2.5 sm:px-3.5 py-1.5 rounded"
-            >
-              <Download className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
-              <span>PDF</span>
-              <span className="hidden sm:inline">Guide</span>
+            <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="inline-flex h-10 items-center gap-1.5 bg-[#111111] px-3 text-[13px] font-semibold text-white whitespace-nowrap hover:bg-[#2A2724]">
+              <Download className="h-4 w-4" /> PDF
             </a>
           </div>
         </div>
       </header>
 
-      {/* Mobile Jump-To-Section Bar (Visible on Phones & Tablets) */}
-      <div className="lg:hidden border-b border-[#D8D2C7] bg-white px-3 py-2 flex items-center gap-2 overflow-x-auto text-xs font-bold whitespace-nowrap print:hidden">
-        <span className="font-mono text-[10px] uppercase text-[#D9381E] shrink-0">Jump:</span>
-        <a href="#key-takeaways" className="px-2 py-1 rounded bg-[#F5F2EB] text-[#111111]">
-          Key Takeaways
-        </a>
-        <a href="#action-items" className="px-2 py-1 rounded bg-[#F5F2EB] text-[#111111]">
-          Action Items
-        </a>
-        <a href="#manifold-3d" className="px-2 py-1 rounded bg-[#F5F2EB] text-[#111111]">
-          3D County Map
-        </a>
-        <a href="#pb-10-county-ledger" className="px-2 py-1 rounded bg-[#F5F2EB] text-[#111111]">
-          All 82 Counties
-        </a>
-      </div>
-
-      {/* Accént 3-Column Publication Spine */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-6 sm:py-12 grid grid-cols-1 lg:grid-cols-[210px_minmax(0,1fr)] xl:grid-cols-[210px_minmax(0,1fr)_250px] gap-8 lg:gap-10 print:block print:max-w-none print:p-0">
-        {/* Left Column: Sticky Section Index Rail (Desktop) */}
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-10 px-4 py-8 sm:px-8 sm:py-14 lg:grid-cols-[200px_minmax(0,1fr)] print:block">
+        {/* ---------- Left spine ---------- */}
         <aside className="hidden lg:block print:hidden">
-          <div className="sticky top-20 border-t-2 border-[#111111] pt-4 text-xs">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-[#111111] font-bold mb-3">
-              Quick Navigation
-            </div>
-            <nav className="divide-y divide-[#D8D2C7] border-b border-[#111111]">
-              {[
-                { href: "#key-takeaways", num: "01", label: "Key Takeaways & Action Items" },
-                { href: "#manifold-3d", num: "02", label: "Interactive 3D County Map" },
-                { href: "#mathematical-correlations", num: "03", label: "2-for-1 Cleanup Connections" },
-                { href: "#commissioner-toolkit", num: "04", label: "Share With Neighbor Counties" },
-                { href: "#voting-history-forensics", num: "05", label: "25.91M Past Ballots Checked" },
-                { href: "#pb-01-high-density", num: "06", label: "Check 1: 8+ Voter Addresses" },
-                { href: "#pb-02-missing-dorm", num: "07", label: "Check 2: Missing Dorm/Apt #s" },
-                { href: "#pb-03-ncoa-drift", num: "08", label: "Check 3: Out-of-State Mail" },
-                { href: "#pb-04-po-box", num: "09", label: "Check 4: P.O. Boxes on Roll" },
-                { href: "#pb-05-clerical", num: "10", label: "Check 5: Old 1801 Paper Dates" },
-                { href: "#pb-06-duplicates", num: "11", label: "Check 6: Jr./Sr. & Duplicates" },
-                { href: "#pb-07-08-precincts", num: "12", label: "Checks 7–8: 3,000+ Precincts" },
-                { href: "#pb-09-benford", num: "13", label: "Check 9: Accounting Pattern" },
-                { href: "#pb-10-county-ledger", num: "14", label: "Check 10: All 82 Counties" },
-              ].map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-baseline gap-2 py-2 text-[#22201E] hover:text-[#D9381E] transition-colors"
-                >
-                  <span className="font-mono text-[10px] font-bold text-[#6E675F]">{item.num}</span>
-                  <span className="font-semibold leading-snug">{item.label}</span>
-                </a>
+          <nav className="sticky top-20 border-t-2 border-[#111111] pt-3" aria-label="Report sections">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#5A534A]">Contents</div>
+            <ol className="mt-2 divide-y divide-[#DDD6CA] border-b border-[#DDD6CA]">
+              {navItems.map(([id, n, label]) => (
+                <li key={id}>
+                  <a href={`#${id}`} className="flex gap-3 py-2 text-[13px] font-medium text-[#2C2825] hover:text-[#C2341B]">
+                    <span className="font-serif tabular-nums text-[#8A8279]">{n}</span>
+                    {label}
+                  </a>
+                </li>
               ))}
-            </nav>
-
-            <div className="mt-4 pt-4 border-t border-[#D8D2C7] text-[11px] text-[#2C2825] space-y-1.5">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[#15803D] font-bold flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" /> 100% Zero-PII Verified
-              </div>
-              <p className="leading-snug">
-                Zero voter names, zero birth dates, zero unmasked voter IDs, zero P.O. Box numbers, and 100-block masking on all residential addresses.
-              </p>
-            </div>
-          </div>
+            </ol>
+            <p className="mt-4 flex gap-1.5 text-[12px] leading-snug text-[#3A3530]">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#111111]" />
+              No names, birth dates, voter IDs, P.O. Box numbers, or house numbers appear anywhere in this report.
+            </p>
+          </nav>
         </aside>
 
-        {/* Center Main Publication Spine */}
-        <main className="min-w-0 space-y-12 sm:space-y-14">
-          {/* SECTION 01: Title + Top Key Takeaways + Immediate Action Items for Non-Auth'd Users */}
-          <section id="key-takeaways" className="border-t-4 border-[#111111] pt-5">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono uppercase tracking-wider text-[#2C2825] pb-3 border-b border-[#111111]">
-              <span className="font-bold">MISSISSIPPI 82-COUNTY VOTER ROLL GUIDE</span>
-              <span className="text-[#15803D] font-bold">
-                100% ZERO-PII • PUBLIC EDITION (NO LOGIN REQUIRED)
-              </span>
-            </div>
-
-            <h1 className="mt-4 font-serif text-3xl sm:text-4xl lg:text-[46px] font-bold tracking-tight leading-[1.1] text-[#111111]">
-              Mississippi Voter Roll &amp; 25.91 Million Ballot Review
+        <main className="min-w-0 max-w-[880px] space-y-16">
+          {/* ---------- Hero ---------- */}
+          <section>
+            <Kicker>Mississippi · Public edition · No login required</Kicker>
+            <h1 className="mt-4 font-serif text-[38px] sm:text-[56px] font-bold leading-[1.03] tracking-[-0.02em]">
+              Mississippi&rsquo;s voter roll is in good shape. Here&rsquo;s where to tidy up.
             </h1>
-
-            <p className="mt-3 text-base sm:text-lg text-[#2C2825] font-serif leading-relaxed max-w-3xl">
-              We checked all <strong className="text-[#111111]">2,112,460 voter registrations</strong> and{" "}
-              <strong className="text-[#111111]">25,911,640 past ballots</strong> across all 82 Mississippi counties—filtering out{" "}
-              <strong className="text-[#D9381E]">18,093 false alarms</strong> so Election Commissioners, Clerks, and citizens can see what is working and what needs simple cleanup.
+            <p className="mt-5 max-w-[60ch] font-serif text-[19px] sm:text-[21px] leading-[1.55] text-[#2C2825]">
+              We checked {fmt(metadata.totalRecords)} registrations and {fmt(votingHistoryAudit.totalHistoryRowsScanned)} past
+              ballots across all 82 counties. Every ballot matched a real voter. After removing {fmt(falseAlarms)} false
+              alarms, what remains is routine, fixable list maintenance.
             </p>
 
-            {/* TOP BOX 1: 4 Plain-English Key Takeaways */}
-            <div className="mt-6 rounded-xl border-2 border-[#111111] bg-white p-4 sm:p-6 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E4E0D8]">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#111111]">
-                  <BookOpen className="w-4 h-4 text-[#D9381E]" />
-                  4 Key Takeaways at a Glance
+            {/* Mobile section picker (non-sticky) */}
+            <label className="mt-6 block lg:hidden print:hidden">
+              <span className="sr-only">Jump to section</span>
+              <select
+                onChange={(e) => document.getElementById(e.target.value)?.scrollIntoView({ behavior: "smooth" })}
+                defaultValue=""
+                className="h-11 w-full border border-[#111111] bg-white px-3 text-[15px] font-medium"
+              >
+                <option value="" disabled>Jump to a section…</option>
+                {navItems.map(([id, n, label]) => (
+                  <option key={id} value={id}>{n} · {label}</option>
+                ))}
+              </select>
+            </label>
+
+            {/* Key figures — hairline row, no cards */}
+            <dl className="mt-8 grid grid-cols-2 border-y-2 border-[#111111] sm:grid-cols-4">
+              {[
+                [fmt(votingHistoryAudit.totalHistoryRowsScanned), "past ballots checked", "0 unmatched"],
+                [`${normalCount} of 82`, "counties in normal range", `${priorityCount} with extra tasks`],
+                [fmt(falseAlarms), "false alarms removed", "before anyone reviews"],
+                [`${ncoaInactivePct}%`, "of out-of-state movers", "already set Inactive"],
+              ].map(([v, l, s], i) => (
+                <div key={l} className={`py-5 pr-3 ${i % 2 ? "pl-4 border-l border-[#DDD6CA]" : ""} ${i === 2 ? "sm:pl-4 sm:border-l" : ""} ${i >= 2 ? "border-t border-[#DDD6CA] sm:border-t-0" : ""}`}>
+                  <dd className="font-serif text-[30px] sm:text-[36px] font-bold leading-none tabular-nums" style={i === 2 ? { color: FOCUS } : undefined}>{v}</dd>
+                  <dt className="mt-2 text-[14px] font-semibold leading-tight">{l}</dt>
+                  <div className="text-[13px] text-[#6E675F]">{s}</div>
                 </div>
-                <span className="font-mono text-[11px] font-bold text-[#15803D] bg-[#E8F5E9] px-2.5 py-0.5 rounded">
-                  60-Second Read
+              ))}
+            </dl>
+          </section>
+
+          {/* ---------- 01 Takeaways ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="takeaways" num="01" kicker="Key takeaways" title="Four things to know" />
+            <ol className="divide-y divide-[#DDD6CA] border-b border-[#DDD6CA]">
+              {[
+                ["No phantom ballots.", `All ${fmt(votingHistoryAudit.totalHistoryRowsScanned)} past ballots trace back to a registered voter. ${normalCount} of 82 counties look normal for their size.`],
+                ["Most “red flags” are ordinary buildings and families.", `College dorms, nursing homes, ${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households, and ${fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} homes on streets like “Marshall Place” were filtered out first.`],
+                ["Clerks are already handling people who moved.", `Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${ncoaInactivePct}%) are already Inactive. ${fmt(ncoa.totalVoters)} active voters still need a confirmation postcard.`],
+                ["Each county has its own to-do list.", `College towns mostly need apartment and dorm room numbers (${fmt(playbooks.missingDorm.totalVoters)} records). Growing suburbs mostly need busy precincts split (${playbooks.precinctCapacity.overCapacityCount} over 3,000 voters).`],
+              ].map(([t, b], i) => (
+                <li key={t} className="grid grid-cols-[36px_1fr] gap-2 py-5 sm:grid-cols-[52px_1fr]">
+                  <span className="font-serif text-[22px] font-bold tabular-nums" style={{ color: FOCUS }}>{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3 className="font-serif text-[20px] sm:text-[22px] font-bold leading-snug">{t}</h3>
+                    <p className="mt-1 max-w-[62ch] text-[16px] leading-relaxed text-[#3A3530]">{b}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {/* ---------- 02 Actions ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="actions" num="02" kicker="What you can do today" title="Look up your county in ten seconds" dek="No account needed. Pick a county, then copy a plain-text summary to share with your clerk, board, or neighbors." />
+
+            <div className="bg-white border-y-2 border-[#111111] p-5 sm:p-7">
+              <label htmlFor="county" className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-[#5A534A]">Your county</label>
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                <select id="county" value={selected.county} onChange={(e) => setQuickCounty(e.target.value)} className="h-12 flex-1 border border-[#111111] bg-[#F6F3EC] px-3 text-[16px] font-semibold">
+                  {sortedCounties.map((c) => (
+                    <option key={c.county} value={c.county}>{c.county} County</option>
+                  ))}
+                </select>
+                <button onClick={copyBrief} className="inline-flex h-12 items-center justify-center gap-2 px-5 text-[15px] font-semibold text-white" style={{ background: FOCUS }}>
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? "Copied" : "Copy county summary"}
+                </button>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-serif text-[26px] font-bold">{selected.county} County</h3>
+                <span className="text-[14px] font-semibold" style={{ color: selected.regime === "Equilibrium Manifold Surface" ? INK : FOCUS }}>
+                  {STATUS_LABEL[selected.regime] || selected.regime}
                 </span>
               </div>
-
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs sm:text-sm">
-                <div className="rounded-lg border border-[#D8D2C7] bg-[#FCFBF9] p-3.5">
-                  <div className="font-mono text-[11px] font-bold uppercase text-[#15803D]">
-                    Takeaway 1 • 100% Ballot Match
-                  </div>
-                  <div className="font-serif font-bold text-base text-[#111111] mt-0.5">
-                    Zero &ldquo;Phantom&rdquo; Ballots Statewide
-                  </div>
-                  <p className="text-[#2C2825] mt-1 leading-snug">
-                    All <strong>25,911,640 past ballots</strong> match a real registered Voter ID, and <strong>66 of 82 counties</strong> sit right in the normal range for their population size.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-[#D8D2C7] bg-[#FCFBF9] p-3.5">
-                  <div className="font-mono text-[11px] font-bold uppercase text-[#D9381E]">
-                    Takeaway 2 • 18,093 False Alarms Removed
-                  </div>
-                  <div className="font-serif font-bold text-base text-[#111111] mt-0.5">
-                    Dorms, Nursing Homes &amp; Jr./Sr. Separated
-                  </div>
-                  <p className="text-[#2C2825] mt-1 leading-snug">
-                    Basic scripts falsely flag college dorms, nursing homes, 4,404 Jr./Sr. fathers and sons, and 4,346 homes on streets like <em>Marshall Place</em>. We stripped those out first.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-[#D8D2C7] bg-[#FCFBF9] p-3.5">
-                  <div className="font-mono text-[11px] font-bold uppercase text-[#6D28D9]">
-                    Takeaway 3 • 82% of Mail Moves Already Handled
-                  </div>
-                  <div className="font-serif font-bold text-base text-[#111111] mt-0.5">
-                    Only 2,444 Active Out-of-State Mailings Left
-                  </div>
-                  <p className="text-[#2C2825] mt-1 leading-snug">
-                    Out of 13,675 voters with an out-of-state mailing address, County Clerks have <strong>already marked 11,231 (82.1%) Inactive</strong> while waiting out federal NVRA rules.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-[#D8D2C7] bg-[#FCFBF9] p-3.5">
-                  <div className="font-mono text-[11px] font-bold uppercase text-[#0369A1]">
-                    Takeaway 4 • Custom Recipe for Each County
-                  </div>
-                  <div className="font-serif font-bold text-base text-[#111111] mt-0.5">
-                    Addresses vs. Mail Moves vs. Large Precincts
-                  </div>
-                  <p className="text-[#2C2825] mt-1 leading-snug">
-                    College towns need apartment unit numbers added (682 rows), while fast-growing suburbs need large 3,000+ voter polling places split (123 precincts).
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* TOP BOX 2: What You Can Do Right Now (No Login Required!) */}
-            <div
-              id="action-items"
-              className="mt-5 rounded-xl border-2 border-[#111111] bg-[#FFFDF7] p-4 sm:p-6 shadow-xs"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#111111]">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#D9381E]">
-                  <ClipboardCheck className="w-4 h-4" />
-                  4 Action Items You Can Take Right Now (No Account or Login Needed)
-                </div>
-                <span className="font-mono text-[11px] font-bold text-[#111111] bg-[#F3EFE6] px-2.5 py-0.5 rounded border border-[#111111]/30">
-                  100% Free Public Tools
-                </span>
-              </div>
-
-              {/* Instant County Lookup & Copyable Brief */}
-              <div className="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-white border-2 border-[#111111] rounded-xl p-4">
-                <div className="lg:col-span-5">
-                  <label
-                    htmlFor="top-county-picker"
-                    className="block font-mono text-[10px] uppercase font-bold text-[#5A534A] mb-1"
-                  >
-                    Action 1 • Pick Your County for an Instant Summary:
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <select
-                      id="top-county-picker"
-                      value={selectedQuickCounty.county}
-                      onChange={(e) => setQuickCountyName(e.target.value)}
-                      className="w-full rounded-lg border-2 border-[#111111] bg-[#FCFBF9] px-3 py-2 text-sm font-bold text-[#111111] cursor-pointer"
-                    >
-                      {threatManifold.countyVectors
-                        .slice()
-                        .sort((a, b) => a.county.localeCompare(b.county))
-                        .map((c) => (
-                          <option key={c.county} value={c.county}>
-                            {c.county} County ({c.total.toLocaleString()} Voters)
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-7 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 lg:pt-0 lg:border-l lg:border-[#D8D2C7] lg:pl-4">
-                  <div className="text-xs space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-serif font-bold text-base text-[#111111]">
-                        {selectedQuickCounty.county} County:
-                      </span>
-                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[#111111] text-white">
-                        {FRIENDLY_REGIME_MAP[selectedQuickCounty.regime] || selectedQuickCounty.regime}
-                      </span>
-                    </div>
-                    <p className="text-[#2C2825]">
-                      <strong>{selectedQuickCounty.total.toLocaleString()}</strong> voters (
-                      {selectedQuickCounty.active.toLocaleString()} Active) •{" "}
-                      <strong>{selectedQuickCounty.highDensityCount}</strong> 8+ voter addresses •{" "}
-                      <strong>{selectedQuickCounty.ncoaCount}</strong> active out-of-state mailings •{" "}
-                      <strong>{selectedQuickCounty.overCapacityPrecincts}</strong> precincts over 3,000 voters
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleCopyBrief}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg border-2 border-[#111111] bg-[#D9381E] hover:bg-[#B82D16] text-white text-xs font-bold shrink-0 cursor-pointer"
-                  >
-                    <Share2 className="w-3.5 h-3.5" />
-                    {copiedSummary ? "Copied to Clipboard!" : "Copy County Brief"}
-                  </button>
-                </div>
-              </div>
-
-              {/* 3 Additional Direct Action Cards */}
-              <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="rounded-lg border border-[#111111] bg-white p-3.5 flex flex-col justify-between">
-                  <div>
-                    <div className="font-mono text-[10px] font-bold uppercase text-[#D9381E]">
-                      Action 2 • For Board Meetings
-                    </div>
-                    <div className="font-serif font-bold text-sm text-[#111111] mt-0.5">
-                      Download the 10-Page Printable PDF
-                    </div>
-                    <p className="text-[#2C2825] mt-1 leading-snug">
-                      Formatted on white paper to save printer toner. Bring it directly to your County Election Commission or Circuit Clerk.
-                    </p>
-                  </div>
-                  <a
-                    href="/Marigold-Mississippi-Playbook-Analysis.pdf"
-                    download="Marigold-Mississippi-Playbook-Analysis.pdf"
-                    className="mt-3 inline-flex items-center gap-1 font-bold text-[#111111] hover:text-[#D9381E]"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Download PDF Now →
-                  </a>
-                </div>
-
-                <div className="rounded-lg border border-[#111111] bg-white p-3.5 flex flex-col justify-between">
-                  <div>
-                    <div className="font-mono text-[10px] font-bold uppercase text-[#15803D]">
-                      Action 3 • Interactive 3D Map
-                    </div>
-                    <div className="font-serif font-bold text-sm text-[#111111] mt-0.5">
-                      Compare Neighboring Counties
-                    </div>
-                    <p className="text-[#2C2825] mt-1 leading-snug">
-                      Use the unlocked 3D map below to isolate apartment unit numbers, mail moves, or large polling places for your county.
-                    </p>
-                  </div>
-                  <a
-                    href="#manifold-3d"
-                    className="mt-3 inline-flex items-center gap-1 font-bold text-[#111111] hover:text-[#D9381E]"
-                  >
-                    <Compass className="w-3.5 h-3.5" /> Jump to 3D Map Below →
-                  </a>
-                </div>
-
-                <div className="rounded-lg border border-[#111111] bg-white p-3.5 flex flex-col justify-between">
-                  <div>
-                    <div className="font-mono text-[10px] font-bold uppercase text-[#0369A1]">
-                      Action 4 • All 82 Counties Table
-                    </div>
-                    <div className="font-serif font-bold text-sm text-[#111111] mt-0.5">
-                      Search Any County&apos;s Exact Numbers
-                    </div>
-                    <p className="text-[#2C2825] mt-1 leading-snug">
-                      Filter all 82 counties side by side in Section 14 to see how your county ranks against peers of similar size.
-                    </p>
-                  </div>
-                  <a
-                    href="#pb-10-county-ledger"
-                    className="mt-3 inline-flex items-center gap-1 font-bold text-[#111111] hover:text-[#D9381E]"
-                  >
-                    <MapPin className="w-3.5 h-3.5" /> Jump to 82-County Table →
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Compact 6-Card Key Numbers Grid */}
-            <div className="mt-6 border-y-2 border-[#111111] bg-white p-4 sm:p-6 grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              <div className="border-l-4 border-[#111111] pl-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#5A534A] font-bold">
-                  01 • Voter Roll Checked
-                </div>
-                <div className="font-serif text-xl sm:text-3xl font-bold text-[#111111] mt-0.5">
-                  {metadata.totalRecords.toLocaleString()}
-                </div>
-                <div className="font-mono text-[11px] text-[#2C2825]">
-                  {metadata.activeVoters.toLocaleString()} Active
-                </div>
-              </div>
-
-              <div className="border-l-4 border-[#15803D] pl-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#5A534A] font-bold">
-                  02 • Past Ballots Checked
-                </div>
-                <div className="font-serif text-xl sm:text-3xl font-bold text-[#111111] mt-0.5">
-                  {votingHistoryAudit.totalHistoryRowsScanned.toLocaleString()}
-                </div>
-                <div className="font-mono text-[11px] text-[#15803D] font-bold">
-                  100% Match (0 Orphans)
-                </div>
-              </div>
-
-              <div className="border-l-4 border-[#111111] pl-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#5A534A] font-bold">
-                  03 • 2024 General Voters
-                </div>
-                <div className="font-serif text-xl sm:text-3xl font-bold text-[#111111] mt-0.5">
-                  {votingHistoryAudit.unique2024GeneralVoters.toLocaleString()}
-                </div>
-                <div className="font-mono text-[11px] text-[#2C2825]">
-                  88 Double-Scans (0.007%)
-                </div>
-              </div>
-
-              <div className="border-l-4 border-[#15803D] pl-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#5A534A] font-bold">
-                  04 • Normal Range
-                </div>
-                <div className="font-serif text-xl sm:text-3xl font-bold text-[#111111] mt-0.5">
-                  66 / 82 Counties
-                </div>
-                <div className="font-mono text-[11px] text-[#2C2825]">
-                  16 Priority Counties
-                </div>
-              </div>
-
-              <div className="border-l-4 border-[#D9381E] pl-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#5A534A] font-bold">
-                  05 • False Alarms Removed
-                </div>
-                <div className="font-serif text-xl sm:text-3xl font-bold text-[#D9381E] mt-0.5">
-                  18,093
-                </div>
-                <div className="font-mono text-[11px] text-[#2C2825]">
-                  Dorms, Jr/Sr &amp; Street Names
-                </div>
-              </div>
-
-              <div className="border-l-4 border-[#15803D] pl-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#5A534A] font-bold">
-                  06 • Citizen Privacy
-                </div>
-                <div className="font-serif text-xl sm:text-3xl font-bold text-[#15803D] mt-0.5">
-                  100% Zero-PII
-                </div>
-                <div className="font-mono text-[11px] text-[#2C2825]">
-                  0 Names • Block-Masked
-                </div>
-              </div>
-            </div>
-
-            {/* BUILT-IN VISUALIZATION 01: Signal vs. Noise Filtering Architecture Chart */}
-            <div className="mt-6 border-2 border-[#111111] rounded-xl bg-white p-4 sm:p-6 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E4E0D8]">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-[#D9381E] shrink-0" />
-                  <h3 className="font-serif text-lg sm:text-xl font-bold text-[#111111]">
-                    Visual Chart 1.1 — False Alarms Removed (Gray) vs. Real Cleanup Work (Red)
-                  </h3>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <dl className="mt-3 grid grid-cols-2 gap-y-4 border-t border-[#DDD6CA] pt-4 sm:grid-cols-4">
                 {[
-                  {
-                    title: "Check 2: Dorms & Apartments Missing Unit #",
-                    naiveCount:
-                      playbooks.missingDorm.totalVoters +
-                      playbooks.missingDorm.streetNameFalsePositivesRemoved,
-                    removedCount: playbooks.missingDorm.streetNameFalsePositivesRemoved,
-                    removedReason: "4,346 homes on 'Marshall Pl' & 'Halls Ferry Rd' removed",
-                    actionableCount: playbooks.missingDorm.activeVoters,
-                  },
-                  {
-                    title: "Check 1: Addresses With 8+ Registered Voters",
-                    naiveCount: playbooks.highDensity.totalVoters,
-                    removedCount:
-                      playbooks.highDensity.institutionalVoters +
-                      playbooks.highDensity.multiFamilyVoters,
-                    removedReason: "University dorms, nursing homes & apartments separated",
-                    actionableCount: playbooks.highDensity.singleFamilyAnomalyVoters,
-                  },
-                  {
-                    title: "Check 6: Same-Name Voters in Same ZIP Code",
-                    naiveCount:
-                      playbooks.duplicates.generationalPairs + playbooks.duplicates.trueDuplicates,
-                    removedCount: playbooks.duplicates.generationalPairs,
-                    removedReason: "4,404 Father/Son (Jr./Sr./III) families protected",
-                    actionableCount: playbooks.duplicates.activeActiveDuplicates,
-                  },
-                  {
-                    title: "Check 3: Out-of-State Mailing Addresses",
-                    naiveCount: playbooks.ncoaRelocations.totalAllStatusVoters,
-                    removedCount: playbooks.ncoaRelocations.inactiveRelocatedVoters,
-                    removedReason: "11,231 (82.1%) already marked Inactive by County Clerks",
-                    actionableCount: playbooks.ncoaRelocations.totalVoters,
-                  },
-                ].map((bar) => {
-                  const pctActionable = Math.max(
-                    8,
-                    Math.round((bar.actionableCount / bar.naiveCount) * 100)
-                  );
-                  const pctRemoved = 100 - pctActionable;
-                  return (
-                    <div
-                      key={bar.title}
-                      className="border border-[#D8D2C7] rounded-lg p-3.5 bg-[#FCFBF9]"
-                    >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <div className="font-serif font-bold text-sm sm:text-base text-[#111111]">
-                          {bar.title}
-                        </div>
-                        <span className="font-mono text-[11px] font-bold text-[#15803D] shrink-0">
-                          -{Math.round((bar.removedCount / bar.naiveCount) * 100)}% Noise
-                        </span>
-                      </div>
-
-                      <div className="mt-2.5 h-6 w-full rounded overflow-hidden flex border border-[#111111]">
-                        <div
-                          style={{ width: `${pctRemoved}%` }}
-                          className="bg-[#E5E0D5] text-[#2C2825] flex items-center px-2 font-mono text-[10px] font-bold truncate"
-                        >
-                          Filtered: {bar.removedCount.toLocaleString()}
-                        </div>
-                        <div
-                          style={{ width: `${pctActionable}%` }}
-                          className="bg-[#D9381E] text-white flex items-center justify-end px-1.5 font-mono text-[10px] font-bold"
-                        >
-                          {bar.actionableCount.toLocaleString()}
-                        </div>
-                      </div>
-
-                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-                        <span className="text-[#3A3530]">{bar.removedReason}</span>
-                        <span className="font-mono font-bold text-[#D9381E]">
-                          To Check: {bar.actionableCount.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                  [fmt(selected.total), "registered voters"],
+                  [fmt(selected.highDensityCount), "addresses with 8+ voters"],
+                  [fmt(selected.ncoaCount), "active, out-of-state mail"],
+                  [String(selected.overCapacityPrecincts), "precincts over 3,000"],
+                ].map(([v, l]) => (
+                  <div key={l}>
+                    <dd className="font-serif text-[26px] font-bold tabular-nums leading-none">{v}</dd>
+                    <dt className="mt-1 text-[13px] text-[#5A534A]">{l}</dt>
+                  </div>
+                ))}
+              </dl>
             </div>
+
+            <ul className="divide-y divide-[#DDD6CA] border-y border-[#DDD6CA]">
+              {[
+                ["/Marigold-Mississippi-Playbook-Analysis.pdf", "Print the 10-page guide", "Black-and-white friendly. Bring it to your next commission meeting.", true],
+                ["#map", "Compare counties in 3D", "See which of the three task areas matters most where you live.", false],
+                ["#ledger", "Check all 82 counties side by side", "Search and filter the full table.", false],
+              ].map(([href, t, d, dl]) => (
+                <li key={t as string}>
+                  <a href={href as string} {...(dl ? { download: true } : {})} className="group flex min-h-[64px] items-center justify-between gap-4 py-4">
+                    <span>
+                      <span className="block font-serif text-[19px] font-bold group-hover:text-[#C2341B]">{t}</span>
+                      <span className="block text-[14px] text-[#5A534A]">{d}</span>
+                    </span>
+                    <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </section>
 
-          {/* SECTION 02: Interactive 3D County Map */}
-          <section id="manifold-3d" className="border-t-2 border-[#111111] pt-8">
-            <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-              <div>
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 02 • Interactive 3D County Map
-                </div>
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-                  Explore All 82 Counties in 3D
-                </h2>
-              </div>
-            </div>
-
+          {/* ---------- 03 Map ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="map" num="03" kicker="Interactive" title="All 82 counties in 3D" dek="Drag to turn the map. Tap a circle to see that county. The green net shows normal for a county's size; red lines show extra work." />
             <div className="print:hidden">
-              <ThreatManifold3DExplorer compact={false} forceUnlocked={true} />
+              <ThreatManifold3DExplorer compact forceUnlocked />
             </div>
-
-            {/* Sticky-Header Table 2.1: Top 16 Priority Counties */}
-            <div className="mt-8">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2.5">
-                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#111111]">
-                  Table 2.1 — The 16 Priority Counties Above the Normal Statewide Net
-                </h3>
-                <span className="font-mono text-xs font-bold text-[#15803D]">
-                  66 Counties Sit on the Normal Green Net
-                </span>
-              </div>
-
-              <div className="max-h-[440px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                    <tr className="font-mono text-[10px] uppercase tracking-wider">
-                      <th className="py-3 px-3">Rank &amp; County</th>
-                      <th className="py-3 px-2.5 text-right">Total Voters</th>
-                      <th className="py-3 px-2.5 text-right">1. Addrs (X)</th>
-                      <th className="py-3 px-2.5 text-right">2. Mail (Y)</th>
-                      <th className="py-3 px-2.5 text-right">3. Polls (Z)</th>
-                      <th className="py-3 px-2.5 text-right text-[#F59E0B]">Score</th>
-                      <th className="py-3 px-3">Workload Split</th>
-                      <th className="py-3 px-3">Main Focus</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#D8D2C7]">
-                    {threatManifold.countyVectors.slice(0, 16).map((c, i) => (
-                      <tr key={c.county} className="hover:bg-[#F5F2EB]">
-                        <td className="py-2.5 px-3 font-bold text-[#111111] whitespace-nowrap">
-                          <span className="font-mono text-[10px] text-[#D9381E] mr-1">
-                            #{String(i + 1).padStart(2, "0")}
-                          </span>
-                          {c.county}
-                        </td>
-                        <td className="py-2.5 px-2.5 text-right font-mono font-semibold">
-                          {c.total.toLocaleString()}
-                        </td>
-                        <td className="py-2.5 px-2.5 text-right font-mono">{c.x}</td>
-                        <td className="py-2.5 px-2.5 text-right font-mono">{c.y}</td>
-                        <td className="py-2.5 px-2.5 text-right font-mono">{c.z}</td>
-                        <td className="py-2.5 px-2.5 text-right font-mono font-bold text-[#D9381E]">
-                          {c.threatEnergy}
-                        </td>
-                        <td className="py-2.5 px-3 font-mono text-[11px] whitespace-nowrap font-semibold">
-                          {c.partialX}% Addr • {c.partialY}% Mail • {c.partialZ}% Poll
-                        </td>
-                        <td className="py-2.5 px-3 text-[#111111] font-medium whitespace-nowrap">
-                          {c.dominantDriver}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <EditorialTable
+              caption={`The ${priorityCount} counties with extra tasks`}
+              rows={counties.filter((c) => c.regime !== "Equilibrium Manifold Surface")}
+              rowKey={(c) => c.county}
+              columns={[
+                { key: "county", label: "County" },
+                { key: "total", label: "Voters", align: "right", render: (c) => fmt(c.total) },
+                { key: "threatEnergy", label: "Priority score", align: "right", focus: true },
+                { key: "dominantDriver", label: "Main focus" },
+              ]}
+            />
           </section>
 
-          {/* SECTION 03: How Issues Connect */}
-          <section id="mathematical-correlations" className="border-t-2 border-[#111111] pt-8">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-              Section 03 • 2-for-1 Cleanup Connections
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-              Which Cleanup Steps Solve Two Problems at Once?
-            </h2>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {correlations.map((corr) => {
-                const rPct = Math.min(100, Math.round(Math.abs(corr.pearsonR) * 100));
+          {/* ---------- 04 Filtering ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="filtering" num="04" kicker="Signal vs. noise" title={`${fmt(falseAlarms)} false alarms, removed first`} dek="Simple scans flag dorms, nursing homes, and fathers and sons with the same name. We set those aside so clerks only see real work. Gray is noise; red is what's left to review." />
+            <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
+              {[
+                ["Dorms & apartments missing a unit number", playbooks.missingDorm.totalVoters + playbooks.missingDorm.streetNameFalsePositivesRemoved, playbooks.missingDorm.activeVoters, "Street names like “Marshall Pl” removed"],
+                ["Addresses with 8 or more voters", playbooks.highDensity.totalVoters, playbooks.highDensity.singleFamilyAnomalyVoters, "Campuses, nursing homes & apartment complexes set aside"],
+                ["Same name, same ZIP code", playbooks.duplicates.generationalPairs + playbooks.duplicates.trueDuplicates, playbooks.duplicates.activeActiveDuplicates, "Jr./Sr. households protected"],
+                ["Out-of-state mailing address", ncoa.totalAllStatusVoters, ncoa.totalVoters, "Already-Inactive voters set aside"],
+              ].map(([t, total, left, note]) => {
+                const keep = Math.max(3, Math.round(((left as number) / (total as number)) * 100));
                 return (
-                  <div
-                    key={corr.id}
-                    className="border-2 border-[#111111] rounded-xl p-4 bg-white flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-[#111111] text-white">
-                          {corr.id}
-                        </span>
-                        <span className="font-mono text-[11px] font-bold text-[#D9381E]">
-                          +{corr.pearsonR.toFixed(2)} / 1.00
-                        </span>
-                      </div>
-                      <h3 className="font-serif text-base font-bold text-[#111111] mt-2">
-                        {corr.plainTitle}
-                      </h3>
-                      <p className="text-xs text-[#2C2825] mt-1.5 leading-snug">
-                        {corr.commonManTakeaway}
-                      </p>
+                  <div key={t as string} className="p-4 sm:p-5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="font-serif text-[18px] font-bold">{t}</h3>
+                      <span className="text-[14px] tabular-nums text-[#3A3530]">
+                        <strong style={{ color: FOCUS }}>{fmt(left as number)}</strong> to review of {fmt(total as number)}
+                      </span>
                     </div>
-
-                    <div className="mt-3 pt-2.5 border-t border-[#E4E0D8]">
-                      <div className="h-2 w-full bg-[#ECE8DF] rounded overflow-hidden border border-[#111111]/30">
-                        <div style={{ width: `${rPct}%` }} className="h-full bg-[#D9381E]" />
-                      </div>
-                      <div className="mt-1.5 text-[11px] font-mono text-[#15803D] font-bold">
-                        {corr.rateOfChange}
-                      </div>
+                    <div className="mt-3 flex h-3 w-full">
+                      <div className="h-full bg-[#D8D1C4]" style={{ width: `${100 - keep}%` }} />
+                      <div className="h-full" style={{ width: `${keep}%`, background: FOCUS }} />
                     </div>
+                    <p className="mt-2 text-[13px] text-[#5A534A]">{note}</p>
                   </div>
                 );
               })}
             </div>
           </section>
 
-          {/* SECTION 04: County Election Commissioner Evangelism & Peer Guide */}
-          <section id="commissioner-toolkit" className="border-t-2 border-[#111111] pt-8">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-              Section 04 • County-to-County Peer Guide
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-              {commissionerToolkit.headline}
-            </h2>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-2 border-[#111111] rounded-xl bg-white p-4 sm:p-5">
-              {commissionerToolkit.evangelismSteps.map((st) => (
-                <div
-                  key={st.step}
-                  className="md:border-r md:last:border-r-0 border-[#D8D2C7] md:pr-4"
-                >
-                  <div className="inline-block font-mono text-xs font-bold text-white bg-[#D9381E] px-2.5 py-0.5 rounded">
-                    STEP {st.step}
-                  </div>
-                  <h3 className="font-serif text-base font-bold text-[#111111] mt-2">
-                    {st.title}
-                  </h3>
-                  <p className="text-xs text-[#2C2825] mt-1.5 leading-relaxed">{st.detail}</p>
+          {/* ---------- 05 Ballots ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="ballots" num="05" kicker="Ballot history" title="Every past ballot matches a real voter" dek={`${fmt(votingHistoryAudit.totalHistoryRowsScanned)} ballot records, matched one by one to the voter roll. Unmatched: 0. Double-scanned 2024 credits: ${votingHistoryAudit.duplicate2024SameDayCreditRows}.`} />
+            <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
+              {votingHistoryAudit.majorElections.map((e) => (
+                <div key={e.date} className="grid grid-cols-1 gap-1.5 px-4 py-3 sm:grid-cols-[230px_1fr_96px] sm:items-center sm:gap-4">
+                  <div className="text-[14px] font-semibold">{e.label.replace(" General Election", "")}</div>
+                  <Bar value={e.ballotsRecorded} max={maxBallots} focus={e.date === "11/05/2024"} label={`${fmt(e.ballotsRecorded)} ballots`} />
+                  <div className="text-[14px] tabular-nums sm:text-right">{fmt(e.ballotsRecorded)}</div>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* SECTION 05: 25.91 Million Voting History Audit + Turnout Bar Chart */}
-          <section id="voting-history-forensics" className="border-t-2 border-[#111111] pt-8">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-              Section 05 • 25.91 Million Past Ballots Checked
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-              100% of Historical Ballots Match a Valid Registered Voter ID
-            </h2>
-
-            <div className="mt-4 border-2 border-[#111111] rounded-xl bg-white p-4 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E4E0D8]">
-                <h3 className="font-serif text-base sm:text-lg font-bold text-[#111111]">
-                  Visual Chart 5.1 — Verified Ballots by Major Statewide Election
-                </h3>
-                <span className="font-mono text-xs font-bold text-[#15803D]">
-                  0 Unmatched Ballots
-                </span>
-              </div>
-              <div className="mt-4 space-y-2.5">
-                {votingHistoryAudit.majorElections.map((el) => {
-                  const widthPct = Math.max(
-                    14,
-                    Math.round((el.ballotsRecorded / maxElectionVotes) * 100)
-                  );
-                  const isPresidential = el.label.includes("Presidential");
-                  return (
-                    <div
-                      key={el.date}
-                      className="grid grid-cols-1 sm:grid-cols-[210px_1fr_110px] items-center gap-1.5"
-                    >
-                      <div className="font-mono text-xs font-bold text-[#111111]">
-                        {el.date} •{" "}
-                        <span className="font-sans font-medium text-[#3A3530]">
-                          {el.label.replace(" General Election", "")}
-                        </span>
-                      </div>
-                      <div className="h-5 bg-[#ECE8DF] rounded overflow-hidden border border-[#111111]/40">
-                        <div
-                          style={{ width: `${widthPct}%` }}
-                          className={`h-full flex items-center px-2 font-mono text-[10px] font-bold text-white ${
-                            isPresidential ? "bg-[#111111]" : "bg-[#D9381E]"
-                          }`}
-                        >
-                          {isPresidential ? "Presidential" : "State / Midterm"}
-                        </div>
-                      </div>
-                      <div className="text-right font-mono text-xs font-bold text-[#111111]">
-                        {el.ballotsRecorded.toLocaleString()}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* SECTION 06: Playbook 01 — High-Density Residential Domiciles (100% Block-Masked) */}
-          <section id="pb-01-high-density" className="border-t-2 border-[#111111] pt-8">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-              Section 06 • Check 1 — Addresses With 8+ Registered Voters
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-              Separating Universities &amp; Nursing Homes from Single-Family Houses
-            </h2>
-
-            <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-serif text-base font-bold text-[#111111] mb-2">
-                  Table 6.1 — Largest Campus &amp; Multi-Unit Complexes (Block-Masked)
-                </h3>
-                <div className="max-h-[380px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                      <tr className="font-mono text-[10px] uppercase">
-                        <th className="py-2.5 px-3">Campus / Anonymized Block</th>
-                        <th className="py-2.5 px-2">County</th>
-                        <th className="py-2.5 px-2 text-right">Total (Active)</th>
-                        <th className="py-2.5 px-3">Facility Type</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D8D2C7]">
-                      {playbooks.highDensity.topClusters.slice(0, 12).map((c, idx) => (
-                        <tr key={idx} className="hover:bg-[#F5F2EB]">
-                          <td className="py-2.5 px-3 font-mono text-[11px] font-semibold text-[#111111]">
-                            {c.address}, {c.city}
-                          </td>
-                          <td className="py-2.5 px-2 font-medium">{c.county}</td>
-                          <td className="py-2.5 px-2 text-right font-mono font-bold">
-                            {c.occupantCount.toLocaleString()} ({c.activeOccupantCount.toLocaleString()})
-                          </td>
-                          <td className="py-2.5 px-3 text-[11px] text-[#2C2825]">
-                            {c.classification.replace(" Hub", "").replace(" Cluster", "")}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-serif text-base font-bold text-[#111111] mb-2">
-                  Table 6.2 — Single-Family Houses to Review (100-Block Masked for Zero-PII)
-                </h3>
-                <div className="max-h-[380px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                      <tr className="font-mono text-[10px] uppercase">
-                        <th className="py-2.5 px-3">100-Block Masked Street</th>
-                        <th className="py-2.5 px-2">County</th>
-                        <th className="py-2.5 px-2 text-right text-[#F59E0B]">Total</th>
-                        <th className="py-2.5 px-3 text-right">Active / Inactive</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D8D2C7]">
-                      {playbooks.highDensity.topSingleFamilyAnomalies.slice(0, 12).map((c, idx) => (
-                        <tr key={idx} className="hover:bg-[#F5F2EB]">
-                          <td className="py-2.5 px-3 font-mono text-[11px] font-semibold text-[#111111]">
-                            {c.address}, {c.city}
-                          </td>
-                          <td className="py-2.5 px-2 font-medium">{c.county}</td>
-                          <td className="py-2.5 px-2 text-right font-mono font-bold text-[#D9381E]">
-                            {c.occupantCount}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-[11px] font-semibold">
-                            {c.activeOccupantCount} Act / {c.inactiveOccupantCount} Inact
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* SECTION 07: Playbook 02 — Missing Dorm & Apartment Units */}
-          <section id="pb-02-missing-dorm" className="border-t-2 border-[#111111] pt-8">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-              Section 07 • Check 2 — Dorms &amp; Apartments Missing a Room Number
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-              4,346 Street-Name False Alarms Removed • 682 Campus/Apt Records Isolated
-            </h2>
-
-            <div className="mt-4 max-h-[360px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                  <tr className="font-mono text-[11px] uppercase">
-                    <th className="py-3 px-4">Campus / Anonymized Multi-Unit Block</th>
-                    <th className="py-3 px-4">City</th>
-                    <th className="py-3 px-4">County</th>
-                    <th className="py-3 px-4 text-right text-[#F59E0B]">Voters Missing Room/Apt #</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D8D2C7]">
-                  {playbooks.missingDorm.campusBreakdown.slice(0, 12).map((item, idx) => (
-                    <tr key={idx} className="hover:bg-[#F5F2EB]">
-                      <td className="py-2.5 px-4 font-mono font-bold text-[#111111]">
-                        {item.address}
-                      </td>
-                      <td className="py-2.5 px-4 font-medium">{item.city}</td>
-                      <td className="py-2.5 px-4 font-medium">{item.county}</td>
-                      <td className="py-2.5 px-4 text-right font-mono font-bold text-[#D9381E]">
-                        {item.voterCount.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          {/* SECTION 08 & 09: Playbook 03 (NCOA Out-of-State) & Playbook 04 (P.O. Box Domiciles — Redacted Box #s) */}
-          <section id="pb-03-ncoa-drift" className="border-t-2 border-[#111111] pt-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div>
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 08 • Check 3 — Out-of-State Mailing Addresses
-                </div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-1">
-                  82.1% Already Marked Inactive • 2,444 Active Voters to Confirm
-                </h2>
-
-                <div className="mt-3 border-2 border-[#111111] rounded-xl bg-white p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-wider font-bold text-[#111111] mb-2">
-                    Visual Chart 8.1 — Top Out-of-State Mail Destinations
+          {/* ---------- 06 Connections ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="connections" num="06" kicker="2-for-1 fixes" title="Which fixes solve two problems at once" dek="A score near 1.00 means two issues rise and fall together across counties — so fixing one usually helps the other." />
+            <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111]">
+              {correlations.map((c) => (
+                <li key={c.id} className="grid grid-cols-1 gap-3 py-5 sm:grid-cols-[1fr_160px] sm:gap-8">
+                  <div>
+                    <h3 className="font-serif text-[19px] font-bold leading-snug">{c.plainTitle}</h3>
+                    <p className="mt-1 text-[15px] leading-relaxed text-[#3A3530]">{c.commonManTakeaway}</p>
                   </div>
-                  <div className="space-y-1.5">
-                    {topNcoaStates.map((st) => {
-                      const wPct = Math.max(10, Math.round((st.count / maxNcoaStateCount) * 100));
-                      return (
-                        <div
-                          key={st.state}
-                          className="grid grid-cols-[40px_1fr_60px] items-center gap-2 text-xs"
-                        >
-                          <span className="font-mono font-bold text-[#111111]">{st.state}</span>
-                          <div className="h-3.5 bg-[#ECE8DF] rounded overflow-hidden border border-[#111111]/30">
-                            <div style={{ width: `${wPct}%` }} className="h-full bg-[#D9381E]" />
-                          </div>
-                          <span className="text-right font-mono font-bold text-[#111111]">
-                            {st.count.toLocaleString()}
-                          </span>
-                        </div>
-                      );
-                    })}
+                  <div>
+                    <div className="font-serif text-[28px] font-bold tabular-nums leading-none">{c.pearsonR.toFixed(2)}</div>
+                    <div className="mt-2"><Bar value={Math.abs(c.pearsonR)} max={1} focus /></div>
+                    <div className="mt-1 text-[12px] text-[#6E675F]">connection score (0–1)</div>
                   </div>
-                </div>
-              </div>
-
-              {/* PB-04: Zero-PII Redacted P.O. Box Table */}
-              <div id="pb-04-po-box">
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 09 • Check 4 — P.O. Boxes Typed on the Street Line
-                </div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-1">
-                  339 Records With a P.O. Box in the Home Address Field (Box #s Redacted)
-                </h2>
-
-                <div className="mt-3 max-h-[320px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                      <tr className="font-mono text-[10px] uppercase">
-                        <th className="py-2.5 px-3">Zero-PII Token</th>
-                        <th className="py-2.5 px-3">Redacted P.O. Box Entry</th>
-                        <th className="py-2.5 px-3">County</th>
-                        <th className="py-2.5 px-3 text-right">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D8D2C7]">
-                      {playbooks.commercialPOBox.samples.slice(0, 10).map((s) => (
-                        <tr key={s.recordToken} className="hover:bg-[#F5F2EB]">
-                          <td className="py-2 px-3 font-mono text-[11px] font-bold text-[#5A534A]">
-                            {s.recordToken}
-                          </td>
-                          <td className="py-2 px-3 font-mono text-[11px] font-semibold text-[#111111]">
-                            {s.address}, {s.city}
-                          </td>
-                          <td className="py-2 px-3 font-medium">{s.county}</td>
-                          <td className="py-2 px-3 text-right font-mono text-[11px] font-bold">
-                            {s.status}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+                </li>
+              ))}
+            </ol>
           </section>
 
-          {/* SECTION 10 & 11: Playbook 05 (Clerical Typos) & Playbook 06 (Duplicates) */}
-          <section id="pb-05-clerical" className="border-t-2 border-[#111111] pt-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div>
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 10 • Check 5 — Old 1801 Paper Transfer Dates
-                </div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-1">
-                  5,607 Early-2000s Computer Import Placeholders
-                </h2>
-                <div className="mt-3 max-h-[320px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                      <tr className="font-mono text-[10px] uppercase">
-                        <th className="py-2.5 px-3">Placeholder Category</th>
-                        <th className="py-2.5 px-3 text-right">Count</th>
-                        <th className="py-2.5 px-3">Administrative Cause</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D8D2C7]">
-                      {Object.entries(playbooks.clericalTypos.yearBreakdown)
-                        .slice(0, 8)
-                        .map(([k, v]) => (
-                          <tr key={k} className="hover:bg-[#F5F2EB]">
-                            <td className="py-2 px-3 font-mono font-bold text-[#111111]">{k}</td>
-                            <td className="py-2 px-3 text-right font-mono font-bold text-[#D9381E]">
-                              {(v as number).toLocaleString()}
-                            </td>
-                            <td className="py-2 px-3 text-[#2C2825]">
-                              {k === "TRUNCATED_NAME_1CHAR"
-                                ? "Initial-only name field"
-                                : k === "DATAMIGRATION_ADDR"
-                                ? "Early-2000s import placeholder"
-                                : "Missing date on paper card"}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+          {/* ---------- 07 The 10 checks ---------- */}
+          <section className="space-y-10">
+            <SectionHead id="checks" num="07" kicker="The 10 checks" title="What we looked for, and what we found" />
 
-              <div id="pb-06-duplicates">
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 11 • Check 6 — Jr./Sr. &amp; Same-ZIP Duplicate Check
-                </div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-1">
-                  4,404 Jr./Sr. Families Protected • 818 Active Same-ZIP Pairs
-                </h2>
-                <div className="mt-3 max-h-[320px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                      <tr className="font-mono text-[10px] uppercase">
-                        <th className="py-2.5 px-3">Zero-PII Cluster ID</th>
-                        <th className="py-2.5 px-3">County &amp; ZIP</th>
-                        <th className="py-2.5 px-3 text-right">Records</th>
-                        <th className="py-2.5 px-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D8D2C7]">
-                      {playbooks.duplicates.sampleClusters.slice(0, 10).map((d) => (
-                        <tr key={d.clusterId} className="hover:bg-[#F5F2EB]">
-                          <td className="py-2 px-3 font-mono font-bold text-[#111111]">
-                            {d.clusterId}
-                          </td>
-                          <td className="py-2 px-3 font-medium">
-                            {d.county} ({d.zip})
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono font-bold">
-                            {d.recordCount} ({d.activeRecords} Act)
-                          </td>
-                          <td className="py-2 px-3 text-[#2C2825]">{d.classification}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            <div className="space-y-4">
+              <h3 className="font-serif text-[22px] font-bold">Check 1 · Addresses with 8 or more voters</h3>
+              <p className="max-w-[62ch] text-[16px] leading-relaxed text-[#3A3530]">
+                {fmt(playbooks.highDensity.totalAddresses)} addresses qualify. Most are campuses, nursing homes, and apartment
+                complexes. {fmt(playbooks.highDensity.singleFamilyAnomalies)} are single-family homes worth a closer look — usually
+                past renters who never updated their registration. House numbers are hidden to the nearest 100 block.
+              </p>
+              <EditorialTable
+                caption="Largest single-family addresses (100-block masked)"
+                rows={playbooks.highDensity.topSingleFamilyAnomalies.slice(0, 10)}
+                rowKey={(r, i) => `${r.address}-${i}`}
+                maxHeight={360}
+                columns={[
+                  { key: "address", label: "Street block", render: (r) => `${r.address}, ${r.city}` },
+                  { key: "county", label: "County" },
+                  { key: "occupantCount", label: "Voters", align: "right", focus: true },
+                  { key: "activeOccupantCount", label: "Active", align: "right" },
+                ]}
+              />
             </div>
-          </section>
 
-          {/* SECTION 12 & 13: Playbooks 07, 08 (Busy Precincts) & Playbook 09 (First-Digit Pattern Test) */}
-          <section id="pb-07-08-precincts" className="border-t-2 border-[#111111] pt-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div>
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 12 • Checks 7 &amp; 8 — Busy Polling Places (3,000+ Voters)
-                </div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-1">
-                  123 Precincts Exceed 3,000 Voters (27 Exceed 5,000)
-                </h2>
-                <div className="mt-3 max-h-[360px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 z-20 bg-[#111111] text-white">
-                      <tr className="font-mono text-[10px] uppercase">
-                        <th className="py-2.5 px-3">Precinct Code &amp; Name</th>
-                        <th className="py-2.5 px-2">County</th>
-                        <th className="py-2.5 px-2 text-right text-[#F59E0B]">Total</th>
-                        <th className="py-2.5 px-3 text-right">Active</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D8D2C7]">
-                      {playbooks.precinctCapacity.topOverCapacity.slice(0, 12).map((p, i) => (
-                        <tr key={i} className="hover:bg-[#F5F2EB]">
-                          <td className="py-2 px-3 font-mono text-[11px] font-bold text-[#111111]">
-                            {p.precinctCode} — {p.precinctName}
-                          </td>
-                          <td className="py-2 px-2 font-medium">{p.county}</td>
-                          <td className="py-2 px-2 text-right font-mono font-bold text-[#D9381E]">
-                            {p.voterCount.toLocaleString()}
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono font-semibold">
-                            {p.activeVoterCount.toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div id="pb-09-benford">
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 13 • Check 9 — Accounting Pattern Check
-                </div>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#111111] mt-1">
-                  All 1,742 Precincts Pass Natural First-Digit Pattern Test
-                </h2>
-
-                <div className="mt-3 border-2 border-[#111111] rounded-xl bg-white p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-[10px] uppercase font-bold text-[#111111]">
-                      Visual Chart 13.1 — Expected (Gray) vs. Actual MS Roll (Green)
-                    </span>
-                    <span className="font-mono text-[10px] font-bold text-[#15803D]">
-                      ✓ PASS
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-9 gap-1.5 items-end h-28 pt-3 px-1 border-b border-[#111111]">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => {
-                      const key = String(d) as keyof typeof playbooks.benfordsLaw.expected;
-                      const exp = playbooks.benfordsLaw.expected[key];
-                      const obs = playbooks.benfordsLaw.observedPct[key];
-                      const expH = Math.max(8, Math.round((exp / 32) * 100));
-                      const obsH = Math.max(8, Math.round((obs / 32) * 100));
-                      return (
-                        <div key={d} className="flex flex-col items-center h-full justify-end">
-                          <div className="w-full flex items-end justify-center gap-1 h-full">
-                            <div
-                              style={{ height: `${expH}%` }}
-                              className="w-2 bg-[#BDB6AC] rounded-t"
-                            />
-                            <div
-                              style={{ height: `${obsH}%` }}
-                              className="w-2 bg-[#15803D] rounded-t"
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="grid grid-cols-9 gap-1.5 text-center font-mono text-[10px] font-bold text-[#111111] pt-1">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
-                      <div key={d}>#{d}</div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div className="space-y-4">
+              <h3 className="font-serif text-[22px] font-bold">Check 2 · Dorms and apartments missing a room number</h3>
+              <p className="max-w-[62ch] text-[16px] leading-relaxed text-[#3A3530]">
+                Searching for &ldquo;HALL&rdquo; also catches &ldquo;Mars<strong>hall</strong> Place.&rdquo; Matching whole words
+                removed {fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} false hits, leaving{" "}
+                {fmt(playbooks.missingDorm.totalVoters)} real campus and apartment records ({fmt(playbooks.missingDorm.activeVoters)} active).
+              </p>
             </div>
-          </section>
 
-          {/* SECTION 14: Playbook 10 — Complete 82-County Lookup Table */}
-          <section id="pb-10-county-ledger" className="border-t-2 border-[#111111] pt-8">
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
-              <div>
-                <div className="font-mono text-[11px] uppercase tracking-widest text-[#D9381E] font-bold">
-                  Section 14 • Check 10 — Complete 82-County Lookup Table
-                </div>
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111111] mt-1">
-                  Find Your County: All 82 Mississippi Counties Ranked Side by Side
-                </h2>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 print:hidden">
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-[#5A534A] absolute left-2.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={countySearch}
-                    onChange={(e) => setCountySearch(e.target.value)}
-                    placeholder="Type county name..."
-                    className="pl-8 pr-3 py-1.5 text-xs font-medium border-2 border-[#111111] bg-white rounded focus:outline-none"
-                  />
-                </div>
-                {(["ALL", "DETACHED", "BASELINE"] as const).map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTierFilter(tf)}
-                    className={`px-2.5 py-1.5 text-[11px] font-mono font-bold uppercase rounded border-2 cursor-pointer ${
-                      tierFilter === tf
-                        ? "bg-[#111111] text-white border-[#111111]"
-                        : "bg-white text-[#111111] border-[#111111]"
-                    }`}
-                  >
-                    {tf === "ALL"
-                      ? "All 82"
-                      : tf === "DETACHED"
-                      ? "16 Priority"
-                      : "66 Normal"}
-                  </button>
+            <div className="space-y-4">
+              <h3 className="font-serif text-[22px] font-bold">Check 3 · Out-of-state mailing addresses</h3>
+              <p className="max-w-[62ch] text-[16px] leading-relaxed text-[#3A3530]">
+                {ncoaInactivePct}% are already Inactive under federal rules. {fmt(ncoa.totalVoters)} active voters need a confirmation postcard. Most destinations are neighboring states and military moves.
+              </p>
+              <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
+                {ncoaStates.map((x) => (
+                  <div key={x.s} className="grid grid-cols-[44px_1fr_64px] items-center gap-3 px-4 py-2">
+                    <span className="font-mono text-[13px] font-bold">{x.s}</span>
+                    <Bar value={x.n} max={maxState} />
+                    <span className="text-right text-[13px] tabular-nums">{fmt(x.n)}</span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            <div className="max-h-[580px] overflow-auto border-2 border-[#111111] rounded-xl bg-white shadow-xs">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="sticky top-0 z-20 bg-[#111111] text-white shadow-xs">
-                  <tr className="font-mono text-[10px] uppercase tracking-wider">
-                    <th className="py-3 px-3">County</th>
-                    <th className="py-3 px-2.5 text-right">Total Voters</th>
-                    <th className="py-3 px-2.5 text-right">Active</th>
-                    <th className="py-3 px-2.5 text-right">2024 Votes</th>
-                    <th className="py-3 px-2.5 text-right">8+ Addrs</th>
-                    <th className="py-3 px-2.5 text-right">Missing Unit</th>
-                    <th className="py-3 px-2.5 text-right">Out-of-State</th>
-                    <th className="py-3 px-2.5 text-right">Same-ZIP Dup</th>
-                    <th className="py-3 px-2.5 text-right">3,000+ Polls</th>
-                    <th className="py-3 px-2.5 text-right text-[#F59E0B]">Score</th>
-                    <th className="py-3 px-3">Plain-English Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D8D2C7]">
-                  {filteredCountyVectors.map((c) => (
-                    <tr key={c.county} className="hover:bg-[#F5F2EB]">
-                      <td className="py-2.5 px-3 font-bold text-[#111111] whitespace-nowrap">
-                        {c.county}
-                      </td>
-                      <td className="py-2.5 px-2.5 text-right font-mono font-semibold">
-                        {c.total.toLocaleString()}
-                      </td>
-                      <td className="py-2.5 px-2.5 text-right font-mono text-[#2C2825]">
-                        {c.active.toLocaleString()}
-                      </td>
-                      <td className="py-2.5 px-2.5 text-right font-mono">
-                        {c.votes2024General.toLocaleString()}
-                      </td>
-                      <td className="py-2.5 px-2.5 text-right font-mono">{c.highDensityCount}</td>
-                      <td className="py-2.5 px-2.5 text-right font-mono">{c.missingDormCount}</td>
-                      <td className="py-2.5 px-2.5 text-right font-mono">{c.ncoaCount}</td>
-                      <td className="py-2.5 px-2.5 text-right font-mono">{c.duplicateCount}</td>
-                      <td className="py-2.5 px-2.5 text-right font-mono">{c.overCapacityPrecincts}</td>
-                      <td className="py-2.5 px-2.5 text-right font-mono font-bold text-[#D9381E]">
-                        {c.threatEnergy}
-                      </td>
-                      <td className="py-2.5 px-3 text-[11px] font-semibold text-[#111111] whitespace-nowrap">
-                        {FRIENDLY_REGIME_MAP[c.regime] || c.regime}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ol className="divide-y divide-[#DDD6CA] border-y border-[#DDD6CA]">
+              {[
+                ["Check 4 · P.O. boxes typed as a home address", `${fmt(playbooks.commercialPOBox.totalVoters)} records statewide. A home address is needed to assign the right precinct; box numbers are not shown.`],
+                ["Check 5 · Old placeholder dates like 1801", `${fmt(playbooks.clericalTypos.totalAnomalies)} records carry default dates from the early-2000s move off paper. These are clerical, not fraud.`],
+                ["Check 6 · Same-name duplicates", `${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households protected. ${fmt(playbooks.duplicates.activeActiveDuplicates)} same-ZIP pairs where both records are active should be reviewed.`],
+                ["Checks 7–8 · Deadline spikes and busy precincts", `Sign-ups peak at the 30-day deadline before presidential elections — expected. ${playbooks.precinctCapacity.overCapacityCount} precincts exceed 3,000 voters; ${fivePlus} of the largest exceed 5,000.`],
+                ["Check 9 · Accounting pattern test", `Registration totals across precincts follow the natural first-digit pattern auditors expect (score ${benford.chiSquare}, ${benford.conforming ? "pass" : "review"}). Turnout counts deviate (score ${benfordTurnout.chiSquare}) because counties deliberately size precincts — this is a known limitation of the test, not a red flag.`],
+              ].map(([t, b]) => (
+                <li key={t} className="py-5">
+                  <h3 className="font-serif text-[19px] font-bold">{t}</h3>
+                  <p className="mt-1 max-w-[62ch] text-[15px] leading-relaxed text-[#3A3530]">{b}</p>
+                </li>
+              ))}
+            </ol>
+
+            <EditorialTable
+              caption="Largest precincts"
+              rows={playbooks.precinctCapacity.topOverCapacity.slice(0, 10)}
+              rowKey={(p) => `${p.county}-${p.precinctCode}`}
+              maxHeight={360}
+              columns={[
+                { key: "precinctName", label: "Precinct", render: (p) => `${p.precinctName} (${p.precinctCode})` },
+                { key: "county", label: "County" },
+                { key: "voterCount", label: "Voters", align: "right", focus: true, render: (p) => fmt(p.voterCount) },
+                { key: "activeVoterCount", label: "Active", align: "right", render: (p) => fmt(p.activeVoterCount) },
+              ]}
+            />
           </section>
-        </main>
 
-        {/* Right Column: Commissioner Quick-Reference Rail (Desktop) */}
-        <aside className="hidden xl:block print:hidden">
-          <div className="sticky top-20 border-t-2 border-[#111111] pt-4 space-y-5 text-xs">
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-widest text-[#D9381E] font-bold">
-                Commissioner Quick Brief
+          {/* ---------- Share ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="share" num="—" kicker="Share it" title={toolkit.headline} />
+            <ol className="grid grid-cols-1 border-y-2 border-[#111111] md:grid-cols-3 md:divide-x divide-y md:divide-y-0 divide-[#DDD6CA]">
+              {toolkit.evangelismSteps.map((s) => (
+                <li key={s.step} className="py-5 md:px-5 first:md:pl-0">
+                  <span className="font-serif text-[22px] font-bold" style={{ color: FOCUS }}>{s.step}</span>
+                  <h3 className="mt-1 font-serif text-[18px] font-bold leading-snug">{s.title}</h3>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[#3A3530]">{s.detail}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {/* ---------- 08 Ledger ---------- */}
+          <section className="space-y-6">
+            <SectionHead id="ledger" num="08" kicker="Reference" title="All 82 counties" />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center print:hidden">
+              <label className="relative flex-1">
+                <span className="sr-only">Search counties</span>
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6E675F]" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search a county" className="h-11 w-full border border-[#111111] bg-white pl-9 pr-3 text-[15px]" />
+              </label>
+              <div className="flex" role="group" aria-label="Filter counties">
+                {([["ALL", "All 82"], ["PRIORITY", `${priorityCount} with tasks`], ["NORMAL", `${normalCount} normal`]] as const).map(([k, l]) => (
+                  <button key={k} onClick={() => setTier(k)} aria-pressed={tier === k} className={`h-11 border border-[#111111] px-3 text-[14px] font-semibold -ml-px first:ml-0 ${tier === k ? "bg-[#111111] text-white" : "bg-white"}`}>
+                    {l}
+                  </button>
+                ))}
               </div>
-              <h3 className="font-serif text-base font-bold text-[#111111] mt-1">
-                3 Points for Your County Board
-              </h3>
-              <p className="text-[#2C2825] mt-2 leading-relaxed">
-                1. <strong>Zero unmatched ballots.</strong> All 25.91M past ballots match a real Voter ID, and 66 of 82 counties sit in the normal range.
-              </p>
-              <p className="text-[#2C2825] mt-2 leading-relaxed">
-                2. <strong>18,093 false alarms removed.</strong> Nursing homes, college dorms, Jr./Sr. families, and street names like <em>Marshall Pl</em> are already filtered out.
-              </p>
-              <p className="text-[#2C2825] mt-2 leading-relaxed">
-                3. <strong>100% Zero-PII.</strong> Every personal name, voter ID, P.O. Box number, and private house number is redacted.
-              </p>
             </div>
+            <EditorialTable
+              rows={ledger}
+              rowKey={(c) => c.county}
+              maxHeight={560}
+              columns={[
+                { key: "county", label: "County" },
+                { key: "total", label: "Voters", align: "right", render: (c) => fmt(c.total) },
+                { key: "highDensityCount", label: "8+ addresses", align: "right" },
+                { key: "ncoaCount", label: "Out-of-state", align: "right" },
+                { key: "duplicateCount", label: "Same-ZIP dup.", align: "right" },
+                { key: "overCapacityPrecincts", label: "3,000+ precincts", align: "right" },
+                { key: "threatEnergy", label: "Score", align: "right", focus: true },
+                { key: "regime", label: "Status", render: (c) => STATUS_LABEL[c.regime] || c.regime },
+              ]}
+            />
+          </section>
 
-            <div className="border-t border-[#111111] pt-4 space-y-2">
-              <Link
-                href="/manifold"
-                className="w-full inline-flex items-center justify-between px-3 py-2.5 rounded border-2 border-[#111111] bg-[#111111] text-white font-bold hover:bg-[#2A2927]"
-              >
-                <span>Open Full-Screen 3D Map</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#F59E0B]" />
-              </Link>
-              <Link
-                href="/updates"
-                className="w-full inline-flex items-center justify-between px-3 py-2.5 rounded border-2 border-[#111111] bg-white text-[#111111] font-bold hover:bg-[#F5F2EB]"
-              >
-                <span>Read Plain-English Post</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-        </aside>
+          <footer className="border-t-2 border-[#111111] pt-6 text-[13px] leading-relaxed text-[#5A534A]">
+            Source: {metadata.sourceFile}. {metadata.privacyStandard}.
+          </footer>
+        </main>
       </div>
     </div>
   );

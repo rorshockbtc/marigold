@@ -74,9 +74,9 @@ export default function AuditPage() {
       id: "benfords-law",
       label: "PB-09: First-Digit Benford Test",
       icon: "📊",
-      metric: "Roll χ² = 6.94 (PASS)",
+      metric: "Roll χ² = 9.16 (PASS)",
       phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
-      desc: "Demonstrates why total registration passes Benford's Law cleanly (χ² = 6.94 < 15.51) while 2024 turnout (χ² = 71.15) reflects 1,500–3,000 precinct sizing.",
+      desc: "Demonstrates why total registration passes Benford's Law cleanly (χ² = 9.16 < 15.51) while 2024 turnout (χ² = 30.5) reflects 1,500–3,000 precinct sizing.",
     },
     {
       id: "voting-history",

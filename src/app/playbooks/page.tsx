@@ -126,7 +126,7 @@ export default function MissionControl() {
           {
             id: "benfords-law",
             name: "PB-09: Newcomb-Benford First-Digit Distribution",
-            desc: "Total Roll χ² = 6.94 (PASS < 15.51) • 2024 Turnout χ² = 71.15 (Sizing Effect)",
+            desc: "Total Roll χ² = 9.16 (PASS < 15.51) • 2024 Turnout χ² = 30.5 (Sizing Effect)",
             description:
               "Tests precinct registration and 2024 turnout counts against the logarithmic Benford curve, demonstrating why 1,500–3,000 statutory precinct sizing clusters turnout at digits 2–4.",
             flaggedCount: 0,

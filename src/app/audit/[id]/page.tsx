@@ -137,13 +137,13 @@ const PLAYBOOK_DETAILS: Record<string, any> = {
     title: "PB-09: Newcomb-Benford First-Digit Distribution",
     icon: "📊",
     subtitle:
-      "Mississippi Benchmark: Total Roll χ² = 6.94 (PASS < 15.51) • 2024 Turnout χ² = 71.15 (Statutory Precinct Sizing Effect).",
+      "Mississippi Benchmark: Total Roll χ² = 9.16 (PASS < 15.51) • 2024 Turnout χ² = 30.5 (Statutory Precinct Sizing Effect).",
     story:
-      "Benford's Law tests whether the first digits of numbers (1 through 9) follow a natural logarithmic curve. Importantly, Benford's Law only works when numbers span several orders of magnitude (from 10 to 9,000). Mississippi's total precinct registration spans four orders of magnitude and passes with flying colors (χ² = 6.94). Meanwhile, 2024 Election Day turnout clusters around 200 to 499 voters per precinct (digits 2, 3, and 4) simply because counties design precincts to hold roughly 1,500 voters!",
+      "Benford's Law tests whether the first digits of numbers (1 through 9) follow a natural logarithmic curve. Importantly, Benford's Law only works when numbers span several orders of magnitude (from 10 to 9,000). Mississippi's total precinct registration spans four orders of magnitude and passes with flying colors (χ² = 9.16). Meanwhile, 2024 Election Day turnout clusters around 200 to 499 voters per precinct (digits 2, 3, and 4) simply because counties design precincts to hold roughly 1,500 voters!",
     steps: [
       "Extracts leading digits (1–9) across all 1,742 precincts for both Total Registration and 2024 General Turnout.",
       "Computes Pearson's Chi-Square goodness-of-fit against log10(1 + 1/d).",
-      "Explains why total registration passes (χ² = 6.94) while bounded turnout reflects statutory precinct sizing.",
+      "Explains why total registration passes (χ² = 9.16) while bounded turnout reflects statutory precinct sizing.",
     ],
     technical:
       "Logarithmic first-digit distribution test (df = 8, α = 0.05 critical value = 15.51).",

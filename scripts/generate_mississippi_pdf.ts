@@ -360,8 +360,8 @@ async function generateMississippiPdf() {
               <td class="mono">PB-09</td>
               <td><strong>First-Digit Benford's Law</strong></td>
               <td class="num">1,742 Precincts</td>
-              <td class="num accent-green">χ² = 6.94 (PASS)</td>
-              <td>Total registration passes cleanly (&lt;15.51); 2024 turnout (χ² = 71.15) reflects 1,500–3,000 precinct sizing.</td>
+              <td class="num accent-green">χ² = 9.16 (PASS)</td>
+              <td>Total registration passes cleanly (&lt;15.51); 2024 turnout (χ² = 30.5) reflects 1,500–3,000 precinct sizing.</td>
             </tr>
             <tr>
               <td class="mono">PB-10</td>
@@ -1037,9 +1037,9 @@ async function generateMississippiPdf() {
 
       <div style="margin-top: 14px;">
         <div class="kicker">PLAYBOOK 09 · NEWCOMB-BENFORD FIRST-DIGIT DISTRIBUTION (TOTAL ROLL VS. 2024 TURNOUT)</div>
-        <h2>Why Total Precinct Roll Passes (χ² = 6.94) While Turnout Clusters at Digits 2, 3, and 4</h2>
+        <h2>Why Total Precinct Roll Passes (χ² = 9.16) While Turnout Clusters at Digits 2, 3, and 4</h2>
         <p style="margin-bottom: 6px;">
-          Across all 1,742 precincts, total voter registration spans four orders of magnitude (from 10 to 9,105 voters) and conforms closely to Benford's Law (<strong>χ² = 6.94 &lt; 15.51 critical value — PASS</strong>). By contrast, 2024 General Election precinct turnout yields <strong>χ² = 71.15</strong> because County Election Commissions intentionally size precincts to hold 1,000–2,500 voters, causing Election Day turnout to cluster naturally between 200 and 499 ballots (leading digits 2, 3, and 4).
+          Across all 1,742 precincts, total voter registration spans four orders of magnitude (from 10 to 9,105 voters) and conforms closely to Benford's Law (<strong>χ² = 9.16 &lt; 15.51 critical value — PASS</strong>). By contrast, 2024 General Election precinct turnout yields <strong>χ² = 30.5</strong> because County Election Commissions intentionally size precincts to hold 1,000–2,500 voters, causing Election Day turnout to cluster naturally between 200 and 499 ballots (leading digits 2, 3, and 4).
         </p>
 
         <table>
