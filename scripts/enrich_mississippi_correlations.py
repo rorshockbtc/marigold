@@ -1,3 +1,5 @@
+import os
+import glob
 #!/usr/bin/env python3
 import csv
 import json
@@ -5,7 +7,9 @@ import math
 import re
 from collections import Counter
 
-VOTER_FILE = "/Users/kendallkylecyree/Developer/marigold/mississippi voter files most recent Octoer 2026/Weekly Distribution_kkirkpatrick_10262026_94.csv"
+# Raw extracts stay outside git (see .gitignore). Override with MS_VOTER_FILE / MS_HISTORY_FILE.
+MS_DATA_DIR = os.environ.get("MS_DATA_DIR", os.path.expanduser("~/Developer/marigold/mississippi voter files most recent Octoer 2026"))
+VOTER_FILE = os.environ.get("MS_VOTER_FILE") or next(iter(sorted(f for f in glob.glob(os.path.join(MS_DATA_DIR, "*.csv")) if "VotingHistory" not in f)), "")
 JSON_PATH = "/Users/kendallkylecyree/.gemini/antigravity/scratch/rorshockbtc_repos/marigold/src/data/mississippi_audit_results.json"
 
 CAMPUS_KEYWORD_REGEX = re.compile(r"\b(HALL|DORM|DORMITORY|CAMPUS|UNIVERSITY|COLLEGE|APARTMENT|APTS|TOWERS)\b", re.IGNORECASE)
@@ -67,7 +71,7 @@ def main():
             is_active = (status == "Active")
             res_addr_raw = row[5].strip()
             res_city_raw = row[11].strip()
-            res_county_raw = row[14].strip().upper()
+            res_county_raw = {"JEFF DAVIS": "JEFFERSON DAVIS"}.get(row[14].strip().upper(), row[14].strip().upper())
             upper_addr = normalize_addr(res_addr_raw)
             norm_city = normalize_addr(res_city_raw)
 
@@ -141,118 +145,110 @@ def main():
         c["inactiveRatePct"] = round((c["inactive"] / max(1, c["total"])) * 100.0, 1)
         c["turnout2024Pct"] = round((c["votes2024General"] / max(1, c["active"])) * 100.0, 1)
 
+    # ---- Correlations: every number below is computed; no hand-typed statistics. ----
+    # Count-vs-count comparisons across counties mostly measure county size, so
+    # CORR-01/03/04 use rates per 1,000 registered voters to remove the size effect.
+    def ols_slope(xv, yv):
+        n = len(xv)
+        mxv, myv = sum(xv) / n, sum(yv) / n
+        den = sum((a - mxv) ** 2 for a in xv)
+        return sum((a - mxv) * (b - myv) for a, b in zip(xv, yv)) / den if den else 0.0
+
+    def strength_label(r):
+        a = abs(r)
+        word = "Very strong" if a >= 0.8 else "Strong" if a >= 0.6 else "Moderate" if a >= 0.4 else "Weak" if a >= 0.2 else "Little or no"
+        return f"{word} {'positive' if r >= 0 else 'negative'} link" if a >= 0.2 else "Little or no link"
+
+    live = [c for c in cvs if c["total"] > 0]
+    per_k = lambda key: [c[key] / c["total"] * 1000.0 for c in live]
+    ncoa_rate, dup_rate, hd_rate = per_k("ncoaCount"), per_k("duplicateCount"), per_k("highDensityVoters")
+    inactive_rate = [c["inactive"] / c["total"] * 100.0 for c in live]
+    overcap_rate = [c["overCapacityPrecincts"] / c["total"] * 10000.0 for c in live]
+    totals_live = [c["total"] for c in live]
+    hd_live = [c["highDensityCount"] for c in live]
+    xs_l, ys_l = [c["x"] for c in live], [c["y"] for c in live]
+
+    s01 = ols_slope(ncoa_rate, dup_rate)
+    s02 = ols_slope(totals_live, hd_live)
+    s03 = ols_slope(inactive_rate, hd_rate)
+    hd = data["playbooks"]["highDensity"]
+    hd_inactive_share = (1 - hd["activeVoters"] / hd["totalVoters"]) * 100 if hd.get("totalVoters") else 0
+    big = [c for c in live if c["overCapacityPrecincts"] >= 5]
+    big_share = sum(c["ncoaCount"] for c in big) / max(1, sum(c["ncoaCount"] for c in live)) * 100
+
+    def pair(cid, label, title, xv, yv, rate_text, takeaway):
+        r = pearson_r(xv, yv)
+        return {"id": cid, "pairLabel": label, "plainTitle": title, "pearsonR": r,
+                "spearmanRho": spearman_rho(xv, yv), "strength": strength_label(r),
+                "rateOfChange": rate_text, "commonManTakeaway": takeaway, "countiesCompared": len(xv)}
+
     correlation_pairs = [
-        {
-            "id": "CORR-01",
-            "pairLabel": "Out-of-State Mail Forwardings (PB-03) vs. Intra-ZIP Duplicate Clusters (PB-06)",
-            "plainTitle": "When Voters Move Without Updating Rolls, Duplicate Records Follow",
-            "pearsonR": pearson_r(ncoa_counts, dup_counts),
-            "spearmanRho": spearman_rho(ncoa_counts, dup_counts),
-            "strength": "Strong Positive Correlation",
-            "rateOfChange": "Every +10 Active out-of-state mail forwardings in a county corresponds to +4.2 intra-ZIP duplicate registration clusters.",
-            "commonManTakeaway": (
-                "Counties with high residential turnover (college towns, military bases, and fast-growing suburbs) accumulate both "
-                "out-of-state mail forwardings and duplicate registrations at the exact same time. Cleaning NCOA relocation backlogs "
-                "automatically resolves nearly half of a county's duplicate footprint."
-            )
-        },
-        {
-            "id": "CORR-02",
-            "pairLabel": "Total County Roll Volume vs. High-Density Residential Clusters (PB-01)",
-            "plainTitle": "High-Density Clusters Scale with Urban & Campus Housing Concentration",
-            "pearsonR": pearson_r(totals, hd_counts),
-            "spearmanRho": spearman_rho(totals, hd_counts),
-            "strength": "Very Strong Positive Correlation",
-            "rateOfChange": "Each additional 10,000 registered voters adds an average of +8.7 high-density parcels (8+ voters at a single street address).",
-            "commonManTakeaway": (
-                "Large counties naturally have more apartments, nursing homes, and dorms—which is why raw counts alone mislead people. "
-                "By subtracting institutional and apartment buildings first, a Commissioner can see which counties actually have "
-                "single-family houses with 10 to 25 legacy voters still on the roll."
-            )
-        },
-        {
-            "id": "CORR-03",
-            "pairLabel": "Inactive Voter Roll Share vs. Single-Family High-Density Accumulation (PB-01)",
-            "plainTitle": "Delayed Inactive-Roll Purges Directly Inflate 'Crowded House' Counts",
-            "pearsonR": pearson_r(inactives, hd_voters),
-            "spearmanRho": spearman_rho(inactives, hd_voters),
-            "strength": "Strong Positive Correlation",
-            "rateOfChange": "30.4% of all voters sitting inside high-density addresses (7,076 of 24,905) are already marked Inactive—waiting on their 2-cycle NVRA removal clock.",
-            "commonManTakeaway": (
-                "When someone sees '15 voters registered at one house,' it usually isn't 15 people living there today—it is three families "
-                "who rented the house over 12 years and never cancelled their old registration. Separating Active from Inactive voters cuts "
-                "the high-density alarm list by a third overnight."
-            )
-        },
-        {
-            "id": "CORR-04",
-            "pairLabel": "Over-Capacity Mega-Precincts (>3,000 Voters, PB-08) vs. Active Out-of-State Drift (PB-03)",
-            "plainTitle": "Fast-Growing Suburban Precincts Face Both Line Bottlenecks and Mail Drift",
-            "pearsonR": pearson_r(over_cap, ncoa_counts),
-            "spearmanRho": spearman_rho(over_cap, ncoa_counts),
-            "strength": "Strong Positive Correlation",
-            "rateOfChange": "Counties with 5+ mega-precincts (DeSoto, Harrison, Madison, Rankin, Hinds) account for 43.2% of all out-of-state active mailings statewide.",
-            "commonManTakeaway": (
-                "Rapidly growing commuter counties experience a double squeeze: new subdivisions overload existing polling places past 5,000 voters "
-                "while mobile families move across state lines. Splitting overloaded precincts and running NCOA address updates solves both bottlenecks together."
-            )
-        },
-        {
-            "id": "CORR-05",
-            "pairLabel": "Manifold Axis X (Address Crowding) vs. Axis Y (Identity & Mail Drift)",
-            "plainTitle": "Why 3D Variable Isolation Beats a Single Flat Score",
-            "pearsonR": pearson_r(xs, ys),
-            "spearmanRho": spearman_rho(xs, ys),
-            "strength": "Moderate Coupled Slope (Surface Baseline)",
-            "rateOfChange": "Partial derivative dZ_eq/dX = +0.34 and dZ_eq/dY = +0.29 along the smooth baseline surface; counties above Z_eq are true statistical outliers.",
-            "commonManTakeaway": (
-                "Because address crowding (X) and mail drift (Y) only moderately overlap (r = " + str(pearson_r(xs, ys)) + "), "
-                "a single 1-to-100 score hides whether a county needs building-unit cleanup (like Oktibbeha/Lafayette) or polling-place splits (like DeSoto/Madison). "
-                "Plotting X, Y, and Z in 3D lets every Election Commissioner see their county's exact maintenance recipe."
-            )
-        }
+        pair("CORR-01", "Out-of-state mail vs. same-ZIP duplicates (both per 1,000 voters)",
+             "Do counties with more movers also have more duplicate records?",
+             ncoa_rate, dup_rate,
+             f"Straight-line fit: +1 out-of-state mailing per 1,000 voters goes with {s01:+.2f} duplicate pairs per 1,000 voters.",
+             "Counties with lots of people moving (college towns, military areas, fast-growing suburbs) tend to have both. "
+             "This is a pattern across counties, not proof that one causes the other."),
+        pair("CORR-02", "County size vs. addresses with 8+ voters",
+             "Do bigger counties have more crowded addresses?",
+             totals_live, hd_live,
+             f"Straight-line fit: about {s02 * 10000:.1f} more 8+ voter addresses for every 10,000 additional registered voters.",
+             "Raw counts mostly track county size. That is why this report separates campuses, care homes and apartment "
+             "complexes before showing single-family homes."),
+        pair("CORR-03", "Inactive share vs. voters at 8+ voter addresses (per 1,000 voters)",
+             "Do counties with more Inactive voters have more crowded addresses?",
+             inactive_rate, hd_rate,
+             f"Statewide, {hd_inactive_share:.1f}% of voters at 8+ voter addresses are already marked Inactive.",
+             "A house with many names on the roll often reflects past residents who moved away. Many are already Inactive "
+             "and will come off the roll on the normal federal schedule."),
+        pair("CORR-04", "Precincts over 3,000 voters vs. out-of-state mail (both size-adjusted)",
+             "Do counties with crowded precincts also have more out-of-state mail?",
+             overcap_rate, ncoa_rate,
+             f"Counties with 5 or more precincts over 3,000 voters ({len(big)} counties) hold {big_share:.1f}% of active out-of-state mailings.",
+             "These are separate tasks: splitting busy precincts and sending address-confirmation notices. Read the "
+             "connection score before assuming one fix helps the other."),
+        pair("CORR-05", "Address score (X) vs. mail & duplicate score (Y)",
+             "Why the map uses three directions instead of one score",
+             xs_l, ys_l,
+             "The two scores overlap only partly, so a single combined number would hide which task a county needs.",
+             "Looking at addresses, mail moves and precinct size separately shows each county's own to-do list."),
     ]
 
+    for cp in correlation_pairs:
+        if cp["id"] in ("CORR-01", "CORR-03", "CORR-04") and abs(cp["pearsonR"]) < 0.2:
+            cp["commonManTakeaway"] = ("No clear pattern once county size is taken into account. "
+                                       "Treat these as separate tasks rather than expecting one fix to solve both.")
+
+    normal = [c for c in live if c["regime"] == "Equilibrium Manifold Surface"]
+    by_regime = lambda reg: sorted([c for c in live if c["regime"] == reg], key=lambda c: -c["threatEnergy"])
+    def tier(name, reg, focus, metric_fn):
+        group = by_regime(reg)
+        return {"tier": f"{name} ({len(group)} counties)", "counties": [c["county"] for c in group[:10]],
+                "primaryFocus": focus, "benchmarkMetric": metric_fn(group) if group else "—"}
+    avg = lambda g, k: sum(c[k] for c in g) / len(g)
+
     commissioner_toolkit = {
-        "headline": "A Mississippi Election Commissioner's Guide to Reading & Sharing This Audit",
-        "subheadline": "How to explain the numbers in plain English to your Board of Supervisors, Circuit Clerk, and neighboring counties.",
+        "headline": "How to share these findings with your county",
+        "subheadline": "Plain steps for talking with your Board of Supervisors, Circuit Clerk and neighboring counties.",
         "peerTiers": [
-            {
-                "tier": "Tier 1 — High-Growth Commuter & Metro Counties",
-                "counties": ["DeSoto", "Harrison", "Hinds", "Rankin", "Madison", "Jackson", "Lee", "Forrest", "Lauderdale", "Lowndes"],
-                "primaryFocus": "Split mega-precincts exceeding 3,000 voters (PB-08) and process NCOA out-of-state mail forwardings (PB-03).",
-                "benchmarkMetric": "Average 7.4 over-capacity precincts and 128 active out-of-state mailings per county."
-            },
-            {
-                "tier": "Tier 2 — University & Institutional Hub Counties",
-                "counties": ["Lafayette", "Oktibbeha", "Leflore", "Claiborne", "Forrest", "Hinds", "stone", "Pearl River", "Jones", "Bolivar"],
-                "primaryFocus": "Work with campus housing registrars to append room/apartment numbers (PB-02) and separate student dorms from single-family homes (PB-01).",
-                "benchmarkMetric": "Accounts for 91.4% of all verified un-unitized dormitory and multi-unit student records statewide."
-            },
-            {
-                "tier": "Tier 3 — Rural & Legacy Migration Counties (62 Counties)",
-                "counties": ["Warren", "Washington", "Panola", "Pike", "Lincoln", "Alcorn", "Marshall", "Monroe", "Tate", "Hancock"],
-                "primaryFocus": "Clean 1801/0001 placeholder dates and DATAMIGRATION street strings (PB-05), and convert P.O. Box residential lines to physical 911 addresses (PB-04).",
-                "benchmarkMetric": "66 of 82 counties sit comfortably on the healthy baseline surface and only require targeted clerical cleanup."
-            }
+            tier("Main focus: out-of-state mail & duplicates", "Axis-Y Interstate Drift Ridge",
+                 "Send address-confirmation notices to active voters with out-of-state mail; review same-ZIP duplicate pairs.",
+                 lambda g: f"Average {avg(g, 'ncoaCount'):.0f} active out-of-state mailings per county."),
+            tier("Main focus: apartment & dorm unit numbers", "Axis-X Spatial Domicile Ridge",
+                 "Work with campus housing and apartment managers to add room and unit numbers.",
+                 lambda g: f"Average {avg(g, 'highDensityCount'):.0f} addresses with 8+ voters per county."),
+            tier("Main focus: large precincts", "Axis-Z Precinct Strain Ridge",
+                 "Review precincts over 3,000 voters for splits or extra poll-book stations.",
+                 lambda g: f"Average {avg(g, 'overCapacityPrecincts'):.1f} precincts over 3,000 voters per county."),
         ],
         "evangelismSteps": [
-            {
-                "step": "01",
-                "title": "Separate Real Anomalies from Normal Buildings Before Anyone Panics",
-                "detail": "Show your fellow Commissioners how Marigold automatically separates nursing homes, university dorms (PB-01/PB-02), and Jr./Sr. fathers and sons (PB-06) from true actionable items. That immediately builds trust with Circuit Clerks."
-            },
-            {
-                "step": "02",
-                "title": "Isolate Your County's #1 Driver on the 3D Manifold",
-                "detail": "Instead of arguing over raw totals, click your county on the 3D Manifold and toggle X (Addresses), Y (Relocations/Duplicates), and Z (Polling Place Strain). You will immediately see which single variable drives your county's workload."
-            },
-            {
-                "step": "03",
-                "title": "Bring a 1-Page Peer Comparison to Your Next ECAM District Meeting",
-                "detail": "Compare your county against similarly sized Mississippi peers using the 82-County Benchmark Table. When neighboring counties see that 98.7% of records pass cleanly and the remaining 1.3% can be fixed with standard NVRA postcards and 911 address tables, adoption becomes effortless."
-            }
-        ]
+            {"step": "01", "title": "Start with what checked out",
+             "detail": "Every past ballot record matched a registered voter. Lead with that, then explain that ordinary buildings and Jr./Sr. families were filtered out before any list was made."},
+            {"step": "02", "title": "Find your county's main task",
+             "detail": "Use the 3D map or the county table to see whether addresses, mail moves or precinct size drives your county's score."},
+            {"step": "03", "title": "Compare with similar counties",
+             "detail": f"Bring the 82-county table to your next district meeting. {len(normal)} counties sit in the normal range for their size; the rest each have one main task."},
+        ],
     }
 
     data["threatManifold"]["correlations"] = correlation_pairs

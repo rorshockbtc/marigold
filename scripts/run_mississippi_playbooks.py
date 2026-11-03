@@ -1,3 +1,4 @@
+import glob
 #!/usr/bin/env python3
 import csv
 import json
@@ -7,8 +8,10 @@ import re
 from collections import defaultdict, Counter
 from datetime import datetime, timezone
 
-VOTER_FILE = "/Users/kendallkylecyree/Developer/marigold/mississippi voter files most recent Octoer 2026/Weekly Distribution_kkirkpatrick_10262026_94.csv"
-HISTORY_FILE = "/Users/kendallkylecyree/Developer/marigold/mississippi voter files most recent Octoer 2026/Weekly Distribution_kkirkpatrick_10262026_94VotingHistory.csv"
+# Raw extracts stay outside git (see .gitignore). Override with MS_VOTER_FILE / MS_HISTORY_FILE.
+MS_DATA_DIR = os.environ.get("MS_DATA_DIR", os.path.expanduser("~/Developer/marigold/mississippi voter files most recent Octoer 2026"))
+VOTER_FILE = os.environ.get("MS_VOTER_FILE") or next(iter(sorted(f for f in glob.glob(os.path.join(MS_DATA_DIR, "*.csv")) if "VotingHistory" not in f)), "")
+HISTORY_FILE = os.environ.get("MS_HISTORY_FILE") or next(iter(sorted(glob.glob(os.path.join(MS_DATA_DIR, "*VotingHistory*.csv")))), "")
 OUT_PATH = "/Users/kendallkylecyree/.gemini/antigravity/scratch/rorshockbtc_repos/marigold/src/data/mississippi_audit_results.json"
 
 MISSISSIPPI_82_COUNTIES = [
@@ -36,6 +39,8 @@ STREET_NAME_FALSE_POSITIVE_REGEX = re.compile(
 )
 UNIT_REGEX = re.compile(r"\b(APT|UNIT|RM|ROOM|SUITE|BLDG|LOT|TRLR|STE)\b|#", re.IGNORECASE)
 PO_BOX_KEYWORDS = ("PO BOX", "P O BOX", "P.O. BOX", "UPS STORE", "PMB", "FEDEX")
+# Catches "PO BOX", "P.O.BOX", "P. O. BOX", "POBOX"; PMB only as a whole word.
+PO_BOX_RE = re.compile(r"\bP\.?\s?O\.?\s?BOX\b|\bPMB\b|UPS STORE|FEDEX")
 INSTITUTIONAL_KEYWORDS = (
     "NURSING", "CARE CENTER", "SENIOR LIVING", "REHAB", "RETIREMENT", "CONVALESCENT",
     "DORMITORY", "DORM", "HALL", "MANOR", "HEALTHCARE", "ASSISTED LIVING", "LYNCH",
@@ -52,6 +57,9 @@ MULTIFAMILY_KEYWORDS = (
     "20 TH ST", "U S HIGHWAY 49", "BROAD AVE", "PARKER RD", "OAKLAWN RD", "COWAN RD", "W 4 TH ST"
 )
 WHITESPACE_RE = re.compile(r"\s+")
+
+# Raw SEMS extract abbreviates some county names; map them to canonical names.
+COUNTY_ALIASES = {"JEFF DAVIS": "JEFFERSON DAVIS"}
 
 def normalize_addr(addr: str) -> str:
     return WHITESPACE_RE.sub(" ", addr.upper()).strip()
@@ -157,7 +165,7 @@ def main():
             res_city = row[11].strip()
             res_state = row[12].strip() or "MS"
             res_zip = row[13].strip()
-            res_county_raw = row[14].strip().upper()
+            res_county_raw = COUNTY_ALIASES.get(row[14].strip().upper(), row[14].strip().upper())
             precinct_code = row[15].strip()
             precinct_name = row[16].strip()
             mail_addr = row[17].strip()
@@ -213,13 +221,13 @@ def main():
                         county_stats[c_key]["ncoaCount"] += 1
 
             # Playbook 4: Commercial & PO Box Disguises
-            if upper_addr and any(kw in upper_addr for kw in PO_BOX_KEYWORDS):
+            if upper_addr and PO_BOX_RE.search(" ".join(res_addr.upper().split())):
                 po_box_total += 1
                 if is_active:
                     po_box_active_total += 1
                 if "UPS STORE" in upper_addr or "FEDEX" in upper_addr:
                     cat = "Commercial Parcel Hub (UPS/FedEx)"
-                elif "PMB" in upper_addr:
+                elif re.search(r"\bPMB\b", upper_addr):
                     cat = "Private Mail Box (PMB)"
                 else:
                     cat = "U.S. Post Office Box (P.O. Box)"
@@ -288,6 +296,7 @@ def main():
     high_density_voters = 0
     active_only_hd_addresses = 0
     active_only_hd_voters = 0
+    high_density_active_voters = 0
     inst_cluster_count = 0
     inst_voter_count = 0
     multifamily_cluster_count = 0
@@ -305,6 +314,7 @@ def main():
             act_cnt = addr_active_counts[addr_key]
             high_density_addresses += 1
             high_density_voters += cnt
+            high_density_active_voters += act_cnt
             if act_cnt >= 8:
                 active_only_hd_addresses += 1
                 active_only_hd_voters += act_cnt
@@ -849,8 +859,8 @@ def main():
     output = {
         "metadata": {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
-            "sourceFile": "Weekly Distribution_kkirkpatrick_10262026_94.csv",
-            "votingHistoryFile": "Weekly Distribution_kkirkpatrick_10262026_94VotingHistory.csv",
+            "sourceFile": "Mississippi Statewide Voter Roll (October 2026 extract)",
+            "votingHistoryFile": "Mississippi Statewide Voting History (October 2026 extract)",
             "totalRecords": total_records,
             "activeVoters": active_voters,
             "inactiveVoters": inactive_voters,
@@ -931,6 +941,7 @@ def main():
                 "totalVoters": high_density_voters,
                 "activeOnlyAddresses": active_only_hd_addresses,
                 "activeOnlyVoters": active_only_hd_voters,
+                "activeVoters": high_density_active_voters,
                 "institutionalClusters": inst_cluster_count,
                 "institutionalVoters": inst_voter_count,
                 "multiFamilyClusters": multifamily_cluster_count,

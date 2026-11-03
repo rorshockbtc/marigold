@@ -66,11 +66,6 @@ export default function MississippiPlaybookAnalysisReportPage() {
   /* ---------- Derived, data-bound figures (no hardcoded statistics) ---------- */
   const priorityCount = counties.filter((c) => c.regime !== "Equilibrium Manifold Surface").length;
   const normalCount = counties.length - priorityCount;
-  const falseAlarms =
-    playbooks.missingDorm.streetNameFalsePositivesRemoved +
-    playbooks.duplicates.generationalPairs +
-    playbooks.highDensity.institutionalVoters +
-    playbooks.highDensity.multiFamilyVoters;
   const ncoa = playbooks.ncoaRelocations;
   const ncoaInactivePct = pct(ncoa.inactiveRelocatedVoters, ncoa.totalAllStatusVoters);
   const benford = playbooks.benfordsLaw;
@@ -125,7 +120,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
     ["map", "03", "3D county map"],
     ["filtering", "04", "False alarms removed"],
     ["ballots", "05", "Ballot history check"],
-    ["connections", "06", "2-for-1 fixes"],
+    ["connections", "06", "Do issues overlap?"],
     ["checks", "07", "The 10 checks"],
     ["ledger", "08", "All 82 counties"],
   ] as const;
@@ -183,8 +178,8 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </h1>
             <p className="mt-5 max-w-[60ch] font-serif text-[19px] sm:text-[21px] leading-[1.55] text-[#2C2825]">
               We checked {fmt(metadata.totalRecords)} registrations and {fmt(votingHistoryAudit.totalHistoryRowsScanned)} past
-              ballots across all 82 counties. Every ballot matched a real voter. After removing {fmt(falseAlarms)} false
-              alarms, what remains is routine, fixable list maintenance.
+              ballots across all 82 counties. Every ballot matched a real voter. After setting aside dorms, care homes, apartment
+              buildings and Jr./Sr. families, what remains is routine, fixable list maintenance.
             </p>
 
             {/* Mobile section picker (non-sticky) */}
@@ -207,7 +202,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
               {[
                 [fmt(votingHistoryAudit.totalHistoryRowsScanned), "past ballots checked", "0 unmatched"],
                 [`${normalCount} of 82`, "counties in normal range", `${priorityCount} with extra tasks`],
-                [fmt(falseAlarms), "false alarms removed", "before anyone reviews"],
+                [fmt(playbooks.precinctCapacity.overCapacityCount), "precincts over 3,000 voters", `of ${fmt(playbooks.precinctCapacity.totalPrecincts)} statewide`],
                 [`${ncoaInactivePct}%`, "of out-of-state movers", "already set Inactive"],
               ].map(([v, l, s], i) => (
                 <div key={l} className={`py-5 pr-3 ${i % 2 ? "pl-4 border-l border-[#DDD6CA]" : ""} ${i === 2 ? "sm:pl-4 sm:border-l" : ""} ${i >= 2 ? "border-t border-[#DDD6CA] sm:border-t-0" : ""}`}>
@@ -319,7 +314,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- 04 Filtering ---------- */}
           <section className="space-y-6">
-            <SectionHead id="filtering" num="04" kicker="Signal vs. noise" title={`${fmt(falseAlarms)} false alarms, removed first`} dek="Simple scans flag dorms, nursing homes, and fathers and sons with the same name. We set those aside so clerks only see real work. Gray is noise; red is what's left to review." />
+            <SectionHead id="filtering" num="04" kicker="Signal vs. noise" title="Ordinary explanations, set aside first" dek="Simple scans flag dorms, nursing homes, and fathers and sons with the same name. We set those aside so clerks only see real work. Gray is noise; red is what's left to review." />
             <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
               {[
                 ["Dorms & apartments missing a unit number", playbooks.missingDorm.totalVoters + playbooks.missingDorm.streetNameFalsePositivesRemoved, playbooks.missingDorm.activeVoters, "Street names like “Marshall Pl” removed"],
@@ -363,7 +358,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- 06 Connections ---------- */}
           <section className="space-y-6">
-            <SectionHead id="connections" num="06" kicker="2-for-1 fixes" title="Which fixes solve two problems at once" dek="A score near 1.00 means two issues rise and fall together across counties — so fixing one usually helps the other." />
+            <SectionHead id="connections" num="06" kicker="Patterns across counties" title="Do these issues travel together?" dek="A score near 1 means two measures rise and fall together across counties; near 0 means no pattern. Where raw counts would just reflect county size, we compare rates per 1,000 voters. A pattern is not proof of cause." />
             <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111]">
               {correlations.map((c) => (
                 <li key={c.id} className="grid grid-cols-1 gap-3 py-5 sm:grid-cols-[1fr_160px] sm:gap-8">
@@ -374,7 +369,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   <div>
                     <div className="font-serif text-[28px] font-bold tabular-nums leading-none">{c.pearsonR.toFixed(2)}</div>
                     <div className="mt-2"><Bar value={Math.abs(c.pearsonR)} max={1} focus /></div>
-                    <div className="mt-1 text-[12px] text-[#6E675F]">connection score (0–1)</div>
+                    <div className="mt-1 text-[12px] text-[#6E675F]">connection score (−1 to 1)</div>
                   </div>
                 </li>
               ))}
@@ -390,15 +385,15 @@ export default function MississippiPlaybookAnalysisReportPage() {
               <p className="max-w-[62ch] text-[16px] leading-relaxed text-[#3A3530]">
                 {fmt(playbooks.highDensity.totalAddresses)} addresses qualify. Most are campuses, nursing homes, and apartment
                 complexes. {fmt(playbooks.highDensity.singleFamilyAnomalies)} are single-family homes worth a closer look — usually
-                past renters who never updated their registration. House numbers are hidden to the nearest 100 block.
+                past renters who never updated their registration. Exact locations are withheld; counties can find them in their own system.
               </p>
               <EditorialTable
-                caption="Largest single-family addresses (100-block masked)"
+                caption="Single-family homes with the most registrations (location withheld)"
                 rows={playbooks.highDensity.topSingleFamilyAnomalies.slice(0, 10)}
                 rowKey={(r, i) => `${r.address}-${i}`}
                 maxHeight={360}
                 columns={[
-                  { key: "address", label: "Street block", render: (r) => `${r.address}, ${r.city}` },
+                  { key: "address", label: "Location (city only)" },
                   { key: "county", label: "County" },
                   { key: "occupantCount", label: "Voters", align: "right", focus: true },
                   { key: "activeOccupantCount", label: "Active", align: "right" },

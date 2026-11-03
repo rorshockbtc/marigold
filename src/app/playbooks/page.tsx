@@ -66,10 +66,10 @@ export default function MissionControl() {
           {
             id: "po-box",
             name: "PB-04: Commercial & P.O. Box in Physical Residence Line",
-            desc: "339 records (186 Active, 153 Inactive) with P.O. Box or PMB as domicile",
+            desc: "380 records (212 Active, 168 Inactive) with P.O. Box or PMB as domicile",
             description:
               "Identifies records where a post office box or private mail box was entered into the physical street residence column instead of the mailing address column.",
-            flaggedCount: 339,
+            flaggedCount: 380,
             status: "verified",
             totalScanned: 2112460,
             threshold: "P.O. Box / PMB / Parcel Hub",

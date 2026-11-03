@@ -26,7 +26,7 @@ export default function AuditPage() {
       id: "po-box",
       label: "PB-04: P.O. Box in Residence Field",
       icon: "📬",
-      metric: "339 Voters (186 Active)",
+      metric: "380 Voters (212 Active)",
       phase: "Axis X: Physical Domicile & Multi-Unit Verification",
       desc: "Flags 337 P.O. Boxes and 2 Private Mail Boxes typed into the physical residential line instead of the mailing address field.",
     },

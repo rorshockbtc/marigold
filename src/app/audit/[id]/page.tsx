@@ -62,7 +62,7 @@ const PLAYBOOK_DETAILS: Record<string, any> = {
     title: "PB-04: P.O. Box & PMB in Physical Residence Line",
     icon: "📬",
     subtitle:
-      "Mississippi Benchmark: 339 records statewide (186 Active, 153 Inactive; 337 P.O. Boxes and 2 Private Mail Boxes).",
+      "Mississippi Benchmark: 380 records statewide (212 Active, 168 Inactive; 379 P.O. Boxes and 1 Private Mail Box).",
     story:
       "You cannot live inside a post office box. Mississippi law requires a physical residential address so the county knows which precinct ballot to give you, while your P.O. Box belongs in the Mailing Address column. Only 339 voters statewide have a P.O. Box accidentally typed into their physical residence line—an easy clerical fix for County Election Commissioners.",
     steps: [
@@ -94,7 +94,7 @@ const PLAYBOOK_DETAILS: Record<string, any> = {
     subtitle:
       "Mississippi Benchmark: 4,404 Jr./Sr. pairs protected • 818 Active–Active intra-ZIP clusters • 185 Active–Inactive move trails.",
     story:
-      "In thousands of Mississippi households, a father ('John Smith Sr.') and son ('John Smith Jr.') live at the same address or in the same town. Basic scripts flag them as duplicate voters! Our playbook protects all 4,404 generational family pairs first, and then separates intra-ZIP duplicates into Active–Active (818 clusters where a voter moved across town and registered twice) and Active–Inactive move trails (185 clusters where the old address is already Inactive).",
+      "In thousands of Mississippi households, a father (Sr.) and son (Jr.) live at the same address or in the same town. Basic scripts flag them as duplicate voters! Our playbook protects all 4,404 generational family pairs first, and then separates intra-ZIP duplicates into Active–Active (818 clusters where a voter moved across town and registered twice) and Active–Inactive move trails (185 clusters where the old address is already Inactive).",
     steps: [
       "Normalizes generational suffixes (JR, SR, II, III, IV) and protects 4,404 multi-generational family households.",
       "Identifies 1,026 intra-ZIP clusters where the exact same First, Middle, Last, and Suffix appear at different addresses.",
