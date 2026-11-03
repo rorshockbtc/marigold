@@ -624,7 +624,13 @@
         "plainEnglishSummary": "Hinds County has higher-than-average activity across all three areas (Address Score=75.0, Mail & Duplicates=72.1, Polling Place Size=50.9). It has 431 addresses with 8+ voters, 355 active out-of-state mailings, and 8 precincts over 3,000 voters.",
         "mahalanobisDistance": 3.92,
         "inactiveRatePct": 4.6,
-        "turnout2024Pct": 51.7
+        "turnout2024Pct": 51.7,
+        "splitPrecincts": 18,
+        "splitAllPrecincts": 19,
+        "inactiveVotedRecent": 716,
+        "dormantPre2019Active": 30166,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Oktibbeha",
@@ -665,7 +671,13 @@
         "plainEnglishSummary": "Oktibbeha County has higher-than-average activity across all three areas (Address Score=70.7, Mail & Duplicates=81.7, Polling Place Size=35.1). It has 87 addresses with 8+ voters, 198 active out-of-state mailings, and 3 precincts over 3,000 voters.",
         "mahalanobisDistance": 3.65,
         "inactiveRatePct": 17.4,
-        "turnout2024Pct": 65.9
+        "turnout2024Pct": 65.9,
+        "splitPrecincts": 7,
+        "splitAllPrecincts": 7,
+        "inactiveVotedRecent": 944,
+        "dormantPre2019Active": 2256,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Harrison",
@@ -706,7 +718,13 @@
         "plainEnglishSummary": "Harrison County has higher-than-average activity across all three areas (Address Score=46.8, Mail & Duplicates=47.4, Polling Place Size=89.7). It has 219 addresses with 8+ voters, 112 active out-of-state mailings, and 22 precincts over 3,000 voters.",
         "mahalanobisDistance": 4.59,
         "inactiveRatePct": 17.7,
-        "turnout2024Pct": 56.3
+        "turnout2024Pct": 56.3,
+        "splitPrecincts": 18,
+        "splitAllPrecincts": 18,
+        "inactiveVotedRecent": 2694,
+        "dormantPre2019Active": 18453,
+        "unparsedAddressCount": 14,
+        "missingDistrictCount": 0
       },
       {
         "county": "Humphreys",
@@ -747,7 +765,13 @@
         "plainEnglishSummary": "Humphreys County has higher-than-average activity across all three areas (Address Score=48.4, Mail & Duplicates=87.5, Polling Place Size=12.8). It has 22 addresses with 8+ voters, 67 active out-of-state mailings, and 0 precincts over 3,000 voters.",
         "mahalanobisDistance": 3.0,
         "inactiveRatePct": 2.6,
-        "turnout2024Pct": 52.9
+        "turnout2024Pct": 52.9,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 19,
+        "dormantPre2019Active": 840,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Leflore",
@@ -788,7 +812,13 @@
         "plainEnglishSummary": "Leflore County has higher-than-average activity across all three areas (Address Score=71.0, Mail & Duplicates=48.2, Polling Place Size=35.9). It has 60 addresses with 8+ voters, 28 active out-of-state mailings, and 1 precincts over 3,000 voters.",
         "mahalanobisDistance": 2.81,
         "inactiveRatePct": 4.9,
-        "turnout2024Pct": 49.3
+        "turnout2024Pct": 49.3,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 72,
+        "dormantPre2019Active": 4206,
+        "unparsedAddressCount": 7,
+        "missingDistrictCount": 0
       },
       {
         "county": "Marshall",
@@ -829,7 +859,13 @@
         "plainEnglishSummary": "Marshall County has higher-than-average activity across all three areas (Address Score=63.7, Mail & Duplicates=62.1, Polling Place Size=17.5). It has 28 addresses with 8+ voters, 70 active out-of-state mailings, and 1 precincts over 3,000 voters.",
         "mahalanobisDistance": 2.44,
         "inactiveRatePct": 12.7,
-        "turnout2024Pct": 61.2
+        "turnout2024Pct": 61.2,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 550,
+        "dormantPre2019Active": 2672,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jackson",
@@ -870,7 +906,13 @@
         "plainEnglishSummary": "62.4% of Jackson County's priority score comes from large polling places: 14 precincts exceed the 3,000-voter benchmark (largest precinct: 7,544 voters).",
         "mahalanobisDistance": 3.32,
         "inactiveRatePct": 14.0,
-        "turnout2024Pct": 62.1
+        "turnout2024Pct": 62.1,
+        "splitPrecincts": 14,
+        "splitAllPrecincts": 15,
+        "inactiveVotedRecent": 2766,
+        "dormantPre2019Active": 8968,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Madison",
@@ -911,7 +953,13 @@
         "plainEnglishSummary": "Madison County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 48.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.35,
         "inactiveRatePct": 9.4,
-        "turnout2024Pct": 73.7
+        "turnout2024Pct": 73.7,
+        "splitPrecincts": 18,
+        "splitAllPrecincts": 23,
+        "inactiveVotedRecent": 1859,
+        "dormantPre2019Active": 5632,
+        "unparsedAddressCount": 85,
+        "missingDistrictCount": 0
       },
       {
         "county": "Adams",
@@ -952,7 +1000,13 @@
         "plainEnglishSummary": "94.4% of Adams County's cleanup checklist comes from mail and relocation updates: 59 active voters receiving mail out-of-state and 35 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.54,
         "inactiveRatePct": 10.5,
-        "turnout2024Pct": 68.3
+        "turnout2024Pct": 68.3,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 347,
+        "dormantPre2019Active": 1179,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Scott",
@@ -993,7 +1047,13 @@
         "plainEnglishSummary": "90.9% of Scott County's cleanup checklist comes from mail and relocation updates: 101 active voters receiving mail out-of-state and 8 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.29,
         "inactiveRatePct": 13.6,
-        "turnout2024Pct": 72.2
+        "turnout2024Pct": 72.2,
+        "splitPrecincts": 3,
+        "splitAllPrecincts": 3,
+        "inactiveVotedRecent": 140,
+        "dormantPre2019Active": 922,
+        "unparsedAddressCount": 20,
+        "missingDistrictCount": 0
       },
       {
         "county": "Forrest",
@@ -1034,7 +1094,13 @@
         "plainEnglishSummary": "Forrest County has higher-than-average activity across all three areas (Address Score=54.7, Mail & Duplicates=53.5, Polling Place Size=20.3). It has 101 addresses with 8+ voters, 48 active out-of-state mailings, and 2 precincts over 3,000 voters.",
         "mahalanobisDistance": 1.7,
         "inactiveRatePct": 13.5,
-        "turnout2024Pct": 62.6
+        "turnout2024Pct": 62.6,
+        "splitPrecincts": 11,
+        "splitAllPrecincts": 11,
+        "inactiveVotedRecent": 824,
+        "dormantPre2019Active": 4503,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "DeSoto",
@@ -1075,7 +1141,13 @@
         "plainEnglishSummary": "59.7% of DeSoto County's priority score comes from large polling places: 25 precincts exceed the 3,000-voter benchmark (largest precinct: 6,409 voters).",
         "mahalanobisDistance": 2.95,
         "inactiveRatePct": 18.9,
-        "turnout2024Pct": 65.4
+        "turnout2024Pct": 65.4,
+        "splitPrecincts": 25,
+        "splitAllPrecincts": 25,
+        "inactiveVotedRecent": 4800,
+        "dormantPre2019Active": 10688,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Wilkinson",
@@ -1116,7 +1188,13 @@
         "plainEnglishSummary": "85.5% of Wilkinson County's cleanup checklist comes from mail and relocation updates: 17 active voters receiving mail out-of-state and 8 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 1.93,
         "inactiveRatePct": 22.2,
-        "turnout2024Pct": 69.8
+        "turnout2024Pct": 69.8,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 351,
+        "dormantPre2019Active": 618,
+        "unparsedAddressCount": 7,
+        "missingDistrictCount": 0
       },
       {
         "county": "Claiborne",
@@ -1157,7 +1235,13 @@
         "plainEnglishSummary": "75.2% of Claiborne County's cleanup checklist comes from multi-voter addresses: 19 addresses with 8+ voters (445 voters), 3 campus/apartment records missing unit numbers, and 10 P.O. Box residence lines.",
         "mahalanobisDistance": 2.33,
         "inactiveRatePct": 6.9,
-        "turnout2024Pct": 57.4
+        "turnout2024Pct": 57.4,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 87,
+        "dormantPre2019Active": 543,
+        "unparsedAddressCount": 52,
+        "missingDistrictCount": 0
       },
       {
         "county": "Rankin",
@@ -1198,7 +1282,13 @@
         "plainEnglishSummary": "65.9% of Rankin County's priority score comes from large polling places: 14 precincts exceed the 3,000-voter benchmark (largest precinct: 6,492 voters).",
         "mahalanobisDistance": 3.05,
         "inactiveRatePct": 11.6,
-        "turnout2024Pct": 71.5
+        "turnout2024Pct": 71.5,
+        "splitPrecincts": 16,
+        "splitAllPrecincts": 17,
+        "inactiveVotedRecent": 2510,
+        "dormantPre2019Active": 8557,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Calhoun",
@@ -1239,7 +1329,13 @@
         "plainEnglishSummary": "98.1% of Calhoun County's cleanup checklist comes from mail and relocation updates: 98 active voters receiving mail out-of-state and 3 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.57,
         "inactiveRatePct": 4.7,
-        "turnout2024Pct": 65.5
+        "turnout2024Pct": 65.5,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 47,
+        "dormantPre2019Active": 945,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tishomingo",
@@ -1280,7 +1376,13 @@
         "plainEnglishSummary": "94.3% of Tishomingo County's cleanup checklist comes from mail and relocation updates: 71 active voters receiving mail out-of-state and 6 same-ZIP duplicate pairs.",
         "mahalanobisDistance": 2.29,
         "inactiveRatePct": 11.6,
-        "turnout2024Pct": 71.1
+        "turnout2024Pct": 71.1,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 149,
+        "dormantPre2019Active": 659,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Noxubee",
@@ -1321,7 +1423,13 @@
         "plainEnglishSummary": "Noxubee County has higher-than-average activity across all three areas (Address Score=42.5, Mail & Duplicates=60.1, Polling Place Size=11.4). It has 19 addresses with 8+ voters, 21 active out-of-state mailings, and 0 precincts over 3,000 voters.",
         "mahalanobisDistance": 1.43,
         "inactiveRatePct": 4.8,
-        "turnout2024Pct": 60.5
+        "turnout2024Pct": 60.5,
+        "splitPrecincts": 3,
+        "splitAllPrecincts": 3,
+        "inactiveVotedRecent": 55,
+        "dormantPre2019Active": 470,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Coahoma",
@@ -1362,7 +1470,13 @@
         "plainEnglishSummary": "72.1% of Coahoma County's cleanup checklist comes from multi-voter addresses: 34 addresses with 8+ voters (613 voters), 0 campus/apartment records missing unit numbers, and 6 P.O. Box residence lines.",
         "mahalanobisDistance": 2.03,
         "inactiveRatePct": 15.2,
-        "turnout2024Pct": 51.9
+        "turnout2024Pct": 51.9,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 169,
+        "dormantPre2019Active": 2086,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Chickasaw",
@@ -1403,7 +1517,13 @@
         "plainEnglishSummary": "Chickasaw County sits within the normal range for its population size (Roll Health Score 85/100, Priority Score 42.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.44,
         "inactiveRatePct": 7.1,
-        "turnout2024Pct": 64.5
+        "turnout2024Pct": 64.5,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 8,
+        "inactiveVotedRecent": 102,
+        "dormantPre2019Active": 1069,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Covington",
@@ -1444,7 +1564,13 @@
         "plainEnglishSummary": "Covington County sits within the normal range for its population size (Roll Health Score 84/100, Priority Score 41.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.56,
         "inactiveRatePct": 1.2,
-        "turnout2024Pct": 69.9
+        "turnout2024Pct": 69.9,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 10,
+        "dormantPre2019Active": 217,
+        "unparsedAddressCount": 27,
+        "missingDistrictCount": 0
       },
       {
         "county": "Holmes",
@@ -1485,7 +1611,13 @@
         "plainEnglishSummary": "Holmes County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 41.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.46,
         "inactiveRatePct": 1.0,
-        "turnout2024Pct": 53.2
+        "turnout2024Pct": 53.2,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 5,
+        "dormantPre2019Active": 2075,
+        "unparsedAddressCount": 17,
+        "missingDistrictCount": 0
       },
       {
         "county": "Benton",
@@ -1526,7 +1658,13 @@
         "plainEnglishSummary": "Benton County sits within the normal range for its population size (Roll Health Score 84/100, Priority Score 40.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.86,
         "inactiveRatePct": 4.5,
-        "turnout2024Pct": 64.4
+        "turnout2024Pct": 64.4,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 61,
+        "dormantPre2019Active": 456,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jefferson",
@@ -1567,7 +1705,13 @@
         "plainEnglishSummary": "Jefferson County sits within the normal range for its population size (Roll Health Score 86/100, Priority Score 39.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.06,
         "inactiveRatePct": 9.1,
-        "turnout2024Pct": 62.5
+        "turnout2024Pct": 62.5,
+        "splitPrecincts": 5,
+        "splitAllPrecincts": 5,
+        "inactiveVotedRecent": 0,
+        "dormantPre2019Active": 113,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Panola",
@@ -1608,7 +1752,13 @@
         "plainEnglishSummary": "Panola County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 38.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.3,
         "inactiveRatePct": 7.8,
-        "turnout2024Pct": 65.2
+        "turnout2024Pct": 65.2,
+        "splitPrecincts": 6,
+        "splitAllPrecincts": 6,
+        "inactiveVotedRecent": 244,
+        "dormantPre2019Active": 2341,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Bolivar",
@@ -1649,7 +1799,13 @@
         "plainEnglishSummary": "Bolivar County sits within the normal range for its population size (Roll Health Score 83/100, Priority Score 38.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.05,
         "inactiveRatePct": 3.0,
-        "turnout2024Pct": 61.0
+        "turnout2024Pct": 61.0,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 17,
+        "dormantPre2019Active": 1522,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lafayette",
@@ -1690,7 +1846,13 @@
         "plainEnglishSummary": "Lafayette County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 38.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.06,
         "inactiveRatePct": 15.0,
-        "turnout2024Pct": 70.4
+        "turnout2024Pct": 70.4,
+        "splitPrecincts": 9,
+        "splitAllPrecincts": 9,
+        "inactiveVotedRecent": 756,
+        "dormantPre2019Active": 2058,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lee",
@@ -1731,7 +1893,13 @@
         "plainEnglishSummary": "Lee County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 37.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.58,
         "inactiveRatePct": 12.9,
-        "turnout2024Pct": 68.2
+        "turnout2024Pct": 68.2,
+        "splitPrecincts": 11,
+        "splitAllPrecincts": 11,
+        "inactiveVotedRecent": 1874,
+        "dormantPre2019Active": 4314,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lowndes",
@@ -1772,7 +1940,13 @@
         "plainEnglishSummary": "Lowndes County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 37.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.46,
         "inactiveRatePct": 11.8,
-        "turnout2024Pct": 65.3
+        "turnout2024Pct": 65.3,
+        "splitPrecincts": 13,
+        "splitAllPrecincts": 13,
+        "inactiveVotedRecent": 803,
+        "dormantPre2019Active": 4583,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Washington",
@@ -1813,7 +1987,13 @@
         "plainEnglishSummary": "Washington County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 37.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.57,
         "inactiveRatePct": 15.7,
-        "turnout2024Pct": 58.2
+        "turnout2024Pct": 58.2,
+        "splitPrecincts": 6,
+        "splitAllPrecincts": 6,
+        "inactiveVotedRecent": 369,
+        "dormantPre2019Active": 3766,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Alcorn",
@@ -1854,7 +2034,13 @@
         "plainEnglishSummary": "Alcorn County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 36.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.16,
         "inactiveRatePct": 5.2,
-        "turnout2024Pct": 61.8
+        "turnout2024Pct": 61.8,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 78,
+        "dormantPre2019Active": 3626,
+        "unparsedAddressCount": 10,
+        "missingDistrictCount": 0
       },
       {
         "county": "Clay",
@@ -1895,7 +2081,13 @@
         "plainEnglishSummary": "Clay County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 36.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.89,
         "inactiveRatePct": 7.0,
-        "turnout2024Pct": 67.3
+        "turnout2024Pct": 67.3,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 36,
+        "dormantPre2019Active": 983,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Kemper",
@@ -1936,7 +2128,13 @@
         "plainEnglishSummary": "Kemper County sits within the normal range for its population size (Roll Health Score 80/100, Priority Score 35.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.69,
         "inactiveRatePct": 15.5,
-        "turnout2024Pct": 65.9
+        "turnout2024Pct": 65.9,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 260,
+        "dormantPre2019Active": 682,
+        "unparsedAddressCount": 43,
+        "missingDistrictCount": 0
       },
       {
         "county": "Yazoo",
@@ -1977,7 +2175,13 @@
         "plainEnglishSummary": "Yazoo County sits within the normal range for its population size (Roll Health Score 85/100, Priority Score 34.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.97,
         "inactiveRatePct": 0.6,
-        "turnout2024Pct": 47.1
+        "turnout2024Pct": 47.1,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 4,
+        "dormantPre2019Active": 5174,
+        "unparsedAddressCount": 21,
+        "missingDistrictCount": 0
       },
       {
         "county": "Issaquena",
@@ -2018,7 +2222,13 @@
         "plainEnglishSummary": "Issaquena County sits within the normal range for its population size (Roll Health Score 72/100, Priority Score 34.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.95,
         "inactiveRatePct": 5.5,
-        "turnout2024Pct": 70.3
+        "turnout2024Pct": 70.3,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 6,
+        "dormantPre2019Active": 65,
+        "unparsedAddressCount": 33,
+        "missingDistrictCount": 0
       },
       {
         "county": "Copiah",
@@ -2059,7 +2269,13 @@
         "plainEnglishSummary": "Copiah County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 33.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.37,
         "inactiveRatePct": 8.5,
-        "turnout2024Pct": 66.8
+        "turnout2024Pct": 66.8,
+        "splitPrecincts": 8,
+        "splitAllPrecincts": 8,
+        "inactiveVotedRecent": 212,
+        "dormantPre2019Active": 1791,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Pearl River",
@@ -2100,7 +2316,13 @@
         "plainEnglishSummary": "Pearl River County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 33.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.44,
         "inactiveRatePct": 10.9,
-        "turnout2024Pct": 64.8
+        "turnout2024Pct": 64.8,
+        "splitPrecincts": 7,
+        "splitAllPrecincts": 7,
+        "inactiveVotedRecent": 948,
+        "dormantPre2019Active": 2714,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Hancock",
@@ -2141,7 +2363,13 @@
         "plainEnglishSummary": "Hancock County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 33.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.69,
         "inactiveRatePct": 4.9,
-        "turnout2024Pct": 55.6
+        "turnout2024Pct": 55.6,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 79,
+        "dormantPre2019Active": 4471,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Amite",
@@ -2182,7 +2410,13 @@
         "plainEnglishSummary": "Amite County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 32.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.66,
         "inactiveRatePct": 12.0,
-        "turnout2024Pct": 75.5
+        "turnout2024Pct": 75.5,
+        "splitPrecincts": 5,
+        "splitAllPrecincts": 5,
+        "inactiveVotedRecent": 349,
+        "dormantPre2019Active": 763,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Simpson",
@@ -2223,7 +2457,13 @@
         "plainEnglishSummary": "Simpson County sits within the normal range for its population size (Roll Health Score 85/100, Priority Score 32.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.33,
         "inactiveRatePct": 8.0,
-        "turnout2024Pct": 66.9
+        "turnout2024Pct": 66.9,
+        "splitPrecincts": 5,
+        "splitAllPrecincts": 5,
+        "inactiveVotedRecent": 263,
+        "dormantPre2019Active": 1636,
+        "unparsedAddressCount": 168,
+        "missingDistrictCount": 0
       },
       {
         "county": "Grenada",
@@ -2264,7 +2504,13 @@
         "plainEnglishSummary": "Grenada County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 32.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.24,
         "inactiveRatePct": 15.4,
-        "turnout2024Pct": 75.1
+        "turnout2024Pct": 75.1,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 361,
+        "dormantPre2019Active": 705,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jones",
@@ -2305,7 +2551,13 @@
         "plainEnglishSummary": "Jones County sits within the normal range for its population size (Roll Health Score 89/100, Priority Score 31.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.19,
         "inactiveRatePct": 6.1,
-        "turnout2024Pct": 63.3
+        "turnout2024Pct": 63.3,
+        "splitPrecincts": 10,
+        "splitAllPrecincts": 10,
+        "inactiveVotedRecent": 319,
+        "dormantPre2019Active": 6270,
+        "unparsedAddressCount": 9,
+        "missingDistrictCount": 4
       },
       {
         "county": "Lamar",
@@ -2346,7 +2598,13 @@
         "plainEnglishSummary": "Lamar County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 30.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.71,
         "inactiveRatePct": 5.8,
-        "turnout2024Pct": 68.7
+        "turnout2024Pct": 68.7,
+        "splitPrecincts": 11,
+        "splitAllPrecincts": 12,
+        "inactiveVotedRecent": 288,
+        "dormantPre2019Active": 2084,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tunica",
@@ -2387,7 +2645,13 @@
         "plainEnglishSummary": "Tunica County sits within the normal range for its population size (Roll Health Score 72/100, Priority Score 30.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.84,
         "inactiveRatePct": 19.2,
-        "turnout2024Pct": 47.3
+        "turnout2024Pct": 47.3,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 80,
+        "dormantPre2019Active": 1129,
+        "unparsedAddressCount": 120,
+        "missingDistrictCount": 0
       },
       {
         "county": "Perry",
@@ -2428,7 +2692,13 @@
         "plainEnglishSummary": "Perry County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 30.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.65,
         "inactiveRatePct": 9.7,
-        "turnout2024Pct": 68.5
+        "turnout2024Pct": 68.5,
+        "splitPrecincts": 3,
+        "splitAllPrecincts": 3,
+        "inactiveVotedRecent": 201,
+        "dormantPre2019Active": 841,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Wayne",
@@ -2469,7 +2739,13 @@
         "plainEnglishSummary": "Wayne County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 30.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.48,
         "inactiveRatePct": 8.5,
-        "turnout2024Pct": 70.6
+        "turnout2024Pct": 70.6,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 116,
+        "dormantPre2019Active": 861,
+        "unparsedAddressCount": 6,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lincoln",
@@ -2510,7 +2786,13 @@
         "plainEnglishSummary": "Lincoln County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 30.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.57,
         "inactiveRatePct": 10.1,
-        "turnout2024Pct": 74.0
+        "turnout2024Pct": 74.0,
+        "splitPrecincts": 5,
+        "splitAllPrecincts": 5,
+        "inactiveVotedRecent": 427,
+        "dormantPre2019Active": 1294,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Attala",
@@ -2551,7 +2833,13 @@
         "plainEnglishSummary": "Attala County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 30.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.94,
         "inactiveRatePct": 10.7,
-        "turnout2024Pct": 72.0
+        "turnout2024Pct": 72.0,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 346,
+        "dormantPre2019Active": 911,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Sunflower",
@@ -2592,7 +2880,13 @@
         "plainEnglishSummary": "Sunflower County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 29.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.75,
         "inactiveRatePct": 17.3,
-        "turnout2024Pct": 70.1
+        "turnout2024Pct": 70.1,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 147,
+        "dormantPre2019Active": 294,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Walthall",
@@ -2633,7 +2927,13 @@
         "plainEnglishSummary": "Walthall County sits within the normal range for its population size (Roll Health Score 86/100, Priority Score 29.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.79,
         "inactiveRatePct": 11.0,
-        "turnout2024Pct": 67.1
+        "turnout2024Pct": 67.1,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 205,
+        "dormantPre2019Active": 957,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 1
       },
       {
         "county": "Marion",
@@ -2674,7 +2974,13 @@
         "plainEnglishSummary": "Marion County sits within the normal range for its population size (Roll Health Score 88/100, Priority Score 29.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.86,
         "inactiveRatePct": 8.1,
-        "turnout2024Pct": 69.2
+        "turnout2024Pct": 69.2,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 243,
+        "dormantPre2019Active": 1266,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Warren",
@@ -2715,7 +3021,13 @@
         "plainEnglishSummary": "Warren County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 28.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.7,
         "inactiveRatePct": 14.5,
-        "turnout2024Pct": 75.7
+        "turnout2024Pct": 75.7,
+        "splitPrecincts": 10,
+        "splitAllPrecincts": 10,
+        "inactiveVotedRecent": 933,
+        "dormantPre2019Active": 1389,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Winston",
@@ -2756,7 +3068,13 @@
         "plainEnglishSummary": "Winston County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 28.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.59,
         "inactiveRatePct": 5.9,
-        "turnout2024Pct": 69.6
+        "turnout2024Pct": 69.6,
+        "splitPrecincts": 5,
+        "splitAllPrecincts": 5,
+        "inactiveVotedRecent": 18,
+        "dormantPre2019Active": 624,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jasper",
@@ -2797,7 +3115,13 @@
         "plainEnglishSummary": "Jasper County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 27.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.52,
         "inactiveRatePct": 6.7,
-        "turnout2024Pct": 72.3
+        "turnout2024Pct": 72.3,
+        "splitPrecincts": 3,
+        "splitAllPrecincts": 3,
+        "inactiveVotedRecent": 9,
+        "dormantPre2019Active": 437,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Leake",
@@ -2838,7 +3162,13 @@
         "plainEnglishSummary": "Leake County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 27.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.74,
         "inactiveRatePct": 11.4,
-        "turnout2024Pct": 68.3
+        "turnout2024Pct": 68.3,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 301,
+        "dormantPre2019Active": 1476,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lauderdale",
@@ -2879,7 +3209,13 @@
         "plainEnglishSummary": "Lauderdale County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 27.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.68,
         "inactiveRatePct": 15.0,
-        "turnout2024Pct": 67.9
+        "turnout2024Pct": 67.9,
+        "splitPrecincts": 6,
+        "splitAllPrecincts": 7,
+        "inactiveVotedRecent": 1506,
+        "dormantPre2019Active": 3590,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Sharkey",
@@ -2920,7 +3256,13 @@
         "plainEnglishSummary": "Sharkey County sits within the normal range for its population size (Roll Health Score 72/100, Priority Score 27.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.46,
         "inactiveRatePct": 5.2,
-        "turnout2024Pct": 59.1
+        "turnout2024Pct": 59.1,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 3,
+        "dormantPre2019Active": 239,
+        "unparsedAddressCount": 60,
+        "missingDistrictCount": 0
       },
       {
         "county": "Pike",
@@ -2961,7 +3303,13 @@
         "plainEnglishSummary": "Pike County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 27.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.61,
         "inactiveRatePct": 8.6,
-        "turnout2024Pct": 58.7
+        "turnout2024Pct": 58.7,
+        "splitPrecincts": 15,
+        "splitAllPrecincts": 15,
+        "inactiveVotedRecent": 273,
+        "dormantPre2019Active": 2639,
+        "unparsedAddressCount": 5,
+        "missingDistrictCount": 1
       },
       {
         "county": "Tippah",
@@ -3002,7 +3350,13 @@
         "plainEnglishSummary": "Tippah County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 25.7). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.2,
         "inactiveRatePct": 8.9,
-        "turnout2024Pct": 69.5
+        "turnout2024Pct": 69.5,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 137,
+        "dormantPre2019Active": 1164,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Stone",
@@ -3043,7 +3397,13 @@
         "plainEnglishSummary": "Stone County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 25.5). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.1,
         "inactiveRatePct": 9.7,
-        "turnout2024Pct": 71.1
+        "turnout2024Pct": 71.1,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 301,
+        "dormantPre2019Active": 627,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Carroll",
@@ -3084,7 +3444,13 @@
         "plainEnglishSummary": "Carroll County sits within the normal range for its population size (Roll Health Score 90/100, Priority Score 25.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.11,
         "inactiveRatePct": 5.9,
-        "turnout2024Pct": 72.7
+        "turnout2024Pct": 72.7,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 58,
+        "dormantPre2019Active": 486,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "George",
@@ -3125,7 +3491,13 @@
         "plainEnglishSummary": "George County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 25.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.76,
         "inactiveRatePct": 9.5,
-        "turnout2024Pct": 69.7
+        "turnout2024Pct": 69.7,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 366,
+        "dormantPre2019Active": 1218,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Newton",
@@ -3166,7 +3538,13 @@
         "plainEnglishSummary": "Newton County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 24.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.9,
         "inactiveRatePct": 9.8,
-        "turnout2024Pct": 73.1
+        "turnout2024Pct": 73.1,
+        "splitPrecincts": 5,
+        "splitAllPrecincts": 5,
+        "inactiveVotedRecent": 257,
+        "dormantPre2019Active": 927,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Neshoba",
@@ -3207,7 +3585,13 @@
         "plainEnglishSummary": "Neshoba County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 24.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.94,
         "inactiveRatePct": 10.8,
-        "turnout2024Pct": 66.7
+        "turnout2024Pct": 66.7,
+        "splitPrecincts": 8,
+        "splitAllPrecincts": 8,
+        "inactiveVotedRecent": 247,
+        "dormantPre2019Active": 1555,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tate",
@@ -3248,7 +3632,13 @@
         "plainEnglishSummary": "Tate County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 24.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.95,
         "inactiveRatePct": 8.7,
-        "turnout2024Pct": 69.9
+        "turnout2024Pct": 69.9,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 350,
+        "dormantPre2019Active": 989,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Greene",
@@ -3289,7 +3679,13 @@
         "plainEnglishSummary": "Greene County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 23.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.17,
         "inactiveRatePct": 10.0,
-        "turnout2024Pct": 75.8
+        "turnout2024Pct": 75.8,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 213,
+        "dormantPre2019Active": 399,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Clarke",
@@ -3330,7 +3726,13 @@
         "plainEnglishSummary": "Clarke County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 23.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.14,
         "inactiveRatePct": 6.0,
-        "turnout2024Pct": 67.4
+        "turnout2024Pct": 67.4,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 80,
+        "dormantPre2019Active": 884,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Itawamba",
@@ -3371,7 +3773,13 @@
         "plainEnglishSummary": "Itawamba County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 22.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 0.97,
         "inactiveRatePct": 14.2,
-        "turnout2024Pct": 73.4
+        "turnout2024Pct": 73.4,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 435,
+        "dormantPre2019Active": 1356,
+        "unparsedAddressCount": 16,
+        "missingDistrictCount": 0
       },
       {
         "county": "Choctaw",
@@ -3412,7 +3820,13 @@
         "plainEnglishSummary": "Choctaw County sits within the normal range for its population size (Roll Health Score 87/100, Priority Score 22.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.1,
         "inactiveRatePct": 4.9,
-        "turnout2024Pct": 76.5
+        "turnout2024Pct": 76.5,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 83,
+        "dormantPre2019Active": 125,
+        "unparsedAddressCount": 13,
+        "missingDistrictCount": 0
       },
       {
         "county": "Pontotoc",
@@ -3453,7 +3867,13 @@
         "plainEnglishSummary": "Pontotoc County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 22.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.08,
         "inactiveRatePct": 8.7,
-        "turnout2024Pct": 69.1
+        "turnout2024Pct": 69.1,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 452,
+        "dormantPre2019Active": 1886,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 1
       },
       {
         "county": "Monroe",
@@ -3494,7 +3914,13 @@
         "plainEnglishSummary": "Monroe County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 22.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.03,
         "inactiveRatePct": 5.0,
-        "turnout2024Pct": 67.5
+        "turnout2024Pct": 67.5,
+        "splitPrecincts": 3,
+        "splitAllPrecincts": 3,
+        "inactiveVotedRecent": 25,
+        "dormantPre2019Active": 2100,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Union",
@@ -3535,7 +3961,13 @@
         "plainEnglishSummary": "Union County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 21.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.72,
         "inactiveRatePct": 5.9,
-        "turnout2024Pct": 71.6
+        "turnout2024Pct": 71.6,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 210,
+        "dormantPre2019Active": 1094,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lawrence",
@@ -3576,7 +4008,13 @@
         "plainEnglishSummary": "Lawrence County sits within the normal range for its population size (Roll Health Score 93/100, Priority Score 21.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.13,
         "inactiveRatePct": 11.5,
-        "turnout2024Pct": 76.8
+        "turnout2024Pct": 76.8,
+        "splitPrecincts": 4,
+        "splitAllPrecincts": 4,
+        "inactiveVotedRecent": 224,
+        "dormantPre2019Active": 247,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Prentiss",
@@ -3617,7 +4055,13 @@
         "plainEnglishSummary": "Prentiss County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 21.4). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.54,
         "inactiveRatePct": 10.7,
-        "turnout2024Pct": 74.6
+        "turnout2024Pct": 74.6,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 486,
+        "dormantPre2019Active": 1053,
+        "unparsedAddressCount": 4,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tallahatchie",
@@ -3658,7 +4102,13 @@
         "plainEnglishSummary": "Tallahatchie County sits within the normal range for its population size (Roll Health Score 85/100, Priority Score 20.9). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.17,
         "inactiveRatePct": 2.3,
-        "turnout2024Pct": 53.4
+        "turnout2024Pct": 53.4,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 0,
+        "dormantPre2019Active": 1746,
+        "unparsedAddressCount": 9,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jefferson Davis",
@@ -3699,7 +4149,13 @@
         "plainEnglishSummary": "Jefferson Davis County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 20.3). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.51,
         "inactiveRatePct": 11.2,
-        "turnout2024Pct": 67.9
+        "turnout2024Pct": 67.9,
+        "splitPrecincts": 1,
+        "splitAllPrecincts": 1,
+        "inactiveVotedRecent": 152,
+        "dormantPre2019Active": 616,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Yalobusha",
@@ -3740,7 +4196,13 @@
         "plainEnglishSummary": "Yalobusha County sits within the normal range for its population size (Roll Health Score 94/100, Priority Score 18.2). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.45,
         "inactiveRatePct": 15.8,
-        "turnout2024Pct": 71.7
+        "turnout2024Pct": 71.7,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 91,
+        "dormantPre2019Active": 166,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Franklin",
@@ -3781,7 +4243,13 @@
         "plainEnglishSummary": "Franklin County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 16.8). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.61,
         "inactiveRatePct": 10.8,
-        "turnout2024Pct": 75.8
+        "turnout2024Pct": 75.8,
+        "splitPrecincts": 2,
+        "splitAllPrecincts": 2,
+        "inactiveVotedRecent": 206,
+        "dormantPre2019Active": 359,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Smith",
@@ -3822,7 +4290,13 @@
         "plainEnglishSummary": "Smith County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 16.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.73,
         "inactiveRatePct": 1.5,
-        "turnout2024Pct": 67.4
+        "turnout2024Pct": 67.4,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 51,
+        "dormantPre2019Active": 1216,
+        "unparsedAddressCount": 108,
+        "missingDistrictCount": 0
       },
       {
         "county": "Montgomery",
@@ -3863,7 +4337,13 @@
         "plainEnglishSummary": "Montgomery County sits within the normal range for its population size (Roll Health Score 92/100, Priority Score 16.0). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 1.87,
         "inactiveRatePct": 3.9,
-        "turnout2024Pct": 72.8
+        "turnout2024Pct": 72.8,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 91,
+        "dormantPre2019Active": 435,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Quitman",
@@ -3904,7 +4384,13 @@
         "plainEnglishSummary": "Quitman County sits within the normal range for its population size (Roll Health Score 91/100, Priority Score 12.1). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.25,
         "inactiveRatePct": 4.8,
-        "turnout2024Pct": 59.4
+        "turnout2024Pct": 59.4,
+        "splitPrecincts": 0,
+        "splitAllPrecincts": 0,
+        "inactiveVotedRecent": 19,
+        "dormantPre2019Active": 357,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Webster",
@@ -3945,7 +4431,13 @@
         "plainEnglishSummary": "Webster County sits within the normal range for its population size (Roll Health Score 95/100, Priority Score 10.6). Standard statutory list maintenance applies.",
         "mahalanobisDistance": 2.58,
         "inactiveRatePct": 8.1,
-        "turnout2024Pct": 78.9
+        "turnout2024Pct": 78.9,
+        "splitPrecincts": 6,
+        "splitAllPrecincts": 6,
+        "inactiveVotedRecent": 186,
+        "dormantPre2019Active": 164,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       }
     ],
     "clusterVectors": [
@@ -5726,7 +6218,12 @@
         "clericalCount": 666,
         "overCapacityPrecincts": 8,
         "maxPrecinctVoters": 4155,
-        "cleanlinessScore": 83
+        "cleanlinessScore": 83,
+        "splitPrecincts": 18,
+        "inactiveVotedRecent": 716,
+        "dormantPre2019Active": 30166,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Harrison",
@@ -5745,7 +6242,12 @@
         "clericalCount": 332,
         "overCapacityPrecincts": 22,
         "maxPrecinctVoters": 9868,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 18,
+        "inactiveVotedRecent": 2694,
+        "dormantPre2019Active": 18453,
+        "unparsedAddressCount": 14,
+        "missingDistrictCount": 0
       },
       {
         "county": "DeSoto",
@@ -5764,7 +6266,12 @@
         "clericalCount": 141,
         "overCapacityPrecincts": 25,
         "maxPrecinctVoters": 6409,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 25,
+        "inactiveVotedRecent": 4800,
+        "dormantPre2019Active": 10688,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Rankin",
@@ -5783,7 +6290,12 @@
         "clericalCount": 185,
         "overCapacityPrecincts": 14,
         "maxPrecinctVoters": 6492,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 16,
+        "inactiveVotedRecent": 2510,
+        "dormantPre2019Active": 8557,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jackson",
@@ -5802,7 +6314,12 @@
         "clericalCount": 79,
         "overCapacityPrecincts": 14,
         "maxPrecinctVoters": 7544,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 14,
+        "inactiveVotedRecent": 2766,
+        "dormantPre2019Active": 8968,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Madison",
@@ -5821,7 +6338,12 @@
         "clericalCount": 184,
         "overCapacityPrecincts": 8,
         "maxPrecinctVoters": 5149,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 18,
+        "inactiveVotedRecent": 1859,
+        "dormantPre2019Active": 5632,
+        "unparsedAddressCount": 85,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lee",
@@ -5840,7 +6362,12 @@
         "clericalCount": 74,
         "overCapacityPrecincts": 5,
         "maxPrecinctVoters": 7102,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 11,
+        "inactiveVotedRecent": 1874,
+        "dormantPre2019Active": 4314,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Forrest",
@@ -5859,7 +6386,12 @@
         "clericalCount": 95,
         "overCapacityPrecincts": 2,
         "maxPrecinctVoters": 3394,
-        "cleanlinessScore": 89
+        "cleanlinessScore": 89,
+        "splitPrecincts": 11,
+        "inactiveVotedRecent": 824,
+        "dormantPre2019Active": 4503,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lauderdale",
@@ -5878,7 +6410,12 @@
         "clericalCount": 44,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2639,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 6,
+        "inactiveVotedRecent": 1506,
+        "dormantPre2019Active": 3590,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jones",
@@ -5897,7 +6434,12 @@
         "clericalCount": 180,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2975,
-        "cleanlinessScore": 89
+        "cleanlinessScore": 89,
+        "splitPrecincts": 10,
+        "inactiveVotedRecent": 319,
+        "dormantPre2019Active": 6270,
+        "unparsedAddressCount": 9,
+        "missingDistrictCount": 4
       },
       {
         "county": "Lamar",
@@ -5916,7 +6458,12 @@
         "clericalCount": 46,
         "overCapacityPrecincts": 3,
         "maxPrecinctVoters": 3844,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 11,
+        "inactiveVotedRecent": 288,
+        "dormantPre2019Active": 2084,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lowndes",
@@ -5935,7 +6482,12 @@
         "clericalCount": 70,
         "overCapacityPrecincts": 5,
         "maxPrecinctVoters": 5609,
-        "cleanlinessScore": 93
+        "cleanlinessScore": 93,
+        "splitPrecincts": 13,
+        "inactiveVotedRecent": 803,
+        "dormantPre2019Active": 4583,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Pearl River",
@@ -5954,7 +6506,12 @@
         "clericalCount": 27,
         "overCapacityPrecincts": 1,
         "maxPrecinctVoters": 4542,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 7,
+        "inactiveVotedRecent": 948,
+        "dormantPre2019Active": 2714,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Hancock",
@@ -5973,7 +6530,12 @@
         "clericalCount": 12,
         "overCapacityPrecincts": 2,
         "maxPrecinctVoters": 3768,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 79,
+        "dormantPre2019Active": 4471,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lafayette",
@@ -5992,7 +6554,12 @@
         "clericalCount": 40,
         "overCapacityPrecincts": 5,
         "maxPrecinctVoters": 8403,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 9,
+        "inactiveVotedRecent": 756,
+        "dormantPre2019Active": 2058,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Oktibbeha",
@@ -6011,7 +6578,12 @@
         "clericalCount": 74,
         "overCapacityPrecincts": 3,
         "maxPrecinctVoters": 5517,
-        "cleanlinessScore": 79
+        "cleanlinessScore": 79,
+        "splitPrecincts": 7,
+        "inactiveVotedRecent": 944,
+        "dormantPre2019Active": 2256,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Washington",
@@ -6030,7 +6602,12 @@
         "clericalCount": 86,
         "overCapacityPrecincts": 2,
         "maxPrecinctVoters": 3072,
-        "cleanlinessScore": 88
+        "cleanlinessScore": 88,
+        "splitPrecincts": 6,
+        "inactiveVotedRecent": 369,
+        "dormantPre2019Active": 3766,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Warren",
@@ -6049,7 +6626,12 @@
         "clericalCount": 30,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2573,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 10,
+        "inactiveVotedRecent": 933,
+        "dormantPre2019Active": 1389,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Marshall",
@@ -6068,7 +6650,12 @@
         "clericalCount": 31,
         "overCapacityPrecincts": 1,
         "maxPrecinctVoters": 3019,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 550,
+        "dormantPre2019Active": 2672,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Pike",
@@ -6087,7 +6674,12 @@
         "clericalCount": 89,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1593,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 15,
+        "inactiveVotedRecent": 273,
+        "dormantPre2019Active": 2639,
+        "unparsedAddressCount": 5,
+        "missingDistrictCount": 1
       },
       {
         "county": "Alcorn",
@@ -6106,7 +6698,12 @@
         "clericalCount": 95,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2570,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 78,
+        "dormantPre2019Active": 3626,
+        "unparsedAddressCount": 10,
+        "missingDistrictCount": 0
       },
       {
         "county": "Monroe",
@@ -6125,7 +6722,12 @@
         "clericalCount": 32,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2642,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 3,
+        "inactiveVotedRecent": 25,
+        "dormantPre2019Active": 2100,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Panola",
@@ -6144,7 +6746,12 @@
         "clericalCount": 59,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2769,
-        "cleanlinessScore": 88
+        "cleanlinessScore": 88,
+        "splitPrecincts": 6,
+        "inactiveVotedRecent": 244,
+        "dormantPre2019Active": 2341,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lincoln",
@@ -6163,7 +6770,12 @@
         "clericalCount": 44,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1629,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 5,
+        "inactiveVotedRecent": 427,
+        "dormantPre2019Active": 1294,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Pontotoc",
@@ -6182,7 +6794,12 @@
         "clericalCount": 35,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1723,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 452,
+        "dormantPre2019Active": 1886,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 1
       },
       {
         "county": "Tate",
@@ -6201,7 +6818,12 @@
         "clericalCount": 37,
         "overCapacityPrecincts": 1,
         "maxPrecinctVoters": 3019,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 350,
+        "dormantPre2019Active": 989,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Leflore",
@@ -6220,7 +6842,12 @@
         "clericalCount": 27,
         "overCapacityPrecincts": 1,
         "maxPrecinctVoters": 3579,
-        "cleanlinessScore": 88
+        "cleanlinessScore": 88,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 72,
+        "dormantPre2019Active": 4206,
+        "unparsedAddressCount": 7,
+        "missingDistrictCount": 0
       },
       {
         "county": "Adams",
@@ -6239,7 +6866,12 @@
         "clericalCount": 34,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2018,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 347,
+        "dormantPre2019Active": 1179,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Copiah",
@@ -6258,7 +6890,12 @@
         "clericalCount": 44,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2561,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 8,
+        "inactiveVotedRecent": 212,
+        "dormantPre2019Active": 1791,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Yazoo",
@@ -6277,7 +6914,12 @@
         "clericalCount": 98,
         "overCapacityPrecincts": 1,
         "maxPrecinctVoters": 3238,
-        "cleanlinessScore": 85
+        "cleanlinessScore": 85,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 4,
+        "dormantPre2019Active": 5174,
+        "unparsedAddressCount": 21,
+        "missingDistrictCount": 0
       },
       {
         "county": "Bolivar",
@@ -6296,7 +6938,12 @@
         "clericalCount": 106,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1370,
-        "cleanlinessScore": 83
+        "cleanlinessScore": 83,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 17,
+        "dormantPre2019Active": 1522,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Union",
@@ -6315,7 +6962,12 @@
         "clericalCount": 38,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1724,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 210,
+        "dormantPre2019Active": 1094,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Neshoba",
@@ -6334,7 +6986,12 @@
         "clericalCount": 30,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2400,
-        "cleanlinessScore": 93
+        "cleanlinessScore": 93,
+        "splitPrecincts": 8,
+        "inactiveVotedRecent": 247,
+        "dormantPre2019Active": 1555,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Simpson",
@@ -6353,7 +7010,12 @@
         "clericalCount": 68,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1977,
-        "cleanlinessScore": 85
+        "cleanlinessScore": 85,
+        "splitPrecincts": 5,
+        "inactiveVotedRecent": 263,
+        "dormantPre2019Active": 1636,
+        "unparsedAddressCount": 168,
+        "missingDistrictCount": 0
       },
       {
         "county": "Marion",
@@ -6372,7 +7034,12 @@
         "clericalCount": 72,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1766,
-        "cleanlinessScore": 88
+        "cleanlinessScore": 88,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 243,
+        "dormantPre2019Active": 1266,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "George",
@@ -6391,7 +7058,12 @@
         "clericalCount": 49,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2082,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 366,
+        "dormantPre2019Active": 1218,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Itawamba",
@@ -6410,7 +7082,12 @@
         "clericalCount": 32,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1770,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 435,
+        "dormantPre2019Active": 1356,
+        "unparsedAddressCount": 16,
+        "missingDistrictCount": 0
       },
       {
         "county": "Scott",
@@ -6429,7 +7106,12 @@
         "clericalCount": 62,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1478,
-        "cleanlinessScore": 79
+        "cleanlinessScore": 79,
+        "splitPrecincts": 3,
+        "inactiveVotedRecent": 140,
+        "dormantPre2019Active": 922,
+        "unparsedAddressCount": 20,
+        "missingDistrictCount": 0
       },
       {
         "county": "Prentiss",
@@ -6448,7 +7130,12 @@
         "clericalCount": 44,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2117,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 486,
+        "dormantPre2019Active": 1053,
+        "unparsedAddressCount": 4,
+        "missingDistrictCount": 0
       },
       {
         "county": "Grenada",
@@ -6467,7 +7154,12 @@
         "clericalCount": 41,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2288,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 361,
+        "dormantPre2019Active": 705,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Coahoma",
@@ -6486,7 +7178,12 @@
         "clericalCount": 60,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2568,
-        "cleanlinessScore": 85
+        "cleanlinessScore": 85,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 169,
+        "dormantPre2019Active": 2086,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tippah",
@@ -6505,7 +7202,12 @@
         "clericalCount": 55,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1960,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 137,
+        "dormantPre2019Active": 1164,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Clay",
@@ -6524,7 +7226,12 @@
         "clericalCount": 25,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2084,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 36,
+        "dormantPre2019Active": 983,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tishomingo",
@@ -6543,7 +7250,12 @@
         "clericalCount": 26,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2625,
-        "cleanlinessScore": 86
+        "cleanlinessScore": 86,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 149,
+        "dormantPre2019Active": 659,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Wayne",
@@ -6562,7 +7274,12 @@
         "clericalCount": 53,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1704,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 116,
+        "dormantPre2019Active": 861,
+        "unparsedAddressCount": 6,
+        "missingDistrictCount": 0
       },
       {
         "county": "Newton",
@@ -6581,7 +7298,12 @@
         "clericalCount": 23,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1477,
-        "cleanlinessScore": 93
+        "cleanlinessScore": 93,
+        "splitPrecincts": 5,
+        "inactiveVotedRecent": 257,
+        "dormantPre2019Active": 927,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Leake",
@@ -6600,7 +7322,12 @@
         "clericalCount": 36,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1291,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 301,
+        "dormantPre2019Active": 1476,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Sunflower",
@@ -6619,7 +7346,12 @@
         "clericalCount": 35,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2208,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 147,
+        "dormantPre2019Active": 294,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Covington",
@@ -6638,7 +7370,12 @@
         "clericalCount": 57,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2327,
-        "cleanlinessScore": 84
+        "cleanlinessScore": 84,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 10,
+        "dormantPre2019Active": 217,
+        "unparsedAddressCount": 27,
+        "missingDistrictCount": 0
       },
       {
         "county": "Winston",
@@ -6657,7 +7394,12 @@
         "clericalCount": 24,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 2124,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 5,
+        "inactiveVotedRecent": 18,
+        "dormantPre2019Active": 624,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Holmes",
@@ -6676,7 +7418,12 @@
         "clericalCount": 26,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1832,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 5,
+        "dormantPre2019Active": 2075,
+        "unparsedAddressCount": 17,
+        "missingDistrictCount": 0
       },
       {
         "county": "Stone",
@@ -6695,7 +7442,12 @@
         "clericalCount": 29,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1595,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 301,
+        "dormantPre2019Active": 627,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Chickasaw",
@@ -6714,7 +7466,12 @@
         "clericalCount": 39,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1783,
-        "cleanlinessScore": 85
+        "cleanlinessScore": 85,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 102,
+        "dormantPre2019Active": 1069,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Clarke",
@@ -6733,7 +7490,12 @@
         "clericalCount": 27,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1736,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 80,
+        "dormantPre2019Active": 884,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Attala",
@@ -6752,7 +7514,12 @@
         "clericalCount": 50,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1717,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 346,
+        "dormantPre2019Active": 911,
+        "unparsedAddressCount": 1,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jasper",
@@ -6771,7 +7538,12 @@
         "clericalCount": 29,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1753,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 3,
+        "inactiveVotedRecent": 9,
+        "dormantPre2019Active": 437,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Smith",
@@ -6790,7 +7562,12 @@
         "clericalCount": 10,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1161,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 51,
+        "dormantPre2019Active": 1216,
+        "unparsedAddressCount": 108,
+        "missingDistrictCount": 0
       },
       {
         "county": "Walthall",
@@ -6809,7 +7586,12 @@
         "clericalCount": 51,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1233,
-        "cleanlinessScore": 86
+        "cleanlinessScore": 86,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 205,
+        "dormantPre2019Active": 957,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 1
       },
       {
         "county": "Amite",
@@ -6828,7 +7610,12 @@
         "clericalCount": 29,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 854,
-        "cleanlinessScore": 88
+        "cleanlinessScore": 88,
+        "splitPrecincts": 5,
+        "inactiveVotedRecent": 349,
+        "dormantPre2019Active": 763,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tallahatchie",
@@ -6847,7 +7634,12 @@
         "clericalCount": 62,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1417,
-        "cleanlinessScore": 85
+        "cleanlinessScore": 85,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 0,
+        "dormantPre2019Active": 1746,
+        "unparsedAddressCount": 9,
+        "missingDistrictCount": 0
       },
       {
         "county": "Yalobusha",
@@ -6866,7 +7658,12 @@
         "clericalCount": 19,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1859,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 91,
+        "dormantPre2019Active": 166,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Calhoun",
@@ -6885,7 +7682,12 @@
         "clericalCount": 38,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1393,
-        "cleanlinessScore": 73
+        "cleanlinessScore": 73,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 47,
+        "dormantPre2019Active": 945,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Perry",
@@ -6904,7 +7706,12 @@
         "clericalCount": 10,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1782,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 3,
+        "inactiveVotedRecent": 201,
+        "dormantPre2019Active": 841,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jefferson Davis",
@@ -6923,7 +7730,12 @@
         "clericalCount": 10,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1366,
-        "cleanlinessScore": 94
+        "cleanlinessScore": 94,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 152,
+        "dormantPre2019Active": 616,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Lawrence",
@@ -6942,7 +7754,12 @@
         "clericalCount": 16,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1557,
-        "cleanlinessScore": 93
+        "cleanlinessScore": 93,
+        "splitPrecincts": 4,
+        "inactiveVotedRecent": 224,
+        "dormantPre2019Active": 247,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Greene",
@@ -6961,7 +7778,12 @@
         "clericalCount": 24,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1712,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 213,
+        "dormantPre2019Active": 399,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Noxubee",
@@ -6980,7 +7802,12 @@
         "clericalCount": 21,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1609,
-        "cleanlinessScore": 82
+        "cleanlinessScore": 82,
+        "splitPrecincts": 3,
+        "inactiveVotedRecent": 55,
+        "dormantPre2019Active": 470,
+        "unparsedAddressCount": 23,
+        "missingDistrictCount": 0
       },
       {
         "county": "Carroll",
@@ -6999,7 +7826,12 @@
         "clericalCount": 24,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 960,
-        "cleanlinessScore": 90
+        "cleanlinessScore": 90,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 58,
+        "dormantPre2019Active": 486,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Kemper",
@@ -7018,7 +7850,12 @@
         "clericalCount": 31,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1079,
-        "cleanlinessScore": 80
+        "cleanlinessScore": 80,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 260,
+        "dormantPre2019Active": 682,
+        "unparsedAddressCount": 43,
+        "missingDistrictCount": 0
       },
       {
         "county": "Webster",
@@ -7037,7 +7874,12 @@
         "clericalCount": 12,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1334,
-        "cleanlinessScore": 95
+        "cleanlinessScore": 95,
+        "splitPrecincts": 6,
+        "inactiveVotedRecent": 186,
+        "dormantPre2019Active": 164,
+        "unparsedAddressCount": 3,
+        "missingDistrictCount": 0
       },
       {
         "county": "Tunica",
@@ -7056,7 +7898,12 @@
         "clericalCount": 53,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 829,
-        "cleanlinessScore": 72
+        "cleanlinessScore": 72,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 80,
+        "dormantPre2019Active": 1129,
+        "unparsedAddressCount": 120,
+        "missingDistrictCount": 0
       },
       {
         "county": "Humphreys",
@@ -7075,7 +7922,12 @@
         "clericalCount": 36,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1363,
-        "cleanlinessScore": 72
+        "cleanlinessScore": 72,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 19,
+        "dormantPre2019Active": 840,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Claiborne",
@@ -7094,7 +7946,12 @@
         "clericalCount": 8,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 877,
-        "cleanlinessScore": 86
+        "cleanlinessScore": 86,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 87,
+        "dormantPre2019Active": 543,
+        "unparsedAddressCount": 52,
+        "missingDistrictCount": 0
       },
       {
         "county": "Wilkinson",
@@ -7113,7 +7970,12 @@
         "clericalCount": 12,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1203,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 351,
+        "dormantPre2019Active": 618,
+        "unparsedAddressCount": 7,
+        "missingDistrictCount": 0
       },
       {
         "county": "Montgomery",
@@ -7132,7 +7994,12 @@
         "clericalCount": 21,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1163,
-        "cleanlinessScore": 92
+        "cleanlinessScore": 92,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 91,
+        "dormantPre2019Active": 435,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Benton",
@@ -7151,7 +8018,12 @@
         "clericalCount": 25,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1319,
-        "cleanlinessScore": 84
+        "cleanlinessScore": 84,
+        "splitPrecincts": 1,
+        "inactiveVotedRecent": 61,
+        "dormantPre2019Active": 456,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Franklin",
@@ -7170,7 +8042,12 @@
         "clericalCount": 20,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1016,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 206,
+        "dormantPre2019Active": 359,
+        "unparsedAddressCount": 2,
+        "missingDistrictCount": 0
       },
       {
         "county": "Jefferson",
@@ -7189,7 +8066,12 @@
         "clericalCount": 13,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 815,
-        "cleanlinessScore": 86
+        "cleanlinessScore": 86,
+        "splitPrecincts": 5,
+        "inactiveVotedRecent": 0,
+        "dormantPre2019Active": 113,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Choctaw",
@@ -7208,7 +8090,12 @@
         "clericalCount": 26,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 1108,
-        "cleanlinessScore": 87
+        "cleanlinessScore": 87,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 83,
+        "dormantPre2019Active": 125,
+        "unparsedAddressCount": 13,
+        "missingDistrictCount": 0
       },
       {
         "county": "Quitman",
@@ -7227,7 +8114,12 @@
         "clericalCount": 21,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 845,
-        "cleanlinessScore": 91
+        "cleanlinessScore": 91,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 19,
+        "dormantPre2019Active": 357,
+        "unparsedAddressCount": 0,
+        "missingDistrictCount": 0
       },
       {
         "county": "Sharkey",
@@ -7246,7 +8138,12 @@
         "clericalCount": 877,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 615,
-        "cleanlinessScore": 72
+        "cleanlinessScore": 72,
+        "splitPrecincts": 0,
+        "inactiveVotedRecent": 3,
+        "dormantPre2019Active": 239,
+        "unparsedAddressCount": 60,
+        "missingDistrictCount": 0
       },
       {
         "county": "Issaquena",
@@ -7265,8 +8162,204 @@
         "clericalCount": 2,
         "overCapacityPrecincts": 0,
         "maxPrecinctVoters": 197,
-        "cleanlinessScore": 72
+        "cleanlinessScore": 72,
+        "splitPrecincts": 2,
+        "inactiveVotedRecent": 6,
+        "dormantPre2019Active": 65,
+        "unparsedAddressCount": 33,
+        "missingDistrictCount": 0
       }
-    ]
+    ],
+    "districtIntegrity": {
+      "panolaSupCoalescedVoters": 24013,
+      "missingCong": 0,
+      "missingSen": 1,
+      "missingRep": 2,
+      "missingSup": 8,
+      "missingEc": 8,
+      "activeMissingAnyDistrict": 7,
+      "splitLegislativePrecincts": 356,
+      "splitAllPrecincts": 374,
+      "splitCongPrecincts": 3,
+      "splitSenPrecincts": 96,
+      "splitRepPrecincts": 308,
+      "splitSupPrecincts": 38,
+      "topSplitCounties": [
+        {
+          "county": "DeSoto",
+          "splitPrecincts": 25
+        },
+        {
+          "county": "Harrison",
+          "splitPrecincts": 18
+        },
+        {
+          "county": "Hinds",
+          "splitPrecincts": 18
+        },
+        {
+          "county": "Madison",
+          "splitPrecincts": 18
+        },
+        {
+          "county": "Rankin",
+          "splitPrecincts": 16
+        },
+        {
+          "county": "Pike",
+          "splitPrecincts": 15
+        },
+        {
+          "county": "Jackson",
+          "splitPrecincts": 14
+        },
+        {
+          "county": "Lowndes",
+          "splitPrecincts": 13
+        },
+        {
+          "county": "Lee",
+          "splitPrecincts": 11
+        },
+        {
+          "county": "Forrest",
+          "splitPrecincts": 11
+        }
+      ]
+    },
+    "nvraReconciliation": {
+      "inactiveWithRecentVote2024_2026": 36071,
+      "dormantActivePre2019NoVote": 196957,
+      "topInactiveVotedCounties": [
+        {
+          "county": "DeSoto",
+          "count": 4800
+        },
+        {
+          "county": "Jackson",
+          "count": 2766
+        },
+        {
+          "county": "Harrison",
+          "count": 2694
+        },
+        {
+          "county": "Rankin",
+          "count": 2510
+        },
+        {
+          "county": "Lee",
+          "count": 1874
+        },
+        {
+          "county": "Madison",
+          "count": 1859
+        },
+        {
+          "county": "Lauderdale",
+          "count": 1506
+        },
+        {
+          "county": "Pearl River",
+          "count": 948
+        },
+        {
+          "county": "Oktibbeha",
+          "count": 944
+        },
+        {
+          "county": "Warren",
+          "count": 933
+        }
+      ],
+      "topDormantActiveCounties": [
+        {
+          "county": "Hinds",
+          "count": 30166
+        },
+        {
+          "county": "Harrison",
+          "count": 18453
+        },
+        {
+          "county": "DeSoto",
+          "count": 10688
+        },
+        {
+          "county": "Jackson",
+          "count": 8968
+        },
+        {
+          "county": "Rankin",
+          "count": 8557
+        },
+        {
+          "county": "Jones",
+          "count": 6270
+        },
+        {
+          "county": "Madison",
+          "count": 5632
+        },
+        {
+          "county": "Yazoo",
+          "count": 5174
+        },
+        {
+          "county": "Lowndes",
+          "count": 4583
+        },
+        {
+          "county": "Forrest",
+          "count": 4503
+        }
+      ]
+    },
+    "addressParsing": {
+      "unparsedHouseNumTotal": 1900,
+      "unparsedHouseNumActive": 1011,
+      "topCounties": [
+        {
+          "county": "Simpson",
+          "count": 168
+        },
+        {
+          "county": "Tunica",
+          "count": 120
+        },
+        {
+          "county": "Smith",
+          "count": 108
+        },
+        {
+          "county": "Madison",
+          "count": 85
+        },
+        {
+          "county": "Sharkey",
+          "count": 60
+        },
+        {
+          "county": "Claiborne",
+          "count": 52
+        },
+        {
+          "county": "Kemper",
+          "count": 43
+        },
+        {
+          "county": "Issaquena",
+          "count": 33
+        },
+        {
+          "county": "Covington",
+          "count": 27
+        },
+        {
+          "county": "Forrest",
+          "count": 23
+        }
+      ]
+    }
   }
 }

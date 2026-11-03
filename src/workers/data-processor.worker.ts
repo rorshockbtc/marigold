@@ -132,15 +132,30 @@ export class DataProcessorWorker {
 
     const addressCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
     const dateCounts: Map<string, { count: number; sample: Record<string, any>; residents: any[] }> = new Map();
-    const precinctCounts: Map<string, { count: number; sample: Record<string, any> }> = new Map();
+    const precinctCounts: Map<string, { count: number; sample: Record<string, any>; congSet: Set<string>; senSet: Set<string>; repSet: Set<string>; supSet: Set<string> }> = new Map();
     const phantomList: Array<Record<string, any>> = [];
     const missingDormList: Array<Record<string, any>> = [];
     const ncoaList: Array<Record<string, any>> = [];
     const dupMap: Map<string, { count: number; sample: Record<string, any>; addrs: Set<string> }> = new Map();
     const typoList: Array<Record<string, any>> = [];
+    const missingDistrictCandidates: Array<Record<string, any>> = [];
+    const nvraReconciliationList: Array<Record<string, any>> = [];
+    const unparsedAddressList: Array<Record<string, any>> = [];
+    let datasetHasDistrictColumns = false;
+    let datasetHasHouseNumColumn = false;
+    let datasetHasVoteDateColumn = false;
     const benfordsLawCounts: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0 };
     let benfordsTotal = 0;
     const filterCounty = (countyFilter || '').toLowerCase();
+
+    const extractYearVal = (dateStr: string): number => {
+      if (!dateStr) return 0;
+      const trimmed = dateStr.trim();
+      const parts = trimmed.includes('/') ? trimmed.split('/') : trimmed.split('-');
+      if (parts.length !== 3) return 0;
+      const yr = parseInt(parts[0].length === 4 ? parts[0] : parts[2], 10);
+      return isNaN(yr) ? 0 : yr;
+    };
 
     const CAMPUS_KEYWORD_REGEX = /\b(HALL|DORM|DORMITORY|CAMPUS|UNIVERSITY|COLLEGE|APARTMENT|APTS|TOWERS)\b/i;
     const EXPLICIT_MULTIUNIT_KEYWORDS = ['DORM', 'DORMITORY', 'RESIDENCE HALL', 'APARTMENT', 'APTS', 'TOWERS', 'COMMONS', 'COMPLEX'];
@@ -159,7 +174,40 @@ export class DataProcessorWorker {
       const isInactive = statusStr === 'I' || statusStr === 'INACTIVE' || statusStr === 'C' || statusStr === 'CANCELLED' || statusStr === 'PURGED' || statusStr === 'DECEASED';
 
       if (filterCounty && !rCounty.toLowerCase().includes(filterCounty)) return;
-      if (isInactive) return;
+
+      if (std.dist_cong || std.dist_sen || std.dist_rep || std.dist_sup || std.dist_ec) {
+        datasetHasDistrictColumns = true;
+      }
+      if (std.house_num || (raw && ('HOUSE_NUM' in raw || 'house_num' in raw || 'house_number' in raw))) {
+        datasetHasHouseNumColumn = true;
+      }
+      if (std.date_voted) {
+        datasetHasVoteDateColumn = true;
+      }
+
+      if (isInactive) {
+        // Check 13A (Voter Protection): Inactive status despite recent 2024-2026 ballot activity
+        const votedYr = extractYearVal(std.date_voted || '');
+        if (votedYr >= 2024) {
+          nvraReconciliationList.push({
+            id: std.voter_id,
+            name: std.name,
+            first_name: std.first_name,
+            middle_name: std.middle_name,
+            last_name: std.last_name,
+            address: std.address || 'Unlisted Domicile',
+            city: std.city,
+            state: std.state,
+            zip: std.zip,
+            county: rCounty,
+            occupant_count: 1,
+            risk_level: 'HIGH',
+            details: `Voter-Protection Sync: Marked Inactive despite recorded vote on ${std.date_voted}. Restore Active status prior to printing pollbooks.`,
+            raw: nvraReconciliationList.length < 2500 ? std.raw : undefined
+          });
+        }
+        return;
+      }
 
       const addr = std.address;
       if (addr) {
@@ -217,12 +265,95 @@ export class DataProcessorWorker {
       } else {
         const pctKey = `${rCounty}|${std.precinct_code}`;
         const pEx = precinctCounts.get(pctKey);
+        const supOrEc = std.dist_sup || std.dist_ec || '';
         if (pEx) {
           pEx.count++;
+          if (std.dist_cong) pEx.congSet.add(std.dist_cong);
+          if (std.dist_sen) pEx.senSet.add(std.dist_sen);
+          if (std.dist_rep) pEx.repSet.add(std.dist_rep);
+          if (supOrEc) pEx.supSet.add(supOrEc);
         } else {
           precinctCounts.set(pctKey, {
             count: 1,
+            congSet: new Set(std.dist_cong ? [std.dist_cong] : []),
+            senSet: new Set(std.dist_sen ? [std.dist_sen] : []),
+            repSet: new Set(std.dist_rep ? [std.dist_rep] : []),
+            supSet: new Set(supOrEc ? [supOrEc] : []),
             sample: { voter_id: std.voter_id, name: std.precinct_name || `Precinct ${std.precinct_code}`, first_name: std.first_name, middle_name: std.middle_name, last_name: std.last_name, address: `Precinct ${std.precinct_code}`, city: std.city, state: std.state, zip: std.zip, county: rCounty, raw: std.raw }
+          });
+        }
+      }
+
+      // Check 11: Missing Congressional, Legislative, or County Supervisor/EC District (SUPR || SUP coalesced)
+      const supVal = std.dist_sup || std.dist_ec || '';
+      if (!std.dist_cong || !std.dist_sen || !std.dist_rep || !supVal) {
+        const missingFields: string[] = [];
+        if (!std.dist_cong) missingFields.push('U.S. Congress (CONG)');
+        if (!std.dist_sen) missingFields.push('State Senate (SEN)');
+        if (!std.dist_rep) missingFields.push('State House (REP)');
+        if (!supVal) missingFields.push('County Supervisor / Election Comm. (SUPR/SUP)');
+        missingDistrictCandidates.push({
+          id: std.voter_id,
+          name: std.name,
+          first_name: std.first_name,
+          middle_name: std.middle_name,
+          last_name: std.last_name,
+          address: std.address || 'Unlisted Domicile',
+          city: std.city,
+          state: std.state,
+          zip: std.zip,
+          county: rCounty,
+          occupant_count: 1,
+          risk_level: 'HIGH',
+          details: `Missing district assignment: ${missingFields.join(', ')}. Assign via 911 GIS parcel boundary.`,
+          raw: missingDistrictCandidates.length < 1000 ? std.raw : undefined
+        });
+      }
+
+      // Check 13B: Active 2-Cycle Dormancy (registered <= 2018 with no vote recorded since before 2018)
+      if (std.date_registered && datasetHasVoteDateColumn) {
+        const regYr = extractYearVal(std.date_registered);
+        const votedYr = extractYearVal(std.date_voted || '');
+        if (regYr > 1900 && regYr <= 2018 && (votedYr === 0 || votedYr < 2018)) {
+          nvraReconciliationList.push({
+            id: std.voter_id,
+            name: std.name,
+            first_name: std.first_name,
+            middle_name: std.middle_name,
+            last_name: std.last_name,
+            address: std.address || 'Unlisted Domicile',
+            city: std.city,
+            state: std.state,
+            zip: std.zip,
+            county: rCounty,
+            occupant_count: 1,
+            risk_level: 'MEDIUM',
+            details: `NVRA List-Maintenance Review: Active registration (${std.date_registered}) with no recorded ballot since ${std.date_voted || 'registration'}.`,
+            raw: nvraReconciliationList.length < 2500 ? std.raw : undefined
+          });
+        }
+      }
+
+      // Check 14: Unparsed 911 Residential House Numbers (address text present, structured HOUSE_NUM blank)
+      if (addr && !std.house_num) {
+        const upperA = addr.toUpperCase();
+        const isPoBox = upperA.includes('PO BOX') || upperA.includes('P O BOX') || upperA.includes('P.O. BOX');
+        if (!isPoBox) {
+          unparsedAddressList.push({
+            id: std.voter_id,
+            name: std.name,
+            first_name: std.first_name,
+            middle_name: std.middle_name,
+            last_name: std.last_name,
+            address: addr,
+            city: std.city,
+            state: std.state,
+            zip: std.zip,
+            county: rCounty,
+            occupant_count: 1,
+            risk_level: 'MEDIUM',
+            details: '911 GIS Parsing Check: Residential address text is present, but structured HOUSE_NUM field is blank.',
+            raw: unparsedAddressList.length < 2000 ? std.raw : undefined
           });
         }
       }
@@ -372,7 +503,8 @@ export class DataProcessorWorker {
     }
     resultMap['spikes'] = spikeResults;
 
-    for (const [, { count, sample }] of precinctCounts.entries()) {
+    const splitPrecinctList: Array<Record<string, any>> = [];
+    for (const [, { count, sample, congSet, senSet, repSet }] of precinctCounts.entries()) {
       const leadDigit = String(count).charAt(0);
       if (benfordsLawCounts[leadDigit] !== undefined) {
         benfordsLawCounts[leadDigit]++;
@@ -387,8 +519,35 @@ export class DataProcessorWorker {
           id: sample.voter_id, name: sample.name, first_name: sample.first_name, middle_name: sample.middle_name, last_name: sample.last_name, address: sample.address, city: sample.city, state: sample.state, zip: sample.zip, county: sample.county, occupant_count: count, risk_level: 'MEDIUM', details: `Low-population phantom precinct (${count} active voters).`, raw: sample.raw
         });
       }
+
+      if (congSet.size > 1 || senSet.size > 1 || repSet.size > 1) {
+        const splitLabels: string[] = [];
+        if (congSet.size > 1) splitLabels.push(`${congSet.size} U.S. Congress districts (${Array.from(congSet).sort().join('/')})`);
+        if (senSet.size > 1) splitLabels.push(`${senSet.size} State Senate districts (${Array.from(senSet).sort().join('/')})`);
+        if (repSet.size > 1) splitLabels.push(`${repSet.size} State House districts (${Array.from(repSet).sort().join('/')})`);
+        splitPrecinctList.push({
+          id: sample.voter_id,
+          name: sample.name,
+          first_name: sample.first_name,
+          middle_name: sample.middle_name,
+          last_name: sample.last_name,
+          address: sample.address,
+          city: sample.city,
+          state: sample.state,
+          zip: sample.zip,
+          county: sample.county,
+          occupant_count: count,
+          risk_level: congSet.size > 1 ? 'HIGH' : 'MEDIUM',
+          details: `Split-Ballot Precinct (${count} active voters): spans ${splitLabels.join('; ')}. Verify GIS street-range ballot styles.`,
+          raw: sample.raw
+        });
+      }
     }
     resultMap['phantom-precincts'] = phantomList;
+    resultMap['split-precincts'] = splitPrecinctList.sort((a, b) => b.occupant_count - a.occupant_count);
+    resultMap['missing-districts'] = datasetHasDistrictColumns ? missingDistrictCandidates : [];
+    resultMap['nvra-reconciliation'] = nvraReconciliationList;
+    resultMap['unparsed-addresses'] = datasetHasHouseNumColumn ? unparsedAddressList : [];
 
     const benfordResults: Array<Record<string, any>> = [];
     let chiSquare = 0;

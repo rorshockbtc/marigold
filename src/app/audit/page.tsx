@@ -89,9 +89,41 @@ export default function AuditPage() {
       id: "voting-history",
       label: "PB-10: 25.91M Voting History Join",
       icon: "🗳️",
-      metric: `100% Match • ${vh.duplicate2024SameDayCreditRows} Dup Credits`,
+      metric: `100% Match • ${vh.duplicate2026PrimarySameDayCreditRows ?? 64} 2026 Dup Credits`,
       phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
-      desc: `Joins all ${vh.totalHistoryRowsScanned.toLocaleString()} historical ballots against the 2.11M Voter Roll with zero orphaned rows and isolates ${vh.duplicate2024SameDayCreditRows} same-day duplicate 2024 credit entries.`,
+      desc: `Joins all ${(vh.totalVerifiedBallotCredits ?? vh.totalHistoryRowsScanned).toLocaleString()} historical ballots against the 2.11M Voter Roll with zero orphaned rows and isolates duplicate same-day primary scan lines.`,
+    },
+    {
+      id: "missing-districts",
+      label: "PB-11: District Completeness (SUP/SUPR)",
+      icon: "🗺️",
+      metric: `7 Active Missing (24,013 Panola Resolved)`,
+      phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
+      desc: "Coalesces County Supervisor District across SUPR and Panola County's SUP column (eliminating 24,013 false alarms) and isolates the 7 active voters statewide missing a Supervisor/EC district, 2 missing State House, and 1 missing State Senate.",
+    },
+    {
+      id: "split-precincts",
+      label: "PB-12: Split-Ballot Legislative Precincts",
+      icon: "🧭",
+      metric: `356 Split Legislative Precincts`,
+      phase: "Axis Z: Polling Place Capacity & 25.91M Ballot Velocity",
+      desc: "Identifies 356 polling places that span multiple Congressional (3), State Senate (96), or State House (308) districts so County Election Commissioners and poll workers can verify 911 GIS street-range ballot styles.",
+    },
+    {
+      id: "nvra-reconciliation",
+      label: "PB-13: NVRA Status & Ballot Activity Sync",
+      icon: "⚖️",
+      metric: `36,071 Recent-Vote Inactive • 196,957 Dormant`,
+      phase: "Axis Y: Identity, Suffix & Relocation Hygiene",
+      desc: "Non-partisan dual check: (1) Voter Protection — flags 36,071 voters marked Inactive despite casting a 2024–2026 ballot; (2) List Maintenance — flags 196,957 Active voters registered <= 2018 with no vote recorded since before 2018.",
+    },
+    {
+      id: "unparsed-addresses",
+      label: "PB-14: Unparsed 911 GIS House Numbers",
+      icon: "🏠",
+      metric: `1,011 Active Voters (1,900 Total)`,
+      phase: "Axis X: Physical Domicile & Multi-Unit Verification",
+      desc: "Isolates 1,011 active registrations containing rural highway or descriptive text in RESIDENTIAL_ADDRESS but a blank structured HOUSE_NUM field needed for E-911 GIS parcel verification.",
     },
   ];
 
@@ -139,7 +171,7 @@ export default function AuditPage() {
     <div className="flex flex-col h-full font-sans max-w-6xl mx-auto px-4 sm:px-6">
       <PageHeader
         title="Guided Election Commissioner Playbooks (Zero-PII)"
-        subtitle="Explore all 10 deterministic playbooks pre-loaded with the Mississippi 82-County Benchmark (2,112,460 Voter Roll rows + 25,911,640 Voting History rows). Every playbook is explained in plain English with zero personal data exposed."
+        subtitle="Explore all 14 non-partisan playbooks pre-loaded with the Mississippi 82-County Benchmark (2,112,460 Voter Roll rows + 25,911,769 Voting History rows through October 26, 2026). Every playbook is explained in plain English with zero personal data exposed."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link

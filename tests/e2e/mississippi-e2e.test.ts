@@ -1152,7 +1152,20 @@ describe('Tier 4: Real-World Application Scenarios', () => {
         expect(summary.total).toBe(summary.active + summary.inactive);
         expect(summary.cleanlinessScore).toBeGreaterThanOrEqual(0);
         expect(summary.cleanlinessScore).toBeLessThanOrEqual(100);
+        expect(typeof summary.splitPrecincts).toBe('number');
+        expect(typeof summary.inactiveVotedRecent).toBe('number');
+        expect(typeof summary.dormantPre2019Active).toBe('number');
+        expect(typeof summary.unparsedAddressCount).toBe('number');
       }
+
+      // Verify Checks 11-14 (District Integrity, Split Precincts, NVRA Reconciliation, Address Parsing)
+      expect(data.playbooks.districtIntegrity).toBeDefined();
+      expect(data.playbooks.districtIntegrity.panolaSupCoalescedVoters).toBe(24013);
+      expect(data.playbooks.districtIntegrity.activeMissingAnyDistrict).toBe(7);
+      expect(data.playbooks.districtIntegrity.splitLegislativePrecincts).toBe(356);
+      expect(data.playbooks.nvraReconciliation.inactiveWithRecentVote2024_2026).toBe(36071);
+      expect(data.playbooks.nvraReconciliation.dormantActivePre2019NoVote).toBe(196957);
+      expect(data.playbooks.addressParsing.unparsedHouseNumActive).toBe(1011);
     } else {
       // Contract specification verification when artifact is in-flight
       expect(MISSISSIPPI_82_COUNTIES.length).toBe(82);

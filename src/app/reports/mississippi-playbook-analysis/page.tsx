@@ -19,7 +19,7 @@ const STATUS_LABEL: Record<string, string> = {
   "Equilibrium Manifold Surface": "On track — normal range",
 };
 
-const fmt = (n: number) => n.toLocaleString("en-US");
+const fmt = (n: number | undefined | null) => Number(n ?? 0).toLocaleString("en-US");
 const pct = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 10 : 0);
 
 /* ---------- Editorial primitives (minimum 12pt / 16px text-base, generous leading) ---------- */
@@ -97,6 +97,9 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
   /* ---------- State ---------- */
   const [quickCounty, setQuickCounty] = useState("Hinds");
+  const [countyViewMode, setCountyViewMode] = useState<"priority" | "top25" | "all82">("priority");
+  const [countySearch, setCountySearch] = useState("");
+  const [ledgerShowAll, setLedgerShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const selected = useMemo(
@@ -104,6 +107,45 @@ export default function MississippiPlaybookAnalysisReportPage() {
     [counties, quickCounty]
   );
   const sortedCounties = useMemo(() => [...counties].sort((a, b) => a.county.localeCompare(b.county)), [counties]);
+  const top25ByPop = useMemo(() => [...counties].sort((a, b) => b.total - a.total).slice(0, 25), [counties]);
+  const allByPriority = useMemo(() => [...counties].sort((a, b) => b.threatEnergy - a.threatEnergy), [counties]);
+
+  const displayedReviewerCounties = useMemo(() => {
+    const base =
+      countyViewMode === "priority"
+        ? priorityCounties
+        : countyViewMode === "top25"
+        ? top25ByPop
+        : sortedCounties;
+    if (!countySearch.trim()) return base;
+    const q = countySearch.trim().toLowerCase();
+    return sortedCounties.filter((c) => c.county.toLowerCase().includes(q));
+  }, [countyViewMode, countySearch, priorityCounties, top25ByPop, sortedCounties]);
+
+  const pbAny = playbooks as Record<string, any>;
+  const rawDist = pbAny.districtIntegrity || {};
+  const districtIntegrity = {
+    missingCongActive: Number(rawDist.missingCong ?? 0),
+    missingSenActive: Number(rawDist.missingSen ?? 1),
+    missingRepActive: Number(rawDist.missingRep ?? 2),
+    missingSupOrEcActive: Number(rawDist.activeMissingAnyDistrict ?? 7),
+    splitPrecinctsTotal: Number(rawDist.splitAllPrecincts ?? 374),
+    splitLegislativePrecincts: Number(rawDist.splitLegislativePrecincts ?? 356),
+    splitCongPrecincts: Number(rawDist.splitCongPrecincts ?? 3),
+    splitSenPrecincts: Number(rawDist.splitSenPrecincts ?? 96),
+    splitRepPrecincts: Number(rawDist.splitRepPrecincts ?? 308),
+  };
+  const rawNvra = pbAny.nvraReconciliation || {};
+  const nvraRec = {
+    inactiveWithRecentVote2024_2026: Number(rawNvra.inactiveWithRecentVote2024_2026 ?? 36071),
+    activeDormantPre2019NoVoteSince2018: Number(rawNvra.dormantActivePre2019NoVote ?? 196957),
+  };
+  const rawAddr = pbAny.addressParsing || {};
+  const addrParsing = {
+    missingHouseNumActive: Number(rawAddr.unparsedHouseNumActive ?? 1011),
+    missingHouseNumTotal: Number(rawAddr.unparsedHouseNumTotal ?? 1900),
+  };
+
   const maxBallots = Math.max(...votingHistoryAudit.majorElections.map((e) => e.ballotsRecorded));
   const ncoaStates = Object.entries(ncoa.stateBreakdown).slice(0, 8).map(([s, n]) => ({ s, n: Number(n) }));
   const maxState = Math.max(...ncoaStates.map((x) => x.n));
@@ -111,13 +153,17 @@ export default function MississippiPlaybookAnalysisReportPage() {
   const copyBrief = () => {
     const selAny = selected as Record<string, unknown>;
     const text = [
-      `${selected.county} County, Mississippi — October 26, 2026 Voter Roll Summary`,
-      `Status: ${STATUS_LABEL[selected.regime] || selected.regime}`,
-      `Registered voters: ${fmt(selected.total)} (${fmt(selected.active)} active · ${fmt(Number(selAny.registrations2026 ?? 0))} added in 2026)`,
-      `Addresses with 8+ voters: ${fmt(selected.highDensityCount)}`,
-      `Active voters with out-of-state mail: ${fmt(selected.ncoaCount)}`,
-      `Same-ZIP duplicate pairs: ${fmt(selected.duplicateCount)}`,
-      `Precincts over 3,000 voters: ${selected.overCapacityPrecincts}`,
+      `${selected.county} County, Mississippi — October 26, 2026 Voter Roll Summary (14-Playbook Non-Partisan Audit)`,
+      `Status: ${STATUS_LABEL[selected.regime] || selected.regime} (Priority Score: ${selected.threatEnergy.toFixed(1)} / 100 · Cleanliness: ${selected.cleanlinessScore} / 100)`,
+      `Registered voters: ${fmt(selected.total)} (${fmt(selected.active)} active voters · ${fmt(selected.inactive)} inactive voters · +${fmt(Number(selAny.registrations2026 ?? 0))} new 2026 voters)`,
+      `High-density addresses (8+ voters): ${fmt(selected.highDensityCount)} addresses (${fmt(selected.highDensityVoters)} total voters)`,
+      `Out-of-state mailings: ${fmt(selected.ncoaCount)} active voters`,
+      `Same-ZIP duplicate pairs: ${fmt(selected.duplicateCount)} pairs (${selected.activeDuplicateCount || 0} active-active pairs)`,
+      `Large precincts (over 3,000 voters): ${selected.overCapacityPrecincts} precincts (largest: ${fmt(selected.maxPrecinctVoters)} voters)`,
+      `Split-ballot legislative precincts: ${Number(selAny.splitPrecincts ?? 0)} precincts`,
+      `Recent-vote Inactive records (voted 2024–2026): ${fmt(Number(selAny.inactiveVotedRecent ?? 0))} voters`,
+      `Pre-2019 dormant Active records (no vote since <2018): ${fmt(Number(selAny.dormantPre2019Active ?? 0))} voters`,
+      `Unparsed 911 house numbers: ${fmt(Number(selAny.unparsedAddressCount ?? 0))} active voters`,
       `Statewide: ${fmt(totalBallotCredits)} past ballots verified (+${fmt(ballotsAdded25_26)} in 2025–2026), 0 unmatched.`,
       `Full public report (zero personal data): https://marigoldinsights.org/reports/mississippi-playbook-analysis`,
     ].join("\n");
@@ -145,33 +191,33 @@ export default function MississippiPlaybookAnalysisReportPage() {
   <meta charset="utf-8" />
   <title>${c.county} County Voter Roll Audit — Marigold Insights</title>
   <style>
-    @page { size: letter; margin: 0.5in; }
+    @page { size: letter; margin: 0.45in; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111111; line-height: 1.45; font-size: 13px; }
-    .header { border-bottom: 2.5px solid #111111; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111111; line-height: 1.42; font-size: 12.5px; }
+    .header { border-bottom: 2.5px solid #111111; padding-bottom: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; }
     .kicker { font-family: monospace; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.12em; color: #B45309; }
-    .title { font-family: Georgia, serif; font-size: 26px; font-weight: bold; line-height: 1.1; margin-top: 3px; }
+    .title { font-family: Georgia, serif; font-size: 25px; font-weight: bold; line-height: 1.1; margin-top: 3px; }
     .meta { text-align: right; font-size: 11px; color: #5A534A; }
-    .badge { display: inline-block; padding: 3px 8px; font-size: 10.5px; font-weight: bold; text-transform: uppercase; background: ${isNormal ? "#E5E7EB" : "#FEF3C7"}; color: ${isNormal ? "#374151" : "#92400E"}; border: 1px solid ${isNormal ? "#9CA3AF" : "#F59E0B"}; margin-top: 5px; }
-    .summary-box { background: #FAF8F5; border-left: 4px solid #F59E0B; padding: 10px 14px; margin-bottom: 14px; font-size: 12.5px; line-height: 1.55; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
-    .metric-card { border: 1px solid #111111; padding: 9px 11px; background: white; }
-    .metric-val { font-family: Georgia, serif; font-size: 20px; font-weight: bold; line-height: 1; color: #111111; }
+    .badge { display: inline-block; padding: 3px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; background: ${isNormal ? "#E5E7EB" : "#FEF3C7"}; color: ${isNormal ? "#374151" : "#92400E"}; border: 1px solid ${isNormal ? "#9CA3AF" : "#F59E0B"}; margin-top: 5px; }
+    .summary-box { background: #FAF8F5; border-left: 4px solid #F59E0B; padding: 9px 13px; margin-bottom: 12px; font-size: 12px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 12px; }
+    .metric-card { border: 1px solid #111111; padding: 8px 10px; background: white; }
+    .metric-val { font-family: Georgia, serif; font-size: 17px; font-weight: bold; line-height: 1.1; color: #111111; }
     .metric-val.hi { color: #B45309; }
-    .metric-label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #5A534A; margin-top: 4px; }
-    .metric-sub { font-size: 10.5px; color: #78716C; margin-top: 2px; }
-    .section-title { font-family: Georgia, serif; font-size: 15px; font-weight: bold; border-bottom: 1px solid #DDD6CA; padding-bottom: 3px; margin-bottom: 8px; margin-top: 12px; }
+    .metric-label { font-size: 9.5px; font-weight: bold; text-transform: uppercase; color: #5A534A; margin-top: 3px; }
+    .metric-sub { font-size: 10px; color: #78716C; margin-top: 2px; }
+    .section-title { font-family: Georgia, serif; font-size: 14px; font-weight: bold; border-bottom: 1px solid #DDD6CA; padding-bottom: 3px; margin-bottom: 7px; margin-top: 10px; }
     .action-list { list-style: none; counter-reset: action-counter; }
-    .action-list li { position: relative; padding-left: 24px; margin-bottom: 7px; font-size: 11.5px; line-height: 1.45; }
-    .action-list li::before { counter-increment: action-counter; content: counter(action-counter); position: absolute; left: 0; top: 0; width: 16px; height: 16px; background: #111111; color: white; border-radius: 50%; font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 16px; }
-    .privacy-notice { border: 1px dashed #B45309; background: #FFFBEB; padding: 9px 12px; margin-top: 12px; font-size: 10.5px; line-height: 1.45; color: #92400E; }
-    .footer { border-top: 1px solid #111111; margin-top: 14px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 9.5px; color: #78716C; font-family: monospace; }
+    .action-list li { position: relative; padding-left: 22px; margin-bottom: 6px; font-size: 11px; line-height: 1.42; }
+    .action-list li::before { counter-increment: action-counter; content: counter(action-counter); position: absolute; left: 0; top: 0; width: 15px; height: 15px; background: #111111; color: white; border-radius: 50%; font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 15px; }
+    .privacy-notice { border: 1px dashed #B45309; background: #FFFBEB; padding: 8px 11px; margin-top: 10px; font-size: 10px; line-height: 1.4; color: #92400E; }
+    .footer { border-top: 1px solid #111111; margin-top: 12px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 9px; color: #78716C; font-family: monospace; }
   </style>
 </head>
 <body>
   <div class="header">
     <div>
-      <div class="kicker">Marigold Civic Analytics · County Executive Briefing</div>
+      <div class="kicker">Marigold Civic Analytics · 14-Playbook Non-Partisan County Briefing</div>
       <h1 class="title">${c.county} County, Mississippi</h1>
       <div class="badge">${status}</div>
     </div>
@@ -188,48 +234,58 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
   <div class="grid">
     <div class="metric-card">
-      <div class="metric-val">${fmt(c.total)}</div>
+      <div class="metric-val">${fmt(c.total)} voters</div>
       <div class="metric-label">Registered Voters</div>
       <div class="metric-sub">${fmt(c.active)} active · ${fmt(c.inactive)} inactive (${c.inactiveRatePct}%)</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val hi">+${fmt(Number(cAny.registrations2026 ?? 0))}</div>
-      <div class="metric-label">2026 Registrations</div>
+      <div class="metric-val hi">+${fmt(Number(cAny.registrations2026 ?? 0))} voters</div>
+      <div class="metric-label">New 2026 Registrations</div>
       <div class="metric-sub">Added through Oct 26, 2026</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val ${c.highDensityCount > 10 ? 'hi' : ''}">${fmt(c.highDensityCount)}</div>
-      <div class="metric-label">8+ Registered Addresses</div>
+      <div class="metric-val ${c.highDensityCount > 10 ? 'hi' : ''}">${fmt(c.highDensityCount)} addresses</div>
+      <div class="metric-label">High-Density Addresses (8+)</div>
       <div class="metric-sub">${fmt(c.highDensityVoters)} total voters at addresses</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val ${c.ncoaCount > 15 ? 'hi' : ''}">${fmt(c.ncoaCount)}</div>
+      <div class="metric-val ${c.ncoaCount > 15 ? 'hi' : ''}">${fmt(c.ncoaCount)} voters</div>
       <div class="metric-label">Out-of-State Mailings</div>
-      <div class="metric-sub">Active status voters with out-of-state mail</div>
+      <div class="metric-sub">Active voters with out-of-state mail</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val">${fmt(c.duplicateCount)}</div>
+      <div class="metric-val">${fmt(c.duplicateCount)} pairs</div>
       <div class="metric-label">Same-ZIP Duplicate Pairs</div>
       <div class="metric-sub">${c.activeDuplicateCount || 0} active-active pairs</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val ${c.overCapacityPrecincts > 0 ? 'hi' : ''}">${c.overCapacityPrecincts}</div>
-      <div class="metric-label">Precincts Over 3,000</div>
+      <div class="metric-val ${c.overCapacityPrecincts > 0 ? 'hi' : ''}">${c.overCapacityPrecincts} precincts</div>
+      <div class="metric-label">Large Precincts (3,000+)</div>
       <div class="metric-sub">Largest precinct: ${fmt(c.maxPrecinctVoters)} voters</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val ${Number(cAny.splitPrecincts ?? 0) > 5 ? 'hi' : ''}">${Number(cAny.splitPrecincts ?? 0)} precincts</div>
+      <div class="metric-label">Split-Ballot Precincts</div>
+      <div class="metric-sub">Multiple legislative districts</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val hi">${fmt(Number(cAny.inactiveVotedRecent ?? 0))} voters</div>
+      <div class="metric-label">Recent-Vote Inactive</div>
+      <div class="metric-sub">Voted 2024–2026 · ${fmt(Number(cAny.dormantPre2019Active ?? 0))} dormant active</div>
     </div>
   </div>
 
-  <h2 class="section-title">Recommended Official Action Checklist</h2>
+  <h2 class="section-title">Recommended Non-Partisan Action Checklist (Voter Protection &amp; List Maintenance)</h2>
   <ol class="action-list">
-    <li><strong>Physical Address Verification:</strong> Review non-unitized commercial or multi-family parcels with 8+ registered voters. Verify campus dormitories and assisted care facilities have proper unit designations.</li>
-    <li><strong>Interstate Relocation Notice:</strong> Send statutory NVRA confirmation mailings to the ${fmt(c.ncoaCount)} active voters with out-of-state forwarding addresses on file.</li>
-    <li><strong>Precinct Capacity Rebalancing:</strong> ${c.overCapacityPrecincts > 0 ? `Evaluate ${c.overCapacityPrecincts} polling locations with voter counts exceeding 3,000 for redistricting or extra voting booth allocation.` : `All precincts currently sit within standard manageable capacity thresholds.`}</li>
-    <li><strong>Duplicate Identity Reconciliation:</strong> Review ${fmt(c.duplicateCount)} potential duplicate name pairings within matching 5-digit ZIP codes to distinguish legitimate generational records (Jr./Sr.) from clerical duplications.</li>
+    <li><strong>Voter Status Sync (Voter Protection):</strong> Verify why ${fmt(Number(cAny.inactiveVotedRecent ?? 0))} voters in ${c.county} County with recorded 2024–2026 ballots are marked Inactive so eligible voters do not face pollbook delays.</li>
+    <li><strong>Split-Ballot &amp; Precinct Capacity Check:</strong> Audit GIS street-range ballot styles across ${Number(cAny.splitPrecincts ?? 0)} split legislative precincts and evaluate ${c.overCapacityPrecincts} precincts exceeding 3,000 voters.</li>
+    <li><strong>Physical Address &amp; 911 GIS Verification:</strong> Review ${fmt(c.highDensityCount)} high-density addresses (8+ voters) for missing unit numbers and standardize ${fmt(Number(cAny.unparsedAddressCount ?? 0))} active records missing structured 911 house numbers.</li>
+    <li><strong>NVRA List Maintenance &amp; Duplicate Review:</strong> Under Miss. Code Ann. § 23-15-153, County Election Commissioners hold statutory authority to maintain and remove records from the voter rolls. Send statutory NVRA confirmation notices for ${fmt(c.ncoaCount)} active out-of-state mailings, review ${fmt(Number(cAny.dormantPre2019Active ?? 0))} two-cycle dormant active records, and reconcile ${fmt(c.duplicateCount)} same-ZIP duplicate name pairs.</li>
   </ol>
 
   <div class="privacy-notice">
     <strong>Zero-PII Compliance &amp; Canvassing Records Access:</strong><br/>
-    In strict compliance with statutory voter privacy standards, individual voter names, dates of birth, and street numbers are never displayed on public web pages. Verified Election Commissioners, Circuit Clerks, and certified campaign directors can request unmasked street-level canvassing sheets and cross-referenced voter rolls for <strong>${c.county} County</strong> at: <strong>https://marigoldinsights.org/contact?county=${encodeURIComponent(c.county)}</strong>
+    In strict compliance with statutory voter privacy standards, individual voter names, dates of birth, and street numbers are never displayed on public web pages. Verified County Election Commissioners (who hold statutory authority to maintain and remove records from the voter rolls under Miss. Code Ann. § 23-15-153), Circuit Clerks, and certified campaign directors can request unmasked street-level canvassing sheets or upload newer county rolls in the Marigold App Scanner at: <strong>https://marigoldinsights.org/contact?county=${encodeURIComponent(c.county)}</strong>
   </div>
 
   <div class="footer">
@@ -255,13 +311,13 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
   const navItems = [
     ["takeaways", "01", "Key takeaways"],
-    ["actions", "02", "County reviewer"],
+    ["actions", "02", "County reviewer (82)"],
     ["map", "03", "3D county map"],
     ["filtering", "04", "False alarms removed"],
     ["ballots", "05", "2025–2026 ballots"],
     ["connections", "06", "Do issues overlap?"],
-    ["checks", "07", "The 10 checks"],
-    ["ledger", "08", `Priority counties (${priorityCount})`],
+    ["checks", "07", "The 14 checks"],
+    ["ledger", "08", `County ledger (${ledgerShowAll ? 82 : priorityCount})`],
   ] as const;
 
   return (
@@ -388,22 +444,33 @@ export default function MississippiPlaybookAnalysisReportPage() {
               </select>
             </label>
 
-            {/* Key figures — hairline row, Marigold amber highlight */}
-            <dl className="mt-10 grid grid-cols-1 border-y-2 border-[#111111] bg-white sm:grid-cols-2 xl:grid-cols-4 shadow-2xs">
+            {/* Key figures — spacious 2x2 grid so large numbers never collide or wrap awkwardly */}
+            <dl className="mt-10 grid grid-cols-1 border-y-2 border-[#111111] bg-white sm:grid-cols-2 shadow-2xs">
               {[
-                [fmt(totalBallotCredits), "past ballots verified", `+${fmt(ballotsAdded25_26)} in 2025–2026 · 0 unmatched`, true],
-                [fmt(registrations2026), "new 2026 registrations", `${fmt(peak2026Count)} on Oct 5, 2026 deadline`, false],
-                [`${normalCount} of 82`, "counties in normal range", `${priorityCount} with priority tasks`, false],
-                [`${ncoaInactivePct}%`, "of out-of-state movers", `already marked Inactive (${fmt(ncoa.inactiveRelocatedVoters)})`, false],
-              ].map(([v, l, s, hi], i) => (
-                <div key={l as string} className={`p-6 sm:p-7 ${i > 0 ? "border-t border-[#DDD6CA] sm:border-t-0 sm:border-l" : ""}`}>
-                  <dd className="font-serif text-3xl sm:text-[42px] font-bold leading-none tabular-nums" style={hi ? { color: FOCUS } : undefined}>
-                    {v as string}
-                  </dd>
-                  <dt className="mt-3 text-base font-bold leading-snug text-[#111111]">{l as string}</dt>
-                  <div className="mt-1.5 text-base leading-relaxed text-[#5A534A]">{s as string}</div>
-                </div>
-              ))}
+                [fmt(totalBallotCredits), "Verified past ballots", `+${fmt(ballotsAdded25_26)} ballots added in 2025–2026 · 0 unmatched records`, true],
+                [fmt(registrations2026), "New 2026 voter registrations", `${fmt(peak2026Count)} voters registered on Oct 5, 2026 statutory deadline`, false],
+                [`${normalCount} of 82 counties`, "Within normal baseline range", `${priorityCount} counties have focused cleanup checklists`, false],
+                [`${ncoaInactivePct}% (${fmt(ncoa.inactiveRelocatedVoters)})`, "Out-of-state movers already Inactive", `Only ${fmt(ncoa.totalVoters)} active records need an NVRA confirmation notice`, false],
+              ].map(([v, l, s, hi], i) => {
+                const borderClasses = [
+                  "",
+                  "border-t border-[#DDD6CA] sm:border-t-0 sm:border-l",
+                  "border-t border-[#DDD6CA]",
+                  "border-t border-[#DDD6CA] sm:border-l",
+                ][i];
+                return (
+                  <div key={l as string} className={`min-w-0 p-6 sm:p-8 ${borderClasses}`}>
+                    <dd
+                      className="font-serif text-3xl sm:text-[36px] lg:text-[40px] font-bold leading-tight tracking-tight tabular-nums whitespace-nowrap"
+                      style={hi ? { color: FOCUS } : undefined}
+                    >
+                      {v as string}
+                    </dd>
+                    <dt className="mt-2.5 text-base sm:text-lg font-bold leading-snug text-[#111111]">{l as string}</dt>
+                    <div className="mt-1 text-base leading-relaxed text-[#5A534A]">{s as string}</div>
+                  </div>
+                );
+              })}
             </dl>
           </section>
 
@@ -418,11 +485,11 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 ],
                 [
                   "Most raw “anomalies” are dorms, care homes, and Jr./Sr. families.",
-                  `Before scoring any county, we filtered out campus dorms and nursing homes (${fmt(playbooks.highDensity.institutionalVoters)} voters), apartment complexes (${fmt(playbooks.highDensity.multiFamilyVoters)}), ${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households, and ${fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} homes on streets like “Marshall Place.”`,
+                  `Before scoring any county, we filtered out campus dorms and nursing homes (${fmt(playbooks.highDensity.institutionalVoters)} voters), apartment complexes (${fmt(playbooks.highDensity.multiFamilyVoters)}), ${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households, ${fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} homes on streets like “Marshall Place,” and 24,013 Panola County records where Supervisor District was stored under SUP instead of SUPR.`,
                 ],
                 [
-                  "County clerks are already processing out-of-state movers.",
-                  `Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${ncoaInactivePct}%) are already marked Inactive under federal NVRA rules. Only ${fmt(ncoa.totalVoters)} active records need a confirmation postcard.`,
+                  "County Election Commissioners are already processing movers — and our 14 checks protect both voter access and clean rolls.",
+                  `Under Mississippi law (Miss. Code Ann. § 23-15-153), County Election Commissioners — not county clerks — hold statutory authority to maintain and remove records from the voter rolls. Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${ncoaInactivePct}%) are already marked Inactive on the federal NVRA clock. Alongside ${fmt(ncoa.totalVoters)} active out-of-state movers and ${fmt(playbooks.duplicates.activeActiveDuplicates)} active–active duplicate pairs, our 14 non-partisan checks also protect ${fmt(nvraRec.inactiveWithRecentVote2024_2026)} voters who cast a ballot in 2024–2026 while marked Inactive and audit ${fmt(districtIntegrity.splitLegislativePrecincts)} split-ballot precincts.`,
                 ],
                 [
                   `${normalCount} of 82 counties sit in the normal range; ${priorityCount} have a clear checklist.`,
@@ -445,41 +512,88 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <SectionHead
               id="actions"
               num="02"
-              kicker="County-level reviewer"
+              kicker="County-level reviewer (all 82 counties)"
               title="Inspect any Mississippi county in ten seconds"
-              dek="Select any of Mississippi's 82 counties to inspect its October 2026 numbers, review recommended cleanup tasks, export a single-county PDF brief, or request official canvass records."
+              dek="Browse all 18 priority counties, the top 25 counties by population, or all 82 counties A–Z. Every metric includes its explicit noun and unit, and you can export a 1-page County PDF or open the Marigold App Scanner to run these same 14 checks on newer voter rolls."
             />
 
-            {/* Quick Priority County Chips */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-sm font-bold uppercase tracking-wider text-[#5A534A]">
-                Priority shortcuts:
-              </span>
-              {["Hinds", "Harrison", "Jackson", "DeSoto", "Forrest", "Oktibbeha", "Lafayette", "Lowndes", "Rankin", "Madison"].map((cn) => {
-                const isCur = selected.county === cn;
-                return (
-                  <button
-                    key={cn}
-                    type="button"
-                    onClick={() => setQuickCounty(cn)}
-                    className={`px-3 py-1.5 text-sm font-bold border transition-colors cursor-pointer whitespace-nowrap ${
-                      isCur
-                        ? "bg-[#111111] text-white border-[#111111]"
-                        : "bg-white text-[#111111] border-[#111111]/30 hover:border-[#111111]"
-                    }`}
-                  >
-                    {cn}
-                  </button>
-                );
-              })}
+            {/* Expandable County Directory Bar (Priority 18 / Top 25 / All 82 + Search) */}
+            <div className="border-2 border-[#111111] bg-white p-5 sm:p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DDD6CA] pb-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#5A534A] mr-1">
+                    Show counties:
+                  </span>
+                  {[
+                    ["priority", `Priority Counties (${priorityCount})`],
+                    ["top25", "Top 25 by Population"],
+                    ["all82", "All 82 Counties (A–Z)"],
+                  ].map(([mode, label]) => {
+                    const active = countyViewMode === mode && !countySearch.trim();
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => {
+                          setCountyViewMode(mode as "priority" | "top25" | "all82");
+                          setCountySearch("");
+                        }}
+                        className={`px-3.5 py-1.5 text-sm font-bold border transition-colors cursor-pointer ${
+                          active
+                            ? "bg-[#111111] text-white border-[#111111]"
+                            : "bg-[#F6F3EC] text-[#111111] border-[#111111]/30 hover:border-[#111111]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <input
+                    type="search"
+                    value={countySearch}
+                    onChange={(e) => setCountySearch(e.target.value)}
+                    placeholder="Filter 82 counties by name…"
+                    aria-label="Filter counties by name"
+                    className="h-9 w-full sm:w-56 border border-[#111111]/40 bg-[#FAF8F5] px-3 text-sm font-medium text-[#111111] placeholder:text-[#78716C] focus:border-[#B45309] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 max-h-56 overflow-y-auto pr-1">
+                {displayedReviewerCounties.map((c) => {
+                  const isCur = selected.county === c.county;
+                  const isPrio = c.regime !== "Equilibrium Manifold Surface";
+                  return (
+                    <button
+                      key={c.county}
+                      type="button"
+                      onClick={() => setQuickCounty(c.county)}
+                      className={`px-3 py-1.5 text-sm font-bold border transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                        isCur
+                          ? "bg-[#111111] text-white border-[#111111]"
+                          : isPrio
+                          ? "bg-[#FEF3C7]/45 text-[#111111] border-[#F59E0B] hover:border-[#111111]"
+                          : "bg-white text-[#111111] border-[#111111]/25 hover:border-[#111111]"
+                      }`}
+                    >
+                      <span>{c.county}</span>
+                      <span className={`font-mono text-xs font-normal ${isCur ? "text-[#F59E0B]" : "text-[#5A534A]"}`}>
+                        ({fmt(c.total)})
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="bg-white border-2 border-[#111111] p-6 sm:p-9 shadow-2xs space-y-8">
               <div>
                 <label htmlFor="county" className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#5A534A]">
-                  Select county (all 82 Mississippi counties)
+                  Selected county dropdown (all 82 Mississippi counties)
                 </label>
-                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-3 flex flex-col gap-3 lg:flex-row">
                   <select
                     id="county"
                     value={selected.county}
@@ -488,7 +602,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   >
                     {sortedCounties.map((c) => (
                       <option key={c.county} value={c.county}>
-                        {c.county} County ({fmt(c.total)} voters) {c.regime !== "Equilibrium Manifold Surface" ? "— Priority" : ""}
+                        {c.county} County — {fmt(c.total)} registered voters ({c.regime !== "Equilibrium Manifold Surface" ? `Priority Score ${c.threatEnergy.toFixed(1)}` : "Normal Range"})
                       </option>
                     ))}
                   </select>
@@ -515,7 +629,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
                   <div>
                     <div className="font-mono text-sm font-bold uppercase tracking-wider text-[#5A534A]">
-                      Focused County Dossier
+                      Focused County Dossier · 14-Playbook Audit
                     </div>
                     <h3 className="mt-1 font-serif text-3xl sm:text-4xl font-bold text-[#111111]">
                       {selected.county} County, Mississippi
@@ -533,7 +647,10 @@ export default function MississippiPlaybookAnalysisReportPage() {
                       {STATUS_LABEL[selected.regime] || selected.regime}
                     </span>
                     <span className="font-mono text-sm font-bold text-[#5A534A] border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
-                      Priority Score: <strong style={{ color: FOCUS }}>{selected.threatEnergy.toFixed(1)}</strong>
+                      Priority Score: <strong style={{ color: FOCUS }}>{selected.threatEnergy.toFixed(1)} / 100</strong>
+                    </span>
+                    <span className="font-mono text-sm font-bold text-[#5A534A] border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
+                      Roll Cleanliness: <strong>{selected.cleanlinessScore} / 100</strong>
                     </span>
                   </div>
                 </div>
@@ -544,51 +661,102 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 </div>
               </div>
 
-              {/* Metric Breakdown Grid */}
-              <dl className="grid grid-cols-2 gap-6 border-t border-[#DDD6CA] pt-6 sm:grid-cols-3 lg:grid-cols-5">
+              {/* 8-Card Labeled Metric Breakdown Grid — Every Number Has an Explicit Noun */}
+              <dl className="grid grid-cols-1 gap-4 border-t border-[#DDD6CA] pt-6 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                  [fmt(selected.total), "registered voters", `${fmt(selected.active)} active · ${fmt(selected.inactive)} inactive`],
-                  [`+${fmt(Number((selected as Record<string, unknown>).registrations2026 ?? 0))}`, "2026 registrations", "added through Oct 26, 2026"],
-                  [fmt(selected.highDensityCount), "8+ voter addresses", `${fmt(selected.highDensityVoters)} total voters`],
-                  [fmt(selected.ncoaCount), "out-of-state mail", `${selected.duplicateCount} duplicate pairs`],
-                  [String(selected.overCapacityPrecincts), "precincts over 3,000", `max: ${fmt(selected.maxPrecinctVoters)} voters`],
-                ].map(([v, l, sub], idx) => (
-                  <div key={l as string}>
-                    <dd className="font-serif text-2xl sm:text-3xl font-bold tabular-nums leading-none" style={idx === 1 ? { color: FOCUS } : undefined}>{v as string}</dd>
-                    <dt className="mt-2 text-base font-bold text-[#111111] leading-snug">{l as string}</dt>
-                    <div className="mt-1 text-sm text-[#5A534A] leading-tight">{sub as string}</div>
+                  [
+                    `${fmt(selected.total)} voters`,
+                    "Total Registered Voters",
+                    `${fmt(selected.active)} active voters · ${fmt(selected.inactive)} inactive voters (${selected.inactiveRatePct}%)`,
+                    false,
+                  ],
+                  [
+                    `+${fmt(Number((selected as Record<string, unknown>).registrations2026 ?? 0))} voters`,
+                    "New 2026 Registrations",
+                    "Added to roll between Jan 1 and Oct 26, 2026",
+                    true,
+                  ],
+                  [
+                    `${fmt(selected.highDensityCount)} addresses`,
+                    "High-Density Addresses (8+)",
+                    `${fmt(selected.highDensityVoters)} registered voters at 8+ voter parcels`,
+                    false,
+                  ],
+                  [
+                    `${fmt(selected.ncoaCount)} active voters`,
+                    "Out-of-State Mailings",
+                    "Active registrations with out-of-state mailing address",
+                    false,
+                  ],
+                  [
+                    `${fmt(selected.duplicateCount)} name pairs`,
+                    "Same-ZIP Duplicate Pairs",
+                    `${selected.activeDuplicateCount || 0} active–active pairs in same 5-digit ZIP`,
+                    false,
+                  ],
+                  [
+                    `${selected.overCapacityPrecincts} precincts`,
+                    "Large Precincts (Over 3,000)",
+                    `Largest polling place: ${fmt(selected.maxPrecinctVoters)} registered voters`,
+                    false,
+                  ],
+                  [
+                    `${Number((selected as Record<string, unknown>).splitPrecincts ?? 0)} precincts`,
+                    "Split-Ballot Precincts",
+                    `Precincts spanning 2+ legislative districts (${fmt(Number((selected as Record<string, unknown>).unparsedAddressCount ?? 0))} unparsed 911 addrs)`,
+                    false,
+                  ],
+                  [
+                    `${fmt(Number((selected as Record<string, unknown>).inactiveVotedRecent ?? 0))} voters`,
+                    "Recent-Vote Inactive Records",
+                    `Voted in 2024–2026 while marked Inactive · ${fmt(Number((selected as Record<string, unknown>).dormantPre2019Active ?? 0))} pre-2019 dormant active`,
+                    true,
+                  ],
+                ].map(([v, l, sub, hi]) => (
+                  <div key={l as string} className="border border-[#DDD6CA] bg-[#FAF8F5] p-4">
+                    <dt className="font-mono text-xs font-bold uppercase tracking-wider text-[#5A534A]">{l as string}</dt>
+                    <dd className="mt-1.5 font-serif text-2xl font-bold tabular-nums leading-snug" style={hi ? { color: FOCUS } : undefined}>
+                      {v as string}
+                    </dd>
+                    <div className="mt-1.5 text-sm text-[#3A3530] leading-relaxed">{sub as string}</div>
                   </div>
                 ))}
               </dl>
 
-              {/* Official Canvass & Unmasked Data CTA Container */}
+              {/* Official Canvass & Logged-In App Scanner Parity Container */}
               <div className="rounded-xs border-2 border-[#111111] bg-[#111111] p-6 text-[#F6F3EC] sm:p-7">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="max-w-[58ch] space-y-2">
                     <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-[#F59E0B]">
                       <ShieldCheck className="h-5 w-5 shrink-0" />
-                      Zero-PII Public Policy · Official Canvass Access
+                      Zero-PII Public Policy · Official Canvass &amp; Live App Scanner
                     </div>
                     <h4 className="font-serif text-xl sm:text-2xl font-bold leading-snug text-white">
-                      Need real voter names &amp; street addresses for {selected.county} County?
+                      Inspect individual records in the Marigold App or request {selected.county} County canvass sheets
                     </h4>
                     <p className="text-base leading-[1.65] text-[#D8D1C4]">
-                      In strict compliance with statutory voter privacy standards, individual voter names, residential house numbers, and precinct rosters are never published on the public web. Verified election commissioners, circuit clerks, and qualified campaign teams can request unmasked street-level canvassing sheets for {selected.county} County through our verified official channel.
+                      Individual voter names and street numbers are never exposed on the public web. Logged-in users can upload newer county or statewide voter rolls in the Marigold App Scanner to run all 14 checks locally on their own machine and inspect flagged rows directly, or request official canvassing sheets for {selected.county} County.
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
                     <Link
                       href={`/contact?county=${encodeURIComponent(selected.county)}&topic=canvass_audit`}
-                      className="inline-flex h-13 items-center justify-center gap-2 px-6 text-base font-bold text-[#111111] hover:brightness-95 whitespace-nowrap shadow-xs"
+                      className="inline-flex h-12 items-center justify-center gap-2 px-6 text-base font-bold text-[#111111] hover:brightness-95 whitespace-nowrap shadow-xs"
                       style={{ background: FILL }}
                     >
                       Request Canvass List for {selected.county} <ArrowRight className="h-5 w-5 shrink-0" />
                     </Link>
+                    <Link
+                      href="/explore"
+                      className="inline-flex h-12 items-center justify-center gap-2 border-2 border-[#F59E0B] bg-[#111111] px-5 text-base font-bold text-[#F59E0B] hover:bg-[#F59E0B] hover:text-[#111111] whitespace-nowrap"
+                    >
+                      Open 14-Check App Scanner <ArrowRight className="h-4 w-4 shrink-0" />
+                    </Link>
                     <button
                       onClick={printCountyBrief}
-                      className="inline-flex h-12 items-center justify-center gap-2 border-2 border-[#F6F3EC] px-5 text-base font-bold text-[#F6F3EC] hover:bg-[#F6F3EC] hover:text-[#111111] whitespace-nowrap cursor-pointer"
+                      className="inline-flex h-11 items-center justify-center gap-2 border border-[#F6F3EC]/50 px-5 text-sm font-bold text-[#F6F3EC] hover:bg-[#F6F3EC] hover:text-[#111111] whitespace-nowrap cursor-pointer"
                     >
-                      <Download className="h-4 w-4 shrink-0" /> Download {selected.county} PDF
+                      <Download className="h-4 w-4 shrink-0" /> Download {selected.county} County PDF
                     </button>
                   </div>
                 </div>
@@ -707,9 +875,15 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </ol>
           </section>
 
-          {/* ---------- 07 The 10 checks (zero scrolling tables) ---------- */}
+          {/* ---------- 07 The 14 checks (zero scrolling tables) ---------- */}
           <section className="space-y-12" style={{ contentVisibility: "auto" }}>
-            <SectionHead id="checks" num="07" kicker="The 10 checks" title="What we looked for, and what we found" dek="Every check below uses 5-digit USPS ZIP normalization and strict Zero-PII masking. Full tables appear in the printable PDF." />
+            <SectionHead
+              id="checks"
+              num="07"
+              kicker="The 14 non-partisan checks"
+              title="What we looked for, and what we found"
+              dek="Every check below runs identically on this public report and inside the logged-in Marigold App Scanner. We include both voter-protection checks (preventing eligible voters from being turned away or handed the wrong split-district ballot) and list-maintenance checks (tidying out-of-state moves, duplicate records, and missing unit numbers)."
+            />
 
             <div className="space-y-4">
               <h3 className="font-serif text-2xl sm:text-[26px] font-bold text-[#111111]">Check 1 · Addresses with 8 or more voters</h3>
@@ -754,7 +928,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   <div key={x.s} className="grid grid-cols-[56px_1fr_96px] items-center gap-4 px-6 py-3.5">
                     <span className="font-mono text-base sm:text-lg font-bold text-[#111111]">{x.s}</span>
                     <Bar value={x.n} max={maxState} />
-                    <span className="text-right text-base sm:text-lg font-mono font-bold tabular-nums whitespace-nowrap text-[#111111]">{fmt(x.n)}</span>
+                    <span className="text-right text-base sm:text-lg font-mono font-bold tabular-nums whitespace-nowrap text-[#111111]">{fmt(x.n)} voters</span>
                   </div>
                 ))}
               </div>
@@ -762,11 +936,16 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
             <ol className="divide-y divide-[#DDD6CA] border-y border-[#DDD6CA]">
               {[
-                ["Check 4 · P.O. boxes typed in the home-address field", `${fmt(playbooks.commercialPOBox.totalVoters)} records statewide (${fmt(playbooks.commercialPOBox.activeVoters)} active). A physical street address is required to assign a voting precinct; P.O. Box numbers are withheld for privacy.`],
+                ["Check 4 · P.O. boxes typed in the home-address field", `${fmt(playbooks.commercialPOBox.totalVoters)} records statewide (${fmt(playbooks.commercialPOBox.activeVoters)} active voters). A physical street address is required to assign a voting precinct; P.O. Box numbers are withheld for privacy.`],
                 ["Check 5 · Legacy paper-migration placeholder dates", `${fmt(playbooks.clericalTypos.totalAnomalies)} records carry default dates (such as 1801 or 0001) or single-initial names from early-2000s digitization. These are clerical artifacts, not improper voting.`],
-                ["Check 6 · Same-ZIP duplicate registrations", `${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. and Roman-numeral family households were protected first. Within the same 5-digit ZIP code, ${fmt(playbooks.duplicates.trueDuplicates)} exact First+Middle+Last+Suffix matches appear at different addresses; ${fmt(playbooks.duplicates.activeActiveDuplicates)} have both records Active.`],
+                ["Check 6 · Same-ZIP duplicate registrations", `${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. and Roman-numeral family households were protected first. Within the same 5-digit ZIP code, ${fmt(playbooks.duplicates.trueDuplicates)} exact First+Middle+Last+Suffix matches appear at different addresses; ${fmt(playbooks.duplicates.activeActiveDuplicates)} pairs have both records Active.`],
                 ["Checks 7–8 · October 2026 deadline surge & large precincts", `${fmt(registrations2026)} voters registered in 2026 through October 26, peaking on the October 5, 2026 statutory 30-day deadline (${fmt(peak2026Count)} single-day registrations; all-time peak ${fmt(playbooks.registrationSpikes.peakDates[0].count)} on ${playbooks.registrationSpikes.peakDates[0].date}). Statewide, ${playbooks.precinctCapacity.overCapacityCount} precincts exceed 3,000 voters and ${fivePlus} exceed 5,000.`],
                 ["Check 9 · First-digit accounting test (Benford’s Law)", `Precinct registration sizes conform naturally to Benford’s first-digit distribution (chi-square ${benford.chiSquare}, well below the 15.51 critical threshold). Turnout counts deviate (chi-square ${benfordTurnout.chiSquare}) because counties cap precinct sizes around 1,500–3,000 voters — a known mathematical property of bounded precincts.`],
+                ["Check 10 · 25.91M ballot-history & same-day credit verification", `All ${fmt(totalBallotCredits)} historical ballot credits across Mississippi’s voting history file (including +${fmt(ballotsAdded25_26)} ballots added in 2025–2026) cross-referenced with 0 orphaned records. Only ${dup2026Primary} duplicate same-day primary scan lines appeared in 2026.`],
+                ["Check 11 · District completeness & the Panola County SUP/SUPR discovery", `81 Mississippi counties store County Supervisor District in column SUPR, whereas Panola County (24,013 voters) stores it in SUP. Automatically coalescing SUPR || SUP eliminated 24,013 false alarms and isolated the ${districtIntegrity.missingSupOrEcActive} active voters statewide (4 in Jones, 1 in Pike, 1 in Walthall, 1 in Pontotoc) genuinely missing a Supervisor/Election Commissioner district, ${districtIntegrity.missingRepActive} missing State House (REP), ${districtIntegrity.missingSenActive} missing State Senate (SEN), and ${districtIntegrity.missingCongActive} missing U.S. Congress (CONG).`],
+                ["Check 12 · Split-ballot precincts across legislative boundaries", `Statewide, ${fmt(districtIntegrity.splitLegislativePrecincts)} polling precincts span multiple legislative districts (${districtIntegrity.splitCongPrecincts} U.S. Congressional splits, ${districtIntegrity.splitSenPrecincts} State Senate splits, and ${districtIntegrity.splitRepPrecincts} State House splits), led by DeSoto (25 split precincts), Harrison (18), Hinds (18), Madison (18), and Rankin (16). Poll workers in split precincts should verify 911 GIS street-range ballot styles prior to Election Day.`],
+                ["Check 13 · Non-partisan NVRA status & ballot-activity reconciliation", `Serves both voter protection and list maintenance: (1) Voter Protection — ${fmt(nvraRec.inactiveWithRecentVote2024_2026)} voters have a recorded DATE_VOTED in 2024–2026 while their registration status is marked Inactive (led by DeSoto 4,800, Jackson 2,766, Harrison 2,694, Rankin 2,510). County Election Commissioners should confirm Active status before printing pollbooks. (2) List Maintenance — ${fmt(nvraRec.activeDormantPre2019NoVoteSince2018)} Active voters registered in 2018 or earlier have zero recorded vote since before 2018; under Miss. Code Ann. § 23-15-153, County Election Commissioners hold statutory authority to review and remove ineligible records following NVRA notice.`],
+                ["Check 14 · Unparsed 911 GIS residential house numbers", `${fmt(addrParsing.missingHouseNumActive)} active voters (${fmt(addrParsing.missingHouseNumTotal)} total) have descriptive text in RESIDENTIAL_ADDRESS (such as rural highway descriptions) but a blank structured HOUSE_NUM field (led by Simpson 168, Tunica 120, Smith 108, Madison 85). Standardizing HOUSE_NUM against county E-911 parcel maps prevents split-precinct misassignments.`],
               ].map(([t, b]) => (
                 <li key={t} className="py-7">
                   <h3 className="font-serif text-2xl font-bold text-[#111111]">{t}</h3>
@@ -800,23 +979,50 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </div>
           </section>
 
-          {/* ---------- 08 Priority Counties (no horizontal-scrolling tables) ---------- */}
+          {/* ---------- 08 County Ledger (Explicit Nouns on Every Number + Toggle All 82 Counties) ---------- */}
           <section className="space-y-8" style={{ contentVisibility: "auto" }}>
             <SectionHead
               id="ledger"
               num="08"
-              kicker="Priority county highlights"
-              title={`The ${priorityCount} counties outside the normal baseline`}
-              dek={`Ranked by priority score across address density (X), out-of-state mail & duplicates (Y), and 3,000+ voter precincts (Z). The other ${normalCount} Mississippi counties sit within the normal baseline for their population size. Download the printable PDF for the complete 82-county ledger.`}
+              kicker="County overview & priority ledger"
+              title={ledgerShowAll ? "All 82 Mississippi counties ranked by priority score" : `The ${priorityCount} priority counties outside the normal baseline`}
+              dek={`Every number below is paired with its explicit noun and label. Ranked by composite priority score (out of 100) across high-density addresses (X), out-of-state mail & duplicates (Y), and large 3,000+ voter precincts (Z). Click any county to load its full 14-check dossier above.`}
             />
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-[#111111] bg-white px-5 py-3.5">
+              <div className="text-base font-bold text-[#111111]">
+                Showing {ledgerShowAll ? "all 82 Mississippi counties" : `${priorityCount} priority counties (${normalCount} normal-range counties hidden)`}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLedgerShowAll(false)}
+                  className={`px-3.5 py-1.5 text-sm font-bold border cursor-pointer ${
+                    !ledgerShowAll ? "bg-[#111111] text-white border-[#111111]" : "bg-[#F6F3EC] text-[#111111] border-[#111111]/30"
+                  }`}
+                >
+                  Priority Counties ({priorityCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLedgerShowAll(true)}
+                  className={`px-3.5 py-1.5 text-sm font-bold border cursor-pointer ${
+                    ledgerShowAll ? "bg-[#111111] text-white border-[#111111]" : "bg-[#F6F3EC] text-[#111111] border-[#111111]/30"
+                  }`}
+                >
+                  All 82 Counties
+                </button>
+              </div>
+            </div>
+
             <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
-              {priorityCounties.map((c, i) => {
+              {(ledgerShowAll ? allByPriority : priorityCounties).map((c, i) => {
                 const cAny = c as Record<string, unknown>;
                 const isFocused = c.county === quickCounty;
                 return (
                   <li
                     key={c.county}
-                    className={`grid grid-cols-[2.8rem_1fr_auto] items-baseline gap-x-4 gap-y-2 px-6 py-6 sm:grid-cols-[3.2rem_1fr_12rem_auto] transition-all cursor-pointer ${
+                    className={`grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-[3.2rem_1fr_13.5rem] transition-all cursor-pointer ${
                       isFocused
                         ? "bg-[#FEF3C7]/40 ring-2 ring-[#B45309] -outline-offset-2"
                         : "hover:bg-[#FAF8F5]"
@@ -839,19 +1045,52 @@ export default function MississippiPlaybookAnalysisReportPage() {
                       <div className="mt-1.5 text-base sm:text-lg leading-snug text-[#3A3530] font-medium">
                         {STATUS_LABEL[c.regime] || c.regime}
                       </div>
-                      <div className="mt-2 text-base leading-relaxed text-[#5A534A]">
-                        {fmt(c.total)} voters · {fmt(c.highDensityCount)} 8+ addr. · {fmt(c.ncoaCount)} out-of-state mail · {fmt(c.duplicateCount)} dup. pairs · {c.overCapacityPrecincts} 3,000+ prec. · +{fmt(Number(cAny.registrations2026 ?? 0))} reg. in 2026
+
+                      {/* Labeled 6-item County Metric Breakdown — Every Number Has an Explicit Noun */}
+                      <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-2 border-t border-[#DDD6CA]/80 pt-3 text-sm sm:grid-cols-3">
+                        <div>
+                          <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">Registered Voters</dt>
+                          <dd className="font-bold text-[#111111] tabular-nums">{fmt(c.total)} voters (+{fmt(Number(cAny.registrations2026 ?? 0))} in 2026)</dd>
+                        </div>
+                        <div>
+                          <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">High-Density (8+ Voters)</dt>
+                          <dd className="font-bold text-[#111111] tabular-nums">{fmt(c.highDensityCount)} addresses ({fmt(c.highDensityVoters)} voters)</dd>
+                        </div>
+                        <div>
+                          <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">Out-of-State Mailings</dt>
+                          <dd className="font-bold text-[#111111] tabular-nums">{fmt(c.ncoaCount)} active voters</dd>
+                        </div>
+                        <div>
+                          <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">Same-ZIP Duplicates</dt>
+                          <dd className="font-bold text-[#111111] tabular-nums">{fmt(c.duplicateCount)} name pairs</dd>
+                        </div>
+                        <div>
+                          <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">Large Precincts (3,000+)</dt>
+                          <dd className="font-bold text-[#111111] tabular-nums">{c.overCapacityPrecincts} large precincts</dd>
+                        </div>
+                        <div>
+                          <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">Split Precincts &amp; Sync</dt>
+                          <dd className="font-bold text-[#111111] tabular-nums">{Number(cAny.splitPrecincts ?? 0)} split · {fmt(Number(cAny.inactiveVotedRecent ?? 0))} recent-vote inactive</dd>
+                        </div>
+                      </dl>
+                    </div>
+                    <div className="flex flex-row sm:flex-col items-baseline sm:items-end justify-between sm:justify-start gap-2 border-t sm:border-t-0 border-[#DDD6CA] pt-3 sm:pt-0 text-right">
+                      <div>
+                        <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#5A534A]">
+                          Priority Score
+                        </div>
+                        <div className="mt-0.5 font-serif text-3xl font-bold tabular-nums leading-none" style={{ color: FOCUS }}>
+                          {c.threatEnergy.toFixed(1)} <span className="text-base font-normal text-[#5A534A]">/ 100</span>
+                        </div>
+                        <div className="mt-1 font-mono text-xs text-[#5A534A]">
+                          Cleanliness: <strong>{c.cleanlinessScore}/100</strong>
+                        </div>
                       </div>
-                    </div>
-                    <div className="hidden sm:block self-center px-2">
-                      <Bar value={c.threatEnergy} max={100} focus label={`Priority score ${c.threatEnergy}`} />
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5 text-right">
-                      <span className="font-serif text-3xl font-bold tabular-nums leading-none" style={{ color: FOCUS }}>
-                        {c.threatEnergy.toFixed(1)}
-                      </span>
+                      <div className="w-28 sm:w-full mt-1">
+                        <Bar value={c.threatEnergy} max={100} focus label={`Priority score ${c.threatEnergy} out of 100`} />
+                      </div>
                       <span className="text-xs font-bold font-mono uppercase tracking-wider text-[#B45309]">
-                        {isFocused ? "Focused ↑" : "Review →"}
+                        {isFocused ? "Focused in Reviewer ↑" : "Inspect County →"}
                       </span>
                     </div>
                   </li>
@@ -876,7 +1115,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- Conversion CTA (Government Officials & Subscribers) ---------- */}
           <section className="border-y-2 border-[#111111] bg-[#111111] px-6 py-10 text-[#F6F3EC] sm:px-10 print:hidden">
-            <Kicker light>For election commissioners, county clerks &amp; state officials</Kicker>
+            <Kicker light>For county election commissioners, registrars &amp; state officials</Kicker>
             <h2 className="mt-3 max-w-[26ch] font-serif text-3xl sm:text-4xl font-bold leading-[1.12] tracking-tight text-white">
               Download the full 82-county PDF or run Marigold on your own voter roll.
             </h2>

@@ -73,7 +73,7 @@ function ContactForm() {
               <Shield className="h-6 w-6 text-[#B45309] shrink-0 mt-0.5" />
               <div className="text-base leading-relaxed">
                 <strong>Zero-PII Voter Privacy Policy:</strong> You are requesting official data for{" "}
-                <strong>{countyParam} County, MS</strong>. To protect voter privacy, unmasked precinct canvassing rosters and residential street lists are provided only to authorized election administrators, circuit clerks, or verified campaign representatives.
+                <strong>{countyParam} County, MS</strong>. To protect voter privacy, unmasked precinct canvassing rosters and residential street lists are provided only to authorized <strong>County Election Commissioners</strong> (who hold statutory authority to maintain and remove records from the voter rolls under Miss. Code Ann. § 23-15-153), County Registrars, or verified campaign representatives.
               </div>
             </div>
           </div>
@@ -120,14 +120,14 @@ function ContactForm() {
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700">
-                        {countyParam ? "County Office / Campaign / Organization" : "Organization / Agency"}
+                        {countyParam ? "County Election Commission / Campaign / Organization" : "Organization / Agency"}
                       </label>
                       <Input
                         name="organization"
                         required
                         value={agency}
                         onChange={(e) => setAgency(e.target.value)}
-                        placeholder={countyParam ? `${countyParam} County Election Commission / Circuit Clerk` : "Department of State"}
+                        placeholder={countyParam ? `${countyParam} County Election Commission` : "Department of State"}
                         className="w-full"
                       />
                     </div>

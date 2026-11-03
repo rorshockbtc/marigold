@@ -35,10 +35,10 @@ export default function UpdatesReleasePostPage() {
     ],
     [
       "02",
-      "People who moved are already being handled",
+      "People who moved are already being handled by County Election Commissioners",
       <>
         Of {fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, {fmt(ncoa.inactiveRelocatedVoters)} ({inactivePct}%)
-        are already marked Inactive, as federal law requires before removal. {fmt(ncoa.totalVoters)} active voters still need a
+        are already marked Inactive, as federal law requires before removal by County Election Commissioners under Miss. Code Ann. § 23-15-153. {fmt(ncoa.totalVoters)} active voters still need a
         confirmation notice.
       </>,
     ],
@@ -53,7 +53,7 @@ export default function UpdatesReleasePostPage() {
         <strong>{fmt(totalVerifiedBallots)} verified ballot credits</strong>.{" "}
         {fmt(vh.orphanedHistoryRows)} could not be matched. In the March 10, 2026 U.S. Congressional Primary,{" "}
         {fmt((vh as any).duplicate2026PrimarySameDayCreditRows ?? 64)} records were credited twice on the same day out of{" "}
-        {fmt((vh as any).unique2026PrimaryVoters ?? 309807)} voters ({fmt(vh.duplicate2024SameDayCreditRows)} in the November 2024 general) — a scanning slip clerks can fix quickly.
+        {fmt((vh as any).unique2026PrimaryVoters ?? 309807)} voters ({fmt(vh.duplicate2024SameDayCreditRows)} in the November 2024 general) — a scanning slip County Election Commissioners can reconcile quickly.
       </>,
     ],
     [

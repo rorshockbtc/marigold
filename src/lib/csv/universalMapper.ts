@@ -62,6 +62,8 @@ export interface StandardizedVoterRow {
   dist_sup: string;
   dist_da: string;
   dist_sc: string;
+  dist_ec?: string;
+  date_voted?: string;
   raw: Record<string, any>;
 }
 
@@ -652,6 +654,8 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
   const distSup = getValue(activeMapping.dist_sup, ['supr', 'sup', 'dist_sup', 'supervisor'], '').trim();
   const distDa = getValue(activeMapping.dist_da, ['da', 'dist_da', 'districtattorney'], '').trim();
   const distSc = getValue(activeMapping.dist_sc, ['sc', 'dist_sc', 'supremecourt'], '').trim();
+  const distEc = getValue('', ['ec', 'dist_ec', 'electioncommissioner'], '').trim();
+  const dateVoted = getValue('', ['datevoted', 'date_voted', 'lastvoted', 'last_voted', 'voteddate'], '').trim();
 
   return {
     voter_id: getValue(activeMapping.voter_id, ['mappingvalue', 'mapping_value', 'sosvoterid', 'voterid', 'voterregistrationnumber', 'statevoterid'], 'N/A (Unlisted)'),
@@ -684,6 +688,8 @@ export function normalizeRowWithMapping(rawRow: Record<string, any>, mapping?: C
     dist_sup: distSup,
     dist_da: distDa,
     dist_sc: distSc,
+    dist_ec: distEc,
+    date_voted: dateVoted,
     raw: { ...rawRow }
   };
 }
