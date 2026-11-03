@@ -127,9 +127,135 @@ export default function MississippiPlaybookAnalysisReportPage() {
     });
   };
 
+  const printCountyBrief = () => {
+    const c = selected;
+    const cAny = c as Record<string, unknown>;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+    const dateStr = "October 26, 2026";
+    const status = STATUS_LABEL[c.regime] || c.regime;
+    const isNormal = c.regime === "Equilibrium Manifold Surface";
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${c.county} County Voter Roll Audit — Marigold Insights</title>
+  <style>
+    @page { size: letter; margin: 0.5in; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111111; line-height: 1.45; font-size: 13px; }
+    .header { border-bottom: 2.5px solid #111111; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .kicker { font-family: monospace; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.12em; color: #B45309; }
+    .title { font-family: Georgia, serif; font-size: 26px; font-weight: bold; line-height: 1.1; margin-top: 3px; }
+    .meta { text-align: right; font-size: 11px; color: #5A534A; }
+    .badge { display: inline-block; padding: 3px 8px; font-size: 10.5px; font-weight: bold; text-transform: uppercase; background: ${isNormal ? "#E5E7EB" : "#FEF3C7"}; color: ${isNormal ? "#374151" : "#92400E"}; border: 1px solid ${isNormal ? "#9CA3AF" : "#F59E0B"}; margin-top: 5px; }
+    .summary-box { background: #FAF8F5; border-left: 4px solid #F59E0B; padding: 10px 14px; margin-bottom: 14px; font-size: 12.5px; line-height: 1.55; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+    .metric-card { border: 1px solid #111111; padding: 9px 11px; background: white; }
+    .metric-val { font-family: Georgia, serif; font-size: 20px; font-weight: bold; line-height: 1; color: #111111; }
+    .metric-val.hi { color: #B45309; }
+    .metric-label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #5A534A; margin-top: 4px; }
+    .metric-sub { font-size: 10.5px; color: #78716C; margin-top: 2px; }
+    .section-title { font-family: Georgia, serif; font-size: 15px; font-weight: bold; border-bottom: 1px solid #DDD6CA; padding-bottom: 3px; margin-bottom: 8px; margin-top: 12px; }
+    .action-list { list-style: none; counter-reset: action-counter; }
+    .action-list li { position: relative; padding-left: 24px; margin-bottom: 7px; font-size: 11.5px; line-height: 1.45; }
+    .action-list li::before { counter-increment: action-counter; content: counter(action-counter); position: absolute; left: 0; top: 0; width: 16px; height: 16px; background: #111111; color: white; border-radius: 50%; font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 16px; }
+    .privacy-notice { border: 1px dashed #B45309; background: #FFFBEB; padding: 9px 12px; margin-top: 12px; font-size: 10.5px; line-height: 1.45; color: #92400E; }
+    .footer { border-top: 1px solid #111111; margin-top: 14px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 9.5px; color: #78716C; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="kicker">Marigold Civic Analytics · County Executive Briefing</div>
+      <h1 class="title">${c.county} County, Mississippi</h1>
+      <div class="badge">${status}</div>
+    </div>
+    <div class="meta">
+      <div><strong>Audit Extract:</strong> ${dateStr}</div>
+      <div><strong>Cleanliness Score:</strong> ${c.cleanlinessScore} / 100</div>
+      <div><strong>Priority Score:</strong> ${c.threatEnergy.toFixed(1)} / 100</div>
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <strong>Executive Assessment:</strong> ${c.plainEnglishSummary || `${c.county} County voter registration roll analyzed against Mississippi statewide voter file and 25.91M verified ballot records.`}
+  </div>
+
+  <div class="grid">
+    <div class="metric-card">
+      <div class="metric-val">${fmt(c.total)}</div>
+      <div class="metric-label">Registered Voters</div>
+      <div class="metric-sub">${fmt(c.active)} active · ${fmt(c.inactive)} inactive (${c.inactiveRatePct}%)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val hi">+${fmt(Number(cAny.registrations2026 ?? 0))}</div>
+      <div class="metric-label">2026 Registrations</div>
+      <div class="metric-sub">Added through Oct 26, 2026</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val ${c.highDensityCount > 10 ? 'hi' : ''}">${fmt(c.highDensityCount)}</div>
+      <div class="metric-label">8+ Registered Addresses</div>
+      <div class="metric-sub">${fmt(c.highDensityVoters)} total voters at addresses</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val ${c.ncoaCount > 15 ? 'hi' : ''}">${fmt(c.ncoaCount)}</div>
+      <div class="metric-label">Out-of-State Mailings</div>
+      <div class="metric-sub">Active status voters with out-of-state mail</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">${fmt(c.duplicateCount)}</div>
+      <div class="metric-label">Same-ZIP Duplicate Pairs</div>
+      <div class="metric-sub">${c.activeDuplicateCount || 0} active-active pairs</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val ${c.overCapacityPrecincts > 0 ? 'hi' : ''}">${c.overCapacityPrecincts}</div>
+      <div class="metric-label">Precincts Over 3,000</div>
+      <div class="metric-sub">Largest precinct: ${fmt(c.maxPrecinctVoters)} voters</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Recommended Official Action Checklist</h2>
+  <ol class="action-list">
+    <li><strong>Physical Address Verification:</strong> Review non-unitized commercial or multi-family parcels with 8+ registered voters. Verify campus dormitories and assisted care facilities have proper unit designations.</li>
+    <li><strong>Interstate Relocation Notice:</strong> Send statutory NVRA confirmation mailings to the ${fmt(c.ncoaCount)} active voters with out-of-state forwarding addresses on file.</li>
+    <li><strong>Precinct Capacity Rebalancing:</strong> ${c.overCapacityPrecincts > 0 ? `Evaluate ${c.overCapacityPrecincts} polling locations with voter counts exceeding 3,000 for redistricting or extra voting booth allocation.` : `All precincts currently sit within standard manageable capacity thresholds.`}</li>
+    <li><strong>Duplicate Identity Reconciliation:</strong> Review ${fmt(c.duplicateCount)} potential duplicate name pairings within matching 5-digit ZIP codes to distinguish legitimate generational records (Jr./Sr.) from clerical duplications.</li>
+  </ol>
+
+  <div class="privacy-notice">
+    <strong>Zero-PII Compliance &amp; Canvassing Records Access:</strong><br/>
+    In strict compliance with statutory voter privacy standards, individual voter names, dates of birth, and street numbers are never displayed on public web pages. Verified Election Commissioners, Circuit Clerks, and certified campaign directors can request unmasked street-level canvassing sheets and cross-referenced voter rolls for <strong>${c.county} County</strong> at: <strong>https://marigoldinsights.org/contact?county=${encodeURIComponent(c.county)}</strong>
+  </div>
+
+  <div class="footer">
+    <span>Marigold Insights · Non-Partisan Civic Analytics</span>
+    <span>Source: MS Statewide Voter Roll &amp; 25.91M Ballot History (Oct 2026)</span>
+    <span>Zero-PII Compliant</span>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 300);
+    };
+  </script>
+</body>
+</html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
   const navItems = [
     ["takeaways", "01", "Key takeaways"],
-    ["actions", "02", "County lookup"],
+    ["actions", "02", "County reviewer"],
     ["map", "03", "3D county map"],
     ["filtering", "04", "False alarms removed"],
     ["ballots", "05", "2025–2026 ballots"],
@@ -143,9 +269,21 @@ export default function MississippiPlaybookAnalysisReportPage() {
       {/* ---------- Single sticky top bar ---------- */}
       <header className="sticky top-0 z-40 h-16 border-b border-[#111111] bg-[#F6F3EC]/95 backdrop-blur print:hidden">
         <div className="mx-auto flex h-full max-w-[1380px] items-center justify-between gap-3 px-4 sm:px-8">
-          <Link href="/overview" className="inline-flex items-center gap-2 text-base font-bold whitespace-nowrap hover:text-[#B45309] shrink-0">
-            <ArrowLeft className="h-4 w-4 shrink-0" /> Marigold Insights
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/overview" className="inline-flex items-center gap-2 text-base font-bold whitespace-nowrap hover:text-[#B45309] shrink-0">
+              <ArrowLeft className="h-4 w-4 shrink-0" /> Marigold Insights
+            </Link>
+            <div className="hidden sm:flex items-center gap-2 border border-[#111111]/25 bg-white px-3 py-1 font-mono text-xs font-semibold">
+              <span className="text-[#5A534A]">Focused County:</span>
+              <button
+                type="button"
+                onClick={() => document.getElementById("actions")?.scrollIntoView({ behavior: "smooth" })}
+                className="font-bold text-[#B45309] hover:underline cursor-pointer"
+              >
+                {selected.county} ({fmt(selected.total)})
+              </button>
+            </div>
+          </div>
           <div className="flex items-center gap-2.5">
             <Link href="/manifold" className="inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-white px-4 text-base font-bold whitespace-nowrap shrink-0 hover:bg-[#EFEAE0]">
               <Compass className="h-4 w-4 shrink-0 text-[#B45309]" /> Full 3D Studio
@@ -188,6 +326,36 @@ export default function MississippiPlaybookAnalysisReportPage() {
               <p className="mt-1 text-base leading-relaxed text-[#3A3530]">
                 No names, birth dates, voter IDs, P.O. Box numbers, or house numbers appear anywhere in this report. Safe to share with county officials and the public.
               </p>
+            </div>
+
+            <div className="mt-4 border-l-4 border-[#111111] bg-white p-3.5 text-base leading-snug">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#5A534A]">Active Reviewer</div>
+              <button
+                type="button"
+                onClick={() => document.getElementById("actions")?.scrollIntoView({ behavior: "smooth" })}
+                className="mt-1 font-serif text-lg font-bold text-[#111111] hover:text-[#B45309] text-left block cursor-pointer"
+              >
+                {selected.county} County
+              </button>
+              <div className="mt-1 text-xs leading-normal text-[#5A534A]">
+                {fmt(selected.total)} voters · {STATUS_LABEL[selected.regime] || selected.regime}
+              </div>
+              <div className="mt-2.5 flex items-center gap-2 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={printCountyBrief}
+                  className="text-[#B45309] underline underline-offset-2 hover:text-[#111111] cursor-pointer"
+                >
+                  Print PDF
+                </button>
+                <span className="text-[#DDD6CA]">·</span>
+                <Link
+                  href={`/contact?county=${encodeURIComponent(selected.county)}&topic=canvass_audit`}
+                  className="text-[#B45309] underline underline-offset-2 hover:text-[#111111]"
+                >
+                  Canvass Access →
+                </Link>
+              </div>
             </div>
           </nav>
         </aside>
@@ -272,48 +440,159 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </ol>
           </section>
 
-          {/* ---------- 02 Actions ---------- */}
+          {/* ---------- 02 Actions & County Reviewer ---------- */}
           <section className="space-y-8">
-            <SectionHead id="actions" num="02" kicker="Instant county briefing" title="Look up any Mississippi county in ten seconds" dek="No account needed. Select a county to inspect its October 2026 figures, then copy a ready-to-send summary for your Circuit Clerk, Election Commission, or Board of Supervisors." />
+            <SectionHead
+              id="actions"
+              num="02"
+              kicker="County-level reviewer"
+              title="Inspect any Mississippi county in ten seconds"
+              dek="Select any of Mississippi's 82 counties to inspect its October 2026 numbers, review recommended cleanup tasks, export a single-county PDF brief, or request official canvass records."
+            />
 
-            <div className="bg-white border-2 border-[#111111] p-6 sm:p-9 shadow-2xs">
-              <label htmlFor="county" className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#5A534A]">Select county (all 82 available)</label>
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-                <select id="county" value={selected.county} onChange={(e) => setQuickCounty(e.target.value)} className="h-14 flex-1 border-2 border-[#111111] bg-[#F6F3EC] px-4 text-lg font-bold">
-                  {sortedCounties.map((c) => (
-                    <option key={c.county} value={c.county}>{c.county} County ({fmt(c.total)} voters)</option>
-                  ))}
-                </select>
-                <button
-                  onClick={copyBrief}
-                  className="inline-flex h-14 items-center justify-center gap-2 border-2 border-[#111111] px-6 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:brightness-95 cursor-pointer"
-                  style={{ background: FILL }}
-                >
-                  {copied ? <Check className="h-5 w-5 shrink-0" /> : <Copy className="h-5 w-5 shrink-0" />}
-                  {copied ? "Copied to clipboard" : "Copy county briefing"}
-                </button>
+            {/* Quick Priority County Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-sm font-bold uppercase tracking-wider text-[#5A534A]">
+                Priority shortcuts:
+              </span>
+              {["Hinds", "Harrison", "Jackson", "DeSoto", "Forrest", "Oktibbeha", "Lafayette", "Lowndes", "Rankin", "Madison"].map((cn) => {
+                const isCur = selected.county === cn;
+                return (
+                  <button
+                    key={cn}
+                    type="button"
+                    onClick={() => setQuickCounty(cn)}
+                    className={`px-3 py-1.5 text-sm font-bold border transition-colors cursor-pointer whitespace-nowrap ${
+                      isCur
+                        ? "bg-[#111111] text-white border-[#111111]"
+                        : "bg-white text-[#111111] border-[#111111]/30 hover:border-[#111111]"
+                    }`}
+                  >
+                    {cn}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="bg-white border-2 border-[#111111] p-6 sm:p-9 shadow-2xs space-y-8">
+              <div>
+                <label htmlFor="county" className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#5A534A]">
+                  Select county (all 82 Mississippi counties)
+                </label>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                  <select
+                    id="county"
+                    value={selected.county}
+                    onChange={(e) => setQuickCounty(e.target.value)}
+                    className="h-14 flex-1 border-2 border-[#111111] bg-[#F6F3EC] px-4 text-lg font-bold"
+                  >
+                    {sortedCounties.map((c) => (
+                      <option key={c.county} value={c.county}>
+                        {c.county} County ({fmt(c.total)} voters) {c.regime !== "Equilibrium Manifold Surface" ? "— Priority" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={copyBrief}
+                    className="inline-flex h-14 items-center justify-center gap-2 border-2 border-[#111111] px-5 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:bg-[#FAF8F5] cursor-pointer"
+                  >
+                    {copied ? <Check className="h-5 w-5 shrink-0 text-[#B45309]" /> : <Copy className="h-5 w-5 shrink-0" />}
+                    {copied ? "Copied briefing" : "Copy briefing text"}
+                  </button>
+                  <button
+                    onClick={printCountyBrief}
+                    className="inline-flex h-14 items-center justify-center gap-2 border-2 border-[#111111] px-6 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:brightness-95 cursor-pointer"
+                    style={{ background: FILL }}
+                  >
+                    <Download className="h-5 w-5 shrink-0" />
+                    Print / Export County PDF
+                  </button>
+                </div>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3">
-                <h3 className="font-serif text-3xl sm:text-4xl font-bold">{selected.county} County</h3>
-                <span className="text-base sm:text-lg font-bold whitespace-nowrap" style={{ color: selected.regime === "Equilibrium Manifold Surface" ? INK : FOCUS }}>
-                  {STATUS_LABEL[selected.regime] || selected.regime}
-                </span>
+              {/* County Status Header */}
+              <div className="border-t border-[#DDD6CA] pt-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <div>
+                    <div className="font-mono text-sm font-bold uppercase tracking-wider text-[#5A534A]">
+                      Focused County Dossier
+                    </div>
+                    <h3 className="mt-1 font-serif text-3xl sm:text-4xl font-bold text-[#111111]">
+                      {selected.county} County, Mississippi
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span
+                      className="px-3.5 py-1.5 text-sm sm:text-base font-bold border whitespace-nowrap"
+                      style={
+                        selected.regime === "Equilibrium Manifold Surface"
+                          ? { background: "#F3F4F6", borderColor: "#D1D5DB", color: "#374151" }
+                          : { background: "#FEF3C7", borderColor: "#F59E0B", color: "#92400E" }
+                      }
+                    >
+                      {STATUS_LABEL[selected.regime] || selected.regime}
+                    </span>
+                    <span className="font-mono text-sm font-bold text-[#5A534A] border border-[#DDD6CA] px-3 py-1.5 bg-[#FAF8F5]">
+                      Priority Score: <strong style={{ color: FOCUS }}>{selected.threatEnergy.toFixed(1)}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Plain-English Assessment */}
+                <div className="mt-4 bg-[#FAF8F5] border-l-4 border-[#F59E0B] p-4 text-base sm:text-lg leading-[1.75] text-[#2C2825]">
+                  <strong>Executive Summary:</strong> {selected.plainEnglishSummary || `${selected.county} County sits within standard baseline parameters.`}
+                </div>
               </div>
-              <dl className="mt-6 grid grid-cols-2 gap-6 border-t border-[#DDD6CA] pt-6 sm:grid-cols-3 lg:grid-cols-5">
+
+              {/* Metric Breakdown Grid */}
+              <dl className="grid grid-cols-2 gap-6 border-t border-[#DDD6CA] pt-6 sm:grid-cols-3 lg:grid-cols-5">
                 {[
-                  [fmt(selected.total), "registered voters"],
-                  [fmt(Number((selected as Record<string, unknown>).registrations2026 ?? 0)), "2026 registrations"],
-                  [fmt(selected.highDensityCount), "8+ voter addresses"],
-                  [fmt(selected.ncoaCount), "active out-of-state mail"],
-                  [String(selected.overCapacityPrecincts), "precincts over 3,000"],
-                ].map(([v, l]) => (
-                  <div key={l}>
-                    <dd className="font-serif text-2xl sm:text-3xl font-bold tabular-nums leading-none">{v}</dd>
-                    <dt className="mt-2 text-base font-medium text-[#5A534A] leading-snug">{l}</dt>
+                  [fmt(selected.total), "registered voters", `${fmt(selected.active)} active · ${fmt(selected.inactive)} inactive`],
+                  [`+${fmt(Number((selected as Record<string, unknown>).registrations2026 ?? 0))}`, "2026 registrations", "added through Oct 26, 2026"],
+                  [fmt(selected.highDensityCount), "8+ voter addresses", `${fmt(selected.highDensityVoters)} total voters`],
+                  [fmt(selected.ncoaCount), "out-of-state mail", `${selected.duplicateCount} duplicate pairs`],
+                  [String(selected.overCapacityPrecincts), "precincts over 3,000", `max: ${fmt(selected.maxPrecinctVoters)} voters`],
+                ].map(([v, l, sub], idx) => (
+                  <div key={l as string}>
+                    <dd className="font-serif text-2xl sm:text-3xl font-bold tabular-nums leading-none" style={idx === 1 ? { color: FOCUS } : undefined}>{v as string}</dd>
+                    <dt className="mt-2 text-base font-bold text-[#111111] leading-snug">{l as string}</dt>
+                    <div className="mt-1 text-sm text-[#5A534A] leading-tight">{sub as string}</div>
                   </div>
                 ))}
               </dl>
+
+              {/* Official Canvass & Unmasked Data CTA Container */}
+              <div className="rounded-xs border-2 border-[#111111] bg-[#111111] p-6 text-[#F6F3EC] sm:p-7">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="max-w-[58ch] space-y-2">
+                    <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-[#F59E0B]">
+                      <ShieldCheck className="h-5 w-5 shrink-0" />
+                      Zero-PII Public Policy · Official Canvass Access
+                    </div>
+                    <h4 className="font-serif text-xl sm:text-2xl font-bold leading-snug text-white">
+                      Need real voter names &amp; street addresses for {selected.county} County?
+                    </h4>
+                    <p className="text-base leading-[1.65] text-[#D8D1C4]">
+                      In strict compliance with statutory voter privacy standards, individual voter names, residential house numbers, and precinct rosters are never published on the public web. Verified election commissioners, circuit clerks, and qualified campaign teams can request unmasked street-level canvassing sheets for {selected.county} County through our verified official channel.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+                    <Link
+                      href={`/contact?county=${encodeURIComponent(selected.county)}&topic=canvass_audit`}
+                      className="inline-flex h-13 items-center justify-center gap-2 px-6 text-base font-bold text-[#111111] hover:brightness-95 whitespace-nowrap shadow-xs"
+                      style={{ background: FILL }}
+                    >
+                      Request Canvass List for {selected.county} <ArrowRight className="h-5 w-5 shrink-0" />
+                    </Link>
+                    <button
+                      onClick={printCountyBrief}
+                      className="inline-flex h-12 items-center justify-center gap-2 border-2 border-[#F6F3EC] px-5 text-base font-bold text-[#F6F3EC] hover:bg-[#F6F3EC] hover:text-[#111111] whitespace-nowrap cursor-pointer"
+                    >
+                      <Download className="h-4 w-4 shrink-0" /> Download {selected.county} PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -321,7 +600,12 @@ export default function MississippiPlaybookAnalysisReportPage() {
           <section className="space-y-8">
             <SectionHead id="map" num="03" kicker="Interactive 3D geometry" title="All 82 counties mapped across three task areas" dek="Drag to rotate, click any marker to inspect that county, or open Full Screen 3D. The sky-blue net shows the normal baseline for a county's population; marigold-amber vertical stems and distinct marker shapes highlight extra cleanup work." />
             <div className="print:hidden">
-              <ThreatManifold3DExplorer compact forceUnlocked />
+              <ThreatManifold3DExplorer
+                compact
+                forceUnlocked
+                selectedCounty={quickCounty}
+                onSelectCounty={(c) => setQuickCounty(c)}
+              />
             </div>
           </section>
 
@@ -528,11 +812,30 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
               {priorityCounties.map((c, i) => {
                 const cAny = c as Record<string, unknown>;
+                const isFocused = c.county === quickCounty;
                 return (
-                  <li key={c.county} className="grid grid-cols-[2.8rem_1fr_auto] items-baseline gap-x-4 gap-y-2 px-6 py-6 sm:grid-cols-[3.2rem_1fr_12rem_6rem] hover:bg-[#FAF8F5] transition-colors">
+                  <li
+                    key={c.county}
+                    className={`grid grid-cols-[2.8rem_1fr_auto] items-baseline gap-x-4 gap-y-2 px-6 py-6 sm:grid-cols-[3.2rem_1fr_12rem_auto] transition-all cursor-pointer ${
+                      isFocused
+                        ? "bg-[#FEF3C7]/40 ring-2 ring-[#B45309] -outline-offset-2"
+                        : "hover:bg-[#FAF8F5]"
+                    }`}
+                    onClick={() => {
+                      setQuickCounty(c.county);
+                      document.getElementById("actions")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
                     <span className="font-serif text-2xl font-bold tabular-nums text-[#8A8279]">{String(i + 1).padStart(2, "0")}</span>
                     <div className="min-w-0 pr-2">
-                      <div className="font-serif text-2xl font-bold leading-tight text-[#111111]">{c.county} County</div>
+                      <div className="font-serif text-2xl font-bold leading-tight text-[#111111] flex flex-wrap items-center gap-2">
+                        <span>{c.county} County</span>
+                        {isFocused && (
+                          <span className="font-mono text-xs font-bold uppercase tracking-wider bg-[#B45309] text-white px-2 py-0.5 rounded-xs">
+                            Focused in Reviewer
+                          </span>
+                        )}
+                      </div>
                       <div className="mt-1.5 text-base sm:text-lg leading-snug text-[#3A3530] font-medium">
                         {STATUS_LABEL[c.regime] || c.regime}
                       </div>
@@ -543,9 +846,14 @@ export default function MississippiPlaybookAnalysisReportPage() {
                     <div className="hidden sm:block self-center px-2">
                       <Bar value={c.threatEnergy} max={100} focus label={`Priority score ${c.threatEnergy}`} />
                     </div>
-                    <span className="font-serif text-3xl font-bold tabular-nums leading-none text-right" style={{ color: FOCUS }}>
-                      {c.threatEnergy.toFixed(1)}
-                    </span>
+                    <div className="flex flex-col items-end gap-1.5 text-right">
+                      <span className="font-serif text-3xl font-bold tabular-nums leading-none" style={{ color: FOCUS }}>
+                        {c.threatEnergy.toFixed(1)}
+                      </span>
+                      <span className="text-xs font-bold font-mono uppercase tracking-wider text-[#B45309]">
+                        {isFocused ? "Focused ↑" : "Review →"}
+                      </span>
+                    </div>
                   </li>
                 );
               })}
@@ -569,7 +877,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           {/* ---------- Conversion CTA (Government Officials & Subscribers) ---------- */}
           <section className="border-y-2 border-[#111111] bg-[#111111] px-6 py-10 text-[#F6F3EC] sm:px-10 print:hidden">
             <Kicker light>For election commissioners, county clerks &amp; state officials</Kicker>
-            <h2 className="mt-3 max-w-[26ch] font-serif text-3xl sm:text-4xl font-bold leading-[1.12] tracking-tight">
+            <h2 className="mt-3 max-w-[26ch] font-serif text-3xl sm:text-4xl font-bold leading-[1.12] tracking-tight text-white">
               Download the full 82-county PDF or run Marigold on your own voter roll.
             </h2>
             <p className="mt-4 max-w-[62ch] text-lg leading-[1.65] text-[#E5E0D5]">

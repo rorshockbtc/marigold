@@ -199,9 +199,13 @@ function polygonPoints(cx: number, cy: number, r: number, shape: MarkerShape): s
 export default function ThreatManifold3DExplorer({
   compact = false,
   forceUnlocked = true,
+  selectedCounty: externalSelectedCounty,
+  onSelectCounty,
 }: {
   compact?: boolean;
   forceUnlocked?: boolean;
+  selectedCounty?: string;
+  onSelectCounty?: (county: string) => void;
 }) {
   const manifold = msAudit.threatManifold;
   const countyVectors = manifold.countyVectors as CountyVector[];
@@ -257,7 +261,20 @@ export default function ThreatManifold3DExplorer({
   const [autoRotate, setAutoRotate] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCountyName, setSelectedCountyName] = useState<string>("Hinds");
+  const [selectedCountyName, setSelectedCountyName] = useState<string>(
+    externalSelectedCounty || "Hinds"
+  );
+
+  useEffect(() => {
+    if (externalSelectedCounty && externalSelectedCounty.toLowerCase() !== selectedCountyName.toLowerCase()) {
+      setSelectedCountyName(externalSelectedCounty);
+    }
+  }, [externalSelectedCounty, selectedCountyName]);
+
+  const handleSelectCounty = (name: string) => {
+    setSelectedCountyName(name);
+    onSelectCounty?.(name);
+  };
   const [selectedClusterId, setSelectedClusterId] = useState<string>(
     clusterVectors[0]?.id || "CL-DOM-01"
   );
@@ -896,7 +913,7 @@ export default function ThreatManifold3DExplorer({
             onClick={(e) => {
               e.stopPropagation();
               if (viewMode === "counties") {
-                setSelectedCountyName(node.id);
+                handleSelectCounty(node.id);
               } else {
                 setSelectedClusterId(node.id);
               }
@@ -1177,7 +1194,7 @@ export default function ThreatManifold3DExplorer({
               <select
                 aria-label="Select Mississippi County"
                 value={selectedCounty.county}
-                onChange={(e) => setSelectedCountyName(e.target.value)}
+                onChange={(e) => handleSelectCounty(e.target.value)}
                 className="h-11 rounded-lg border-2 border-[#111111] bg-white px-3.5 text-base text-[#111111] font-bold focus:outline-none cursor-pointer whitespace-nowrap shrink-0"
               >
                 {countyVectors.map((c) => {
@@ -1357,7 +1374,7 @@ export default function ThreatManifold3DExplorer({
                     <button
                       type="button"
                       key={c.county}
-                      onClick={() => setSelectedCountyName(c.county)}
+                      onClick={() => handleSelectCounty(c.county)}
                       className={`px-3 py-1.5 rounded-lg text-base font-bold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                         selectedCounty.county === c.county
                           ? "bg-[#111111] border-[#111111] text-white shadow-xs"
@@ -1833,7 +1850,7 @@ export default function ThreatManifold3DExplorer({
                           key={co}
                           onClick={() => {
                             setViewMode("counties");
-                            setSelectedCountyName(co);
+                            handleSelectCounty(co);
                           }}
                           className="px-3 py-1.5 rounded-md bg-[#FAF8F5] border border-[#111111] text-base font-bold text-[#111111] hover:bg-[#111111] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
                         >
