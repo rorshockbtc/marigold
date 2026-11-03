@@ -72,7 +72,7 @@ export function EditorialTable<T>({
                       c.align === "right" ? "text-right tabular-nums whitespace-nowrap" : ""
                     } ${c.mono ? "font-mono text-base" : ""} ${
                       c.focus
-                        ? "font-bold text-[#C2341B]"
+                        ? "font-bold text-[#B45309]"
                         : ci === 0
                         ? "font-semibold text-[#111111]"
                         : "text-[#2C2825]"
@@ -105,7 +105,7 @@ export function EditorialTable<T>({
                   </dt>
                   <dd
                     className={`text-base tabular-nums ${
-                      c.focus ? "font-bold text-[#C2341B]" : "text-[#2C2825]"
+                      c.focus ? "font-bold text-[#B45309]" : "text-[#2C2825]"
                     }`}
                   >
                     {cell(c, row)}
