@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import ThreatManifold3DExplorer from "@/components/ThreatManifold3DExplorer";
-import msAudit from "@/data/mississippi_audit_results.json";
+import { useStateBenchmark, StateSwitcherPill, BenchmarkStateCode } from "@/lib/data/StateBenchmarkContext";
 import { ArrowLeft, ArrowRight, Compass, Download, Printer, Copy, Check, ShieldCheck } from "lucide-react";
 
 /* ---------- Marigold Design System tokens (zero red; Marigold amber/gold) ---------- */
@@ -57,8 +57,16 @@ function Bar({ value, max, focus = false, label }: { value: number; max: number;
 }
 
 export default function MississippiPlaybookAnalysisReportPage() {
-  const { metadata, votingHistoryAudit, threatManifold, playbooks } = msAudit;
+  const { activeState, setActiveState, stateConfig, auditData } = useStateBenchmark();
+  const { metadata, votingHistoryAudit, threatManifold, playbooks } = auditData;
   const counties = threatManifold.countyVectors;
+  const totalCountiesCount = stateConfig.countiesCount;
+  const stateName = stateConfig.name;
+  const extractDateLabel = stateConfig.extractDateLabel;
+  const pdfUrl = stateConfig.pdfUrl;
+  const authorityLabel = stateConfig.authorityLabel;
+  const authorityCitation = stateConfig.authorityCitation;
+
   const correlations = (threatManifold as Record<string, unknown>).correlations as Array<{
     id: string; plainTitle: string; pearsonR: number; rateOfChange: string; commonManTakeaway: string;
   }>;
@@ -66,7 +74,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
     headline: string; evangelismSteps: Array<{ step: string; title: string; detail: string }>;
   };
 
-  /* ---------- Derived, data-bound figures (October 26, 2026 extract) ---------- */
+  /* ---------- Derived, data-bound figures ---------- */
   const priorityCounties = useMemo(
     () =>
       counties
@@ -91,16 +99,30 @@ export default function MississippiPlaybookAnalysisReportPage() {
   const ballots2025 = Number(vhAny.ballots2025 ?? 505038);
   const dup2026Primary = Number(vhAny.duplicate2026PrimarySameDayCreditRows ?? 64);
   const registrations2026 = Number(mdAny.registrations2026 ?? 82461);
+  const peak2026Date =
+    ((playbooks.registrationSpikes as Record<string, unknown>).peak2026Dates as Array<{ date: string; count: number }> | undefined)?.[0]?.date ?? "10/05/2026";
   const peak2026Count = Number(
     ((playbooks.registrationSpikes as Record<string, unknown>).peak2026Dates as Array<{ count: number }> | undefined)?.[0]?.count ?? 5541
   );
 
   /* ---------- State ---------- */
-  const [quickCounty, setQuickCounty] = useState("Hinds");
+  const [quickCounty, setQuickCounty] = useState(stateConfig.defaultCounty);
   const [countyViewMode, setCountyViewMode] = useState<"priority" | "top25" | "all82">("priority");
   const [countySearch, setCountySearch] = useState("");
   const [ledgerShowAll, setLedgerShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!counties.some((c) => c.county === quickCounty)) {
+      setQuickCounty(stateConfig.defaultCounty);
+    }
+  }, [activeState, counties, quickCounty, stateConfig.defaultCounty]);
+
+  const handleStateSwitch = (st: BenchmarkStateCode) => {
+    setActiveState(st);
+    setQuickCounty(st === "NC" ? "Wake" : "Hinds");
+    setCountySearch("");
+  };
 
   const selected = useMemo(
     () => counties.find((c) => c.county === quickCounty) || counties[0],
@@ -153,7 +175,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
   const copyBrief = () => {
     const selAny = selected as Record<string, unknown>;
     const text = [
-      `${selected.county} County, Mississippi — October 26, 2026 Voter Roll Summary (14-Playbook Non-Partisan Audit)`,
+      `${selected.county} County, ${stateName} — ${extractDateLabel} Voter Roll Summary (14-Playbook Non-Partisan Audit)`,
       `Status: ${STATUS_LABEL[selected.regime] || selected.regime} (Priority Score: ${selected.threatEnergy.toFixed(1)} / 100 · Cleanliness: ${selected.cleanlinessScore} / 100)`,
       `Registered voters: ${fmt(selected.total)} (${fmt(selected.active)} active voters · ${fmt(selected.inactive)} inactive voters · +${fmt(Number(selAny.registrations2026 ?? 0))} new 2026 voters)`,
       `High-density addresses (8+ voters): ${fmt(selected.highDensityCount)} addresses (${fmt(selected.highDensityVoters)} total voters)`,
@@ -165,7 +187,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
       `Pre-2019 dormant Active records (no vote since <2018): ${fmt(Number(selAny.dormantPre2019Active ?? 0))} voters`,
       `Unparsed 911 house numbers: ${fmt(Number(selAny.unparsedAddressCount ?? 0))} active voters`,
       `Statewide: ${fmt(totalBallotCredits)} past ballots verified (+${fmt(ballotsAdded25_26)} in 2025–2026), 0 unmatched.`,
-      `Full public report (zero personal data): https://marigoldinsights.org/reports/mississippi-playbook-analysis`,
+      `Full public report (zero personal data): https://marigoldinsights.org/reports/mississippi-playbook-analysis?state=${activeState}`,
     ].join("\n");
     navigator.clipboard?.writeText(text).then(() => {
       setCopied(true);
@@ -181,7 +203,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
       window.print();
       return;
     }
-    const dateStr = "October 26, 2026";
+    const dateStr = extractDateLabel;
     const status = STATUS_LABEL[c.regime] || c.regime;
     const isNormal = c.regime === "Equilibrium Manifold Surface";
 
@@ -189,7 +211,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${c.county} County Voter Roll Audit — Marigold Insights</title>
+  <title>${c.county} County, ${stateName} Voter Roll Audit — Marigold Insights</title>
   <style>
     @page { size: letter; margin: 0.45in; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -218,7 +240,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
   <div class="header">
     <div>
       <div class="kicker">Marigold Civic Analytics · 14-Playbook Non-Partisan County Briefing</div>
-      <h1 class="title">${c.county} County, Mississippi</h1>
+      <h1 class="title">${c.county} County, ${stateName}</h1>
       <div class="badge">${status}</div>
     </div>
     <div class="meta">
@@ -229,7 +251,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
   </div>
 
   <div class="summary-box">
-    <strong>Executive Assessment:</strong> ${c.plainEnglishSummary || `${c.county} County voter registration roll analyzed against Mississippi statewide voter file and 25.91M verified ballot records.`}
+    <strong>Executive Assessment:</strong> ${c.plainEnglishSummary || `${c.county} County voter registration roll analyzed against ${stateName} statewide voter file and ${fmt(totalBallotCredits)} verified ballot records.`}
   </div>
 
   <div class="grid">
@@ -241,7 +263,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
     <div class="metric-card">
       <div class="metric-val hi">+${fmt(Number(cAny.registrations2026 ?? 0))} voters</div>
       <div class="metric-label">New 2026 Registrations</div>
-      <div class="metric-sub">Added through Oct 26, 2026</div>
+      <div class="metric-sub">Added through ${dateStr}</div>
     </div>
     <div class="metric-card">
       <div class="metric-val ${c.highDensityCount > 10 ? 'hi' : ''}">${fmt(c.highDensityCount)} addresses</div>
@@ -280,17 +302,17 @@ export default function MississippiPlaybookAnalysisReportPage() {
     <li><strong>Voter Status Sync (Voter Protection):</strong> Verify why ${fmt(Number(cAny.inactiveVotedRecent ?? 0))} voters in ${c.county} County with recorded 2024–2026 ballots are marked Inactive so eligible voters do not face pollbook delays.</li>
     <li><strong>Split-Ballot &amp; Precinct Capacity Check:</strong> Audit GIS street-range ballot styles across ${Number(cAny.splitPrecincts ?? 0)} split legislative precincts and evaluate ${c.overCapacityPrecincts} precincts exceeding 3,000 voters.</li>
     <li><strong>Physical Address &amp; 911 GIS Verification:</strong> Review ${fmt(c.highDensityCount)} high-density addresses (8+ voters) for missing unit numbers and standardize ${fmt(Number(cAny.unparsedAddressCount ?? 0))} active records missing structured 911 house numbers.</li>
-    <li><strong>NVRA List Maintenance &amp; Duplicate Review:</strong> Under Miss. Code Ann. § 23-15-153, County Election Commissioners hold statutory authority to maintain and remove records from the voter rolls. Send statutory NVRA confirmation notices for ${fmt(c.ncoaCount)} active out-of-state mailings, review ${fmt(Number(cAny.dormantPre2019Active ?? 0))} two-cycle dormant active records, and reconcile ${fmt(c.duplicateCount)} same-ZIP duplicate name pairs.</li>
+    <li><strong>NVRA List Maintenance &amp; Duplicate Review:</strong> ${stateConfig.statutoryAuthorityNote} Send statutory NVRA confirmation notices for ${fmt(c.ncoaCount)} active out-of-state mailings, review ${fmt(Number(cAny.dormantPre2019Active ?? 0))} two-cycle dormant active records, and reconcile ${fmt(c.duplicateCount)} same-ZIP duplicate name pairs.</li>
   </ol>
 
   <div class="privacy-notice">
     <strong>Zero-PII Compliance &amp; Canvassing Records Access:</strong><br/>
-    In strict compliance with statutory voter privacy standards, individual voter names, dates of birth, and street numbers are never displayed on public web pages. Verified County Election Commissioners (who hold statutory authority to maintain and remove records from the voter rolls under Miss. Code Ann. § 23-15-153), Circuit Clerks, and certified campaign directors can request unmasked street-level canvassing sheets or upload newer county rolls in the Marigold App Scanner at: <strong>https://marigoldinsights.org/contact?county=${encodeURIComponent(c.county)}</strong>
+    In strict compliance with statutory voter privacy standards, individual voter names, dates of birth, and street numbers are never displayed on public web pages. Verified County Election Commissioners, County Boards of Elections, and certified campaign directors can request unmasked street-level canvassing sheets or upload newer county rolls in the Marigold App Scanner at: <strong>https://marigoldinsights.org/contact?county=${encodeURIComponent(c.county)}&amp;state=${activeState}</strong>
   </div>
 
   <div class="footer">
     <span>Marigold Insights · Non-Partisan Civic Analytics</span>
-    <span>Source: MS Statewide Voter Roll &amp; 25.91M Ballot History (Oct 2026)</span>
+    <span>Source: ${stateName} Statewide Voter Roll &amp; ${fmt(totalBallotCredits)} Ballot History (2026)</span>
     <span>Zero-PII Compliant</span>
   </div>
 
@@ -311,13 +333,13 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
   const navItems = [
     ["takeaways", "01", "Key takeaways"],
-    ["actions", "02", "County reviewer (82)"],
+    ["actions", "02", `County reviewer (${totalCountiesCount})`],
     ["map", "03", "3D county map"],
     ["filtering", "04", "False alarms removed"],
     ["ballots", "05", "2025–2026 ballots"],
     ["connections", "06", "Do issues overlap?"],
     ["checks", "07", "The 14 checks"],
-    ["ledger", "08", `County ledger (${ledgerShowAll ? 82 : priorityCount})`],
+    ["ledger", "08", `County ledger (${ledgerShowAll ? totalCountiesCount : priorityCount})`],
   ] as const;
 
   return (
@@ -325,11 +347,12 @@ export default function MississippiPlaybookAnalysisReportPage() {
       {/* ---------- Single sticky top bar ---------- */}
       <header className="sticky top-0 z-40 h-16 border-b border-[#111111] bg-[#F6F3EC]/95 backdrop-blur print:hidden">
         <div className="mx-auto flex h-full max-w-[1380px] items-center justify-between gap-3 px-4 sm:px-8">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/overview" className="inline-flex items-center gap-2 text-base font-bold whitespace-nowrap hover:text-[#B45309] shrink-0">
               <ArrowLeft className="h-4 w-4 shrink-0" /> Marigold Insights
             </Link>
-            <div className="hidden sm:flex items-center gap-2 border border-[#111111]/25 bg-white px-3 py-1 font-mono text-xs font-semibold">
+            <StateSwitcherPill activeState={activeState} onSelectState={handleStateSwitch} variant="compact" />
+            <div className="hidden xl:flex items-center gap-2 border border-[#111111]/25 bg-white px-3 py-1 font-mono text-xs font-semibold">
               <span className="text-[#5A534A]">Focused County:</span>
               <button
                 type="button"
@@ -341,19 +364,19 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </div>
           </div>
           <div className="flex items-center gap-2.5">
-            <Link href="/manifold" className="inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-white px-4 text-base font-bold whitespace-nowrap shrink-0 hover:bg-[#EFEAE0]">
+            <Link href="/manifold" className="hidden sm:inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-white px-4 text-base font-bold whitespace-nowrap shrink-0 hover:bg-[#EFEAE0]">
               <Compass className="h-4 w-4 shrink-0 text-[#B45309]" /> Full 3D Studio
             </Link>
             <button onClick={() => window.print()} className="hidden md:inline-flex h-11 items-center gap-2 border-2 border-[#111111] bg-white px-4 text-base font-bold whitespace-nowrap shrink-0 hover:bg-[#EFEAE0]">
               <Printer className="h-4 w-4 shrink-0" /> Print
             </button>
             <a
-              href="/Marigold-Mississippi-Playbook-Analysis.pdf"
+              href={pdfUrl}
               download
               className="inline-flex h-11 items-center gap-2 border-2 border-[#111111] px-4 text-base font-bold text-[#111111] whitespace-nowrap shrink-0 hover:brightness-95"
               style={{ background: FILL }}
             >
-              <Download className="h-4 w-4 shrink-0" /> Full 82-County PDF
+              <Download className="h-4 w-4 shrink-0" /> Full {totalCountiesCount}-County PDF
             </a>
           </div>
         </div>
@@ -419,14 +442,14 @@ export default function MississippiPlaybookAnalysisReportPage() {
         <main className="min-w-0 max-w-[1020px] space-y-20 sm:space-y-24">
           {/* ---------- Hero ---------- */}
           <section className="space-y-6">
-            <Kicker>Mississippi · October 26, 2026 Extract · Public Edition</Kicker>
+            <Kicker>{stateName} · {extractDateLabel} Extract · Public Edition</Kicker>
             <h1 className="mt-4 font-serif text-4xl sm:text-[54px] font-bold leading-[1.1] tracking-[-0.025em] text-[#111111]">
               Every past ballot matched a real voter. Here&rsquo;s what&rsquo;s left to tidy up.
             </h1>
             <p className="mt-6 max-w-[65ch] font-serif text-xl sm:text-[23px] leading-[1.75] text-[#2C2825]">
-              We audited all {fmt(metadata.totalRecords)} voter registrations and {fmt(totalBallotCredits)} cumulative ballot records
-              through October 26, 2026 — including <strong>+{fmt(ballotsAdded25_26)} ballots added across 2025 and 2026</strong> and{" "}
-              <strong>{fmt(registrations2026)} new 2026 registrations</strong> across all 82 Mississippi counties. Every ballot traced to a registered voter.
+              We audited all {fmt(metadata.totalRecords)} active &amp; inactive voter registrations and {fmt(totalBallotCredits)} cumulative ballot records
+              through {extractDateLabel} — including <strong>+{fmt(ballotsAdded25_26)} ballots added across 2025 and 2026</strong> and{" "}
+              <strong>{fmt(registrations2026)} new 2026 registrations</strong> across all {totalCountiesCount} {stateName} counties. Every ballot traced to a registered voter.
             </p>
 
             {/* Mobile section picker */}
@@ -448,8 +471,8 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <dl className="mt-10 grid grid-cols-1 border-y-2 border-[#111111] bg-white sm:grid-cols-2 shadow-2xs">
               {[
                 [fmt(totalBallotCredits), "Verified past ballots", `+${fmt(ballotsAdded25_26)} ballots added in 2025–2026 · 0 unmatched records`, true],
-                [fmt(registrations2026), "New 2026 voter registrations", `${fmt(peak2026Count)} voters registered on Oct 5, 2026 statutory deadline`, false],
-                [`${normalCount} of 82 counties`, "Within normal baseline range", `${priorityCount} counties have focused cleanup checklists`, false],
+                [fmt(registrations2026), "New 2026 voter registrations", `${fmt(peak2026Count)} voters registered on peak 2026 date (${peak2026Date})`, false],
+                [`${normalCount} of ${totalCountiesCount} counties`, "Within normal baseline range", `${priorityCount} counties have focused cleanup checklists`, false],
                 [`${ncoaInactivePct}% (${fmt(ncoa.inactiveRelocatedVoters)})`, "Out-of-state movers already Inactive", `Only ${fmt(ncoa.totalVoters)} active records need an NVRA confirmation notice`, false],
               ].map(([v, l, s, hi], i) => {
                 const borderClasses = [
@@ -480,20 +503,20 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <ol className="divide-y divide-[#DDD6CA] border-b border-[#DDD6CA]">
               {[
                 [
-                  "Zero orphaned or phantom ballots across 25.91M records.",
+                  `Zero orphaned or phantom ballots across ${(totalBallotCredits / 1_000_000).toFixed(2)}M records.`,
                   `Adding two more years of elections increased verified ballot history from ${fmt(ballotsThrough2024)} (through 2024) by +${fmt(ballotsAdded25_26)} ballots in 2025–2026 to ${fmt(totalBallotCredits)} total records. Every single ballot matched a registered voter.`,
                 ],
                 [
                   "Most raw “anomalies” are dorms, care homes, and Jr./Sr. families.",
-                  `Before scoring any county, we filtered out campus dorms and nursing homes (${fmt(playbooks.highDensity.institutionalVoters)} voters), apartment complexes (${fmt(playbooks.highDensity.multiFamilyVoters)}), ${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households, ${fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} homes on streets like “Marshall Place,” and 24,013 Panola County records where Supervisor District was stored under SUP instead of SUPR.`,
+                  `Before scoring any county, we filtered out campus dorms, military bases, and nursing homes (${fmt(playbooks.highDensity.institutionalVoters)} voters), apartment complexes (${fmt(playbooks.highDensity.multiFamilyVoters)}), ${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households, and ${fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)} homes on streets like “Marshall Place.”`,
                 ],
                 [
-                  "County Election Commissioners are already processing movers — and our 14 checks protect both voter access and clean rolls.",
-                  `Under Mississippi law (Miss. Code Ann. § 23-15-153), County Election Commissioners — not county clerks — hold statutory authority to maintain and remove records from the voter rolls. Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${ncoaInactivePct}%) are already marked Inactive on the federal NVRA clock. Alongside ${fmt(ncoa.totalVoters)} active out-of-state movers and ${fmt(playbooks.duplicates.activeActiveDuplicates)} active–active duplicate pairs, our 14 non-partisan checks also protect ${fmt(nvraRec.inactiveWithRecentVote2024_2026)} voters who cast a ballot in 2024–2026 while marked Inactive and audit ${fmt(districtIntegrity.splitLegislativePrecincts)} split-ballot precincts.`,
+                  `${authorityLabel} are already processing movers — and our 14 checks protect both voter access and clean rolls.`,
+                  `Under ${stateName} law (${authorityCitation}), ${authorityLabel} hold statutory authority to maintain and remove records from the voter rolls. Of ${fmt(ncoa.totalAllStatusVoters)} voters with an out-of-state mailing address, ${fmt(ncoa.inactiveRelocatedVoters)} (${ncoaInactivePct}%) are already marked Inactive on the federal NVRA clock. Alongside ${fmt(ncoa.totalVoters)} active out-of-state movers and ${fmt(playbooks.duplicates.activeActiveDuplicates)} active–active duplicate pairs, our 14 non-partisan checks also protect ${fmt(nvraRec.inactiveWithRecentVote2024_2026)} voters who cast a ballot in 2024–2026 while marked Inactive and audit ${fmt(districtIntegrity.splitLegislativePrecincts)} split-ballot precincts.`,
                 ],
                 [
-                  `${normalCount} of 82 counties sit in the normal range; ${priorityCount} have a clear checklist.`,
-                  `University counties mostly need apartment and dorm unit numbers (${fmt(playbooks.missingDorm.totalVoters)} records). Fast-growing suburbs mostly need large precincts split (${fmt(playbooks.precinctCapacity.overCapacityCount)} precincts over 3,000 voters).`,
+                  `${normalCount} of ${totalCountiesCount} counties sit in the normal range; ${priorityCount} have a clear checklist.`,
+                  `University and military counties mostly need apartment and dorm unit numbers (${fmt(playbooks.missingDorm.totalVoters)} records). Fast-growing suburbs mostly need large precincts split (${fmt(playbooks.precinctCapacity.overCapacityCount)} precincts over 3,000 voters).`,
                 ],
               ].map(([t, b], i) => (
                 <li key={t} className="grid grid-cols-[44px_1fr] gap-4 py-8 sm:grid-cols-[60px_1fr] sm:gap-6">
@@ -512,12 +535,12 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <SectionHead
               id="actions"
               num="02"
-              kicker="County-level reviewer (all 82 counties)"
-              title="Inspect any Mississippi county in ten seconds"
-              dek="Browse all 18 priority counties, the top 25 counties by population, or all 82 counties A–Z. Every metric includes its explicit noun and unit, and you can export a 1-page County PDF or open the Marigold App Scanner to run these same 14 checks on newer voter rolls."
+              kicker={`County-level reviewer (all ${totalCountiesCount} counties)`}
+              title={`Inspect any ${stateName} county in ten seconds`}
+              dek={`Browse all ${priorityCount} priority counties, the top 25 counties by population, or all ${totalCountiesCount} counties A–Z. Every metric includes its explicit noun and unit, and you can export a 1-page County PDF or open the Marigold App Scanner to run these same 14 checks on newer voter rolls.`}
             />
 
-            {/* Expandable County Directory Bar (Priority 18 / Top 25 / All 82 + Search) */}
+            {/* Expandable County Directory Bar (Priority / Top 25 / All + Search) */}
             <div className="rounded-2xl border border-[#111111]/20 bg-white p-5 sm:p-6 space-y-4 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DDD6CA] pb-4">
                 <div className="flex flex-wrap items-center gap-2">
@@ -527,7 +550,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   {[
                     ["priority", `Priority Counties (${priorityCount})`],
                     ["top25", "Top 25 by Population"],
-                    ["all82", "All 82 Counties (A–Z)"],
+                    ["all82", `All ${totalCountiesCount} Counties (A–Z)`],
                   ].map(([mode, label]) => {
                     const active = countyViewMode === mode && !countySearch.trim();
                     return (
@@ -554,7 +577,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                     type="search"
                     value={countySearch}
                     onChange={(e) => setCountySearch(e.target.value)}
-                    placeholder="Filter 82 counties by name…"
+                    placeholder={`Filter ${totalCountiesCount} counties by name…`}
                     aria-label="Filter counties by name"
                     className="h-10 w-full sm:w-60 rounded-lg border border-[#111111]/25 bg-[#FAF8F5] px-3.5 text-sm font-medium text-[#111111] placeholder:text-[#78716C] focus:border-[#B45309] focus:ring-1 focus:ring-[#B45309] focus:outline-none transition-all"
                   />
@@ -591,7 +614,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <div className="rounded-2xl border border-[#111111]/20 bg-white p-6 sm:p-9 shadow-sm space-y-8">
               <div>
                 <label htmlFor="county" className="font-mono text-base font-bold uppercase tracking-[0.12em] text-[#5A534A]">
-                  Selected county dropdown (all 82 Mississippi counties)
+                  Selected county dropdown (all {totalCountiesCount} {stateName} counties)
                 </label>
                 <div className="mt-3 flex flex-col gap-3">
                   <select
@@ -635,7 +658,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                       Focused County Dossier · 14-Playbook Audit
                     </div>
                     <h3 className="mt-1 font-serif text-3xl sm:text-4xl font-bold text-[#111111]">
-                      {selected.county} County, Mississippi
+                      {selected.county} County, {stateName}
                     </h3>
                   </div>
                   <div className="flex flex-wrap items-center gap-2.5">
@@ -676,7 +699,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   [
                     `+${fmt(Number((selected as Record<string, unknown>).registrations2026 ?? 0))} voters`,
                     "New 2026 Registrations",
-                    "Added to roll between Jan 1 and Oct 26, 2026",
+                    `Added to roll during 2026 (${extractDateLabel} extract)`,
                     true,
                   ],
                   [
@@ -743,7 +766,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                   </div>
                   <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
                     <Link
-                      href={`/contact?county=${encodeURIComponent(selected.county)}&topic=canvass_audit`}
+                      href={`/contact?county=${encodeURIComponent(selected.county)}&state=${activeState}&topic=canvass_audit`}
                       className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#B45309] hover:bg-[#92400E] px-6 text-sm font-bold text-white whitespace-nowrap shadow-sm transition-all"
                     >
                       Request Canvass List for {selected.county} <ArrowRight className="h-4 w-4 shrink-0" />
@@ -769,7 +792,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- 03 Map ---------- */}
           <section className="space-y-8">
-            <SectionHead id="map" num="03" kicker="Interactive 3D geometry" title="All 82 counties mapped across three task areas" dek="Drag to rotate, click any marker to inspect that county, or open Full Screen 3D. The sky-blue net shows the normal baseline for a county's population; marigold-amber vertical stems and distinct marker shapes highlight extra cleanup work." />
+            <SectionHead id="map" num="03" kicker="Interactive 3D geometry" title={`All ${totalCountiesCount} ${stateName} counties mapped across three task areas`} dek="Drag to rotate, click any marker to inspect that county, or open Full Screen 3D. The sky-blue net shows the normal baseline for a county's population; marigold-amber vertical stems and distinct marker shapes highlight extra cleanup work." />
             <div className="print:hidden">
               <ThreatManifold3DExplorer
                 compact
@@ -785,10 +808,10 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <SectionHead id="filtering" num="04" kicker="Signal vs. noise" title="Ordinary explanations, set aside first" dek="Basic database queries flag college dorms, nursing homes, and fathers and sons who share a name. We separate those first so election officials only review actionable records. Gray was set aside; marigold gold is what remains." />
             <div className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
               {[
-                ["Dorms & apartments missing a unit number", playbooks.missingDorm.totalVoters + playbooks.missingDorm.streetNameFalsePositivesRemoved, playbooks.missingDorm.activeVoters, "Street names like “Marshall Pl” removed; inactive records excluded"],
-                ["Voters at addresses with 8 or more registrations", playbooks.highDensity.totalVoters, playbooks.highDensity.singleFamilyAnomalyVoters, "University dorms, nursing homes & apartment complexes set aside"],
-                ["Same-name records in the same 5-digit ZIP code", playbooks.duplicates.generationalPairs + playbooks.duplicates.trueDuplicates, playbooks.duplicates.activeActiveDuplicates, "6,146 Jr./Sr. households protected; only active–active pairs remain"],
-                ["Out-of-state mailing addresses", ncoa.totalAllStatusVoters, ncoa.totalVoters, "11,178 voters already marked Inactive set aside"],
+                ["Dorms & apartments missing a unit number", playbooks.missingDorm.totalVoters + playbooks.missingDorm.streetNameFalsePositivesRemoved, playbooks.missingDorm.activeVoters, `Street names like “Marshall Pl” (${fmt(playbooks.missingDorm.streetNameFalsePositivesRemoved)}) removed; inactive records excluded`],
+                ["Voters at addresses with 8 or more registrations", playbooks.highDensity.totalVoters, playbooks.highDensity.singleFamilyAnomalyVoters, `University dorms, military bases, nursing homes (${fmt(playbooks.highDensity.institutionalVoters)}) & apartment complexes (${fmt(playbooks.highDensity.multiFamilyVoters)}) set aside`],
+                ["Same-name records in the same 5-digit ZIP code", playbooks.duplicates.generationalPairs + playbooks.duplicates.trueDuplicates, playbooks.duplicates.activeActiveDuplicates, `${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. households protected; only active–active pairs remain`],
+                ["Out-of-state mailing addresses", ncoa.totalAllStatusVoters, ncoa.totalVoters, `${fmt(ncoa.inactiveRelocatedVoters)} voters already marked Inactive set aside`],
               ].map(([t, total, left, note]) => {
                 const keep = Math.max(3, Math.round(((left as number) / (total as number)) * 100));
                 return (
@@ -815,9 +838,9 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <SectionHead
               id="ballots"
               num="05"
-              kicker="Ballot history (October 26, 2026 extract)"
-              title="Two more years of elections: +835,571 ballots added, 0 unmatched"
-              dek={`Between 2024 and October 26, 2026, Mississippi recorded ${fmt(ballots2025)} ballots across 2025 municipal and special elections and ${fmt(ballots2026)} ballots across 2026 primaries and runoffs — increasing verified ballot history from ${fmt(ballotsThrough2024)} to ${fmt(totalBallotCredits)}. Every ballot matched a registered voter.`}
+              kicker={`Ballot history (${extractDateLabel} extract)`}
+              title={`Two more years of elections: +${fmt(ballotsAdded25_26)} ballots added, 0 unmatched`}
+              dek={`Between 2024 and ${extractDateLabel}, ${stateName} recorded ${fmt(ballots2025)} ballots across 2025 municipal and special elections and ${fmt(ballots2026)} ballots across 2026 primaries and runoffs — increasing verified ballot history from ${fmt(ballotsThrough2024)} to ${fmt(totalBallotCredits)}. Every ballot matched a registered voter.`}
             />
 
             {/* 2024 vs 2025-2026 Accounting Ledger */}
@@ -833,9 +856,9 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 <div className="mt-2 text-base leading-relaxed text-[#3A3530]">{fmt(ballots2025)} in 2025 · {fmt(ballots2026)} in 2026</div>
               </div>
               <div className="p-6 sm:p-7">
-                <dt className="font-mono text-base font-bold uppercase tracking-wider text-[#111111]">Oct 26, 2026 Total</dt>
+                <dt className="font-mono text-base font-bold uppercase tracking-wider text-[#111111]">{extractDateLabel} Total</dt>
                 <dd className="mt-2 font-serif text-3xl sm:text-4xl font-bold tabular-nums text-[#111111]">{fmt(totalBallotCredits)}</dd>
-                <div className="mt-2 text-base leading-relaxed text-[#5A534A]">0 orphaned · {dup2026Primary} duplicate 2026 primary scans</div>
+                <div className="mt-2 text-base leading-relaxed text-[#5A534A]">0 orphaned · {fmt(dup2026Primary)} duplicate 2026 primary scans</div>
               </div>
             </dl>
 
@@ -892,7 +915,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
               <h3 className="font-serif text-2xl sm:text-[26px] font-bold text-[#111111]">Check 1 · Addresses with 8 or more voters</h3>
               <p className="max-w-[65ch] text-base sm:text-lg leading-[1.8] text-[#3A3530]">
                 {fmt(playbooks.highDensity.totalAddresses)} addresses ({fmt(playbooks.highDensity.totalVoters)} voters) have 8 or more registrations.
-                After setting aside {fmt(playbooks.highDensity.institutionalClusters)} campus and care-home sites and {fmt(playbooks.highDensity.multiFamilyClusters)} apartment complexes,{" "}
+                After setting aside {fmt(playbooks.highDensity.institutionalClusters)} campus, military, and care-home sites and {fmt(playbooks.highDensity.multiFamilyClusters)} apartment complexes,{" "}
                 <strong style={{ color: FOCUS }}>{fmt(playbooks.highDensity.singleFamilyAnomalies)} single-family homes</strong> ({fmt(playbooks.highDensity.singleFamilyAnomalyVoters)} registrations) remain for county canvass review. Exact house numbers are withheld for privacy:
               </p>
               <ol className="divide-y divide-[#DDD6CA] border-y-2 border-[#111111] bg-white">
@@ -940,15 +963,22 @@ export default function MississippiPlaybookAnalysisReportPage() {
             <ol className="divide-y divide-[#DDD6CA] border-y border-[#DDD6CA]">
               {[
                 ["Check 4 · P.O. boxes typed in the home-address field", `${fmt(playbooks.commercialPOBox.totalVoters)} records statewide (${fmt(playbooks.commercialPOBox.activeVoters)} active voters). A physical street address is required to assign a voting precinct; P.O. Box numbers are withheld for privacy.`],
-                ["Check 5 · Legacy paper-migration placeholder dates", `${fmt(playbooks.clericalTypos.totalAnomalies)} records carry default dates (such as 1801 or 0001) or single-initial names from early-2000s digitization. These are clerical artifacts, not improper voting.`],
+                ["Check 5 · Legacy paper-migration placeholder dates", `${fmt(playbooks.clericalTypos.totalAnomalies)} records carry default dates (such as 1900, 1801, or 0001) or single-initial names from early digitization. These are clerical artifacts, not improper voting.`],
                 ["Check 6 · Same-ZIP duplicate registrations", `${fmt(playbooks.duplicates.generationalPairs)} Jr./Sr. and Roman-numeral family households were protected first. Within the same 5-digit ZIP code, ${fmt(playbooks.duplicates.trueDuplicates)} exact First+Middle+Last+Suffix matches appear at different addresses; ${fmt(playbooks.duplicates.activeActiveDuplicates)} pairs have both records Active.`],
-                ["Checks 7–8 · October 2026 deadline surge & large precincts", `${fmt(registrations2026)} voters registered in 2026 through October 26, peaking on the October 5, 2026 statutory 30-day deadline (${fmt(peak2026Count)} single-day registrations; all-time peak ${fmt(playbooks.registrationSpikes.peakDates[0].count)} on ${playbooks.registrationSpikes.peakDates[0].date}). Statewide, ${playbooks.precinctCapacity.overCapacityCount} precincts exceed 3,000 voters and ${fivePlus} exceed 5,000.`],
-                ["Check 9 · First-digit accounting test (Benford’s Law)", `Precinct registration sizes conform naturally to Benford’s first-digit distribution (chi-square ${benford.chiSquare}, well below the 15.51 critical threshold). Turnout counts deviate (chi-square ${benfordTurnout.chiSquare}) because counties cap precinct sizes around 1,500–3,000 voters — a known mathematical property of bounded precincts.`],
-                ["Check 10 · 25.91M ballot-history & same-day credit verification", `All ${fmt(totalBallotCredits)} historical ballot credits across Mississippi’s voting history file (including +${fmt(ballotsAdded25_26)} ballots added in 2025–2026) cross-referenced with 0 orphaned records. Only ${dup2026Primary} duplicate same-day primary scan lines appeared in 2026.`],
-                ["Check 11 · District completeness & the Panola County SUP/SUPR discovery", `81 Mississippi counties store County Supervisor District in column SUPR, whereas Panola County (24,013 voters) stores it in SUP. Automatically coalescing SUPR || SUP eliminated 24,013 false alarms and isolated the ${districtIntegrity.missingSupOrEcActive} active voters statewide (4 in Jones, 1 in Pike, 1 in Walthall, 1 in Pontotoc) genuinely missing a Supervisor/Election Commissioner district, ${districtIntegrity.missingRepActive} missing State House (REP), ${districtIntegrity.missingSenActive} missing State Senate (SEN), and ${districtIntegrity.missingCongActive} missing U.S. Congress (CONG).`],
-                ["Check 12 · Split-ballot precincts across legislative boundaries", `Statewide, ${fmt(districtIntegrity.splitLegislativePrecincts)} polling precincts span multiple legislative districts (${districtIntegrity.splitCongPrecincts} U.S. Congressional splits, ${districtIntegrity.splitSenPrecincts} State Senate splits, and ${districtIntegrity.splitRepPrecincts} State House splits), led by DeSoto (25 split precincts), Harrison (18), Hinds (18), Madison (18), and Rankin (16). Poll workers in split precincts should verify 911 GIS street-range ballot styles prior to Election Day.`],
-                ["Check 13 · Non-partisan NVRA status & ballot-activity reconciliation", `Serves both voter protection and list maintenance: (1) Voter Protection — ${fmt(nvraRec.inactiveWithRecentVote2024_2026)} voters have a recorded DATE_VOTED in 2024–2026 while their registration status is marked Inactive (led by DeSoto 4,800, Jackson 2,766, Harrison 2,694, Rankin 2,510). County Election Commissioners should confirm Active status before printing pollbooks. (2) List Maintenance — ${fmt(nvraRec.activeDormantPre2019NoVoteSince2018)} Active voters registered in 2018 or earlier have zero recorded vote since before 2018; under Miss. Code Ann. § 23-15-153, County Election Commissioners hold statutory authority to review and remove ineligible records following NVRA notice.`],
-                ["Check 14 · Unparsed 911 GIS residential house numbers", `${fmt(addrParsing.missingHouseNumActive)} active voters (${fmt(addrParsing.missingHouseNumTotal)} total) have descriptive text in RESIDENTIAL_ADDRESS (such as rural highway descriptions) but a blank structured HOUSE_NUM field (led by Simpson 168, Tunica 120, Smith 108, Madison 85). Standardizing HOUSE_NUM against county E-911 parcel maps prevents split-precinct misassignments.`],
+                ["Checks 7–8 · 2026 deadline surge & large precincts", `${fmt(registrations2026)} voters registered in 2026 through ${extractDateLabel}, peaking on ${peak2026Date} (${fmt(peak2026Count)} single-day registrations; all-time peak ${fmt(playbooks.registrationSpikes.peakDates[0].count)} on ${playbooks.registrationSpikes.peakDates[0].date}). Statewide, ${fmt(playbooks.precinctCapacity.overCapacityCount)} precincts exceed 3,000 voters and ${fmt(fivePlus)} exceed 5,000.`],
+                ["Check 9 · First-digit accounting test (Benford’s Law)", `Precinct registration sizes across ${stateName} (${totalCountiesCount} counties) are tested against Benford’s first-digit distribution (registration chi-square ${benford.chiSquare}; 2024 turnout chi-square ${benfordTurnout.chiSquare}). Bounded administrative precincts naturally cluster around 1,500–4,000 voters per polling place.`],
+                [`Check 10 · ${(totalBallotCredits / 1_000_000).toFixed(2)}M ballot-history & same-day credit verification`, `All ${fmt(totalBallotCredits)} historical ballot credits across ${stateName}’s voting history file (including +${fmt(ballotsAdded25_26)} ballots added in 2025–2026) cross-referenced with 0 orphaned records. Only ${fmt(dup2026Primary)} duplicate same-day primary scan lines appeared in 2026.`],
+                [
+                  activeState === "MS"
+                    ? "Check 11 · District completeness & the Panola County SUP/SUPR discovery"
+                    : "Check 11 · District completeness & 25-county At-Large Commissioner handling",
+                  activeState === "MS"
+                    ? `81 Mississippi counties store County Supervisor District in column SUPR, whereas Panola County (24,013 voters) stores it in SUP. Automatically coalescing SUPR || SUP eliminated 24,013 false alarms and isolated the ${districtIntegrity.missingSupOrEcActive} active voters statewide genuinely missing a Supervisor/Election Commissioner district, ${districtIntegrity.missingRepActive} missing State House (REP), ${districtIntegrity.missingSenActive} missing State Senate (SEN), and ${districtIntegrity.missingCongActive} missing U.S. Congress (CONG).`
+                    : `In North Carolina, 25 counties (including Wake and Mecklenburg) elect County Commissioners at-large, leaving county_commiss_abbrv blank for 2,466,631 active voters by statute. Recognizing at-large commissioner counties prevented 2.46M false alarms and isolated the ${fmt(districtIntegrity.missingSupOrEcActive)} active voters genuinely missing a Congressional (${districtIntegrity.missingCongActive}), State Senate (${districtIntegrity.missingSenActive}), or State House (${districtIntegrity.missingRepActive}) district.`
+                ],
+                ["Check 12 · Split-ballot precincts across legislative boundaries", `Statewide, ${fmt(districtIntegrity.splitLegislativePrecincts)} polling precincts span multiple legislative districts (${districtIntegrity.splitCongPrecincts} U.S. Congressional splits, ${districtIntegrity.splitSenPrecincts} State Senate splits, and ${districtIntegrity.splitRepPrecincts} State House splits; ${fmt(districtIntegrity.splitPrecinctsTotal)} total split precincts including county commissioner splits). Poll workers in split precincts should verify 911 GIS street-range ballot styles prior to Election Day.`],
+                ["Check 13 · Non-partisan NVRA status & ballot-activity reconciliation", `Serves both voter protection and list maintenance: (1) Voter Protection — ${fmt(nvraRec.inactiveWithRecentVote2024_2026)} voters have a recorded ballot in 2024–2026 while their registration status is marked Inactive. ${authorityLabel} should confirm Active status before printing pollbooks. (2) List Maintenance — ${fmt(nvraRec.activeDormantPre2019NoVoteSince2018)} Active voters registered in 2018 or earlier have zero recorded vote since before 2018; under ${authorityCitation}, ${authorityLabel} hold statutory authority to review and remove ineligible records following NVRA notice.`],
+                ["Check 14 · Unparsed 911 GIS residential house numbers", `${fmt(addrParsing.missingHouseNumActive)} active voters (${fmt(addrParsing.missingHouseNumTotal)} total) have descriptive text in their residential street address (such as rural highway descriptions or intersection notes) without a leading E-911 house number. Standardizing house numbers against county E-911 parcel maps prevents split-precinct misassignments.`],
               ].map(([t, b]) => (
                 <li key={t} className="py-7">
                   <h3 className="font-serif text-2xl font-bold text-[#111111]">{t}</h3>
@@ -960,8 +990,8 @@ export default function MississippiPlaybookAnalysisReportPage() {
             {/* Top 6 Largest Precincts — zero-scroll responsive list */}
             <div className="space-y-4">
               <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <h4 className="font-serif text-2xl font-bold text-[#111111]">Six largest precincts statewide (over 5,000 registered voters)</h4>
-                <a href="/Marigold-Mississippi-Playbook-Analysis.pdf" download className="text-base font-bold underline underline-offset-4" style={{ color: FOCUS }}>
+                <h4 className="font-serif text-2xl font-bold text-[#111111]">Six largest precincts in {stateName} (over 5,000 registered voters)</h4>
+                <a href={pdfUrl} download className="text-base font-bold underline underline-offset-4" style={{ color: FOCUS }}>
                   See full list in PDF →
                 </a>
               </div>
@@ -982,19 +1012,19 @@ export default function MississippiPlaybookAnalysisReportPage() {
             </div>
           </section>
 
-          {/* ---------- 08 County Ledger (Explicit Nouns on Every Number + Toggle All 82 Counties) ---------- */}
+          {/* ---------- 08 County Ledger (Explicit Nouns on Every Number + Toggle All Counties) ---------- */}
           <section className="space-y-8" style={{ contentVisibility: "auto" }}>
             <SectionHead
               id="ledger"
               num="08"
               kicker="County overview & priority ledger"
-              title={ledgerShowAll ? "All 82 Mississippi counties ranked by priority score" : `The ${priorityCount} priority counties outside the normal baseline`}
+              title={ledgerShowAll ? `All ${totalCountiesCount} ${stateName} counties ranked by priority score` : `The ${priorityCount} priority counties outside the normal baseline`}
               dek={`Every number below is paired with its explicit noun and label. Ranked by composite priority score (out of 100) across high-density addresses (X), out-of-state mail & duplicates (Y), and large 3,000+ voter precincts (Z). Click any county to load its full 14-check dossier above.`}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-[#111111] bg-white px-5 py-3.5">
               <div className="text-base font-bold text-[#111111]">
-                Showing {ledgerShowAll ? "all 82 Mississippi counties" : `${priorityCount} priority counties (${normalCount} normal-range counties hidden)`}
+                Showing {ledgerShowAll ? `all ${totalCountiesCount} ${stateName} counties` : `${priorityCount} priority counties (${normalCount} normal-range counties hidden)`}
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -1013,7 +1043,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
                     ledgerShowAll ? "bg-[#111111] text-white border-[#111111]" : "bg-[#F6F3EC] text-[#111111] border-[#111111]/30"
                   }`}
                 >
-                  All 82 Counties
+                  All {totalCountiesCount} Counties
                 </button>
               </div>
             </div>
@@ -1118,21 +1148,21 @@ export default function MississippiPlaybookAnalysisReportPage() {
 
           {/* ---------- Conversion CTA (Government Officials & Subscribers) ---------- */}
           <section className="border-y-2 border-[#111111] bg-[#111111] px-6 py-10 text-[#F6F3EC] sm:px-10 print:hidden">
-            <Kicker light>For county election commissioners, registrars &amp; state officials</Kicker>
+            <Kicker light>For {authorityLabel.toLowerCase()}, registrars &amp; state officials</Kicker>
             <h2 className="mt-3 max-w-[26ch] font-serif text-3xl sm:text-4xl font-bold leading-[1.12] tracking-tight text-white">
-              Download the full 82-county PDF or run Marigold on your own voter roll.
+              Download the full {totalCountiesCount}-county {stateName} PDF or run Marigold on your own voter roll.
             </h2>
             <p className="mt-4 max-w-[62ch] text-lg leading-[1.65] text-[#E5E0D5]">
-              The printable magazine edition includes the complete 82-county reference ledger for public meetings. Marigold subscribers can upload voter rolls from any state or county — our header-adaptive schema mapper automatically normalizes state column formats in minutes with strict Zero-PII guarantees.
+              The printable magazine edition includes the complete {totalCountiesCount}-county reference ledger for public meetings. Marigold subscribers can upload voter rolls from any state or county — our header-adaptive schema mapper automatically normalizes state column formats in minutes with strict Zero-PII guarantees.
             </p>
             <div className="mt-7 flex flex-wrap gap-3.5">
               <a
-                href="/Marigold-Mississippi-Playbook-Analysis.pdf"
+                href={pdfUrl}
                 download
                 className="inline-flex h-12 items-center gap-2 px-6 text-base font-bold text-[#111111] whitespace-nowrap hover:brightness-95"
                 style={{ background: FILL }}
               >
-                <Download className="h-5 w-5 shrink-0" /> Download Full 82-County PDF
+                <Download className="h-5 w-5 shrink-0" /> Download Full {totalCountiesCount}-County {activeState} PDF
               </a>
               <Link
                 href="/sign-up"
@@ -1150,7 +1180,7 @@ export default function MississippiPlaybookAnalysisReportPage() {
           </section>
 
           <footer className="border-t-2 border-[#111111] pt-6 text-base leading-relaxed text-[#5A534A]">
-            Source: {metadata.sourceFile} &amp; {metadata.votingHistoryFile} ({fmt(totalBallotCredits)} verified ballot credits through October 26, 2026). {metadata.privacyStandard}.
+            Source: {metadata.sourceFile} &amp; {metadata.votingHistoryFile} ({fmt(totalBallotCredits)} verified ballot credits through {extractDateLabel}). {metadata.privacyStandard}.
           </footer>
         </main>
       </div>

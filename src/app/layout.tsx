@@ -12,6 +12,7 @@ import AppNavigationWrapper from "@/components/AppNavigationWrapper";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { DuckDBProvider } from "@/lib/data/DuckDBProvider";
+import { StateBenchmarkProvider } from "@/lib/data/StateBenchmarkContext";
 
 const lora = Lora({
   variable: "--font-serif",
@@ -76,21 +77,23 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body suppressHydrationWarning className={`${roboto.variable} ${lora.variable} ${inter.variable} ${fraunces.variable} font-sans antialiased min-h-screen flex flex-col`}>
           <AuthProvider>
-            <WorkspaceProvider>
-              <KanbanProvider>
-                <PlaybookProvider>
-                  <FeedProvider>
-                    <DuckDBProvider>
-                      <ExportManagerProvider>
-                        <AppNavigationWrapper>
-                          {children}
-                        </AppNavigationWrapper>
-                      </ExportManagerProvider>
-                    </DuckDBProvider>
-                  </FeedProvider>
-                </PlaybookProvider>
-              </KanbanProvider>
-            </WorkspaceProvider>
+            <StateBenchmarkProvider>
+              <WorkspaceProvider>
+                <KanbanProvider>
+                  <PlaybookProvider>
+                    <FeedProvider>
+                      <DuckDBProvider>
+                        <ExportManagerProvider>
+                          <AppNavigationWrapper>
+                            {children}
+                          </AppNavigationWrapper>
+                        </ExportManagerProvider>
+                      </DuckDBProvider>
+                    </FeedProvider>
+                  </PlaybookProvider>
+                </KanbanProvider>
+              </WorkspaceProvider>
+            </StateBenchmarkProvider>
           </AuthProvider>
           <MobileWarning />
           <LocalDevTools />

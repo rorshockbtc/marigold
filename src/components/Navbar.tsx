@@ -7,6 +7,7 @@ import { UserButton } from '@clerk/nextjs';
 import { MarigoldIcon } from '@/components/MarigoldIcon';
 import { ChevronDown, ArrowRight, Menu, X, Globe, Map, Shield, ShieldAlert, Sparkles, Terminal, Code, FileText } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { StateSwitcherPill } from '@/lib/data/StateBenchmarkContext';
 
 export function Navbar() {
   const pathname = usePathname() || '';
@@ -33,9 +34,9 @@ export function Navbar() {
 
           {/* Center Navigation Links (Hidden on Mobile) */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-            <Link href="/reports/mississippi-playbook-analysis" className="text-primary font-bold hover:opacity-80 transition-colors">MS 82-County Report</Link>
+            <Link href="/reports/mississippi-playbook-analysis" className="text-primary font-bold hover:opacity-80 transition-colors">State Audits (MS &amp; NC)</Link>
             <Link href="/manifold" className="text-secondary hover:text-primary transition-colors">3D Manifold</Link>
-            <Link href="/playbooks" className="text-secondary hover:text-primary transition-colors">10 Playbooks</Link>
+            <Link href="/playbooks" className="text-secondary hover:text-primary transition-colors">14 Playbooks</Link>
             <Link href="/updates" className="text-secondary hover:text-primary transition-colors">What&apos;s New</Link>
             
             {/* More Resources Dropdown */}
@@ -61,8 +62,8 @@ export function Navbar() {
                     <span>Overview &amp; One-Pager</span>
                   </Link>
                   <Link href="/reports/mississippi-playbook-analysis" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-red-600 flex-shrink-0" />
-                    <span className="font-semibold">MS Playbook Report (Draft 2)</span>
+                    <FileText className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <span className="font-semibold">State Playbook Reports (MS &amp; NC)</span>
                   </Link>
                   <Link href="/manifold" onClick={() => setMoreDropdownOpen(false)} className="px-4 py-2.5 text-secondary hover:bg-muted hover:text-primary transition-colors flex items-center gap-2">
                     <Globe className="w-4 h-4 text-amber-600 flex-shrink-0" />
@@ -154,10 +155,10 @@ export function Navbar() {
           <nav className="lg:hidden mt-4 pt-4 border-t border-border-soft flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
             <Link href="/reports/mississippi-playbook-analysis" onClick={() => setMobileMenuOpen(false)} className="text-primary font-bold px-2 py-1.5 transition-colors flex items-center gap-2 bg-amber-50/60 rounded-lg">
               <FileText className="w-4 h-4 text-amber-600" />
-              <span>Mississippi 82-County Report (Draft 2)</span>
+              <span>State Playbook Reports (MS &amp; NC)</span>
             </Link>
             <Link href="/manifold" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">3D Threat Manifold Explorer</Link>
-            <Link href="/playbooks" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">10 Guided Playbooks</Link>
+            <Link href="/playbooks" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">14 Guided Playbooks</Link>
             <Link href="/updates" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-semibold px-2 py-1 hover:text-primary transition-colors">What&apos;s New (Release Post)</Link>
             <Link href="/overview" onClick={() => setMobileMenuOpen(false)} className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Overview &amp; One-Pager</Link>
             <Link href="/sandbox" className="text-secondary font-medium px-2 py-1 hover:text-primary transition-colors">Public Sandbox</Link>
@@ -166,13 +167,16 @@ export function Navbar() {
         )}
       </header>
 
-          {/* Persistent Disclaimer Banner */}
-      <div className="bg-card-bg border-b border-border text-foreground px-6 py-2.5 text-xs md:text-sm font-medium flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 max-w-7xl mx-auto w-full">
-          <span className="w-2 h-2 rounded-full bg-accent inline-block animate-pulse"></span>
-          <span>
-            <strong className="font-bold">100% Voter Privacy Safe:</strong> All analysis runs locally with zero personal voter names, birth dates, or private single-family house numbers ever displayed or shared.
-          </span>
+      {/* Persistent Disclaimer & Active State Benchmark Bar */}
+      <div className="bg-card-bg border-b border-border text-foreground px-4 sm:px-6 py-2 text-xs md:text-sm font-medium shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 max-w-7xl mx-auto w-full">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-accent inline-block animate-pulse shrink-0"></span>
+            <span>
+              <strong className="font-bold">100% Voter Privacy Safe:</strong> All analysis runs locally with zero personal voter names, birth dates, or private single-family house numbers ever displayed or shared.
+            </span>
+          </div>
+          <StateSwitcherPill compact />
         </div>
       </div>
     </>

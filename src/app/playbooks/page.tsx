@@ -7,14 +7,17 @@ import { Tooltip } from "@/components/Tooltip";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
 import { usePlaybooks } from "@/lib/workspace/PlaybookContext";
 import { useFeed } from "@/lib/workspace/FeedContext";
-import msAudit from "@/data/mississippi_audit_results.json";
+import { useStateBenchmark } from "@/lib/data/StateBenchmarkContext";
 
 export default function MissionControl() {
+  const { activeState, setActiveState, stateConfig } = useStateBenchmark();
+  const activeAudit = stateConfig.auditData;
+  const selectedState = activeState;
+  const setSelectedState = setActiveState;
   const [playbooks, setPlaybooks] = useState<any[]>([]);
   const [accuracies, setAccuracies] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCounty, setSelectedCounty] = useState("All");
-  const [selectedState, setSelectedState] = useState("MS");
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -27,17 +30,23 @@ export default function MissionControl() {
   useEffect(() => {
     const fetchPlaybooks = async () => {
       try {
-        const pb = msAudit.playbooks;
-        const meta = msAudit.metadata;
-        const vh = msAudit.votingHistoryAudit;
-        const yb = pb.clericalTypos.yearBreakdown as Record<string, number>;
+        const pb = activeAudit.playbooks as any;
+        const meta = activeAudit.metadata as any;
+        const vh = activeAudit.votingHistoryAudit as any;
+        const yb = (pb.clericalTypos.yearBreakdown || {}) as Record<string, number>;
+        const dist = pb.districtIntegrity || {};
+        const nvra = pb.nvraReconciliation || {};
+        const addrP = pb.addressParsing || {};
+        const totalBallots = Number(vh.totalVerifiedBallotCredits ?? vh.totalHistoryRowsScanned ?? 0);
+        const added2526 = Number(vh.ballotsAdded2025_2026 ?? 0);
+        const dupPrimary = Number(vh.duplicate2026PrimarySameDayCreditRows ?? 0);
         const systemPlaybooks = [
           {
             id: "density",
             name: "PB-01: High-Density Residential Occupancy",
-            desc: `${pb.highDensity.totalAddresses.toLocaleString()} normalized addresses (${pb.highDensity.activeOnlyAddresses.toLocaleString()} Active-only; ${pb.highDensity.institutionalClusters} Institutional hubs separated)`,
+            desc: `${pb.highDensity.totalAddresses.toLocaleString()} normalized addresses (${pb.highDensity.activeOnlyAddresses.toLocaleString()} Active-only; ${pb.highDensity.institutionalClusters.toLocaleString()} Institutional hubs separated)`,
             description:
-              "Flags residential parcels with 8+ registered voters while separating nursing homes, college dormitories, and apartment complexes from single-family homes.",
+              "Flags residential parcels with 8+ registered voters while separating nursing homes, college dormitories, military bases, and apartment complexes from single-family homes.",
             flaggedCount: pb.highDensity.activeOnlyAddresses,
             status: "verified",
             totalScanned: meta.totalRecords,
@@ -61,11 +70,11 @@ export default function MissionControl() {
             name: "PB-03: NCOA Interstate Out-of-State Mail Drift",
             desc: `${pb.ncoaRelocations.totalVoters.toLocaleString()} Active voters with out-of-state mail (${pb.ncoaRelocations.inactiveRelocatedVoters.toLocaleString()} already Inactive on NVRA clock)`,
             description:
-              "Separates Active voters receiving mail out-of-state from the 82.1% already moved to Inactive status awaiting their 2-cycle federal NVRA removal period.",
+              `Separates Active voters receiving mail out-of-state from the ${pb.ncoaRelocations.inactiveRelocatedVoters.toLocaleString()} already moved to Inactive status awaiting their 2-cycle federal NVRA removal period.`,
             flaggedCount: pb.ncoaRelocations.totalVoters,
             status: "verified",
             totalScanned: meta.totalRecords,
-            threshold: "Active Status + Mail State ≠ MS",
+            threshold: `Active Status + Mail State ≠ ${activeState}`,
             audit_type: "out-of-state-mailing",
           },
           {
@@ -82,14 +91,14 @@ export default function MissionControl() {
           },
           {
             id: "typo-names",
-            name: "PB-05: Clerical Typos & Pre-1900 Migration Dates",
-            desc: `${pb.clericalTypos.totalAnomalies.toLocaleString()} legacy database artifacts (${(yb["1801"] ?? 1271).toLocaleString()} Year 1801, ${(yb["0001"] ?? 206).toLocaleString()} Year 0001, ${(yb["DATAMIGRATION_ADDR"] ?? 113).toLocaleString()} DATAMIGRATION)`,
+            name: "PB-05: Clerical Typos & Legacy Migration Dates",
+            desc: `${pb.clericalTypos.totalAnomalies.toLocaleString()} legacy database artifacts across ${stateConfig.name}`,
             description:
-              "Isolates paper-to-digital SEMS migration placeholders (01/01/1801, 01/01/0001, DATAMIGRATION street strings) and 1-character truncated name fields.",
+              "Isolates paper-to-digital migration placeholders (such as 1900, 1801, 0001, or DATAMIGRATION street strings) and 1-character truncated name fields.",
             flaggedCount: pb.clericalTypos.totalAnomalies,
             status: "verified",
             totalScanned: meta.totalRecords,
-            threshold: "Year < 1900 or Length = 1",
+            threshold: "Placeholder Date or Length = 1",
             audit_type: "typo-names",
           },
           {
@@ -107,9 +116,9 @@ export default function MissionControl() {
           {
             id: "spikes",
             name: "PB-07: Statutory Registration Velocity Spikes",
-            desc: `Peaks on ${pb.registrationSpikes.peakDates[0].date} (${pb.registrationSpikes.peakDates[0].count.toLocaleString()}), ${pb.registrationSpikes.peakDates[1].date} (${pb.registrationSpikes.peakDates[1].count.toLocaleString()}), and ${pb.registrationSpikes.peakDates[2].date} (${pb.registrationSpikes.peakDates[2].count.toLocaleString()})`,
+            desc: `Peaks on ${pb.registrationSpikes.peakDates[0]?.date} (${pb.registrationSpikes.peakDates[0]?.count.toLocaleString()}), ${pb.registrationSpikes.peakDates[1]?.date} (${pb.registrationSpikes.peakDates[1]?.count.toLocaleString()}), and ${pb.registrationSpikes.peakDates[2]?.date} (${pb.registrationSpikes.peakDates[2]?.count.toLocaleString()})`,
             description:
-              "Correlates single-day registration surges against Mississippi's 30-day statutory mail-in cutoff dates prior to Presidential General Elections.",
+              `Correlates single-day registration surges against ${stateConfig.name}'s statutory registration cutoff dates prior to General Elections.`,
             flaggedCount: pb.registrationSpikes.peakDates.length,
             status: "verified",
             totalScanned: meta.totalRecords,
@@ -119,7 +128,7 @@ export default function MissionControl() {
           {
             id: "phantom-precincts",
             name: "PB-08: Mega-Precinct Capacity & Assignment Audit",
-            desc: `${pb.precinctCapacity.overCapacityCount} precincts > 3,000 voters (${pb.precinctCapacity.severelyOverCapacityCount} > 5,000 voters; ${pb.precinctCapacity.blankPrecinctCount} blank precinct codes)`,
+            desc: `${pb.precinctCapacity.overCapacityCount.toLocaleString()} precincts > 3,000 voters (${pb.precinctCapacity.severelyOverCapacityCount.toLocaleString()} > 5,000 voters; ${pb.precinctCapacity.blankPrecinctCount.toLocaleString()} blank precinct codes)`,
             description:
               "Identifies fast-growing suburban polling places exceeding the 3,000-voter benchmark and isolates records missing a valid precinct code.",
             flaggedCount: pb.precinctCapacity.overCapacityCount,
@@ -131,9 +140,9 @@ export default function MissionControl() {
           {
             id: "benfords-law",
             name: "PB-09: Newcomb-Benford First-Digit Distribution",
-            desc: `Total Roll χ² = ${pb.benfordsLaw.chiSquare} (PASS < 15.51) • 2024 Turnout χ² = ${pb.benfordsLaw.turnout2024.chiSquare} (Sizing Effect)`,
+            desc: `Total Roll χ² = ${pb.benfordsLaw.chiSquare} • 2024 Turnout χ² = ${pb.benfordsLaw.turnout2024.chiSquare} (Bounded Precinct Sizing)`,
             description:
-              "Tests precinct registration and 2024 turnout counts against the logarithmic Benford curve, demonstrating why 1,500–3,000 statutory precinct sizing clusters turnout at digits 2–4.",
+              "Tests precinct registration and 2024 turnout counts against the logarithmic Benford curve across all precincts in the selected state.",
             flaggedCount: 0,
             status: "verified",
             totalScanned: pb.precinctCapacity.totalPrecincts,
@@ -142,35 +151,38 @@ export default function MissionControl() {
           },
           {
             id: "voting-history",
-            name: "PB-10: 25.91 Million Voting History Referential Audit",
-            desc: `100.00% Roll Match (${vh.orphanedHistoryRows} Orphans) • ${vh.duplicate2026PrimarySameDayCreditRows ?? 64} Same-Day 2026 Primary Duplicate Credit Rows`,
+            name: `PB-10: ${(totalBallots / 1_000_000).toFixed(2)} Million Voting History Referential Audit`,
+            desc: `100.00% Roll Match (${vh.orphanedHistoryRows} Orphans) • ${dupPrimary.toLocaleString()} Same-Day 2026 Primary Duplicate Credit Rows`,
             description:
-              `Cross-table join of all ${(vh.totalVerifiedBallotCredits ?? vh.totalHistoryRowsScanned).toLocaleString()} historical ballots against the ${meta.totalRecords.toLocaleString()} Voter Roll (+835,571 ballots added in 2025–2026) with zero orphaned records.`,
-            flaggedCount: vh.duplicate2026PrimarySameDayCreditRows ?? 64,
+              `Cross-table join of all ${totalBallots.toLocaleString()} historical ballots against the ${meta.totalRecords.toLocaleString()} ${stateConfig.name} Voter Roll (+${added2526.toLocaleString()} ballots added in 2025–2026) with zero orphaned records.`,
+            flaggedCount: dupPrimary,
             status: "verified",
-            totalScanned: vh.totalVerifiedBallotCredits ?? vh.totalHistoryRowsScanned,
-            threshold: "25.91M Cross-Table Join",
+            totalScanned: totalBallots,
+            threshold: `${(totalBallots / 1_000_000).toFixed(2)}M Cross-Table Join`,
             audit_type: "voting-history",
           },
           {
             id: "missing-districts",
-            name: "PB-11: District Completeness (SUP/SUPR Coalesced)",
-            desc: `7 Active voters missing Supervisor/EC district • 24,013 Panola County SUP/SUPR false alarms eliminated`,
-            description:
-              "Coalesces County Supervisor District across SUPR and Panola County's SUP column (eliminating 24,013 false alarms) and isolates the 7 active voters statewide missing a Supervisor/EC district, 2 missing State House, and 1 missing State Senate.",
-            flaggedCount: 7,
+            name: activeState === "MS" ? "PB-11: District Completeness (SUP/SUPR Coalesced)" : "PB-11: District Completeness (At-Large Commissioner Aware)",
+            desc: activeState === "MS"
+              ? `${(dist.activeMissingAnyDistrict ?? 7).toLocaleString()} Active voters missing Supervisor/EC district • 24,013 Panola County SUP/SUPR false alarms eliminated`
+              : `${(dist.activeMissingAnyDistrict ?? 388).toLocaleString()} Active voters missing legislative district • 2,466,631 At-Large Commissioner blanks handled`,
+            description: activeState === "MS"
+              ? "Coalesces County Supervisor District across SUPR and Panola County's SUP column (eliminating 24,013 false alarms) and isolates the 7 active voters statewide missing a Supervisor/EC district."
+              : "Recognizes North Carolina's 25 At-Large County Commissioner counties (2,466,631 active voters) and isolates the 388 active voters genuinely missing a Congressional, State Senate, or State House district.",
+            flaggedCount: Number(dist.activeMissingAnyDistrict ?? 7),
             status: "verified",
             totalScanned: meta.totalRecords,
-            threshold: "CONG + SEN + REP + (SUPR || SUP)",
+            threshold: "CONG + SEN + REP + County District",
             audit_type: "missing-districts",
           },
           {
             id: "split-precincts",
             name: "PB-12: Split-Ballot Legislative Precinct Verification",
-            desc: `356 Split Legislative Precincts (3 U.S. Congress, 96 State Senate, 308 State House)`,
+            desc: `${(dist.splitLegislativePrecincts ?? 356).toLocaleString()} Split Legislative Precincts (${dist.splitCongPrecincts ?? 3} U.S. Congress, ${dist.splitSenPrecincts ?? 96} State Senate, ${dist.splitRepPrecincts ?? 308} State House)`,
             description:
-              "Identifies polling precincts spanning multiple legislative districts so County Election Commissioners can verify E-911 GIS street-range ballot styles prior to printing pollbooks.",
-            flaggedCount: 356,
+              `Identifies polling precincts spanning multiple legislative districts so ${stateConfig.authorityLabel} can verify E-911 GIS street-range ballot styles prior to printing pollbooks.`,
+            flaggedCount: Number(dist.splitLegislativePrecincts ?? 356),
             status: "verified",
             totalScanned: pb.precinctCapacity.totalPrecincts,
             threshold: "≥ 2 Legislative Districts / Precinct",
@@ -179,10 +191,10 @@ export default function MissionControl() {
           {
             id: "nvra-reconciliation",
             name: "PB-13: Non-Partisan NVRA Status & Ballot Activity Reconciliation",
-            desc: `36,071 Recent-Vote Inactive (Voter Protection) • 196,957 Pre-2019 Dormant Active (List Maintenance)`,
+            desc: `${(nvra.inactiveWithRecentVote2024_2026 ?? 36071).toLocaleString()} Recent-Vote Inactive (Voter Protection) • ${(nvra.dormantActivePre2019NoVote ?? 196957).toLocaleString()} Pre-2019 Dormant Active (List Maintenance)`,
             description:
-              "Dual non-partisan check for County Election Commissioners (who hold statutory authority to maintain and remove records from the voter rolls under Miss. Code Ann. § 23-15-153): flags 36,071 Inactive voters who cast a 2024–2026 ballot and 196,957 pre-2019 Active records with no vote since before 2018.",
-            flaggedCount: 36071,
+              `Dual non-partisan check for ${stateConfig.authorityLabel} (${stateConfig.authorityCitation}): flags ${(nvra.inactiveWithRecentVote2024_2026 ?? 36071).toLocaleString()} Inactive voters who cast a 2024–2026 ballot and ${(nvra.dormantActivePre2019NoVote ?? 196957).toLocaleString()} pre-2019 Active records with no vote since before 2018.`,
+            flaggedCount: Number(nvra.inactiveWithRecentVote2024_2026 ?? 36071),
             status: "verified",
             totalScanned: meta.totalRecords,
             threshold: "2024–2026 Vote vs. Status & 2-Cycle Clock",
@@ -191,13 +203,13 @@ export default function MissionControl() {
           {
             id: "unparsed-addresses",
             name: "PB-14: Unparsed 911 GIS Residential House Numbers",
-            desc: `1,011 Active voters (1,900 total) with descriptive RESIDENTIAL_ADDRESS but blank HOUSE_NUM`,
+            desc: `${(addrP.unparsedHouseNumActive ?? 1011).toLocaleString()} Active voters (${(addrP.unparsedHouseNumTotal ?? 1900).toLocaleString()} total) with descriptive street address but blank house number`,
             description:
-              "Isolates active registrations containing rural highway or landmark descriptions in RESIDENTIAL_ADDRESS without a structured HOUSE_NUM field needed for E-911 GIS boundary assignment.",
-            flaggedCount: 1011,
+              "Isolates active registrations containing rural highway or landmark descriptions in their residential address without a structured house number needed for E-911 GIS boundary assignment.",
+            flaggedCount: Number(addrP.unparsedHouseNumActive ?? 1011),
             status: "verified",
             totalScanned: meta.totalRecords,
-            threshold: "Address Text Present + Blank HOUSE_NUM",
+            threshold: "Address Text Present + Blank House Number",
             audit_type: "unparsed-addresses",
           },
         ];
@@ -225,7 +237,7 @@ export default function MissionControl() {
       }
     };
     fetchPlaybooks();
-  }, [customPlaybooks]);
+  }, [customPlaybooks, activeAudit, activeState, stateConfig]);
 
   const getAuditLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -280,11 +292,7 @@ export default function MissionControl() {
     return "💡 Source: Non-Partisan Election Administration Standard";
   };
 
-  const statePlaybooks = playbooks.filter((p) => {
-    if (selectedState === "MS") return !p.name.includes("[NC ");
-    if (selectedState === "NC") return p.name.includes("[NC ");
-    return true;
-  });
+  const statePlaybooks = playbooks;
 
   const filteredPlaybooks =
     selectedCounty === "All"
@@ -306,7 +314,19 @@ export default function MissionControl() {
     "Lafayette",
     "Oktibbeha",
   ];
-  const ncCounties = ["All", "Statewide", "Wake", "Mecklenburg", "Guilford", "Durham", "New Hanover"];
+  const ncCounties = [
+    "All",
+    "Statewide",
+    "Wake",
+    "Mecklenburg",
+    "Guilford",
+    "Durham",
+    "New Hanover",
+    "Forsyth",
+    "Cumberland",
+    "Buncombe",
+    "Pitt",
+  ];
   const currentCounties = selectedState === "NC" ? ncCounties : msCounties;
 
   return (
@@ -316,10 +336,10 @@ export default function MissionControl() {
           <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 bg-amber-100 text-amber-950 rounded-full text-xs font-extrabold uppercase tracking-wider">
-                🏛️ 82-County Commissioner Mission Control
+                🏛️ {stateConfig.totalCounties}-County {stateConfig.name} Mission Control
               </span>
               <span className="text-xs font-mono text-muted-foreground">
-                2,112,460 Voter Roll + 25,911,769 Voting History Rows
+                {activeAudit.metadata.totalRecords.toLocaleString()} Active/Inactive Roll + {(activeAudit.votingHistoryAudit.totalVerifiedBallotCredits ?? activeAudit.votingHistoryAudit.totalHistoryRowsScanned).toLocaleString()} Voting History Rows
               </span>
               <span className="text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded border border-emerald-300 flex items-center gap-1">
                 <span>✓ 100% Zero-PII Verified</span>
@@ -327,41 +347,41 @@ export default function MissionControl() {
             </div>
 
             {/* State Selector */}
-            <div className="flex bg-slate-200 p-1 rounded-xl gap-1">
+            <div className="flex bg-stone-200 p-1 rounded-xl gap-1">
               <button
                 onClick={() => {
                   setSelectedState("MS");
                   setSelectedCounty("All");
                 }}
-                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
                   selectedState === "MS"
-                    ? "bg-primary text-white shadow"
-                    : "text-slate-700 hover:bg-slate-300"
+                    ? "bg-[#111111] text-white shadow"
+                    : "text-stone-700 hover:bg-stone-300"
                 }`}
               >
-                📍 Mississippi (MS — 82 Counties)
+                📍 Mississippi (82 Counties)
               </button>
               <button
                 onClick={() => {
                   setSelectedState("NC");
                   setSelectedCounty("All");
                 }}
-                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
                   selectedState === "NC"
-                    ? "bg-emerald-700 text-white shadow"
-                    : "text-slate-700 hover:bg-slate-300"
+                    ? "bg-[#111111] text-white shadow"
+                    : "text-stone-700 hover:bg-stone-300"
                 }`}
               >
-                🌲 North Carolina (NC)
+                🌲 North Carolina (100 Counties)
               </button>
             </div>
           </div>
 
           <h1 className="text-3xl font-bold text-foreground">
-            {selectedState === "MS" ? "Mississippi 14-Playbook Non-Partisan" : "North Carolina"} Audit Suite
+            {stateConfig.name} 14-Playbook Non-Partisan Audit Suite
           </h1>
           <p className="text-muted-foreground mt-2">
-            Pre-configured deterministic audits calibrated for <strong>County Election Commissioners</strong> (who hold statutory authority to maintain and remove records from the voter rolls under Miss. Code Ann. § 23-15-153) and County Registrars. False alarms from nursing homes, college dormitories, Jr./Sr. fathers and sons, Panola County&apos;s SUP/SUPR column naming, and street names like{" "}
+            Pre-configured deterministic audits calibrated for <strong>{stateConfig.authorityLabel}</strong> ({stateConfig.authorityCitation}) and County Registrars. False alarms from nursing homes, college dormitories, military bases, Jr./Sr. fathers and sons, and street names like{" "}
             <em>Marshall Place</em> are automatically filtered out.{" "}
             <Tooltip content="Hover over any glossary term or open the Plain-English Guide in the right panel to see step-by-step explanations of the math.">
               <span className="text-primary font-semibold underline decoration-dotted">
@@ -373,16 +393,16 @@ export default function MissionControl() {
           {/* Flagship Action Buttons: Report, 3D Manifold, Explore */}
           <div className="pt-4 flex flex-wrap gap-3">
             <Link
-              href="/reports/mississippi-playbook-analysis"
+              href={`/reports/mississippi-playbook-analysis?state=${selectedState}`}
               className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-3.5 rounded-xl shadow-sm transition-all text-xs inline-flex items-center gap-2"
             >
-              <span>📄 Read Accént Editorial Mississippi Report (Draft 2) →</span>
+              <span>📄 Read {stateConfig.name} {stateConfig.totalCounties}-County Report →</span>
             </Link>
             <Link
-              href="/manifold"
+              href={`/manifold?state=${selectedState}`}
               className="bg-amber-700 hover:bg-amber-800 text-white font-bold px-5 py-3.5 rounded-xl shadow-sm transition-all text-xs inline-flex items-center gap-2"
             >
-              <span>🧭 Open Interactive Three.js 3D Threat Manifold →</span>
+              <span>🧭 Open Interactive Three.js 3D Threat Manifold ({stateConfig.totalCounties} Counties) →</span>
             </Link>
             <Link
               href="/explore?autoRun=true"

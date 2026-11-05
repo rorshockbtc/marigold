@@ -24,6 +24,7 @@ import {
   MousePointerClick,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useStateBenchmark, StateSwitcherPill } from "@/lib/data/StateBenchmarkContext";
 import msAudit from "@/data/mississippi_audit_results.json";
 
 type ViewMode = "counties" | "clusters";
@@ -201,13 +202,17 @@ export default function ThreatManifold3DExplorer({
   forceUnlocked = true,
   selectedCounty: externalSelectedCounty,
   onSelectCounty,
+  auditDataOverride,
 }: {
   compact?: boolean;
   forceUnlocked?: boolean;
   selectedCounty?: string;
   onSelectCounty?: (county: string) => void;
+  auditDataOverride?: typeof msAudit;
 }) {
-  const manifold = msAudit.threatManifold;
+  const { activeState, setActiveState, stateConfig, auditData: ctxAuditData } = useStateBenchmark();
+  const activeAudit = auditDataOverride || ctxAuditData || msAudit;
+  const manifold = activeAudit.threatManifold;
   const countyVectors = manifold.countyVectors as CountyVector[];
   const clusterVectors = manifold.clusterVectors as ClusterVector[];
   const correlations = (manifold as Record<string, unknown>).correlations as
@@ -1187,12 +1192,12 @@ export default function ThreatManifold3DExplorer({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search county (e.g. Hinds, Lee, DeSoto)..."
+                  placeholder={`Search ${stateConfig.name} county...`}
                   className="w-full h-11 rounded-lg border-2 border-[#111111]/35 bg-white pl-10 pr-3 text-base text-[#111111] font-medium placeholder:text-[#6E6A64] focus:outline-none focus:border-[#111111]"
                 />
               </div>
               <select
-                aria-label="Select Mississippi County"
+                aria-label={`Select ${stateConfig.name} County`}
                 value={selectedCounty.county}
                 onChange={(e) => handleSelectCounty(e.target.value)}
                 className="h-11 rounded-lg border-2 border-[#111111] bg-white px-3.5 text-base text-[#111111] font-bold focus:outline-none cursor-pointer whitespace-nowrap shrink-0"
@@ -1219,7 +1224,7 @@ export default function ThreatManifold3DExplorer({
                     {FRIENDLY_REGIME_LABELS[selectedCounty.regime] || selectedCounty.regime}
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111] mt-2">
-                    {selectedCounty.county} County, MS
+                    {selectedCounty.county} County, {activeState}
                   </h3>
                   <p className="text-base text-[#2A2623] mt-1">
                     Primary Focus:{" "}
@@ -1513,6 +1518,14 @@ export default function ThreatManifold3DExplorer({
 
           {/* Mode & Studio Theme Controls */}
           <div className="flex flex-wrap items-center gap-2.5">
+            <StateSwitcherPill
+              activeState={activeState}
+              onSelectState={(st) => {
+                setActiveState(st);
+                handleSelectCounty(st === "NC" ? "Wake" : "Hinds");
+              }}
+              variant="compact"
+            />
             <div className="inline-flex rounded-lg border-2 border-[#111111] bg-[#E8E2D5] p-1">
               <button
                 type="button"
@@ -1523,7 +1536,7 @@ export default function ThreatManifold3DExplorer({
                     : "text-[#111111] hover:bg-black/5"
                 }`}
               >
-                All 82 Counties
+                All {countyVectors.length} Counties
               </button>
               <button
                 type="button"
@@ -1534,7 +1547,7 @@ export default function ThreatManifold3DExplorer({
                     : "text-[#111111] hover:bg-black/5"
                 }`}
               >
-                32 Specific Locations
+                {clusterVectors.length} Specific Locations
               </button>
             </div>
 
@@ -1561,7 +1574,7 @@ export default function ThreatManifold3DExplorer({
               01 · The Sky-Blue Net
             </div>
             <h3 className="mt-1 font-serif text-xl font-bold text-[#111111] leading-snug">
-              Normal Baseline ({normalCountyCount} of 82 Counties)
+              Normal Baseline ({normalCountyCount} of {countyVectors.length} Counties)
             </h3>
             <p className="mt-2 text-base text-[#2C2825] leading-relaxed">
               Counties marked with a <strong>neutral circle (●)</strong> sit on the sky-blue net. Their address, mail, and precinct counts are normal for their population size.
@@ -1698,7 +1711,7 @@ export default function ThreatManifold3DExplorer({
               Full Screen 3D Studio
             </span>
             <h2 id={dialogTitleId} className="text-xl sm:text-2xl font-serif font-bold text-[#111111]">
-              Mississippi 82-County 3D Manifold — {selectedCounty.county} County Selected
+              {stateConfig.name} {countyVectors.length}-County 3D Manifold — {selectedCounty.county} County Selected
             </h2>
           </div>
           <div className="flex items-center gap-3">
@@ -1765,7 +1778,7 @@ export default function ThreatManifold3DExplorer({
         <div className="border-t-2 border-[#111111] bg-[#FAF8F5] px-6 py-8 md:px-8">
           <div className="max-w-3xl mb-6">
             <div className="text-base font-mono uppercase tracking-widest text-[#B45309] font-extrabold mb-1">
-              How Different Voter Roll Tasks Connect Across All 82 Counties
+              How Different Voter Roll Tasks Connect Across All {countyVectors.length} {stateConfig.name} Counties
             </div>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
               Which Cleanup Steps Solve Two Problems at Once?
