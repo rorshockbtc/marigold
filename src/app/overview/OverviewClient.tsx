@@ -59,74 +59,42 @@ export default function OverviewClient() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1A1614] selection:bg-amber-100 font-serif">
-      {/* Top Banner & Quick Share Toolbar */}
-      <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#1A1614]/10 px-4 sm:px-6 py-3 font-sans transition-all">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-2 text-[#1A1614] font-serif font-bold text-base hover:opacity-80 transition-opacity">
-            <MarigoldIcon className="w-5 h-5 flex-shrink-0 text-[#B45309]" />
-            <span>Marigold Insights</span>
-            <span className="text-xs font-mono font-normal uppercase text-[#B45309] bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-600/20">
-              One-Pager
-            </span>
-          </Link>
-
-          {/* Quick Actions */}
-          <div className="flex items-center flex-wrap gap-2 text-xs sm:text-sm font-medium">
-            <a
-              href={pdfUrl}
-              download="Marigold-OnePager.pdf"
-              className="inline-flex items-center gap-1.5 bg-[#B45309] hover:bg-[#92400E] text-white px-3.5 py-1.5 rounded-lg shadow-sm font-semibold transition-all hover:shadow"
-              title="Download print-ready 1-page PDF"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download PDF</span>
-            </a>
-
-            <button
-              onClick={handleCopyLink}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 px-3 py-1.5 rounded-lg transition-all"
-              title="Copy shareable link"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-stone-500" />}
-              <span>{copied ? "Link Copied!" : "Copy Link"}</span>
-            </button>
-
-            <button
-              onClick={handleShare}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 px-3 py-1.5 rounded-lg transition-all"
-              title="Share via device or apps"
-            >
-              <Share2 className="w-4 h-4 text-stone-500" />
-              <span className="hidden sm:inline">Share</span>
-            </button>
-
-            <a
-              href={`mailto:?subject=${encodeURIComponent("Marigold — Big data answers. Nothing leaves your computer.")}&body=${encodeURIComponent(`Check out Marigold: A private, in-browser data engine for analyzing massive civic and enterprise datasets without uploading files.\n\nRead the one-page overview here: https://marigoldinsights.org/overview\nDownload the one-page PDF: https://marigoldinsights.org/Marigold-OnePager.pdf`)}`}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 px-3 py-1.5 rounded-lg transition-all"
-              title="Email this one-pager to a colleague"
-            >
-              <Mail className="w-4 h-4 text-stone-500" />
-              <span className="hidden md:inline">Email</span>
-            </a>
-
-            <Link
-              href="/explore?demo=roosevelt"
-              className="inline-flex items-center gap-1 text-[#B45309] hover:text-[#78350F] font-semibold px-2 py-1.5 transition-colors"
-            >
-              <span>Live Demo</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Main Container */}
       <main className="max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
         {/* Document Card Shell (mimics physical print-sheet elegance) */}
         <article className="bg-[#FAF8F5] border border-stone-300/80 rounded-2xl p-6 sm:p-12 shadow-sm relative">
-          {/* Kicker */}
-          <div className="font-sans font-bold text-xs sm:text-sm tracking-widest uppercase text-[#B45309] mb-2">
-            Marigold · A Pipes Production
+          {/* Top Document Bar: Kicker + Clean Action Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-stone-200 font-sans">
+            <div className="font-bold text-xs sm:text-sm tracking-widest uppercase text-[#B45309]">
+              Marigold · One-Page Overview
+            </div>
+            <div className="flex items-center flex-wrap gap-2 text-xs sm:text-sm font-medium">
+              <a
+                href={pdfUrl}
+                download="Marigold-OnePager.pdf"
+                className="inline-flex items-center gap-1.5 bg-[#B45309] hover:bg-[#92400E] text-white px-3.5 py-1.5 rounded-lg shadow-xs font-semibold transition-all"
+                title="Download print-ready 1-page PDF"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download 1-Page PDF</span>
+              </a>
+              <button
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-1.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                title="Copy shareable link"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-stone-500" />}
+                <span>{copied ? "Link Copied!" : "Copy Link"}</span>
+              </button>
+              <button
+                onClick={handleShare}
+                className="inline-flex items-center gap-1.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                title="Share via device or apps"
+              >
+                <Share2 className="w-3.5 h-3.5 text-stone-500" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            </div>
           </div>
 
           {/* Title */}

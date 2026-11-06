@@ -1,13 +1,20 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { PartnersContent } from './PartnersContent';
+import React from "react";
+import type { Metadata } from "next";
+import SupportMarigoldPage from "@/app/partnership/page";
 
 export const metadata: Metadata = {
-  title: "Beta Partnership Program | Marigold Insights",
-  description: "Join our B2B GovTech pilot. We partner with state election officials, good-governance organizations, and academic researchers to deploy secure, local-compute verification.",
-  keywords: ["GovTech partnership", "election administration pilot", "civic tech funding", "voter integrity grants", "non-partisan data research"],
+  title: "Support Marigold | Non-Partisan Civic Data Infrastructure",
+  description:
+    "Support Marigold Insights: share Zero-PII county reports with local election officials, volunteer for state schema testing, launch a county pilot, or fund open-access civic audits.",
+  keywords: [
+    "Support Marigold",
+    "GovTech partnership",
+    "election administration pilot",
+    "civic tech funding",
+    "non-partisan data research",
+  ],
 };
 
 export default function PartnersPage() {
-  return <PartnersContent />;
+  return <SupportMarigoldPage />;
 }
