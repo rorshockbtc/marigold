@@ -148,63 +148,66 @@ export function isGenerationalSuffix(suffix: unknown): boolean {
 const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
   voter_id: [
     'mappingvalue', 'mapping_value', 'mapping val', 'mappingval',
+    'ncid', 'voterregnum', 'voter_reg_num',
     'sosvoterid', 'voterid', 'voterregistrationnumber', 'registrationnumber',
-    'sosid', 'voterregnum', 'idnumber', 'statevoterid', 'regnum', 'voteridnum',
-    'voterkey', 'stateid', 'voterregid', 'voterregnum', 'voterregno', 'statevoteridnum',
-    'voteridnumber', 'statevoteridnumber', 'voter_id', 'voter_reg_num', 'sos_voter_id'
+    'sosid', 'idnumber', 'statevoterid', 'regnum', 'voteridnum',
+    'voterkey', 'stateid', 'voterregid', 'voterregno', 'statevoteridnum',
+    'voteridnumber', 'statevoteridnumber', 'voter_id', 'sos_voter_id'
   ],
   address: [
     'residentialaddress', 'residenceaddress', 'streetaddress', 'resstreet',
+    'resstreetaddress', 'res_street_address',
     'resaddr', 'resaddress', 'physicaladdress', 'addressline1', 'address1',
     'street', 'domicileaddress', 'address'
   ],
   city: [
-    'residentialcity', 'residencecity', 'rescity', 'cityname', 'city',
-    'municipality', 'physcity', 'town', 'residentialcityname'
+    'residentialcity', 'residencecity', 'rescity', 'rescitydesc', 'res_city_desc',
+    'cityname', 'city', 'municipality', 'physcity', 'town', 'residentialcityname'
   ],
   state: [
-    'residentialstate', 'residencestate', 'resstate', 'statename', 'st',
-    'state', 'physstate'
+    'residentialstate', 'residencestate', 'resstate', 'statecd', 'state_cd',
+    'statename', 'st', 'state', 'physstate'
   ],
   zip: [
-    'reszipcode', 'res_zip_code', 'reszip',
-    'residentialzip', 'residencezip', 'zipcode', 'postalcode',
+    'reszipcode', 'res_zip_code', 'reszip', 'zipcode', 'zip_code',
+    'residentialzip', 'residencezip', 'postalcode',
     'zip5', 'zip', 'physzip'
   ],
   county: [
-    'rescounty', 'residentialcounty', 'res_county',
+    'rescounty', 'residentialcounty', 'res_county', 'countydesc', 'county_desc',
     'countyname', 'cntydesc', 'county', 'cnty'
   ],
   first_name: [
-    'firstname', 'voterfirstname', 'fname', 'first', 'namefirst', 'givenname'
+    'firstname', 'first_name', 'voterfirstname', 'fname', 'first', 'namefirst', 'givenname'
   ],
   middle_name: [
-    'middlename', 'middle', 'mname', 'midname', 'votermiddlename'
+    'middlename', 'middle_name', 'middle', 'mname', 'midname', 'votermiddlename'
   ],
   last_name: [
-    'lastname', 'voterlastname', 'lname', 'last', 'namelast', 'surname'
+    'lastname', 'last_name', 'voterlastname', 'lname', 'last', 'namelast', 'surname'
   ],
   suffix: [
-    'suffix', 'generation', 'suffixname', 'nametitle', 'votersuffix', 'name_suffix', 'voter_suffix', 'title'
+    'suffix', 'namesuffixlbl', 'name_suffix_lbl', 'generation', 'suffixname', 'nametitle', 'votersuffix', 'name_suffix', 'voter_suffix', 'title'
   ],
   full_name: [
     'fullname', 'voterfullname', 'displayname'
   ],
   status: [
-    'voterstatus', 'regstatus', 'registrationstatus', 'activestatus',
+    'voterstatus', 'voterstatusdesc', 'voter_status_desc', 'statuscd', 'status_cd',
+    'regstatus', 'registrationstatus', 'activestatus',
     'statuscode', 'status'
   ],
   date_registered: [
     'effectiveregndate', 'effective_regn_date', 'effectiveregdate', 'effectiveregistrationdate',
-    'registrationdate', 'dateregistered', 'regdate', 'origregdate',
+    'registrdt', 'registr_dt', 'registrationdate', 'dateregistered', 'regdate', 'origregdate',
     'effectivedate', 'enrolldate', 'appdate', 'dateadded'
   ],
   dob: [
     'dob', 'birthdate', 'dateofbirth', 'voterbirthdate', 'birth_date',
-    'bdate', 'birthyear', 'yb', 'yob', 'yearofbirth'
+    'bdate', 'birthyear', 'birth_year', 'yb', 'yob', 'yearofbirth'
   ],
   precinct_code: [
-    'precinctcode', 'precinctid', 'pctcode', 'precinct',
+    'precinctcode', 'precinctabbrv', 'precinct_abbrv', 'precinctid', 'pctcode', 'precinct',
     'pct', 'wardprecinct', 'splitcode', 'precinct_code'
   ],
   ncoa_flag: [
@@ -220,7 +223,7 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'streettype', 'street_type', 'sttype', 'st_type', 'streettypecode'
   ],
   mail_address: [
-    'mailingaddress', 'mailaddress', 'mail_address', 'mailing_address', 'mailaddr', 'mail_addr', 'address2'
+    'mailingaddress', 'mailaddress', 'mail_address', 'mailing_address', 'mailaddr', 'mail_addr', 'mailaddr1', 'mail_addr1', 'address2'
   ],
   mail_city: [
     'mailcity', 'mail_city', 'mailingcity', 'mailing_city'
@@ -232,22 +235,22 @@ const FIELD_SYNONYMS: Record<keyof ColumnMappingSchema, string[]> = {
     'mailzipcode', 'mail_zip_code', 'mailzip', 'mail_zip', 'mailingzip', 'mailingzipcode', 'mailing_zip'
   ],
   precinct_name: [
-    'precinctname', 'precinct_name', 'pctname', 'pct_name', 'precinctdesc', 'precinctdescription'
+    'precinctname', 'precinct_name', 'pctname', 'pct_name', 'precinctdesc', 'precinct_desc', 'precinctdescription'
   ],
   dist_cong: [
-    'cong', 'congressional', 'congressionaldistrict', 'dist_cong', 'cd', 'congdist'
+    'cong', 'congdistabbrv', 'cong_dist_abbrv', 'congressional', 'congressionaldistrict', 'dist_cong', 'cd', 'congdist'
   ],
   dist_sen: [
-    'sen', 'senate', 'senatedistrict', 'dist_sen', 'sd', 'senatedist'
+    'sen', 'ncsenateabbrv', 'nc_senate_abbrv', 'senate', 'senatedistrict', 'dist_sen', 'sd', 'senatedist'
   ],
   dist_rep: [
-    'rep', 'house', 'representative', 'housedistrict', 'dist_rep', 'hd', 'repdist', 'statedist'
+    'rep', 'nchouseabbrv', 'nc_house_abbrv', 'house', 'representative', 'housedistrict', 'dist_rep', 'hd', 'repdist', 'statedist'
   ],
   dist_sup: [
-    'sup', 'supr', 'supervisor', 'supervisordistrict', 'dist_sup', 'supervisordist', 'beat'
+    'sup', 'supr', 'countycommissabbrv', 'county_commiss_abbrv', 'supervisor', 'supervisordistrict', 'dist_sup', 'supervisordist', 'beat'
   ],
   dist_da: [
-    'da', 'districtattorney', 'dist_da', 'dadistrict', 'prosecutor'
+    'da', 'distattorneyabbrv', 'dist_attorney_abbrv', 'districtattorney', 'dist_da', 'dadistrict', 'prosecutor'
   ],
   dist_sc: [
     'sc', 'supremecourt', 'dist_sc', 'supremecourtdistrict', 'scdistrict'

@@ -9,6 +9,8 @@ import {
   synthesizeDeterministicResearch,
   tryLocalOllamaOrByokJSON,
 } from './deterministicStoryEngine';
+import { tryWebGPUJSONCompletion } from './webgpuLocalEngine';
+import { isAirGapLocked } from '../security/airGapGuard';
 
 export interface ChartConfig {
   xAxisKey?: string;
@@ -41,15 +43,19 @@ export function useMaryAIRouter() {
     setIsGenerating(true);
     setError(null);
     setPipelineStatus("Analyzing intent locally...");
+    const sysPrompt = `Classify query into JSON with intent ('LOCAL_DATA_EXPLORE'|'LOCAL_DATA_DRAFT'|'WEB_HUNT'|'QUALITATIVE_RESEARCH'|'CLARIFY_MOTIVATION'), reasoning, proposedDatasetQuery, socraticQuestion. Active dataset: ${activeSchemaName || 'None'}`;
     try {
-      // Tier 1: Optional Local Ollama / BYOK
-      const localIntent = await tryLocalOllamaOrByokJSON<IntentPayload>(
-        naturalLanguageQuery,
-        `Classify query into JSON with intent ('LOCAL_DATA_EXPLORE'|'LOCAL_DATA_DRAFT'|'WEB_HUNT'|'QUALITATIVE_RESEARCH'|'CLARIFY_MOTIVATION'), reasoning, proposedDatasetQuery, socraticQuestion. Active dataset: ${activeSchemaName || 'None'}`
-      );
-      if (localIntent && localIntent.intent) return localIntent;
+      // Tier 1A: Warmed In-Browser WebGPU (@mlc-ai/web-llm — 0 network bytes)
+      const webGpuIntent = await tryWebGPUJSONCompletion<IntentPayload>(naturalLanguageQuery, sysPrompt);
+      if (webGpuIntent && webGpuIntent.intent) return webGpuIntent;
 
-      // Tier 0: Zero-cost deterministic intent router (instant, 0 server cost)
+      // Tier 1B: Optional Local Ollama (127.0.0.1) or BYOK (skipped if BYOK + Air-Gap Locked)
+      if (!isAirGapLocked()) {
+        const localIntent = await tryLocalOllamaOrByokJSON<IntentPayload>(naturalLanguageQuery, sysPrompt);
+        if (localIntent && localIntent.intent) return localIntent;
+      }
+
+      // Tier 0: Zero-cost deterministic intent router (instant, 0 server cost, 100% offline)
       return classifyIntentDeterministic(naturalLanguageQuery, activeSchemaName);
     } catch {
       return classifyIntentDeterministic(naturalLanguageQuery, activeSchemaName);
@@ -64,6 +70,11 @@ export function useMaryAIRouter() {
     setError(null);
     setPipelineStatus("Compiling statutory and methodological research...");
     try {
+      // Enforce Zero-Egress Air-Gap Lock when active
+      if (isAirGapLocked()) {
+        return synthesizeDeterministicResearch(naturalLanguageQuery);
+      }
+
       const res = await fetch('/api/data-story/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,17 +112,29 @@ export function useMaryAIRouter() {
         column_name: globalPIIPipeline.encodeValue(col.column_name)
       }));
 
-      // Tier 1: Optional Local Ollama / BYOK
-      const localSql = await tryLocalOllamaOrByokJSON<SQLPayload>(
-        `Query: ${naturalLanguageQuery}\nSchema: ${JSON.stringify(scrubbedSchema)}`,
-        `Return JSON { query: "SELECT ... FROM data_file ...", chartType: "bar"|"line"|"scatter"|"pie", chartConfig: { xAxisKey: "x", yAxisKey: "y", title: "..." } }`
-      );
+      const sqlPrompt = `Query: ${naturalLanguageQuery}\nSchema: ${JSON.stringify(scrubbedSchema)}`;
+      const sqlSys = `Return JSON { query: "SELECT ... FROM data_file ...", chartType: "bar"|"line"|"scatter"|"pie", chartConfig: { xAxisKey: "x", yAxisKey: "y", title: "..." } }`;
+
+      // Tier 1A: Warmed In-Browser WebGPU (@mlc-ai/web-llm)
+      const webGpuSql = await tryWebGPUJSONCompletion<SQLPayload>(sqlPrompt, sqlSys);
+      if (webGpuSql && webGpuSql.query) {
+        webGpuSql.query = globalPIIPipeline.decodeString(webGpuSql.query);
+        return webGpuSql;
+      }
+
+      // Enforce Air-Gap Lock: skip outbound `/api/data-story/sql` and cloud BYOK when locked
+      if (isAirGapLocked()) {
+        return generateDeterministicSQLPayload(naturalLanguageQuery, schema);
+      }
+
+      // Tier 1B: Optional Local Ollama / BYOK
+      const localSql = await tryLocalOllamaOrByokJSON<SQLPayload>(sqlPrompt, sqlSys);
       if (localSql && localSql.query) {
         localSql.query = globalPIIPipeline.decodeString(localSql.query);
         return localSql;
       }
 
-      // Tier 0 / Server Cascade: call server endpoint (which itself falls back to deterministic SQL at $0 cost)
+      // Tier 0 / Server Cascade
       const res = await fetch('/api/data-story/sql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,10 +166,27 @@ export function useMaryAIRouter() {
     setPipelineStatus("Synthesizing 6-stage rhetorical narrative...");
 
     try {
-      // Tier 1: Optional Local Ollama / BYOK
+      const narPrompt = `Query: ${naturalLanguageQuery}\nChartConfig: ${JSON.stringify(chartConfig)}\nAggregatedData: ${JSON.stringify(chartData)}`;
+      const narSys = `Return JSON { nextSocraticQuestion: string, blocks: [{ type: 'hook'|'thesis'|'chart'|'dialectic_antithesis'|'synthesis', title?: string, narrative?: string }] }`;
+
+      // Tier 1A: Warmed In-Browser WebGPU
+      const webGpuNarrative = await tryWebGPUJSONCompletion<{ blocks: any[]; nextSocraticQuestion: string }>(
+        narPrompt,
+        narSys
+      );
+      if (webGpuNarrative && Array.isArray(webGpuNarrative.blocks) && webGpuNarrative.blocks.length > 0) {
+        return webGpuNarrative;
+      }
+
+      // Enforce Air-Gap Lock: synthesize 100% locally via deterministicStoryEngine when locked
+      if (isAirGapLocked()) {
+        return synthesizeDeterministicNarrative(naturalLanguageQuery, chartData, chartConfig);
+      }
+
+      // Tier 1B: Optional Local Ollama / BYOK
       const localNarrative = await tryLocalOllamaOrByokJSON<{ blocks: any[]; nextSocraticQuestion: string }>(
-        `Query: ${naturalLanguageQuery}\nChartConfig: ${JSON.stringify(chartConfig)}\nAggregatedData: ${JSON.stringify(chartData)}`,
-        `Return JSON { nextSocraticQuestion: string, blocks: [{ type: 'hook'|'thesis'|'chart'|'dialectic_antithesis'|'synthesis', title?: string, narrative?: string }] }`
+        narPrompt,
+        narSys
       );
       if (localNarrative && Array.isArray(localNarrative.blocks) && localNarrative.blocks.length > 0) {
         return localNarrative;

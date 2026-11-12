@@ -8,7 +8,7 @@ import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
 import { usePlaybooks } from "@/lib/workspace/PlaybookContext";
 import { isDemoGroupActive, autoLoadSyntheticDemoDataset } from "@/lib/db/dbName";
-import { Filter, Download, ArrowRight, Shield, ShieldAlert, X, Activity, Database, Bot, ChevronDown, ChevronUp, Lock, BarChart3, AlertCircle, RefreshCw, CheckCircle2, BookmarkPlus } from "lucide-react";
+import { Filter, Download, ArrowRight, Shield, ShieldAlert, X, Activity, Database, Bot, ChevronDown, ChevronUp, Lock, BarChart3, AlertCircle, RefreshCw, CheckCircle2, BookmarkPlus, Terminal, Users, Upload, GitCompare } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useExportManager } from "@/hooks/useExportManager";
 import { DataRequiredState } from "@/components/DataRequiredState";
@@ -16,6 +16,26 @@ import { ExploreDataPanel } from "@/components/ExploreDataPanel";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { ExecutiveBriefingExport } from "@/components/ExecutiveBriefingExport";
 import { Link } from "@/components/ui/Link";
+import { AirGapStatusBadge } from "@/components/AirGapStatusBadge";
+import { useCSVParser } from "@/hooks/useCSVParser";
+import { isAirGapLocked } from "@/lib/security/airGapGuard";
+
+const PLAYBOOK_SQL_RECIPES: Record<string, string> = {
+  density: `SELECT RESIDENTIAL_ADDRESS, RES_CITY, RES_ZIP_CODE, COUNTY, COUNT(*) AS registered_voters\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\nGROUP BY 1, 2, 3, 4 HAVING COUNT(*) >= 8 ORDER BY registered_voters DESC;`,
+  "missing-dorm": `SELECT VOTER_ID, RESIDENTIAL_ADDRESS, RES_CITY, COUNTY\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\n  AND REGEXP_MATCHES(UPPER(RESIDENTIAL_ADDRESS), '\\b(HALL|DORM|APARTMENT|APTS|TOWERS)\\b')\n  AND NOT REGEXP_MATCHES(UPPER(RESIDENTIAL_ADDRESS), '\\b(APT|UNIT|RM|ROOM|SUITE|LOT|#)\\b');`,
+  "out-of-state-mailing": `SELECT VOTER_ID, COUNTY, RESIDENTIAL_ADDRESS, MAIL_STATE, STATUS\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\n  AND MAIL_STATE IS NOT NULL AND TRIM(MAIL_STATE) <> '' AND UPPER(MAIL_STATE) NOT IN ('MS', 'NC');`,
+  "po-box": `SELECT VOTER_ID, COUNTY, RESIDENTIAL_ADDRESS, RES_CITY\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\n  AND REGEXP_MATCHES(UPPER(RESIDENTIAL_ADDRESS), '^(P\\.?O\\.?\\s*BOX|PMB\\b)');`,
+  "typo-names": `SELECT VOTER_ID, FIRST_NAME, LAST_NAME, EFFECTIVE_REGN_DATE, COUNTY\nFROM voter_roll WHERE LENGTH(TRIM(FIRST_NAME)) <= 1 OR EXTRACT(YEAR FROM TRY_CAST(EFFECTIVE_REGN_DATE AS DATE)) < 1900;`,
+  duplicates: `SELECT FIRST_NAME, MIDDLE_NAME, LAST_NAME, COALESCE(SUFFIX, '') AS SUFFIX, RES_ZIP_CODE, COUNT(DISTINCT RESIDENTIAL_ADDRESS) AS distinct_addrs, COUNT(*) AS pair_rows\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\nGROUP BY 1, 2, 3, 4, 5 HAVING COUNT(*) > 1 AND COUNT(DISTINCT RESIDENTIAL_ADDRESS) > 1;`,
+  commercial: `SELECT VOTER_ID, RESIDENTIAL_ADDRESS, RES_CITY, COUNTY\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\n  AND REGEXP_MATCHES(UPPER(RESIDENTIAL_ADDRESS), '\\b(UPS STORE|MAILBOX|PMB|COMMERCIAL)\\b');`,
+  spikes: `SELECT EFFECTIVE_REGN_DATE, COUNT(*) AS registrations_on_date\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\nGROUP BY 1 ORDER BY registrations_on_date DESC LIMIT 25;`,
+  "phantom-precincts": `SELECT PRECINCT_CODE, PRECINCT_NAME, COUNTY, COUNT(*) AS active_voters\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\nGROUP BY 1, 2, 3 HAVING COUNT(*) > 3000 OR COALESCE(TRIM(PRECINCT_CODE), '') = '';`,
+  "benfords-law": `WITH pct_totals AS (SELECT PRECINCT_CODE, COUNT(*) AS n FROM voter_roll GROUP BY 1)\nSELECT SUBSTR(CAST(n AS VARCHAR), 1, 1) AS leading_digit, COUNT(*) AS observed_precincts\nFROM pct_totals WHERE n >= 10 GROUP BY 1 ORDER BY 1;`,
+  "missing-districts": `SELECT VOTER_ID, COUNTY, PRECINCT_CODE, CONG, SEN, REP, COALESCE(SUP, SUPR) AS SUPERVISOR\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\n  AND (COALESCE(CONG,'') = '' OR COALESCE(SEN,'') = '' OR COALESCE(REP,'') = '');`,
+  "split-precincts": `SELECT COUNTY, PRECINCT_CODE, COUNT(DISTINCT CONG) AS cong_splits, COUNT(DISTINCT SEN) AS sen_splits, COUNT(DISTINCT REP) AS house_splits, COUNT(*) AS active_voters\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\nGROUP BY 1, 2 HAVING COUNT(DISTINCT CONG) > 1 OR COUNT(DISTINCT SEN) > 1 OR COUNT(DISTINCT REP) > 1;`,
+  "nvra-reconciliation": `SELECT VOTER_ID, COUNTY, STATUS, EFFECTIVE_REGN_DATE, LAST_VOTED_DATE\nFROM voter_roll\nWHERE (UPPER(STATUS) = 'INACTIVE' AND EXTRACT(YEAR FROM TRY_CAST(LAST_VOTED_DATE AS DATE)) >= 2024)\n   OR (UPPER(STATUS) = 'ACTIVE' AND EXTRACT(YEAR FROM TRY_CAST(EFFECTIVE_REGN_DATE AS DATE)) <= 2018 AND COALESCE(LAST_VOTED_DATE, '') = '');`,
+  "unparsed-addresses": `SELECT VOTER_ID, COUNTY, RESIDENTIAL_ADDRESS, HOUSE_NUM\nFROM voter_roll WHERE UPPER(STATUS) = 'ACTIVE'\n  AND COALESCE(TRIM(RESIDENTIAL_ADDRESS), '') <> '' AND COALESCE(TRIM(HOUSE_NUM), '') = '';`,
+};
 
 interface PlaybookStatus {
   id: string;
@@ -31,8 +51,15 @@ interface PlaybookStatus {
 
 export default function ExplorePage() {
   const [viewMode, setViewMode] = useState<'360_overview' | 'playbook_drilldown'>('360_overview');
+  const [personaMode, setPersonaMode] = useState<'commissioner' | 'analyst'>('commissioner');
+  const [baselineSnapshot, setBaselineSnapshot] = useState<{
+    savedAt: string;
+    totalRows: number;
+    counts: Record<string, number>;
+  } | null>(null);
   
   const { runAllPlaybooksSweep, runLocalAudit, query: runQuery, queryProgress, isQuerying } = useDataQuery();
+  const { state: quickParseState, parseFile: quickParseFile } = useCSVParser();
   const { publishAuditCache, loadAuditCache } = useGroupSync();
   const { addTask, addNoteToTask, setSelectedTicketId } = useKanban();
   const { addPlaybook } = usePlaybooks();
@@ -98,6 +125,13 @@ export default function ExplorePage() {
     if (typeof window !== "undefined") {
       const savedName = localStorage.getItem("marigold_display_name");
       if (savedName) setAuditorName(savedName);
+
+      try {
+        const savedBaseline = localStorage.getItem("marigold_audit_baseline_v1");
+        if (savedBaseline) {
+          setBaselineSnapshot(JSON.parse(savedBaseline));
+        }
+      } catch {}
 
       const group = localStorage.getItem("marigold_active_group") || "";
       const isConnected = localStorage.getItem("marigold_file_connected") === "true";
@@ -314,11 +348,43 @@ export default function ExplorePage() {
     });
   };
 
+  const handleSaveBaselineSnapshot = () => {
+    const counts: Record<string, number> = {};
+    playbooks.forEach((pb) => {
+      counts[pb.id] = pb.flaggedCount;
+    });
+    const snap = {
+      savedAt: new Date().toISOString(),
+      totalRows,
+      counts,
+    };
+    setBaselineSnapshot(snap);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("marigold_audit_baseline_v1", JSON.stringify(snap));
+    }
+    setPublishStatus("Saved current extract as Baseline for future Roll Diff comparison!");
+    setTimeout(() => setPublishStatus(null), 4000);
+  };
+
+  const handleQuickIngestFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await quickParseFile(file);
+    setIsDataLoaded(true);
+    setIsUpToDate(false);
+    const activeGrp = localStorage.getItem("marigold_active_group") || "default";
+    const { MarigoldDataEngineService } = await import('@/lib/services/MarigoldDataEngineService');
+    const directCount = await MarigoldDataEngineService.getTotalRowCount(activeGrp);
+    setTotalRows(directCount);
+    setPublishStatus(`Streamed ${file.name} (${directCount.toLocaleString()} rows) into local memory!`);
+    setTimeout(() => setPublishStatus(null), 4500);
+  };
+
   const handlePublishDataStory = async () => {
     try {
       const { generateWorkspaceKey, encryptPayload } = await import("@/lib/crypto/LocalKeyManager");
-      const { getDirectoryHandle, writeStructuredFile } = await import("@/lib/fs/LocalFSManager");
-      const { pushBlobToRelay } = await import("@/lib/relay/clientRelay");
+      const { getDirectoryOrOPFSHandle, writeStructuredFile } = await import("@/lib/fs/LocalFSManager");
+      const { validateCivicContent } = await import("@/lib/security/civicPiiGuard");
       
       const key = await generateWorkspaceKey();
       const now = new Date();
@@ -330,6 +396,14 @@ export default function ExplorePage() {
         resultsCount: filteredResults.length,
         timestamp: Date.now()
       }, null, 2);
+
+      // Verify Zero-PII Guardrail before allowing any relay push
+      const guard = validateCivicContent(rawStory, filename);
+      if (!guard.allowed) {
+        setPublishStatus(guard.userFacingMessage || "Blocked by Civic PII Guardrail.");
+        setTimeout(() => setPublishStatus(null), 5000);
+        return;
+      }
       
       const { ciphertextHex, ivHex } = await encryptPayload(rawStory, key);
 
@@ -343,17 +417,22 @@ export default function ExplorePage() {
       
       const grp = localStorage.getItem("marigold_active_group") || "default";
 
-      const dirHandle = await getDirectoryHandle(grp.toLowerCase());
-      if (dirHandle) {
-        await writeStructuredFile(dirHandle, "Data_Stories", filename, JSON.stringify(payload, null, 2));
-      }
+      const dirHandle = await getDirectoryOrOPFSHandle(grp.toLowerCase());
+      await writeStructuredFile(dirHandle, "Data_Stories", filename, JSON.stringify(payload, null, 2));
 
-      await pushBlobToRelay(grp, payload);
+      if (!isAirGapLocked()) {
+        const { pushBlobToRelay } = await import("@/lib/relay/clientRelay");
+        await pushBlobToRelay(grp, payload);
+      }
       
-      setPublishStatus(`Data Story saved to Marigold_Local/Data_Stories/${filename}!`);
+      setPublishStatus(
+        isAirGapLocked()
+          ? `Air-Gap Locked: Encrypted Data Story saved strictly locally to Marigold_Local/Data_Stories/${filename}!`
+          : `Data Story saved to Marigold_Local/Data_Stories/${filename}!`
+      );
       setTimeout(() => setPublishStatus(null), 4500);
-    } catch (e) {
-      setPublishStatus("Published to local session.");
+    } catch {
+      setPublishStatus("Saved to local Sovereign Vault.");
       setTimeout(() => setPublishStatus(null), 4000);
     }
   };
@@ -409,25 +488,71 @@ export default function ExplorePage() {
       )}
 
       {/* Header */}
-      <div className="px-8 pt-6 pb-2 bg-white z-10 border-b border-border-soft shrink-0">
+      <div className="px-8 pt-6 pb-3 bg-white z-10 border-b border-border-soft shrink-0 space-y-3">
         <PageHeader
-          title={viewMode === '360_overview' ? "Jurisdiction Forensic Sweep" : "Explore Playbook"}
-          subtitle={viewMode === '360_overview' ? `Active Jurisdiction: ${jurisdiction} (${totalRows.toLocaleString()} citizen records locked in RAM)` : "Discover anomalies and drill down."}
+          title={viewMode === '360_overview' ? "Jurisdiction Statutory Sweep" : "Explore Playbook"}
+          subtitle={viewMode === '360_overview' ? `Active Jurisdiction: ${jurisdiction} (${totalRows.toLocaleString()} citizen records locked in local RAM)` : "Inspect flagged records and statutory checks locally."}
           actions={
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 border-r border-border-soft pr-4 mr-2">
-                <Database className="w-4 h-4 text-text-body" />
-                <FilterControl
-                  label=""
-                  value={JSON.stringify(userLocalDatasets)}
-                  onChange={(val) => setUserLocalDatasets(JSON.parse(val))}
-                  options={[
-                    { value: JSON.stringify(["Mississippi_July_2026", "Mari_Research_V1"]), label: "Workspace: Group Collaboration" },
-                    { value: JSON.stringify(["Mississippi_August_2026", "Wyoming_VoterRoll"]), label: "Workspace: Personal Research" },
-                  ]}
-                  className="text-sm font-bold"
-                />
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Dual-Persona Switcher */}
+              <div className="inline-flex items-center rounded-xl bg-[#F6F3EC] p-1 border border-[#DFD9CE]" role="group" aria-label="View Persona">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPersonaMode('commissioner');
+                    setVerboseMode(false);
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    personaMode === 'commissioner'
+                      ? 'bg-[#1C1917] text-[#FAF8F5] shadow-sm'
+                      : 'text-[#57534E] hover:text-[#1C1917]'
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Commissioner View</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPersonaMode('analyst');
+                    setVerboseMode(true);
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    personaMode === 'analyst'
+                      ? 'bg-[#1C1917] text-[#FAF8F5] shadow-sm'
+                      : 'text-[#57534E] hover:text-[#1C1917]'
+                  }`}
+                >
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>SQL &amp; Analyst View</span>
+                </button>
               </div>
+
+              {/* Direct .ZIP / .CSV / .TXT Voter File Loader */}
+              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-[#D6D0C4] text-xs font-bold text-[#1C1917] cursor-pointer transition-colors">
+                <Upload className="w-3.5 h-3.5 text-[#B45309]" />
+                <span>{quickParseState.isProcessing ? `Streaming (${quickParseState.progress}%)...` : "Load .ZIP / .CSV Roll"}</span>
+                <input
+                  type="file"
+                  accept=".zip,.csv,.txt,.tsv"
+                  onChange={handleQuickIngestFile}
+                  disabled={quickParseState.isProcessing}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Save Baseline / Compare Extract */}
+              {viewMode === '360_overview' && isAuditComplete && (
+                <button
+                  type="button"
+                  onClick={handleSaveBaselineSnapshot}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#D6D0C4] text-xs font-bold text-[#44403C] cursor-pointer transition-colors"
+                  title="Snapshot current 14-playbook counts so your next voter roll upload shows exact +/- differences."
+                >
+                  <GitCompare className="w-3.5 h-3.5 text-[#B45309]" />
+                  <span>{baselineSnapshot ? "Update Baseline" : "Pin Baseline"}</span>
+                </button>
+              )}
 
               {viewMode === 'playbook_drilldown' && (
                 <>
@@ -498,6 +623,13 @@ export default function ExplorePage() {
             </div>
           }
         />
+        <AirGapStatusBadge defaultLockedWhenDataConnected={true} />
+        {publishStatus && (
+          <div className="bg-[#FEF3C7] border border-[#F59E0B]/50 text-[#451A03] text-xs font-bold px-4 py-2 rounded-lg flex items-center justify-between">
+            <span>{publishStatus}</span>
+            <button type="button" onClick={() => setPublishStatus(null)} className="text-[#78350F] hover:text-[#1C1917]">✕</button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex overflow-hidden">
@@ -633,32 +765,85 @@ export default function ExplorePage() {
                 })) as any}
               />
 
-              {/* Forensic Playbooks List */}
+              {/* Baseline Extract Diff Comparison Card */}
+              {baselineSnapshot && isAuditComplete && (
+                <Card className="bg-[#FAF8F5] border border-[#DFD9CE] rounded-2xl p-6 shadow-sm space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <GitCompare className="w-4 h-4 text-[#B45309]" />
+                      <h3 className="text-base font-serif font-bold text-[#1C1917]">
+                        Roll Extract Diff vs. Pinned Baseline ({new Date(baselineSnapshot.savedAt).toLocaleDateString()})
+                      </h3>
+                    </div>
+                    <span className="font-mono text-xs font-bold text-[#44403C] bg-white px-2.5 py-1 rounded border border-[#E7E2D8]">
+                      Total Voters: {baselineSnapshot.totalRows.toLocaleString()} → {totalRows.toLocaleString()} (
+                      {totalRows - baselineSnapshot.totalRows >= 0 ? '+' : ''}
+                      {(totalRows - baselineSnapshot.totalRows).toLocaleString()} voters)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                    {playbooks.slice(0, 8).map((pb) => {
+                      const prev = baselineSnapshot.counts[pb.id] ?? 0;
+                      const delta = pb.flaggedCount - prev;
+                      return (
+                        <div key={pb.id} className="bg-white border border-[#E7E2D8] rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-[#57534E] truncate" title={pb.name}>{pb.name}</div>
+                          <div className="mt-1 flex items-baseline justify-between gap-2">
+                            <span className="text-sm font-bold text-[#1C1917]">{pb.flaggedCount.toLocaleString()} flagged</span>
+                            <span className={`font-mono text-[11px] font-bold ${delta < 0 ? 'text-emerald-800' : delta > 0 ? 'text-[#B45309]' : 'text-[#78716C]'}`}>
+                              {delta > 0 ? `+${delta.toLocaleString()}` : delta < 0 ? delta.toLocaleString() : '0 change'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
+
+              {/* 14 Non-Partisan Statutory Playbooks List */}
               <div className="space-y-6">
-                <h2 className="text-2xl font-serif text-text-header font-bold">Forensic Playbooks</h2>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-2xl font-serif text-text-header font-bold">14 Statutory Verification Playbooks</h2>
+                  <span className="text-xs font-medium text-[#57534E]">
+                    {personaMode === 'analyst' ? 'SQL & Analyst Mode: Showing DuckDB verification recipes' : 'Commissioner & Citizen Mode: Plain-English statutory summaries'}
+                  </span>
+                </div>
                 <Card className="bg-white rounded-2xl border border-border-soft shadow-sm overflow-hidden">
                   <div className="divide-y divide-border-soft">
                     {playbooks.map((pb) => {
+                      const prevCount = baselineSnapshot?.counts[pb.id];
+                      const delta = prevCount !== undefined ? pb.flaggedCount - prevCount : null;
                       return (
                         <div 
                           key={pb.id} 
                           className={`flex flex-col lg:flex-row lg:items-center justify-between p-6 hover:bg-surface transition-colors cursor-pointer ${pb.status === 'running' ? 'bg-surface' : ''}`}
                           onClick={() => runPlaybook(pb.id)}
                         >
-                          <div className="flex items-center gap-4 flex-1 pr-8 mb-4 lg:mb-0">
-                            <div className="mt-1 bg-surface p-3 rounded-[12px]">{pb.icon}</div>
-                            <div>
+                          <div className="flex items-start gap-4 flex-1 pr-8 mb-4 lg:mb-0">
+                            <div className="mt-1 bg-surface p-3 rounded-[12px] shrink-0">{pb.icon}</div>
+                            <div className="space-y-2 flex-1 min-w-0">
                               <h3 className="font-bold text-base text-text-header">{pb.name}</h3>
                               <p className="text-sm text-text-body leading-relaxed">{pb.description || pb.desc}</p>
+                              {personaMode === 'analyst' && PLAYBOOK_SQL_RECIPES[pb.id] && (
+                                <pre className="bg-[#1C1917] text-[#FAF8F5] p-3 rounded-xl font-mono text-[11px] overflow-x-auto leading-relaxed border border-[#44403C]">
+                                  {PLAYBOOK_SQL_RECIPES[pb.id]}
+                                </pre>
+                              )}
                             </div>
                           </div>
 
                           <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-end shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-border-soft">
                             <div className="text-right">
                               <div className="text-xs font-bold text-text-body uppercase tracking-wider mb-1">Status</div>
-                              <span className={`px-2.5 py-1 rounded text-xs font-bold ${pb.status === 'complete' ? 'bg-emerald-100 text-emerald-900' : pb.status === 'running' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'}`}>
-                                {pb.flaggedCount > 0 ? `${pb.flaggedCount.toLocaleString()} Anomalies` : pb.status === 'complete' ? 'Clean' : 'Ready'}
+                              <span className={`px-2.5 py-1 rounded text-xs font-bold ${pb.status === 'complete' ? (pb.flaggedCount > 0 ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900') : pb.status === 'running' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'}`}>
+                                {pb.flaggedCount > 0 ? `${pb.flaggedCount.toLocaleString()} Flagged Records` : pb.status === 'complete' ? '0 Flagged · Clean' : 'Ready'}
                               </span>
+                              {delta !== null && pb.status === 'complete' && (
+                                <div className="text-[11px] font-mono text-[#57534E] mt-1">
+                                  vs. baseline: {delta > 0 ? `+${delta.toLocaleString()}` : delta.toLocaleString()}
+                                </div>
+                              )}
                             </div>
 
                             <Button
@@ -686,14 +871,21 @@ export default function ExplorePage() {
           ) : (
             <>
               {/* Playbook Drilldown View */}
-              <div className="mb-6 flex items-center gap-4">
-                <Button onClick={() => setViewMode('360_overview')} variant="outline" className="flex items-center gap-2 text-text-body text-sm font-bold bg-white cursor-pointer hover:bg-surface">
-                  ← Back to 360º Audit
-                </Button>
-                {activePlaybook && (
-                  <h2 className="text-xl font-serif font-bold text-text-header">
-                    {playbooks.find(p => p.id === activePlaybook)?.name}
-                  </h2>
+              <div className="mb-6 space-y-3 max-w-6xl mx-auto">
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button onClick={() => setViewMode('360_overview')} variant="outline" className="flex items-center gap-2 text-text-body text-sm font-bold bg-white cursor-pointer hover:bg-surface">
+                    ← Back to 360º Audit
+                  </Button>
+                  {activePlaybook && (
+                    <h2 className="text-xl font-serif font-bold text-text-header">
+                      {playbooks.find(p => p.id === activePlaybook)?.name}
+                    </h2>
+                  )}
+                </div>
+                {personaMode === 'analyst' && activePlaybook && PLAYBOOK_SQL_RECIPES[activePlaybook] && (
+                  <pre className="bg-[#1C1917] text-[#FAF8F5] p-4 rounded-xl font-mono text-xs overflow-x-auto leading-relaxed border border-[#44403C]">
+                    {PLAYBOOK_SQL_RECIPES[activePlaybook]}
+                  </pre>
                 )}
               </div>
 
@@ -740,7 +932,7 @@ export default function ExplorePage() {
                             <div className="text-xs text-text-body mt-1">{row.city}, {row.state} {row.zip}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${row.risk_level === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${row.risk_level === 'CRITICAL' || row.risk_level === 'HIGH' ? 'bg-amber-100 text-amber-950 border border-amber-300' : 'bg-[#F6F3EC] text-[#44403C] border border-[#D6D0C4]'}`}>
                               {row.risk_level}
                             </span>
                           </td>

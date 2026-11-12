@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
 import * as Comlink from 'comlink';
 import type { DataProcessorWorker } from '../workers/data-processor.worker';
-import { getActiveDatabaseName, openActiveDatabase } from '@/lib/db/dbName';
+import { getActiveDatabaseName } from '@/lib/db/dbName';
 import { getMapBySignature, saveMap } from '@/lib/firebase/map';
+import { isAirGapLocked } from '@/lib/security/airGapGuard';
+import { ensureDurableSovereignStorage } from '@/lib/fs/LocalFSManager';
 
 export interface ParserState {
   isProcessing: boolean;
@@ -68,6 +70,7 @@ export function useCSVParser() {
       });
 
       const dbName = getActiveDatabaseName();
+      await ensureDurableSovereignStorage();
       
       const rawResult = await api.ingestCSVFile(file, dbName, onProgress);
       const result = rawResult as { totalRows: number; columns: string[]; columnMapping: Record<string, string> };
@@ -81,14 +84,14 @@ export function useCSVParser() {
         localStorage.setItem("marigold_dataset_signature", signature);
         
         let finalMapping = result.columnMapping as Record<string, string>;
+        const airGapped = isAirGapLocked();
         
-        // 1. Try Firebase First
-        const firebaseMap = await getMapBySignature(signature);
+        // 1. Try Firebase Schema Registry only when Air-Gap Lock is OFF
+        const firebaseMap = airGapped ? null : await getMapBySignature(signature);
         if (firebaseMap) {
           finalMapping = firebaseMap;
-          console.log("✓ Server-Side Map Applied from Firebase");
         } else {
-          // 2. Fallback to LocalStorage / Heuristics
+          // 2. Fallback to LocalStorage / Deterministic Heuristics
           try {
             const activeGroup = localStorage.getItem("marigold_active_group") || "default";
             const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
@@ -104,11 +107,13 @@ export function useCSVParser() {
                 }
               }
             }
-          } catch (e) {}
+          } catch {}
 
-          // 3. Save resulting map to Firebase for the next person
-          const activeGroup = localStorage.getItem("marigold_active_group") || "default";
-          await saveMap(signature, finalMapping, "system-heuristic", activeGroup);
+          // 3. Save schema map to Firebase only when Air-Gap Lock is OFF
+          if (!airGapped) {
+            const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+            await saveMap(signature, finalMapping, "system-heuristic", activeGroup);
+          }
         }
 
         if (finalMapping) {

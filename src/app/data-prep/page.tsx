@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset, openActiveDatabase } from "@/lib/db/dbName";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { PinSetupModal } from "@/components/PinSetupModal";
+import { AirGapStatusBadge } from "@/components/AirGapStatusBadge";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -144,11 +145,14 @@ export default function DataPrepPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Data Prep & Splitting</h1>
-        <p className="text-muted-foreground mt-2">
-          Drop massive voter roll files here. This tool processes them entirely in your browser without uploading to any server (<GlossaryTooltip term="Air-Gap" />), allowing you to split them into actionable <GlossaryTooltip term="Shard">shards</GlossaryTooltip> inside <GlossaryTooltip term="IndexedDB" />.
-        </p>
+      <header className="mb-8 space-y-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Data Prep &amp; Sovereign Archive Streaming</h1>
+          <p className="text-muted-foreground mt-2">
+            Drop massive voter roll files — including raw state <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">.zip</code> archives (like <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">ncvoter_Statewide.zip</code>), tab-delimited <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">.txt</code>, or <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">.csv</code> files — directly here. Everything streams locally in 5MB chunks (<GlossaryTooltip term="Air-Gap" />) into Triple-Tier Sovereign Storage (Native Folder, OPFS, and <GlossaryTooltip term="IndexedDB" />).
+          </p>
+        </div>
+        <AirGapStatusBadge defaultLockedWhenDataConnected={false} />
       </header>
 
       {/* Prominent State of Roosevelt (Demo) Download Banner (Hide once file is linked or linking) */}
@@ -235,7 +239,7 @@ export default function DataPrepPage() {
                 localStorage.setItem("marigold_file_name", "");
               }}
               variant="outline"
-              className="border-red-500 text-red-700 hover:bg-red-50 bg-white font-bold"
+              className="border-[#B45309] text-[#78350F] hover:bg-[#FEF3C7]/40 bg-white font-bold"
             >
               🗑️ Clear RAM Database &amp; Flush Duplicates
             </Button>
@@ -263,16 +267,13 @@ export default function DataPrepPage() {
           <div className="pt-1">
             <Button
               onClick={async () => {
-                const { getDirectoryHandleWithPermission, getDirectoryHandle } = await import("@/lib/fs/LocalFSManager");
+                const { getDirectoryOrOPFSHandle } = await import("@/lib/fs/LocalFSManager");
                 const grp = localStorage.getItem("marigold_active_group") || "default";
-                let dirHandle = await getDirectoryHandleWithPermission(grp.toLowerCase());
-                if (!dirHandle) dirHandle = await getDirectoryHandle(grp.toLowerCase());
-                if (dirHandle) {
-                  const { LocalFSHydrator } = await import("@/lib/fs/LocalFSHydrator");
-                  const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle);
-                  if (rows > 0) {
-                    window.location.href = "/explore";
-                  }
+                const dirHandle = await getDirectoryOrOPFSHandle(grp.toLowerCase());
+                const { LocalFSHydrator } = await import("@/lib/fs/LocalFSHydrator");
+                const rows = await LocalFSHydrator.hydrateFromLocalFolder(dirHandle);
+                if (rows > 0) {
+                  window.location.href = "/explore";
                 }
               }}
               variant="primary"
@@ -299,27 +300,27 @@ export default function DataPrepPage() {
             {isDemo ? (
               <>Click the button below and pick the <strong className="text-foreground font-mono">DEMO_roosevelt_statewide_voter_roll.csv</strong> file you just saved to your computer&apos;s Downloads folder. Our browser Web Worker will instantly stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
             ) : (
-              <>Select a raw .csv, .json, or .xlsx file from your machine. Our browser Web Worker will instantly stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
+              <>Select a raw <strong className="text-foreground font-mono">.zip</strong> archive (no unzipping needed!), <strong className="text-foreground font-mono">.csv</strong>, tab-delimited <strong className="text-foreground font-mono">.txt/.tsv</strong>, or <strong className="text-foreground font-mono">.xlsx</strong> file from your machine. Our browser Web Worker streams and decompresses rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
             )}
           </p>
           <input 
             type="file" 
-            accept=".csv,.txt,.tsv,.json,.xlsx" 
+            accept=".zip,.csv,.txt,.tsv,.json,.xlsx" 
             className="hidden" 
             id="csv-upload" 
             onChange={handleFileSelect} 
           />
           <label htmlFor="csv-upload" className="bg-primary hover:bg-primary/90 text-white font-black cursor-pointer inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-base shadow-xl transform active:scale-[0.98] transition-all">
-            <span>{isDemo ? "📂 Select `DEMO_roosevelt...csv` from Downloads" : "📂 Upload File From Computer"}</span>
+            <span>{isDemo ? "📂 Select `DEMO_roosevelt...csv` from Downloads" : "📂 Select .ZIP, .CSV, or .TXT Voter Roll"}</span>
           </label>
         </div>
       )}
 
       {parseState.error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-sm text-sm font-semibold flex items-start gap-3 mt-4 animate-in fade-in">
+        <div className="bg-[#FEF3C7]/60 border border-[#F59E0B] text-[#451A03] p-4 rounded-xl shadow-sm text-sm font-semibold flex items-start gap-3 mt-4 animate-in fade-in">
           <span>⚠️</span>
           <div>
-            <p className="font-bold text-red-900 mb-1">Upload Failed</p>
+            <p className="font-bold text-[#78350F] mb-1">Upload Failed</p>
             <p>{parseState.error}</p>
           </div>
         </div>

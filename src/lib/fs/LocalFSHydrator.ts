@@ -1,7 +1,9 @@
 import { openActiveDatabase, getActiveDatabaseName } from "@/lib/db/dbName";
 import Papa from "papaparse";
+import { interpretColumnMappings } from "@/lib/csv/universalMapper";
+import { storeFileHandle, getBestAvailableSovereignStorage } from "@/lib/fs/LocalFSManager";
+import { isAirGapLocked } from "@/lib/security/airGapGuard";
 import { profileDatasetRows } from "@/lib/csv/DataProfiler";
-import { storeFileHandle } from "@/lib/fs/LocalFSManager";
 export interface DiscoveredDataset {
   folderName: string;
   datasetName: string;
@@ -95,12 +97,19 @@ export class LocalFSHydrator {
    * Auto-hydrates IndexedDB from discovered local CSV shards in high-speed streaming chunks
    */
   static async hydrateFromLocalFolder(
-    rootHandle: FileSystemDirectoryHandle,
+    rootHandle?: FileSystemDirectoryHandle | null,
     onProgress?: (msg: string) => void
   ): Promise<number> {
     try {
+      const resolvedRoot =
+        rootHandle || (await getBestAvailableSovereignStorage()).handle;
+      if (!resolvedRoot) {
+        if (onProgress) onProgress("ℹ️ No local folder or OPFS vault available yet.");
+        return 0;
+      }
+
       if (onProgress) onProgress("🔍 Scanning Marigold_Local/Uploaded_Data for saved datasets...");
-      const datasets = await this.discoverLocalDatasets(rootHandle);
+      const datasets = await this.discoverLocalDatasets(resolvedRoot);
 
       if (datasets.length === 0) {
         if (onProgress) onProgress("ℹ️ No saved datasets found in Uploaded_Data.");
@@ -114,7 +123,6 @@ export class LocalFSHydrator {
 
       if (savedSignature === signature && savedRows && parseInt(savedRows) > 0) {
         if (onProgress) onProgress(`⚡ Cryptosig match! Fast-booting '${targetDataset.datasetName}' from local cache...`);
-        // Background stream could be dispatched here if needed, but we'll just fast-boot for now
         if (typeof window !== "undefined") {
           localStorage.setItem("marigold_file_connected", "true");
           window.dispatchEvent(new CustomEvent("marigold-data-connected"));
@@ -124,7 +132,7 @@ export class LocalFSHydrator {
 
       if (onProgress) onProgress(`⚡ Hydrating '${targetDataset.datasetName}' into isolated memory...`);
 
-      const uploadedDataHandle = await rootHandle.getDirectoryHandle("Uploaded_Data", { create: false });
+      const uploadedDataHandle = await resolvedRoot.getDirectoryHandle("Uploaded_Data", { create: false });
       let targetHandle: FileSystemDirectoryHandle = uploadedDataHandle;
 
       if (targetDataset.isSubfolder && targetDataset.folderName && targetDataset.folderName.trim() !== "") {
@@ -138,8 +146,8 @@ export class LocalFSHydrator {
 
       const dbName = getActiveDatabaseName();
       const db = await openActiveDatabase(dbName);
+      if (db && typeof db.close === "function") db.close();
       
-      // Instead of clearing old rows from IDB, we just get ready to store file handles
       let totalRowsHydrated = 0;
 
       for (const fileName of targetDataset.shardFiles) {
@@ -152,7 +160,7 @@ export class LocalFSHydrator {
           const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
           await storeFileHandle(slug, fileHandle);
 
-          // 2. Profile only the first 50 rows for the AI Mapper to avoid memory limits
+          // 2. Profile only the first 50 rows locally
           await new Promise<void>((resolveChunk) => {
             let hasProfiled = false;
 
@@ -166,26 +174,31 @@ export class LocalFSHydrator {
                 
                 if (!hasProfiled && chunkRows.length > 0) {
                   hasProfiled = true;
-                  totalRowsHydrated = targetDataset.rowCount > 0 ? targetDataset.rowCount : 2000000; // Mock total for now or use manifest
+                  totalRowsHydrated = targetDataset.rowCount > 0 ? targetDataset.rowCount : chunkRows.length;
                   
                   if (onProgress) {
                     onProgress(`⚡ Fast-mounting ${totalRowsHydrated.toLocaleString()} records via DuckDB...`);
                   }
 
-                  const profile = profileDatasetRows(chunkRows.slice(0, 50));
-                  fetch('/api/ai-mapper', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ profile }) 
-                  })
-                  .then(r => r.json())
-                  .then(data => {
-                    if (data.mapping && !data.error) {
-                      localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
-                      console.log("Successfully stored intelligent AI mapping.");
-                    }
-                  })
-                  .catch(e => console.warn("AI mapper failed, falling back to static map", e));
+                  // Always store deterministic local heuristic map first (100% air-gapped)
+                  const localMap = interpretColumnMappings(Object.keys(chunkRows[0] || {}), chunkRows.slice(0, 50));
+                  localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(localMap));
+
+                  if (!isAirGapLocked()) {
+                    const profile = profileDatasetRows(chunkRows.slice(0, 50));
+                    fetch('/api/ai-mapper', { 
+                      method: 'POST', 
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ profile }) 
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                      if (data.mapping && !data.error) {
+                        localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
+                      }
+                    })
+                    .catch(() => {});
+                  }
                 }
               },
               complete: () => resolveChunk(),

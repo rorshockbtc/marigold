@@ -1,7 +1,11 @@
 import * as Comlink from 'comlink';
 import Papa from 'papaparse';
 import { interpretColumnMappings, normalizeRowWithMapping, normalizeSuffix } from '@/lib/csv/universalMapper';
-import { profileDatasetRows } from '@/lib/csv/DataProfiler';
+import {
+  detectVoterFileDelimiter,
+  streamZipTabularFileWithBackpressure,
+  MASSIVE_DATASET_CONSTANTS,
+} from '@/lib/datasets/massiveDatasetEngine';
 
 export class DataProcessorWorker {
   
@@ -21,13 +25,92 @@ export class DataProcessorWorker {
     // 1. Initialize IndexedDB
     const db = await this.openDatabase(dbName);
     await this.clearDatabase(db);
-    onProgress(0, 0, "Initializing IndexedDB Air-Gap...");
+    onProgress(0, 0, "Initializing IndexedDB Sovereign Air-Gap...");
+
+    // 2. Direct Streaming `.zip` Archive Decompression (e.g. `ncvoter_Statewide.zip`)
+    const lowerName = (file.name || '').toLowerCase();
+    if (lowerName.endsWith('.zip')) {
+      onProgress(1, 0, `Streaming compressed archive ${file.name} locally in RAM...`);
+      let headerLine = '';
+      let detectedDelimiter: ',' | '\t' | '|' = ',';
+
+      try {
+        const zipStats = await streamZipTabularFileWithBackpressure(
+          file,
+          async (chunkText, compressedApprox, totalCompressed, entryName) => {
+            let parseTarget = chunkText;
+            if (!headerLine) {
+              const firstNl = chunkText.indexOf('\n');
+              if (firstNl === -1) return;
+              headerLine = chunkText.slice(0, firstNl).replace(/^\uFEFF/, '').replace(/\r$/, '');
+              detectedDelimiter = detectVoterFileDelimiter(headerLine);
+              parseTarget = chunkText;
+            } else {
+              parseTarget = `${headerLine}\n${chunkText}`;
+            }
+
+            const parsed = Papa.parse<Record<string, unknown>>(parseTarget, {
+              header: true,
+              delimiter: detectedDelimiter,
+              skipEmptyLines: true,
+              transformHeader: (h: string) => h.replace(/^\uFEFF/, '').trim(),
+            });
+
+            const chunkData = parsed.data || [];
+            if (columns.length === 0 && chunkData.length > 0) {
+              columns = Object.keys(chunkData[0] as object);
+              sampleRows = chunkData.slice(0, 50);
+            }
+
+            if (chunkData.length > 0) {
+              await this.storeChunkBatched(
+                db,
+                chunkData,
+                rowsParsed,
+                MASSIVE_DATASET_CONSTANTS.IDB_WRITE_BATCH_ROWS
+              );
+              rowsParsed += chunkData.length;
+            }
+
+            const pct =
+              totalCompressed > 0
+                ? Math.min(99, Math.max(1, Math.round((compressedApprox / totalCompressed) * 100)))
+                : 50;
+            onProgress(pct, rowsParsed, `Streaming ${entryName} from .zip (${rowsParsed.toLocaleString()} rows)...`);
+          }
+        );
+
+        db.close();
+        onProgress(100, rowsParsed, `Archive Ingestion Complete (${zipStats.entryName})`);
+        const mapping = interpretColumnMappings(columns, sampleRows);
+        return {
+          totalRows: rowsParsed,
+          columns,
+          columnMapping: mapping,
+          extractedEntryName: zipStats.entryName,
+        };
+      } catch (zipErr: any) {
+        db.close();
+        throw new Error(zipErr?.message || 'Failed to stream .zip voter roll archive');
+      }
+    }
+
+    // 3. Auto-detect delimiter (`,`, `\t`, or `|`) from first 16KB slice so tab-delimited `.txt` files parse cleanly
+    let explicitDelimiter: ',' | '\t' | '|' = ',';
+    try {
+      const headerBlob = file.slice(0, Math.min(file.size, 16 * 1024));
+      const headerSample = await headerBlob.text();
+      explicitDelimiter = detectVoterFileDelimiter(headerSample);
+    } catch {
+      explicitDelimiter = ',';
+    }
 
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
         header: true,
+        delimiter: explicitDelimiter,
         skipEmptyLines: true,
-        chunkSize: 1024 * 1024 * 5, // 5MB chunks
+        chunkSize: MASSIVE_DATASET_CONSTANTS.STREAM_CHUNK_BYTES, // 5MB chunks
         transformHeader: (h: string) => h.replace(/^\uFEFF/, '').trim(),
         chunk: async (results: Papa.ParseResult<Record<string, unknown>>, parser: Papa.Parser) => {
           if (hasError) return;
@@ -38,29 +121,16 @@ export class DataProcessorWorker {
             if (columns.length === 0 && chunkData.length > 0) {
               columns = Object.keys(chunkData[0] as object);
               sampleRows = (chunkData as Record<string, unknown>[]).slice(0, 50);
-              
-              // Run AI profiling on first chunk
-              try {
-                const activeGroup = (typeof window !== "undefined" ? localStorage.getItem("marigold_active_group") : "") || "default";
-                const slug = activeGroup.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                const profile = profileDatasetRows((chunkData as any[]).slice(0, 50));
-                fetch('/api/ai-mapper', { 
-                  method: 'POST', 
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ profile }) 
-                })
-                .then(r => r.json())
-                .then(data => {
-                  if (data.mapping && !data.error) {
-                    localStorage.setItem(`marigold_file_mapping_${slug}`, JSON.stringify(data.mapping));
-                  }
-                }).catch(() => {});
-              } catch (e) {}
             }
 
             const startIndex = rowsParsed;
             // Write 10,000-row arrays for max DB throughput
-            await this.storeChunkBatched(db, chunkData, startIndex, 10000);
+            await this.storeChunkBatched(
+              db,
+              chunkData,
+              startIndex,
+              MASSIVE_DATASET_CONSTANTS.IDB_WRITE_BATCH_ROWS
+            );
             
             rowsParsed += chunkData.length;
             const bytesProcessed = results.meta.cursor || 0;
@@ -70,12 +140,14 @@ export class DataProcessorWorker {
             parser.resume();
           } catch (err: any) {
             hasError = true;
+            db.close();
             reject(new Error(err.message || "Failed to store chunk"));
             parser.abort();
           }
         },
         complete: () => {
           if (!hasError) {
+            db.close();
             onProgress(100, rowsParsed, "Ingestion Complete");
             const mapping = interpretColumnMappings(columns, sampleRows);
             resolve({
@@ -87,6 +159,7 @@ export class DataProcessorWorker {
         },
         error: (error) => {
           hasError = true;
+          db.close();
           reject(new Error(error.message));
         }
       });

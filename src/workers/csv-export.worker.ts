@@ -48,8 +48,12 @@ function openDatabase(dbName = DB_NAME): Promise<IDBDatabase> {
 
 function escapeCSVValue(value: any): string {
   if (value === null || value === undefined) return '';
-  const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+  let str = String(value);
+  // Neutralize spreadsheet formula-execution payloads (DDE / HYPERLINK / IMPORTXML attacks)
+  if (/^[=+@\t\r]/.test(str) || (/^-[^0-9.]/.test(str) && str.length > 1)) {
+    str = `'${str}`;
+  }
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r') || str.includes('\t')) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -69,7 +73,7 @@ async function exportData(config: ExportConfig) {
       return;
     }
 
-    const headerRow = columns.map(escapeCSVValue).join(',') + '\n';
+    const headerRow = '\uFEFF' + columns.map(escapeCSVValue).join(',') + '\n';
     let currentFileRows: string[] = [headerRow];
     let currentFileRowCount = 0;
     let totalProcessed = 0;

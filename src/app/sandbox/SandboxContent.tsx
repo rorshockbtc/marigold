@@ -11,6 +11,7 @@ import { FilterControl } from "@/components/ui/FilterControl";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { AirGapStatusBadge } from "@/components/AirGapStatusBadge";
 
 export function SandboxContent() {
   const [simulationState, setSimulationState] = useState<'idle' | 'running' | 'completed' | 'full_sandbox'>('idle');
@@ -115,26 +116,20 @@ export function SandboxContent() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-32 font-sans px-4 sm:px-6">
-      {/* Hot-Pink Alpha Release Warning Banner */}
-      <div className="bg-pink-600 text-slate-900 p-4 sm:p-5 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center gap-3 shadow-lg border border-pink-500 animate-pulse">
-        <span className="text-xl shrink-0">⚠️</span>
-        <span className="leading-relaxed">
-          THIS IS ONLY A DEMONSTRATION. MARIGOLD IS CURRENTLY AN ALPHA RELEASE. Real voter verification pipelines are fully calibrated only for Mississippi.
+      {/* Synthetic Demo Environment Notice (Marigold Warm Stone Palette) */}
+      <div className="bg-[#FAF8F5] text-[#1C1917] p-4 sm:p-5 rounded-2xl text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm border border-[#DFD9CE]">
+        <div className="flex items-center gap-3">
+          <span className="text-xl shrink-0">🧪</span>
+          <span className="leading-relaxed">
+            <strong>SYNTHETIC DEMO ENVIRONMENT:</strong> All datasets, occupancy records, and addresses displayed in this sandbox are 100% simulated fictional mock data. Real statewide voter audits are live for <strong>Mississippi (82 counties)</strong> and <strong>North Carolina (100 counties)</strong>, and you can stream any state <code className="font-mono bg-[#F2ECE1] px-1.5 py-0.5 rounded">.zip</code> or <code className="font-mono bg-[#F2ECE1] px-1.5 py-0.5 rounded">.csv</code> roll locally in the workspace.
+          </span>
+        </div>
+        <span className="bg-[#FEF3C7] text-[#78350F] px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-bold whitespace-nowrap shrink-0 border border-[#F59E0B]/40">
+          Strict Zero-PII Separation
         </span>
       </div>
 
-      {/* Prominent Synthetic Warning Banner */}
-      <div className="bg-orange-600 text-slate-900 p-4 sm:p-5 rounded-2xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg border border-orange-500">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl shrink-0">🧪</span>
-          <span className="leading-relaxed">
-            <strong>SYNTHETIC DEMO ENVIRONMENT:</strong> All datasets, occupancy records, and addresses displayed on this page are 100% simulated fictional mock data generated for demonstration and verification purposes only.
-          </span>
-        </div>
-        <span className="bg-orange-950/60 text-orange-200 px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold whitespace-nowrap shrink-0 border border-orange-400/30">
-          Strict Data Separation
-        </span>
-      </div>
+      <AirGapStatusBadge defaultLockedWhenDataConnected={false} />
 
       {/* Header Banner */}
       <div className="bg-slate-50 border border-slate-200 border border-slate-200 p-8 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 text-slate-900 shadow-xl relative overflow-hidden">

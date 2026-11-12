@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ExportWorkerMessage } from '../workers/csv-export.worker';
 import { getActiveDatabaseName } from '@/lib/db/dbName';
-import { getDirectoryHandle } from '@/lib/fs/LocalFSManager';
+import { getBestAvailableSovereignStorage, verifyPermission, writeStructuredFile } from '@/lib/fs/LocalFSManager';
+import { createMassiveDatasetManifest, DatasetShardDescriptor } from '@/lib/datasets/massiveDatasetEngine';
 
 export interface ExportState {
   isExporting: boolean;
@@ -12,17 +13,6 @@ export interface ExportState {
   filesGenerated: Array<{ filename: string; url: string; rowCount: number }>;
   error: string | null;
   isComplete: boolean;
-}
-
-async function verifyPermission(fileHandle: any, readWrite: boolean) {
-  const options = { mode: readWrite ? 'readwrite' : 'read' };
-  if ((await fileHandle.queryPermission(options)) === 'granted') {
-    return true;
-  }
-  if ((await fileHandle.requestPermission(options)) === 'granted') {
-    return true;
-  }
-  return false;
 }
 
 export function useCSVExport() {
@@ -55,9 +45,11 @@ export function useCSVExport() {
       isComplete: false,
     });
 
-    let directoryHandle = null;
+    let directoryHandle: FileSystemDirectoryHandle | null = null;
+    let storageTier: 'native-fs' | 'opfs' | 'indexeddb' = 'opfs';
     let activeGroup = "default";
     let prefix = customPrefix;
+    const emittedShards: DatasetShardDescriptor[] = [];
 
     if (typeof window !== "undefined") {
       activeGroup = (localStorage.getItem("marigold_active_group") || "default").toLowerCase();
@@ -67,7 +59,6 @@ export function useCSVExport() {
         if (fileName.includes("DEMO") || activeGroup.includes("demo") || activeGroup.includes("roosevelt") || activeGroup.includes("acme") || activeGroup.includes("sandbox")) {
           prefix = "DEMO-dataset";
         } else {
-          // New Naming Convention: State_Date
           const safeGroup = activeGroup.replace(/[^a-z0-9]/gi, '_');
           const dateStr = new Date().toISOString().split('T')[0];
           prefix = `${safeGroup}_${dateStr}`;
@@ -75,15 +66,16 @@ export function useCSVExport() {
       }
 
       try {
-        directoryHandle = await getDirectoryHandle(activeGroup);
-        if (directoryHandle) {
-          const hasPerm = await verifyPermission(directoryHandle, true);
-          if (!hasPerm) {
-            directoryHandle = null; // Fallback to blob download if they decline
+        const bestStorage = await getBestAvailableSovereignStorage(activeGroup);
+        storageTier = bestStorage.tier;
+        if (bestStorage.handle) {
+          const hasPerm = await verifyPermission(bestStorage.handle, true);
+          if (hasPerm) {
+            directoryHandle = bestStorage.handle;
           }
         }
       } catch (err) {
-        console.warn("Failed to retrieve or verify directory handle:", err);
+        console.warn("Failed to resolve Triple-Tier Sovereign Storage handle:", err);
         directoryHandle = null;
       }
     }
@@ -109,24 +101,27 @@ export function useCSVExport() {
         case 'file_ready':
           (async () => {
             let url = '';
-            if (directoryHandle && message.blob) {
-              try {
-                const uploadedDataFolder = await directoryHandle.getDirectoryHandle("Uploaded_Data", { create: true });
-                const targetSubDir = prefix || "Exports";
-                const subDirHandle = await uploadedDataFolder.getDirectoryHandle(targetSubDir, { create: true });
-                const fileHandle = await subDirHandle.getFileHandle(message.filename, { create: true });
-                const writable = await fileHandle.createWritable();
-                await writable.write(message.blob);
-                await writable.close();
-              } catch (err) {
-                console.error("Failed to write to Marigold Local folder:", err);
-                url = URL.createObjectURL(message.blob);
-              }
-            } else if (message.blob) {
+            const targetSubDir = prefix || "Exports";
+            if (message.blob) {
+              emittedShards.push({
+                filename: message.filename,
+                rowCount: message.rowCount,
+                sizeBytes: message.blob.size,
+              });
               url = URL.createObjectURL(message.blob);
+              blobUrlsRef.current.push(url);
+
+              try {
+                await writeStructuredFile(
+                  directoryHandle,
+                  `Uploaded_Data/${targetSubDir}`,
+                  message.filename,
+                  message.blob
+                );
+              } catch (err) {
+                console.warn("Failed to persist shard to local sovereign storage:", err);
+              }
             }
-            
-            if (url) blobUrlsRef.current.push(url);
             
             setState(prev => ({
               ...prev,
@@ -135,8 +130,33 @@ export function useCSVExport() {
           })();
           break;
         case 'complete':
-          setState(prev => ({ ...prev, isExporting: false, isComplete: true, progress: 100 }));
-          worker.terminate();
+          (async () => {
+            try {
+              const targetSubDir = prefix || "Exports";
+              const totalShardBytes = emittedShards.reduce((sum, s) => sum + s.sizeBytes, 0);
+              if (emittedShards.length > 0) {
+                const manifest = await createMassiveDatasetManifest({
+                  datasetName: targetSubDir,
+                  totalRows: message.totalRows,
+                  totalBytes: totalShardBytes,
+                  rowsPerShard: rowsPerFile,
+                  columns,
+                  shards: emittedShards,
+                  storageTier,
+                });
+                await writeStructuredFile(
+                  directoryHandle,
+                  `Uploaded_Data/${targetSubDir}`,
+                  'manifest.json',
+                  JSON.stringify(manifest, null, 2)
+                );
+              }
+            } catch (err) {
+              console.warn("Could not write marigold.dataset.manifest.v1:", err);
+            }
+            setState(prev => ({ ...prev, isExporting: false, isComplete: true, progress: 100 }));
+            worker.terminate();
+          })();
           break;
         case 'error':
           setState(prev => ({ ...prev, isExporting: false, error: message.message }));
@@ -152,8 +172,7 @@ export function useCSVExport() {
         columns, 
         filePrefix: prefix || "dataset", 
         dbName: getActiveDatabaseName() 
-      },
-      directoryHandle
+      }
     });
   }, []);
 

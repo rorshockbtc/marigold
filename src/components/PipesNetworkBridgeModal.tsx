@@ -23,7 +23,12 @@ import {
   verifyDagIntegrity,
   createSovereignCustodyDeed,
   stampDatasetMerkleRoot,
+  verifyDatasetOtsProof,
 } from '@/lib/crypto/merkleDagAndOtsBridge';
+import {
+  createPipesProfileMountNode,
+  triggerSovereignDownload,
+} from '@/lib/datasets/massiveDatasetEngine';
 import {
   evaluateDossierRubric,
   runDatasetBlindSpotCheck,
@@ -67,6 +72,7 @@ export function PipesNetworkBridgeModal({
   const [dagVerified, setDagVerified] = useState<boolean>(false);
   const [custodyDeed, setCustodyDeed] = useState<SovereignCustodyDeed | null>(null);
   const [otsStatus, setOtsStatus] = useState<string | null>(null);
+  const [otsVerifyResult, setOtsVerifyResult] = useState<string | null>(null);
   const [folderStatus, setFolderStatus] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [monthlyMcpQueries, setMonthlyMcpQueries] = useState<number>(2500);
@@ -146,22 +152,54 @@ export function PipesNetworkBridgeModal({
     if (!dagManifest) return;
     setOtsStatus('Stamping 32-byte Merkle-DAG root to Bitcoin OpenTimestamps calendars...');
     const res = await stampDatasetMerkleRoot(dagManifest.merkleRoot);
-    const blob = new Blob([res.otsBytes as BlobPart], {
-      type: 'application/octet-stream',
+    await triggerSovereignDownload({
+      filename: `marigold-${dagManifest.merkleRoot.slice(0, 12)}.ots`,
+      content: res.otsBytes,
+      mimeType: 'application/octet-stream',
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `marigold-${dagManifest.merkleRoot.slice(0, 12)}.ots`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
     setOtsStatus(
       res.mode === 'live-calendar'
         ? `Stamped via ${res.calendarUrl} and downloaded .ots proof!`
         : 'Generated air-gapped Bitcoin OpenTimestamps (.ots) proof container!'
     );
+  };
+
+  const handleVerifyUploadedOts = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !dagManifest) return;
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const check = verifyDatasetOtsProof(bytes, dagManifest.merkleRoot);
+      setOtsVerifyResult(
+        check.valid
+          ? `✓ Verified! ${file.name} commits to Merkle Root ${check.digestHex.slice(0, 20)}…`
+          : `✕ Mismatch: ${check.calendarStatus}`
+      );
+    } catch {
+      setOtsVerifyResult('✕ Could not parse .ots binary receipt.');
+    }
+  };
+
+  const handleDownloadPipesProfileMount = async () => {
+    if (!dagManifest) return;
+    const totalFlagged = (playbookSummaries || []).reduce((s, p) => s + p.flaggedCount, 0);
+    const cleanPct =
+      totalRows > 0 ? Number(((Math.max(0, totalRows - totalFlagged) / totalRows) * 100).toFixed(1)) : 100;
+    const mountNode = await createPipesProfileMountNode({
+      targetPipe: 'pipe\\marigoldinsights',
+      jurisdictionName: dossierTitle || 'Statewide Audit',
+      stateCode: datasetName.toUpperCase().includes('NC') ? 'NC' : 'MS',
+      totalRecordsScanned: totalRows || 1800,
+      cleanlinessPercentage: cleanPct,
+      merkleRoot: dagManifest.merkleRoot,
+      leafCount: dagManifest.nodeCount,
+    });
+    await triggerSovereignDownload({
+      filename: 'pipes.profile.mount.v1.json',
+      content: JSON.stringify(mountNode, null, 2),
+      mimeType: 'application/json;charset=utf-8',
+    });
+    setFolderStatus('Downloaded zero-PII pipes.profile.mount.v1.json receipt!');
   };
 
   const handleProvisionLocalFolder = async () => {
@@ -377,6 +415,16 @@ export function PipesNetworkBridgeModal({
                     <Download className="w-4 h-4 mr-2" />
                     Stamp &amp; Download Bitcoin OpenTimestamps (.ots)
                   </Button>
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D8D0C5] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-sm font-bold text-[#1A1614] cursor-pointer transition-colors">
+                    <ShieldCheck className="w-4 h-4 text-[#B7410E]" />
+                    <span>Verify .ots Receipt</span>
+                    <input
+                      type="file"
+                      accept=".ots"
+                      onChange={handleVerifyUploadedOts}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
 
                 {custodyDeed && (
@@ -393,6 +441,12 @@ export function PipesNetworkBridgeModal({
                 {otsStatus && (
                   <div className="p-3 bg-[#F2ECE1] border border-[#D8D0C5] rounded-lg text-[13px] font-medium text-[#1A1614]">
                     {otsStatus}
+                  </div>
+                )}
+
+                {otsVerifyResult && (
+                  <div className="p-3 bg-[#FAF8F5] border border-[#D8D0C5] rounded-lg text-[13px] font-mono font-bold text-[#1A1614]">
+                    {otsVerifyResult}
                   </div>
                 )}
               </div>
@@ -464,6 +518,10 @@ export function PipesNetworkBridgeModal({
                     <Button variant="outline" onClick={handleDownloadHarnessJson}>
                       <Download className="w-4 h-4 mr-2" />
                       Download marigold.json Harness
+                    </Button>
+                    <Button variant="outline" onClick={handleDownloadPipesProfileMount}>
+                      <Layers className="w-4 h-4 mr-2" />
+                      Export pipes.profile.mount.v1
                     </Button>
                   </div>
                 </div>

@@ -175,7 +175,7 @@ export function ExecutiveBriefingExport({
                   </div>
                   <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex p-0.5">
                     <div 
-                      className={`h-full rounded-full transition-all duration-500 ${pb.flaggedCount > 20 ? 'bg-rose-600' : pb.flaggedCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
+                      className={`h-full rounded-full transition-all duration-500 ${pb.flaggedCount > 20 ? 'bg-[#B45309]' : pb.flaggedCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
                       style={{ width: `${pb.flaggedCount > 0 ? Math.max(4, barWidth) : 100}%` }} 
                     />
                   </div>

@@ -96,14 +96,14 @@ export function ExploreDataPanel({
         </Button>
       </div>
       
-      <div className="bg-red-50 border border-red-100 rounded-[12px] p-4 mb-6">
-        <div className="flex items-center gap-2 mb-2 text-red-700 font-bold">
+      <div className="bg-[#FEF3C7]/60 border border-[#F59E0B]/40 rounded-[12px] p-4 mb-6">
+        <div className="flex items-center gap-2 mb-2 text-[#92400E] font-bold">
           <MarigoldIcon className="w-4 h-4" />
-          Forensic Statistical Finding
+          Statutory Verification Finding
         </div>
-        <p className="text-sm text-red-900 leading-relaxed">
+        <p className="text-sm text-[#451A03] leading-relaxed">
           {selectedRecord.details} 
-          {selectedRecord.occupant_count > 1 ? ` (${selectedRecord.occupant_count} total occupants detected).` : ''}
+          {selectedRecord.occupant_count > 1 ? ` (${selectedRecord.occupant_count} registered voters at parcel).` : ''}
         </p>
       </div>
       
