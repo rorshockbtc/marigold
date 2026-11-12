@@ -18,6 +18,10 @@ import { executeLocalEngine } from '@/lib/data/LocalDataEngine';
 import { useDuckDB } from '@/lib/data/DuckDBProvider';
 import { usePlaybooks } from '@/lib/workspace/PlaybookContext';
 import { ArticleState, ChatMessage, Playbook } from '@/lib/types';
+import { AirGapStatusBadge } from '@/components/AirGapStatusBadge';
+import { isAirGapLocked } from '@/lib/security/airGapGuard';
+import { synthesizeOfflineGroundedAnswer } from '@/lib/ai/localCorpusSearch';
+import { isWebGPUEngineReady, streamWebGPUAnswer } from '@/lib/ai/webgpuLocalEngine';
 
 export interface ChatSession {
   id: string;
@@ -341,6 +345,32 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       const userApiKey = localStorage.getItem("marigold_gemini_key") || "";
       const pageCtx = await getPageContext();
 
+      // Enforce 100% offline Air-Gap execution when Air-Gap Lock is enabled
+      if (isAirGapLocked()) {
+        const offlineFallback = synthesizeOfflineGroundedAnswer(userMessage.content, {
+          datasetName: pageCtx?.datasetName,
+          rowCount: pageCtx?.datasetRowCount,
+        });
+        let finalOfflineReply = offlineFallback;
+        if (isWebGPUEngineReady()) {
+          const streamed = await streamWebGPUAnswer(
+            `You are Mari, Marigold's 100% air-gapped civic investigator. Ground answers in the retrieved local corpus facts below without fabricating personal voter PII:\n\n${offlineFallback}`,
+            userMessage.content,
+            currentMessages.slice(-8).map((m) => ({
+              role: m.role === "user" ? "user" : "assistant",
+              content: m.content,
+            }))
+          );
+          if (streamed) finalOfflineReply = streamed;
+        }
+        const assistantMessage: ChatMessage = {
+          role: "assistant",
+          content: finalOfflineReply,
+        };
+        setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, assistantMessage] } : s));
+        return;
+      }
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -372,7 +402,8 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       let streamAffordance: { datasetName: string; datasetUrl: string; description: string; } | undefined = undefined;
 
       let loopCount = 0;
-      while (response.ok && loopResponseData.action === 'run_tool' && loopCount < 5) {
+      const TAP_OUT_MAX_ITERATIONS = 2; // 2-iteration Tap-Out Loop Guard
+      while (response.ok && loopResponseData.action === 'run_tool' && loopCount < TAP_OUT_MAX_ITERATIONS) {
         loopCount++;
         const t = loopResponseData.tool;
         const args = loopResponseData.args;
@@ -655,7 +686,15 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
       }
 
     } catch (error) {
-      const errorMsg: ChatMessage = { role: "assistant", content: "I'm having trouble connecting to the local model (Gemini). Please ensure your API key is configured correctly or try asking again in a moment. If this persists, contact your group administrator." };
+      const pageCtx = await getPageContext().catch(() => null);
+      const localFallback = synthesizeOfflineGroundedAnswer(scrubbedQuery, {
+        datasetName: pageCtx?.datasetName,
+        rowCount: pageCtx?.datasetRowCount,
+      });
+      const errorMsg: ChatMessage = {
+        role: "assistant",
+        content: localFallback,
+      };
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, errorMsg] } : s));
     } finally {
       setIsLoading(false);
@@ -714,7 +753,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                 <span className="truncate flex-1 pr-2">{s.title}</span>
                 <button 
                   onClick={(e) => handleDeleteSession(s.id, e)}
-                  className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 p-1"
+                  className="opacity-0 group-hover:opacity-100 text-[#B45309] hover:text-[#78350F] p-1"
                   title="Delete Session"
                 >
                   ✕
@@ -741,10 +780,11 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
           </div>
         )}
         <div className="bg-background border-b border-border-soft px-5 py-4 z-10 flex flex-col gap-3">
-          <div className="w-full">
+          <div className="flex flex-wrap items-center justify-between gap-2 w-full">
             <h2 className="text-lg font-serif font-black text-text-header line-clamp-1" title={activeSession ? activeSession.title : "Data Investigator"}>
               {activeSession ? activeSession.title : "Data Investigator"}
             </h2>
+            <AirGapStatusBadge defaultLockedWhenDataConnected={false} />
           </div>
           <div className="flex items-center justify-between">
             <div className="flex bg-surface p-1 rounded-lg border border-border-soft">
@@ -806,7 +846,7 @@ export default function ChatInterface({ isDrawer = false, hideSidebar = false, i
                       <Button variant="outline" className="text-xs py-1 h-7 border-border-soft hover:bg-albers-green-soft hover:text-albers-green-bold hover:border-albers-green-bold/30">
                         Yes
                       </Button>
-                      <Button onClick={() => handleEscalate(msg.originalQuery!, activeSessionId, i)} variant="outline" className="text-xs py-1 h-7 border-border-soft hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+                      <Button onClick={() => handleEscalate(msg.originalQuery!, activeSessionId, i)} variant="outline" className="text-xs py-1 h-7 border-border-soft hover:bg-amber-50 hover:text-[#B45309] hover:border-amber-200">
                         No, ask Mari directly
                       </Button>
                     </div>

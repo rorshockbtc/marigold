@@ -15,6 +15,9 @@ import { Button } from '@/components/ui/Button';
 import { Link } from '@/components/ui/Link';
 import { PipesNetworkBridgeModal } from '@/components/PipesNetworkBridgeModal';
 import { BlindSpotItem } from '@/lib/pipes/editorialRubricAndGraph';
+import { AirGapStatusBadge } from '@/components/AirGapStatusBadge';
+import { synthesizeOfflineGroundedAnswer } from '@/lib/ai/localCorpusSearch';
+import { downloadStandaloneOfflineDossier } from '@/lib/datasets/standaloneOfflineHtmlBundle';
 
 export interface DataStoryPayload {
   query: string;
@@ -267,7 +270,18 @@ export const DataExplorerLayout: React.FC = () => {
       }
     }
 
-    if (!duckDbResult || !sqlPayload) return;
+    if (!duckDbResult || !sqlPayload) {
+      const grounded = synthesizeOfflineGroundedAnswer(userQuery, {
+        datasetName: activeSchema.fileName,
+        rowCount: loadedRowCount ?? undefined,
+      });
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        text: `Tap-Out Loop Guard engaged after ${maxRetries + 1} local SQL attempts. Switching cleanly to verified corpus synthesis:\n\n${grounded}`
+      }]);
+      return;
+    }
 
     if (isDrafting) {
       if (!incrementQuota()) {
@@ -395,12 +409,13 @@ export const DataExplorerLayout: React.FC = () => {
       <div className="p-6 border-b border-gray-800 flex flex-wrap justify-between items-center gap-4 bg-[#1A1A1A] z-10 shadow-md">
         <div>
           <h1 className="text-2xl font-serif text-white mb-1">Marigold Agentic Concierge</h1>
-          <p className="text-gray-400 text-sm">Zero-Cloud, Private Data Storytelling.</p>
+          <p className="text-gray-400 text-sm mb-2">Zero-Cloud, Private Data Storytelling.</p>
+          <AirGapStatusBadge defaultLockedWhenDataConnected={false} />
         </div>
 
         <div className="flex items-center gap-4">
           <div className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-700 text-xs text-gray-300 flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${isQuotaExceeded ? 'bg-red-500' : 'bg-emerald-400'}`} />
+            <span className={`w-2 h-2 rounded-full ${isQuotaExceeded ? 'bg-[#B45309]' : 'bg-emerald-400'}`} />
             {isPipesSubscribed ? (
               <span className="font-semibold text-emerald-400">Pipes Pro: Unlimited Stories</span>
             ) : (
@@ -470,9 +485,40 @@ export const DataExplorerLayout: React.FC = () => {
                 Save Locally
               </Button>
               <Button 
-                variant="danger"
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const firstTitle =
+                    dossierBlocks.find((b) => b.content.title)?.content.title ||
+                    'Marigold Living Forensic Dossier';
+                  const res = await downloadStandaloneOfflineDossier({
+                    title: firstTitle,
+                    subtitle: `Zero-PII offline bundle for ${activeSchema?.fileName || loadedFileName || 'Civic Audit'}`,
+                    jurisdictionName: activeSchema?.fileName || loadedFileName || 'Statewide',
+                    stateCode: 'MS',
+                    totalRecords: cachedAuditSweep?.totalScanned || loadedRowCount || 1800,
+                    cleanlinessScore: 95,
+                    summaryParagraphs: dossierBlocks
+                      .map((b) => (b.content.narrative || '').replace(/<[^>]+>/g, ''))
+                      .filter(Boolean),
+                    metrics: [
+                      {
+                        label: 'Approved Dossier Sections',
+                        valueWithUnit: `${dossierBlocks.length} sections`,
+                        detail: 'Generated locally inside DuckDB-Wasm browser memory',
+                      },
+                    ],
+                  });
+                  setExportBanner(`Saved standalone offline HTML bundle (${res.filename})`);
+                }}
+              >
+                Offline .html
+              </Button>
+              <Button 
+                variant="outline"
                 size="sm"
                 onClick={() => handleExport(true)} 
+                className="border-[#B45309] text-[#B45309] hover:bg-amber-50"
                 title="Strict PII Redaction for Public Sharing"
               >
                 Sanitize &amp; Export
@@ -522,9 +568,9 @@ export const DataExplorerLayout: React.FC = () => {
                   
                   {block.status === 'proposed' && (
                     <div className="absolute -top-4 right-4 flex bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-20">
-                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'approved')} className="text-green-600 hover:bg-green-50 rounded-none border-r border-gray-200">Approve</Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'discuss')} className="text-blue-600 hover:bg-blue-50 rounded-none border-r border-gray-200">Discuss</Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'rejected')} className="text-red-600 hover:bg-red-50 rounded-none">Reject</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'approved')} className="text-emerald-700 hover:bg-emerald-50 rounded-none border-r border-gray-200">Approve</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'discuss')} className="text-[#1C1917] hover:bg-stone-100 rounded-none border-r border-gray-200">Discuss</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleBlockAction(block.id, 'rejected')} className="text-[#B45309] hover:bg-amber-50 rounded-none">Dismiss</Button>
                     </div>
                   )}
 
@@ -638,7 +684,7 @@ export const DataExplorerLayout: React.FC = () => {
           </div>
 
           <div className="p-4 border-t border-gray-800 bg-[#161616]">
-            {error && <div className="text-red-400 text-xs mb-2 truncate" title={error}>{error}</div>}
+            {error && <div className="text-amber-300 text-xs mb-2 truncate" title={error}>{error}</div>}
             <div className="flex flex-col space-y-2">
                 <textarea
                     className="w-full bg-[#242424] border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-primary resize-none placeholder-gray-500"

@@ -6,7 +6,7 @@ import { useCSVExport } from "@/hooks/useCSVExport";
 import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import Link from "next/link";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
-import { Download, Sparkles, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { Download, Sparkles, AlertCircle, FileSpreadsheet, Zap, Layers } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -14,6 +14,7 @@ import { getActiveDatabaseName, isDemoGroupActive, autoLoadSyntheticDemoDataset,
 import { useAuth } from "@/lib/auth/AuthContext";
 import { PinSetupModal } from "@/components/PinSetupModal";
 import { AirGapStatusBadge } from "@/components/AirGapStatusBadge";
+import type { ParquetVaultManifest } from "@/lib/datasets/parquetShardCompiler";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -28,6 +29,9 @@ export default function DataPrepPage() {
   const { hasPinSet } = useAuth();
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [detectedVaultManifest, setDetectedVaultManifest] = useState<ParquetVaultManifest | null>(null);
+  const [isCompilingVault, setIsCompilingVault] = useState(false);
+  const [vaultStatusMsg, setVaultStatusMsg] = useState<string | null>(null);
 
   const requirePin = (action: () => void) => {
     if (!hasPinSet) {
@@ -35,6 +39,28 @@ export default function DataPrepPage() {
       setIsPinModalOpen(true);
     } else {
       action();
+    }
+  };
+
+  const handleCompileParquetVault = async () => {
+    setIsCompilingVault(true);
+    setVaultStatusMsg("Compiling Zstd Parquet shards + 5-primitive ontology...");
+    try {
+      const { compileActiveDatasetToParquetVault } = await import("@/lib/datasets/parquetShardCompiler");
+      const activeGroup = localStorage.getItem("marigold_active_group") || "default";
+      const res = await compileActiveDatasetToParquetVault({
+        groupId: activeGroup,
+        onProgress: (_pct, stage) => setVaultStatusMsg(stage),
+      });
+      setDetectedVaultManifest(res.manifest);
+      setVaultStatusMsg(
+        `Compiled ${res.shardCount} Zstd Parquet shard(s) covering ${res.totalRows.toLocaleString()} rows in ${res.elapsedMs}ms (Merkle Root ${res.manifest.merkleRoot.slice(0, 14)}…).`
+      );
+    } catch (err) {
+      console.error(err);
+      setVaultStatusMsg("Could not compile Zstd Parquet vault in this browser context.");
+    } finally {
+      setIsCompilingVault(false);
     }
   };
 
@@ -79,6 +105,25 @@ export default function DataPrepPage() {
     } catch (err) {
       console.warn("Could not check IndexedDB shard status:", err);
     }
+
+    // Check OPFS / Native Folder for an existing Zstd Parquet Vault manifest
+    import("@/lib/fs/LocalFSManager").then(({ getDirectoryOrOPFSHandle, readStructuredFile }) => {
+      const grp = (activeGroup || "default").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      getDirectoryOrOPFSHandle(grp).then((dir) => {
+        if (!dir) return;
+        readStructuredFile(dir, "Uploaded_Data", "_parquet_vault_manifest.json").then((raw) => {
+          if (!raw) return;
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed?.schema === "marigold.parquet.vault.v1") {
+              setDetectedVaultManifest(parsed);
+            }
+          } catch {
+            // Ignore malformed vault manifest
+          }
+        });
+      });
+    }).catch(() => {});
   }, []);
 
   // Safeguard against accidental tab closure during active processing
@@ -223,10 +268,19 @@ export default function DataPrepPage() {
                 executeExport();
               }}
               variant="primary"
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
+              className="bg-[#1C1917] hover:bg-[#292524] text-[#FAF8F5] font-black px-6 py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
               <span>📦 Chunk &amp; Save to Marigold_Local Folder</span>
+            </Button>
+            <Button
+              onClick={() => requirePin(handleCompileParquetVault)}
+              disabled={isCompilingVault}
+              variant="outline"
+              className="border-[#B45309] bg-[#FEF3C7]/60 text-[#78350F] hover:bg-[#FEF3C7] font-bold px-5 py-3.5 rounded-xl text-sm flex items-center gap-2"
+            >
+              <Zap className="w-4 h-4 text-[#B45309]" />
+              <span>{isCompilingVault ? "Compiling Zstd Parquet..." : "⚡ Compile Zstd Parquet Vault (<1.5s Re-Open)"}</span>
             </Button>
             <Button
               onClick={async () => {
@@ -242,6 +296,56 @@ export default function DataPrepPage() {
               className="border-[#B45309] text-[#78350F] hover:bg-[#FEF3C7]/40 bg-white font-bold"
             >
               🗑️ Clear RAM Database &amp; Flush Duplicates
+            </Button>
+          </div>
+          {vaultStatusMsg && (
+            <div className="bg-[#FAF8F5] border border-[#D6D0C4] rounded-xl px-4 py-2.5 text-xs font-medium text-[#1C1917]">
+              {vaultStatusMsg}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Zstd Parquet Vault Ready Banner (< 1.5s Instant Mount) */}
+      {detectedVaultManifest && (
+        <div className="bg-[#FAF8F5] border-2 border-[#1C1917] rounded-2xl p-6 text-[#1C1917] shadow-sm space-y-4">
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <span className="bg-[#FEF3C7] text-[#92400E] border border-[#F59E0B]/50 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-[#B45309]" /> Zstd Parquet Vault Ready (&lt; 1.5s Instant Re-Open)
+            </span>
+            <span className="text-xs font-mono font-bold text-[#57534E]">
+              Merkle Root: {detectedVaultManifest.merkleRoot.slice(0, 16)}… · {detectedVaultManifest.shards.length} shard(s)
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-xl font-serif font-bold text-[#1C1917]">
+                {detectedVaultManifest.title} ({detectedVaultManifest.rowCount.toLocaleString()} records)
+              </h3>
+              <p className="text-xs text-[#44403C] flex flex-wrap items-center gap-2">
+                <Layers className="w-3.5 h-3.5 text-[#B45309]" />
+                <span>
+                  5-Primitive Ontology: {detectedVaultManifest.columns.filter((c) => c.primitive === "location").length} location ·{" "}
+                  {detectedVaultManifest.columns.filter((c) => c.primitive === "temporal").length} temporal ·{" "}
+                  {detectedVaultManifest.columns.filter((c) => c.primitive === "identifier").length} identifier ·{" "}
+                  {detectedVaultManifest.columns.filter((c) => c.primitive === "categorical").length} categorical ·{" "}
+                  {detectedVaultManifest.columns.filter((c) => c.primitive === "measurement").length} measurement
+                </span>
+              </p>
+            </div>
+            <Button
+              onClick={async () => {
+                const { fastMountParquetVault } = await import("@/lib/datasets/parquetShardCompiler");
+                const mounted = await fastMountParquetVault();
+                if (mounted.mounted) {
+                  setVaultStatusMsg(`Mounted ${mounted.totalRows.toLocaleString()} records in ${mounted.elapsedMs}ms!`);
+                  window.location.href = "/explore";
+                }
+              }}
+              variant="primary"
+              className="bg-[#B45309] hover:bg-[#92400E] text-white font-bold px-5 py-3 rounded-xl text-xs"
+            >
+              ⚡ Instant Mount &amp; Open /explore →
             </Button>
           </div>
         </div>
@@ -393,10 +497,19 @@ export default function DataPrepPage() {
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto relative z-10">
               <Link
                 href="/explore"
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98] w-full sm:w-auto"
+                className="bg-[#B45309] hover:bg-[#92400E] text-white font-black px-6 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform active:scale-[0.98] w-full sm:w-auto"
               >
                 <span>🚀 Continue to Explore &amp; Review →</span>
               </Link>
+              <Button
+                onClick={() => requirePin(handleCompileParquetVault)}
+                disabled={isCompilingVault}
+                variant="outline"
+                className="w-full sm:w-auto border-[#1C1917] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-[#1C1917] font-bold"
+              >
+                <Zap className="w-4 h-4 text-[#B45309] mr-1.5" />
+                {isCompilingVault ? "Compiling Vault..." : "Compile Zstd Parquet Vault"}
+              </Button>
               <Button onClick={handleReset} variant="outline" className="w-full sm:w-auto border-border-soft hover:bg-surface text-text-body">
                 Clear &amp; Start Over
               </Button>

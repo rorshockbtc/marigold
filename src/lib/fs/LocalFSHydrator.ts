@@ -4,6 +4,7 @@ import { interpretColumnMappings } from "@/lib/csv/universalMapper";
 import { storeFileHandle, getBestAvailableSovereignStorage } from "@/lib/fs/LocalFSManager";
 import { isAirGapLocked } from "@/lib/security/airGapGuard";
 import { profileDatasetRows } from "@/lib/csv/DataProfiler";
+import { fastMountParquetVault } from "@/lib/datasets/parquetShardCompiler";
 export interface DiscoveredDataset {
   folderName: string;
   datasetName: string;
@@ -69,10 +70,28 @@ export class LocalFSHydrator {
           } catch (subErr) {
             console.warn(`Could not read subfolder ${entryName}:`, subErr);
           }
-        } else if (handle.kind === "file" && entryName.endsWith(".csv")) {
+        } else if (handle.kind === "file" && (entryName.endsWith(".csv") || entryName.endsWith(".parquet"))) {
           directCsvFiles.push(entryName);
           const file = await (handle as FileSystemFileHandle).getFile();
           directTotalBytes += file.size;
+        } else if (handle.kind === "file" && entryName === "_parquet_vault_manifest.json") {
+          try {
+            const file = await (handle as FileSystemFileHandle).getFile();
+            const parsedVault = JSON.parse(await file.text());
+            if (parsedVault?.schema === "marigold.parquet.vault.v1") {
+              datasets.unshift({
+                folderName: "",
+                datasetName: `${parsedVault.title} (Zstd Parquet Vault)`,
+                rowCount: parsedVault.rowCount || 0,
+                totalBytes: (parsedVault.shards || []).reduce((acc: number, s: any) => acc + (s.byteSize || 0), 0),
+                shardFiles: (parsedVault.shards || []).map((s: any) => s.filename),
+                isSubfolder: false,
+                lastModified: parsedVault.createdAt,
+              });
+            }
+          } catch {
+            // Ignore malformed vault manifest
+          }
         }
       }
 
@@ -106,6 +125,21 @@ export class LocalFSHydrator {
       if (!resolvedRoot) {
         if (onProgress) onProgress("ℹ️ No local folder or OPFS vault available yet.");
         return 0;
+      }
+
+      // Phase 1B Fast-Path: Instant <1.5s Zstd Parquet Vault + 1k preview mount
+      try {
+        const fastVault = await fastMountParquetVault(resolvedRoot);
+        if (fastVault.mounted && fastVault.totalRows > 0) {
+          if (onProgress) {
+            onProgress(
+              `⚡ Mounted ${fastVault.shardCount} Zstd Parquet shard(s) (${fastVault.totalRows.toLocaleString()} rows) in ${fastVault.elapsedMs}ms!`
+            );
+          }
+          return fastVault.totalRows;
+        }
+      } catch {
+        // Fall through to standard CSV shard discovery
       }
 
       if (onProgress) onProgress("🔍 Scanning Marigold_Local/Uploaded_Data for saved datasets...");

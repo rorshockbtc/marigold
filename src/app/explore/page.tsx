@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Drawer } from "@/components/ui/Drawer";
 import { useDataQuery } from "@/hooks/useDataQuery";
 import { useGroupSync } from "@/hooks/useGroupSync";
 import { useKanban } from "@/lib/workspace/KanbanContext";
@@ -15,6 +16,9 @@ import { DataRequiredState } from "@/components/DataRequiredState";
 import { ExploreDataPanel } from "@/components/ExploreDataPanel";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { ExecutiveBriefingExport } from "@/components/ExecutiveBriefingExport";
+import { DynamicCountyReviewerSection } from "@/components/DynamicCountyReviewerSection";
+import { Eli5ConceptPopover } from "@/components/Eli5ConceptPopover";
+import { aggregateDynamicCountySummaries } from "@/lib/data/dynamicCountyAggregator";
 import { Link } from "@/components/ui/Link";
 import { AirGapStatusBadge } from "@/components/AirGapStatusBadge";
 import { useCSVParser } from "@/hooks/useCSVParser";
@@ -95,6 +99,18 @@ export default function ExplorePage() {
   const [anomalyRecords, setAnomalyRecords] = useState<Record<string, any[]>>({});
   const [lastAuditTime, setLastAuditTime] = useState<string | null>(null);
   const [isUpToDate, setIsUpToDate] = useState(false);
+
+  const dynamicCounties = useMemo(
+    () =>
+      totalRows > 0
+        ? aggregateDynamicCountySummaries({
+            totalRows,
+            stateCode,
+            anomalyRecords,
+          })
+        : [],
+    [totalRows, stateCode, anomalyRecords]
+  );
   
   const GROUP_MANIFEST = ["Mississippi_July_2026", "Mari_Research_V1"];
   const [userLocalDatasets, setUserLocalDatasets] = useState<string[]>(["Mississippi_July_2026", "Mari_Research_V1"]);
@@ -447,16 +463,16 @@ export default function ExplorePage() {
 
   if (needsZkProceed) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-background font-sans p-8">
-        <div className="max-w-md w-full bg-white p-8 rounded-[24px] border border-border shadow-xl text-center">
-          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-8 h-8 text-blue-600" />
+      <div className="flex flex-col items-center justify-center h-full bg-[#F6F3EC] font-sans p-8">
+        <div className="max-w-md w-full bg-white p-8 rounded-[24px] border border-[#D6D0C4] shadow-xl text-center">
+          <div className="w-16 h-16 bg-[#FEF3C7] border border-[#F59E0B]/40 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-8 h-8 text-[#B45309]" />
           </div>
           <h2 className="text-2xl font-serif text-text-header mb-4">Secure Local Connection</h2>
           <p className="text-sm text-text-body mb-8 leading-relaxed">
             Marigold is creating a secure connection and utilizing the knowledge stored in your computer's files. Marigold is limited to accessing only those files for which you've granted permission and complies with strict data privacy standards.
           </p>
-          <Button onClick={handleZkProceed} data-testid="btn-proceed-securely" className="w-full py-4 text-lg font-bold">
+          <Button onClick={handleZkProceed} data-testid="btn-proceed-securely" className="w-full py-4 text-lg font-bold bg-[#B45309] hover:bg-[#92400E] text-white">
             Proceed Securely
           </Button>
         </div>
@@ -476,11 +492,11 @@ export default function ExplorePage() {
   return (
     <div className="relative h-full overflow-hidden flex flex-col bg-background">
       {!isGroupSynced && (
-        <div className="bg-blue-50 border-b border-blue-200 p-3 flex items-start gap-3 z-20 shadow-sm shrink-0">
-          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+        <div className="bg-[#FAF8F5] border-b border-[#DFD9CE] p-3 flex items-start gap-3 z-20 shadow-sm shrink-0">
+          <AlertCircle className="w-5 h-5 text-[#B45309] mt-0.5 shrink-0" />
           <div>
-            <h3 className="text-sm font-bold text-blue-900">Personal Mode Active</h3>
-            <p className="text-sm text-blue-800 mt-1">
+            <h3 className="text-sm font-bold text-[#1C1917]">Personal Mode Active</h3>
+            <p className="text-sm text-[#44403C] mt-1">
               You are currently working in Personal Mode. Any insights you generate will not be shared with the group unless you explicitly choose to publish an anonymous snapshot.
             </p>
           </div>
@@ -711,7 +727,7 @@ export default function ExplorePage() {
                     <Link
                       href="/data-stories"
                       data-testid="link-synthesize-data-story"
-                      className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm"
+                      className="flex items-center gap-2 bg-[#1C1917] hover:bg-[#292524] text-[#FAF8F5] font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm"
                     >
                       <span>Synthesize Data Story</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -764,6 +780,20 @@ export default function ExplorePage() {
                   status: pb.flaggedCount > 0 ? "Action Recommended" : "Clean" 
                 })) as any}
               />
+
+              {/* Dynamic County Reviewer & 1-Page County PDF Exporter */}
+              {dynamicCounties.length > 0 && (
+                <DynamicCountyReviewerSection
+                  counties={dynamicCounties}
+                  stateCode={stateCode}
+                  jurisdictionName={jurisdiction}
+                  totalDatasetRows={totalRows}
+                  onFilterPlaybooksByCounty={(countyName) => {
+                    setCountyFilter(countyName);
+                    setPublishStatus(`Filtered workspace target county to ${countyName}. Click "Explore Playbook" below to drill down.`);
+                  }}
+                />
+              )}
 
               {/* Baseline Extract Diff Comparison Card */}
               {baselineSnapshot && isAuditComplete && (
@@ -823,7 +853,11 @@ export default function ExplorePage() {
                           <div className="flex items-start gap-4 flex-1 pr-8 mb-4 lg:mb-0">
                             <div className="mt-1 bg-surface p-3 rounded-[12px] shrink-0">{pb.icon}</div>
                             <div className="space-y-2 flex-1 min-w-0">
-                              <h3 className="font-bold text-base text-text-header">{pb.name}</h3>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="font-bold text-base text-text-header">{pb.name}</h3>
+                                {pb.id === 'benfords-law' && <Eli5ConceptPopover concept="Benford" label="Plain English" />}
+                                {pb.id === 'nvra-reconciliation' && <Eli5ConceptPopover concept="NVRA" label="Plain English" />}
+                              </div>
                               <p className="text-sm text-text-body leading-relaxed">{pb.description || pb.desc}</p>
                               {personaMode === 'analyst' && PLAYBOOK_SQL_RECIPES[pb.id] && (
                                 <pre className="bg-[#1C1917] text-[#FAF8F5] p-3 rounded-xl font-mono text-[11px] overflow-x-auto leading-relaxed border border-[#44403C]">
@@ -836,7 +870,7 @@ export default function ExplorePage() {
                           <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-end shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-border-soft">
                             <div className="text-right">
                               <div className="text-xs font-bold text-text-body uppercase tracking-wider mb-1">Status</div>
-                              <span className={`px-2.5 py-1 rounded text-xs font-bold ${pb.status === 'complete' ? (pb.flaggedCount > 0 ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900') : pb.status === 'running' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'}`}>
+                              <span className={`px-2.5 py-1 rounded text-xs font-bold ${pb.status === 'complete' ? (pb.flaggedCount > 0 ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900') : pb.status === 'running' ? 'bg-amber-100 text-amber-900' : 'bg-[#F6F3EC] text-[#57534E]'}`}>
                                 {pb.flaggedCount > 0 ? `${pb.flaggedCount.toLocaleString()} Flagged Records` : pb.status === 'complete' ? '0 Flagged · Clean' : 'Ready'}
                               </span>
                               {delta !== null && pb.status === 'complete' && (
@@ -915,9 +949,9 @@ export default function ExplorePage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2 mb-1">
                               {row.occupant_count > 1 ? (
-                                <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Address</span>
+                                <span className="text-[10px] uppercase font-bold tracking-wider bg-[#F6F3EC] text-[#44403C] px-2 py-0.5 rounded">Address</span>
                               ) : (
-                                <span className="text-[10px] uppercase font-bold tracking-wider bg-blue-50 text-blue-600 px-2 py-0.5 rounded">Voter</span>
+                                <span className="text-[10px] uppercase font-bold tracking-wider bg-[#FEF3C7] text-[#92400E] px-2 py-0.5 rounded">Voter</span>
                               )}
                             </div>
                             <div className="text-sm font-bold text-text-header">
@@ -972,80 +1006,78 @@ export default function ExplorePage() {
         )}
       </div>
 
-      {/* Playbook Wizard Modal */}
-      {isWizardOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-200">
-            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-              <h3 className="font-bold text-lg text-slate-900">✨ Save as Custom Playbook</h3>
-              <Button variant="ghost" size="sm" onClick={() => setIsWizardOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">✕</Button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg flex items-start gap-2 mb-4">
-                <Filter className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                <p className="text-xs text-blue-900 font-medium leading-relaxed">
-                  You are saving your current filters (Target County: {countyFilter || "Statewide"}, Base Playbook: {activePlaybook}) into a repeatable, 1-click playbook.
-                </p>
-              </div>
+      {/* Playbook Wizard Drawer (Replaces Blocking Modal) */}
+      <Drawer
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        title="Save as Custom Playbook"
+        side="right"
+        size="md"
+      >
+        <div className="space-y-5">
+          <div className="bg-[#FAF8F5] border border-[#D6D0C4] p-3.5 rounded-xl flex items-start gap-2.5">
+            <Filter className="w-4 h-4 text-[#B45309] mt-0.5 shrink-0" />
+            <p className="text-xs text-[#2C2825] font-medium leading-relaxed">
+              You are saving your current filters (Target County: <strong>{countyFilter || "Statewide"}</strong>, Base Playbook: <strong>{activePlaybook || "Custom"}</strong>) into a repeatable, 1-click playbook.
+            </p>
+          </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Playbook Name</label>
-                <input 
-                  type="text" 
-                  value={newPbName}
-                  onChange={(e) => setNewPbName(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder="e.g. Dormitory Anomaly Scanner"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Description / Goal</label>
-                <textarea 
-                  value={newPbDesc}
-                  onChange={(e) => setNewPbDesc(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm h-24 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder="Describe what this playbook aims to find..."
-                />
-              </div>
-            </div>
-            
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsWizardOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  if (newPbName.trim()) {
-                    addPlaybook({
-                      id: crypto.randomUUID(),
-                      name: newPbName,
-                      desc: newPbDesc.slice(0, 50) + (newPbDesc.length > 50 ? '...' : ''),
-                      description: newPbDesc,
-                      audit_type: activePlaybook || 'custom',
-                      county: countyFilter || undefined,
-                      promotedGroups: []
-                    });
-                    setIsWizardOpen(false);
-                    setNewPbName('');
-                    setNewPbDesc('');
-                  }
-                }}
-                disabled={!newPbName.trim()}
-              >
-                Save Playbook
-              </Button>
-            </div>
+          <div>
+            <label className="block text-sm font-bold text-[#1C1917] mb-1">Playbook Name</label>
+            <input 
+              type="text" 
+              value={newPbName}
+              onChange={(e) => setNewPbName(e.target.value)}
+              className="w-full border border-[#D6D0C4] bg-[#FAF8F5] rounded-xl p-2.5 text-sm focus:border-[#B45309] outline-none"
+              placeholder="e.g. Dormitory Anomaly Scanner"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-[#1C1917] mb-1">Description / Goal</label>
+            <textarea 
+              value={newPbDesc}
+              onChange={(e) => setNewPbDesc(e.target.value)}
+              className="w-full border border-[#D6D0C4] bg-[#FAF8F5] rounded-xl p-2.5 text-sm h-28 focus:border-[#B45309] outline-none"
+              placeholder="Describe what this playbook aims to find..."
+            />
+          </div>
+
+          <div className="pt-4 border-t border-[#DDD6CA] flex justify-end gap-2">
+            <Button 
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsWizardOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="primary"
+              size="sm"
+              className="bg-[#B45309] hover:bg-[#92400E] text-white font-bold"
+              onClick={() => {
+                if (newPbName.trim()) {
+                  addPlaybook({
+                    id: crypto.randomUUID(),
+                    name: newPbName,
+                    desc: newPbDesc.slice(0, 50) + (newPbDesc.length > 50 ? '...' : ''),
+                    description: newPbDesc,
+                    audit_type: activePlaybook || 'custom',
+                    county: countyFilter || undefined,
+                    promotedGroups: []
+                  });
+                  setIsWizardOpen(false);
+                  setNewPbName('');
+                  setNewPbDesc('');
+                }
+              }}
+              disabled={!newPbName.trim()}
+            >
+              Save Playbook
+            </Button>
           </div>
         </div>
-      )}
+      </Drawer>
     </div>
   );
 }

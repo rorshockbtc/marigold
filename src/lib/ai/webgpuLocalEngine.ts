@@ -103,3 +103,46 @@ export async function tryWebGPUJSONCompletion<T>(
     return null;
   }
 }
+
+/**
+ * Streams a grounded plain-text answer from the warmed WebGPU engine using a 4-turn
+ * sliding window (`history.slice(-8)`). Zero network bytes transmitted.
+ */
+export async function streamWebGPUAnswer(
+  systemPrompt: string,
+  userMessage: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }> = [],
+  onChunk?: (delta: string, fullText: string) => void
+): Promise<string | null> {
+  if (!activeWebGPUEngine) return null;
+
+  try {
+    const windowHistory = history.slice(-8).map((m) => ({
+      role: m.role,
+      content: m.content.slice(0, 1200),
+    }));
+
+    const stream = await activeWebGPUEngine.chat.completions.create({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...windowHistory,
+        { role: 'user', content: userMessage.slice(0, 1800) },
+      ],
+      temperature: 0.2,
+      max_tokens: 650,
+      stream: true,
+    });
+
+    let fullText = '';
+    for await (const chunk of stream) {
+      const delta = chunk?.choices?.[0]?.delta?.content || '';
+      if (delta) {
+        fullText += delta;
+        onChunk?.(delta, fullText);
+      }
+    }
+    return fullText || null;
+  } catch {
+    return null;
+  }
+}

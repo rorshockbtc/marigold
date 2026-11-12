@@ -35,6 +35,7 @@ import {
   BlindSpotItem,
   RubricEvaluationResult,
 } from '@/lib/pipes/editorialRubricAndGraph';
+import { OtsReceiptVerifierWidget } from '@/components/OtsReceiptVerifierWidget';
 import {
   estimateMarigoldCuratorRoyalties,
   PIPES_SUBSCRIPTION_TIERS,
@@ -447,6 +448,15 @@ export function PipesNetworkBridgeModal({
                 {otsVerifyResult && (
                   <div className="p-3 bg-[#FAF8F5] border border-[#D8D0C5] rounded-lg text-[13px] font-mono font-bold text-[#1A1614]">
                     {otsVerifyResult}
+                  </div>
+                )}
+
+                {dagManifest && (
+                  <div className="pt-2">
+                    <OtsReceiptVerifierWidget
+                      expectedMerkleRootHex={dagManifest.merkleRoot}
+                      reportLabel={datasetName || "Active Workspace DAG"}
+                    />
                   </div>
                 )}
               </div>

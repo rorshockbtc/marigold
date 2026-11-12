@@ -302,72 +302,58 @@ export async function buildMarigoldAuditDag(params: {
   return computeDagMerkleRoot(inputs, params.namespace || 'marigoldinsights');
 }
 
+import {
+  OTS_MAGIC,
+  OTS_CALENDAR_BASES,
+  buildOtsFile,
+  proofStatus,
+  stampDigest,
+} from "./otsFormatAndClient";
+
 /**
  * Bitcoin OpenTimestamps (.ots) Binary Header & Proof Formatter
  * Matches the official OpenTimestamps magic header `\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94`
  */
-export const OTS_MAGIC_HEADER = new Uint8Array([
-  0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00,
-  0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
-]);
+export const OTS_MAGIC_HEADER = OTS_MAGIC;
 
-export const OTS_CALENDAR_URLS = [
-  'https://alice.btc.calendar.opentimestamps.org/digest',
-  'https://bob.btc.calendar.opentimestamps.org/digest',
-  'https://finney.calendar.eternitywall.com/digest',
-];
+export const OTS_CALENDAR_URLS = OTS_CALENDAR_BASES.map((u) => `${u}/digest`);
 
 export function createDeterministicOtsProofBytes(
   merkleRootHex: string,
   calendarResponseBytes?: Uint8Array
 ): Uint8Array {
-  const digestBytes = hexToBytes(merkleRootHex.padEnd(64, '0').slice(0, 64));
-  const versionAndHashOp = new Uint8Array([0x01, 0x08]); // version 1, SHA256 op (0x08)
-  const suffix =
+  return buildOtsFile(
+    merkleRootHex,
     calendarResponseBytes && calendarResponseBytes.length > 0
-      ? calendarResponseBytes
-      : new TextEncoder().encode(
-          `\x00pending:https://alice.btc.calendar.opentimestamps.org`
-        );
-
-  const total = new Uint8Array(
-    OTS_MAGIC_HEADER.length + versionAndHashOp.length + digestBytes.length + suffix.length
+      ? [{ url: OTS_CALENDAR_BASES[0], body: calendarResponseBytes }]
+      : []
   );
-  let offset = 0;
-  total.set(OTS_MAGIC_HEADER, offset);
-  offset += OTS_MAGIC_HEADER.length;
-  total.set(versionAndHashOp, offset);
-  offset += versionAndHashOp.length;
-  total.set(digestBytes, offset);
-  offset += digestBytes.length;
-  total.set(suffix, offset);
-  return total;
 }
 
 export function verifyDatasetOtsProof(
   otsBytes: Uint8Array,
   expectedMerkleRootHex: string
 ): { valid: boolean; digestHex: string; calendarStatus: string } {
-  if (!otsBytes || otsBytes.length < OTS_MAGIC_HEADER.length + 2 + 32) {
-    return { valid: false, digestHex: '', calendarStatus: 'Invalid .ots header length' };
+  try {
+    const info = proofStatus(otsBytes);
+    const expectedClean = expectedMerkleRootHex.toLowerCase().trim();
+    const valid = info.digestHex === expectedClean;
+    return {
+      valid,
+      digestHex: info.digestHex,
+      calendarStatus: !valid
+        ? "Digest mismatch against expected Merkle root"
+        : info.status === "complete"
+        ? `Anchored in Bitcoin Block #${info.blockHeight?.toLocaleString()}`
+        : `Verified SHA-256 Merkle Root in Bitcoin OpenTimestamps (.ots) container (${info.leafCount} leaf)`,
+    };
+  } catch (err) {
+    return {
+      valid: false,
+      digestHex: "",
+      calendarStatus: err instanceof Error ? err.message : "Invalid .ots proof structure",
+    };
   }
-  for (let i = 0; i < OTS_MAGIC_HEADER.length; i++) {
-    if (otsBytes[i] !== OTS_MAGIC_HEADER[i]) {
-      return { valid: false, digestHex: '', calendarStatus: 'Invalid .ots magic bytes' };
-    }
-  }
-  const digestStart = OTS_MAGIC_HEADER.length + 2;
-  const digestSlice = otsBytes.slice(digestStart, digestStart + 32);
-  const digestHex = bytesToHex(digestSlice);
-  const expectedClean = expectedMerkleRootHex.toLowerCase().trim();
-  const valid = digestHex === expectedClean;
-  return {
-    valid,
-    digestHex,
-    calendarStatus: valid
-      ? 'Verified SHA-256 Merkle Root in Bitcoin OpenTimestamps (.ots) container'
-      : 'Digest mismatch against expected Merkle root',
-  };
 }
 
 /**
@@ -377,40 +363,13 @@ export function verifyDatasetOtsProof(
 export async function stampDatasetMerkleRoot(merkleRootHex: string): Promise<{
   otsBytes: Uint8Array;
   calendarUrl: string;
-  mode: 'live-calendar' | 'airgapped-pending';
+  mode: "live-calendar" | "airgapped-pending";
 }> {
-  const digestBytes = hexToBytes(merkleRootHex);
-  for (const url of OTS_CALENDAR_URLS) {
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 3500);
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/vnd.opentimestamps.v1',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: digestBytes as BodyInit,
-        signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      if (res.ok) {
-        const calBytes = new Uint8Array(await res.arrayBuffer());
-        return {
-          otsBytes: createDeterministicOtsProofBytes(merkleRootHex, calBytes),
-          calendarUrl: url,
-          mode: 'live-calendar',
-        };
-      }
-    } catch {
-      // Try next calendar or fall back to air-gapped pending proof
-    }
-  }
-
+  const stamped = await stampDigest(merkleRootHex);
   return {
-    otsBytes: createDeterministicOtsProofBytes(merkleRootHex),
-    calendarUrl: OTS_CALENDAR_URLS[0],
-    mode: 'airgapped-pending',
+    otsBytes: stamped.bytes,
+    calendarUrl: stamped.calendars[0] || OTS_CALENDAR_URLS[0],
+    mode: stamped.mode,
   };
 }
 

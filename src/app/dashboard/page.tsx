@@ -12,6 +12,7 @@ import { useVoterRollConnection } from "@/hooks/useVoterRollConnection";
 import { useDataStats } from "@/hooks/useDataStats";
 import { useGroupSync } from "@/hooks/useGroupSync";
 import { DeviceSecurityNotice } from "@/components/DeviceSecurityNotice";
+import { CoalitionRelaySyncCard } from "@/components/CoalitionRelaySyncCard";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -240,7 +241,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Shared Playbooks Sidebar */}
+          {/* Shared Playbooks & Encrypted Coalition Relay Sidebar */}
           <div className="space-y-4">
             <div className="bg-white border border-border-soft rounded-2xl p-5 shadow-sm space-y-4">
               <h4 className="text-sm font-serif font-bold text-text-header uppercase tracking-wider">
@@ -259,6 +260,8 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
+
+            <CoalitionRelaySyncCard activeGroup={activeGroup} />
           </div>
         </div>
       )}

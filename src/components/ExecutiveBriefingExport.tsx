@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Download, Printer, ShieldCheck, CheckCircle, AlertTriangle, FileText } from "lucide-react";
+import { Download, Printer, ShieldCheck, CheckCircle, AlertTriangle, FileText, FileCode2 } from "lucide-react";
 import { ExecutiveReportPDFTemplate } from "@/components/ExecutiveReportPDFTemplate";
 import { Button } from "@/components/ui/Button";
 import { useExportManager } from "@/hooks/useExportManager";
 import { PipesNetworkBridgeModal } from "@/components/PipesNetworkBridgeModal";
+import { downloadStandaloneOfflineDossier } from "@/lib/datasets/standaloneOfflineHtmlBundle";
 
 export interface PlaybookAuditSummary {
   id: string;
@@ -121,6 +122,33 @@ export function ExecutiveBriefingExport({
             </Button>
 
             <Button
+              variant="outline"
+              onClick={async () => {
+                await downloadStandaloneOfflineDossier({
+                  title: `${jurisdictionName} (${stateCode}) 360° Executive Briefing`,
+                  subtitle: `Non-partisan Zero-Cloud forensic integrity summary across ${totalRecordsScanned.toLocaleString()} records.`,
+                  jurisdictionName,
+                  stateCode,
+                  totalRecords: totalRecordsScanned,
+                  cleanlinessScore: Math.round(actualCleanPercentage),
+                  summaryParagraphs: [
+                    `Marigold Insights scanned ${totalRecordsScanned.toLocaleString()} citizen registration records locally in browser memory with ${actualCleanPercentage}% baseline cleanliness and ${totalAnomalies.toLocaleString()} anomalies across ${sortedPlaybooks.length} playbooks.`,
+                  ],
+                  metrics: sortedPlaybooks.slice(0, 6).map((pb) => ({
+                    label: pb.name,
+                    valueWithUnit: `${pb.flaggedCount.toLocaleString()} flagged`,
+                    detail: pb.description,
+                  })),
+                });
+              }}
+              disabled={!isAuditComplete}
+              className="flex-1 md:flex-initial"
+            >
+              <FileCode2 className="w-4 h-4 mr-2" />
+              Offline .html
+            </Button>
+
+            <Button
               variant="primary"
               onClick={handleExportFullAudit}
               disabled={!isAuditComplete}
@@ -140,10 +168,10 @@ export function ExecutiveBriefingExport({
             <p className="text-xs text-emerald-700">{cleanRecordsCount.toLocaleString()} verified clean citizen records</p>
           </div>
 
-          <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Total Records Evaluated</span>
-            <div className="text-3xl font-bold text-slate-900">{totalRecordsScanned.toLocaleString()}</div>
-            <p className="text-xs text-slate-600">Air-gapped in local browser memory</p>
+          <div className="p-6 bg-[#FAF8F5] border border-[#D6D0C4] rounded-xl space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#57534E] block">Total Records Evaluated</span>
+            <div className="text-3xl font-bold text-[#111111]">{totalRecordsScanned.toLocaleString()}</div>
+            <p className="text-xs text-[#57534E]">Air-gapped in local browser memory</p>
           </div>
 
           <div className="p-6 bg-amber-50/50 border border-amber-200 rounded-xl space-y-2">
@@ -173,7 +201,7 @@ export function ExecutiveBriefingExport({
                       {pb.flaggedCount > 0 ? `${pb.flaggedCount} Anomalies` : '100% Clean'}
                     </span>
                   </div>
-                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex p-0.5">
+                  <div className="h-3 w-full bg-[#F2ECE1] rounded-full overflow-hidden flex p-0.5">
                     <div 
                       className={`h-full rounded-full transition-all duration-500 ${pb.flaggedCount > 20 ? 'bg-[#B45309]' : pb.flaggedCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
                       style={{ width: `${pb.flaggedCount > 0 ? Math.max(4, barWidth) : 100}%` }} 

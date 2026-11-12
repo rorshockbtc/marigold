@@ -4,7 +4,11 @@ import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import ThreatManifold3DExplorer from "@/components/ThreatManifold3DExplorer";
 import { useStateBenchmark, StateSwitcherPill, BenchmarkStateCode } from "@/lib/data/StateBenchmarkContext";
-import { ArrowLeft, ArrowRight, Compass, Download, Printer, Copy, Check, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Compass, Download, Printer, Copy, Check, ShieldCheck, FileCode2 } from "lucide-react";
+import { CountyAudioBriefingButton } from "@/components/CountyAudioBriefingButton";
+import { OtsReceiptVerifierWidget } from "@/components/OtsReceiptVerifierWidget";
+import { sha256Hex } from "@/lib/crypto/merkleDagAndOtsBridge";
+import { downloadStandaloneOfflineDossier } from "@/lib/datasets/standaloneOfflineHtmlBundle";
 
 /* ---------- Marigold Design System tokens (zero red; Marigold amber/gold) ---------- */
 const INK = "#111111";
@@ -111,6 +115,23 @@ export default function MississippiPlaybookAnalysisReportPage() {
   const [countySearch, setCountySearch] = useState("");
   const [ledgerShowAll, setLedgerShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [reportMerkleHex, setReportMerkleHex] = useState<string>(
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  );
+
+  useEffect(() => {
+    sha256Hex(
+      JSON.stringify({
+        state: activeState,
+        records: metadata.totalRecords,
+        ballots: totalBallotCredits,
+        counties: totalCountiesCount,
+        extract: metadata.extractDate,
+      })
+    )
+      .then(setReportMerkleHex)
+      .catch(() => {});
+  }, [activeState, metadata.totalRecords, metadata.extractDate, totalBallotCredits, totalCountiesCount]);
 
   useEffect(() => {
     if (!counties.some((c) => c.county === quickCounty)) {
@@ -646,6 +667,60 @@ export default function MississippiPlaybookAnalysisReportPage() {
                       <Download className="h-4 w-4 shrink-0" />
                       Print / Export County PDF
                     </button>
+                    <CountyAudioBriefingButton
+                      briefingInput={{
+                        county: selected.county,
+                        stateName,
+                        authorityLabel,
+                        total: selected.total,
+                        active: selected.active,
+                        inactive: selected.inactive,
+                        priorityScore: selected.threatEnergy,
+                        cleanlinessScore: selected.cleanlinessScore,
+                        statusLabel: STATUS_LABEL[selected.regime] || selected.regime,
+                        highDensityCount: selected.highDensityCount,
+                        highDensityVoters: selected.highDensityVoters,
+                        ncoaCount: selected.ncoaCount,
+                        duplicateCount: selected.duplicateCount,
+                        overCapacityPrecincts: selected.overCapacityPrecincts,
+                        splitPrecincts: Number((selected as unknown as Record<string, unknown>).splitPrecincts ?? 0),
+                        inactiveVotedRecent: Number((selected as unknown as Record<string, unknown>).inactiveVotedRecent ?? 0),
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sAny = selected as unknown as Record<string, unknown>;
+                        downloadStandaloneOfflineDossier({
+                          title: `${selected.county} County, ${stateName} — Public Audit Dossier`,
+                          subtitle: `Zero-PII civic voter roll briefing for ${authorityLabel}.`,
+                          jurisdictionName: `${selected.county} County`,
+                          stateCode: activeState,
+                          totalRecords: selected.total,
+                          cleanlinessScore: selected.cleanlinessScore,
+                          summaryParagraphs: [
+                            `${selected.county} County comprises ${fmt(selected.total)} total registered voters (${fmt(selected.active)} active, ${fmt(selected.inactive)} inactive) with an overall Roll Cleanliness Score of ${selected.cleanlinessScore}/100 and Priority Score of ${selected.threatEnergy.toFixed(1)}/100.`,
+                          ],
+                          metrics: [
+                            { label: "Total Registered Voters", valueWithUnit: `${fmt(selected.total)} voters`, detail: `${fmt(selected.active)} active · ${fmt(selected.inactive)} inactive` },
+                            { label: "High-Density Addresses (8+)", valueWithUnit: `${fmt(selected.highDensityCount)} addresses`, detail: `${fmt(selected.highDensityVoters)} voters at residential parcels` },
+                            { label: "Out-of-State Mailings", valueWithUnit: `${fmt(selected.ncoaCount)} active voters`, detail: "Subject to federal NVRA confirmation notices" },
+                            { label: "Same-ZIP Duplicates", valueWithUnit: `${fmt(selected.duplicateCount)} pairs`, detail: `${selected.activeDuplicateCount || 0} active–active duplicate pairs` },
+                            { label: "Large Precincts (3,000+)", valueWithUnit: `${selected.overCapacityPrecincts} precincts`, detail: `Largest precinct: ${fmt(selected.maxPrecinctVoters)} voters` },
+                            { label: "Recent-Vote Inactive", valueWithUnit: `${fmt(Number(sAny.inactiveVotedRecent ?? 0))} voters`, detail: `${Number(sAny.splitPrecincts ?? 0)} split-ballot precincts` },
+                          ],
+                          actionItems: [
+                            `Verify ${fmt(Number(sAny.inactiveVotedRecent ?? 0))} voters with recorded 2024–2026 ballots who remain marked Inactive.`,
+                            `Review ${fmt(selected.highDensityCount)} high-density residential addresses (${fmt(selected.highDensityVoters)} voters) for missing unit numbers.`,
+                            `Process NVRA notices for ${fmt(selected.ncoaCount)} active out-of-state mailings and reconcile ${fmt(selected.duplicateCount)} same-ZIP duplicate name pairs.`,
+                          ],
+                        });
+                      }}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#111111]/25 bg-[#FAF8F5] hover:bg-[#F2ECE1] px-4 text-sm font-bold text-[#111111] transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      <FileCode2 className="h-4 w-4 shrink-0 text-[#B45309]" />
+                      Offline .html Dossier
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1130,6 +1205,14 @@ export default function MississippiPlaybookAnalysisReportPage() {
                 );
               })}
             </ol>
+          </section>
+
+          {/* ---------- Cryptographic Custody & OpenTimestamps Verification ---------- */}
+          <section className="space-y-4 print:hidden">
+            <OtsReceiptVerifierWidget
+              expectedMerkleRootHex={reportMerkleHex}
+              reportLabel={`${stateName} (${totalCountiesCount} Counties · Zero-PII Edition)`}
+            />
           </section>
 
           {/* ---------- Share ---------- */}
