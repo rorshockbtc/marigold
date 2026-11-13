@@ -37,7 +37,19 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
       'us_county_election_admin_cvap_2024.csv': 3222,
       'ms_nc_audit_vs_federal_benchmarks_2026.csv': 182,
       'fema_county_election_continuity_2020_2026.csv': 3210,
+      'us_county_public_health_access_2024.csv': 3143,
+      'us_county_irs_migration_fdic_banking_2024.csv': 3219,
     };
+
+    const allowedSignedColumns = new Set([
+      'net_domestic_mig_2020_2024',
+      'turnout_change_2020_to_2024_pct',
+      'irs_net_returns',
+      'irs_net_individuals',
+      'irs_net_agi_thousands',
+      'irs_net_agi_millions',
+      'civic_health_barrier_z',
+    ]);
 
     for (const [filename, expectedRowCount] of Object.entries(expectedCounts)) {
       const filePath = path.join(DATASETS_DIR, filename);
@@ -52,40 +64,48 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
       expect(piiCheck.allowed).toBe(true);
       expect(piiCheck.isSensitive).toBe(false);
 
-      // Verify no EAVS negative sentinel values (-99, -88, -77) leaked into numeric cells
+      // Verify no EAVS negative sentinel values (-99, -88, -77) leaked into unsigned numeric cells
       const headers = lines[0].split(',');
       for (let i = 1; i < lines.length; i++) {
         const cells = lines[i].split(',');
         for (let c = 0; c < cells.length; c++) {
           const val = cells[c].trim();
           const col = headers[c];
-          if (col !== 'net_domestic_mig_2020_2024' && col !== 'turnout_change_2020_to_2024_pct') {
+          if (!allowedSignedColumns.has(col)) {
             expect(['-99', '-88', '-77', '-99.0', '-88.0', '-77.0']).not.toContain(val);
           }
         }
       }
 
-      // Verify SHA-256 matches catalog metadata
+      // Verify SHA-256 matches catalog metadata for both CSV and Zstd Parquet shard
       const digest = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
       const dsEntry = Object.values(PUBLIC_CIVIC_DATASETS).find((d) => d.filename === filename);
       expect(dsEntry).toBeDefined();
       expect(dsEntry!.sha256).toBe(digest);
       expect(dsEntry!.rows).toBe(expectedRowCount);
+
+      const pqPath = path.join(DATASETS_DIR, dsEntry!.parquetFilename);
+      expect(fs.existsSync(pqPath)).toBe(true);
+      const pqBuf = fs.readFileSync(pqPath);
+      expect(pqBuf.subarray(0, 4).toString('ascii')).toBe('PAR1');
+      expect(pqBuf.subarray(pqBuf.length - 4).toString('ascii')).toBe('PAR1');
+      const pqDigest = crypto.createHash('sha256').update(pqBuf).digest('hex');
+      expect(dsEntry!.parquetSha256).toBe(pqDigest);
     }
 
     expect(manifest).toBeTruthy();
   });
 
-  it('validates public/pipes-corpus/index.json (4 Pipes, 24 Articles) and Zero-PII compliance across all exported bundles', () => {
+  it('validates public/pipes-corpus/index.json (6 Pipes, 32 Articles) and Zero-PII compliance across all exported bundles', () => {
     const indexPath = path.join(PIPES_CORPUS_DIR, 'index.json');
     expect(fs.existsSync(indexPath)).toBe(true);
 
     const indexRaw = fs.readFileSync(indexPath, 'utf-8');
     const index = JSON.parse(indexRaw);
-    expect(index.totalPipes).toBe(4);
-    expect(index.totalArticles).toBe(24);
+    expect(index.totalPipes).toBe(6);
+    expect(index.totalArticles).toBe(32);
     expect(Array.isArray(index.pipes)).toBe(true);
-    expect(index.pipes).toHaveLength(4);
+    expect(index.pipes).toHaveLength(6);
     expect(validateCivicContent(indexRaw, 'index.json').allowed).toBe(true);
 
     for (const pipe of index.pipes) {
@@ -108,11 +128,11 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
     expect(normalizeDuckDBValue(null)).toBeNull();
   });
 
-  it('exposes 5 adopted repos, 3 excluded repos, 3 mountable datasets, 4 story starters, and intent-aware dataset resolver', () => {
-    expect(EVALUATED_PUBLIC_DATA_REPOS).toHaveLength(5);
+  it('exposes 9 adopted repos, 3 excluded repos, 5 mountable datasets, 6 story starters, and intent-aware dataset resolver', () => {
+    expect(EVALUATED_PUBLIC_DATA_REPOS).toHaveLength(9);
     expect(EXCLUDED_PUBLIC_DATA_REPOS).toHaveLength(3);
-    expect(Object.keys(PUBLIC_CIVIC_DATASETS)).toHaveLength(3);
-    expect(CURATED_PIPE_STORY_STARTERS).toHaveLength(4);
+    expect(Object.keys(PUBLIC_CIVIC_DATASETS)).toHaveLength(5);
+    expect(CURATED_PIPE_STORY_STARTERS).toHaveLength(6);
 
     for (const repo of EXCLUDED_PUBLIC_DATA_REPOS) {
       expect(repo.excludedReason).toBeTruthy();
@@ -121,9 +141,11 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
     expect(resolvePublicDatasetForWebHunt('Check Hurricane Helene DR-4827-NC FEMA continuity').id).toBe('femaContinuity');
     expect(resolvePublicDatasetForWebHunt('Compare Mississippi and North Carolina Brunswick migration').id).toBe('msNcBenchmarks');
     expect(resolvePublicDatasetForWebHunt('National EAVS confirmation notices and removals').id).toBe('usCountyAtlas');
+    expect(resolvePublicDatasetForWebHunt('CDC PLACES rural hospital deserts and disability').id).toBe('publicHealthAccess');
+    expect(resolvePublicDatasetForWebHunt('IRS AGI tax migration and FDIC bank deposits').id).toBe('irsFdicFiscal');
   });
 
-  it('generates deterministic SQL payloads tailored to FEMA, EAVS removals, and CVAP county schemas', () => {
+  it('generates deterministic SQL payloads tailored to FEMA, EAVS removals, CVAP, CDC health, and IRS/FDIC schemas', () => {
     const femaSchema = [
       { column_name: 'county_name', column_type: 'VARCHAR' },
       { column_name: 'state_abbr', column_type: 'VARCHAR' },
@@ -151,12 +173,33 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
     const cvapSql = generateDeterministicSQLPayload('Which counties have highest active registration vs CVAP?', cvapSchema);
     expect(cvapSql.query).toContain('marigold_active_to_cvap_pct');
 
-    const research = synthesizeDeterministicResearch('Compare EAVS 2024 confirmation notices and CVAP MOE');
+    const healthSchema = [
+      { column_name: 'county_name', column_type: 'VARCHAR' },
+      { column_name: 'state_abbr', column_type: 'VARCHAR' },
+      { column_name: 'eb_smoothed_disability_pct', column_type: 'DOUBLE' },
+      { column_name: 'hhs_hospitals_count', column_type: 'BIGINT' },
+      { column_name: 'hospital_desert_flag', column_type: 'BIGINT' },
+    ];
+    const healthSql = generateDeterministicSQLPayload('Compare CDC PLACES disability prevalence across hospital deserts', healthSchema);
+    expect(healthSql.query).toContain('eb_smoothed_disability_pct');
+
+    const fiscalSchema = [
+      { column_name: 'county_name', column_type: 'VARCHAR' },
+      { column_name: 'state_abbr', column_type: 'VARCHAR' },
+      { column_name: 'irs_net_agi_millions', column_type: 'DOUBLE' },
+      { column_name: 'fdic_deposits_millions_2024', column_type: 'DOUBLE' },
+    ];
+    const irsSql = generateDeterministicSQLPayload('Rank counties by IRS AGI tax inflow migration', fiscalSchema);
+    expect(irsSql.query).toContain('irs_net_agi_millions');
+    const fdicSql = generateDeterministicSQLPayload('Rank counties by FDIC bank deposits', fiscalSchema);
+    expect(fdicSql.query).toContain('fdic_deposits_millions_2024');
+
+    const research = synthesizeDeterministicResearch('Compare CDC PLACES Empirical Bayes and IRS AGI migration');
     expect(research.citations.length).toBeGreaterThan(0);
     expect(research.narrative.length).toBeGreaterThan(20);
   });
 
-  it('grounds offline BM25 corpus search against EAVS A10a, Hurricane Helene DR-4827-NC, and Brunswick migration', () => {
+  it('grounds offline BM25 corpus search against EAVS, Helene, Brunswick, CDC PLACES, and IRS/FDIC', () => {
     const index = getDefaultMarigoldCorpusIndex();
 
     const eavsHits = queryLocalBM25Corpus(index, 'EAVS A10a confirmation notices sentinel', 3);
@@ -170,11 +213,20 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
     const brunswickHits = queryLocalBM25Corpus(index, 'Brunswick migration CVAP 90% MOE', 3);
     expect(brunswickHits.length).toBeGreaterThan(0);
     expect(brunswickHits.map((h) => `${h.doc.title} ${h.doc.content}`).join(' ')).toMatch(/Brunswick|CVAP/i);
+
+    const healthHits = queryLocalBM25Corpus(index, 'CDC PLACES Empirical Bayes Humphreys', 3);
+    expect(healthHits.length).toBeGreaterThan(0);
+    expect(healthHits.map((h) => `${h.doc.title} ${h.doc.content}`).join(' ')).toMatch(/Humphreys|Empirical Bayes/i);
+
+    const fiscalHits = queryLocalBM25Corpus(index, 'IRS AGI Brunswick FDIC Mecklenburg', 3);
+    expect(fiscalHits.length).toBeGreaterThan(0);
+    expect(fiscalHits.map((h) => `${h.doc.title} ${h.doc.content}`).join(' ')).toMatch(/Mecklenburg|FDIC|Brunswick/i);
   });
 
-  it('ensures .vercelignore and Clerk proxy allowlist public civic CSVs and Pipes JSON corpora', () => {
+  it('ensures .vercelignore and Clerk proxy allowlist public civic CSVs, Parquet shards, and Pipes JSON corpora', () => {
     const vercelIgnore = fs.readFileSync(path.join(MARIGOLD_ROOT, '.vercelignore'), 'utf-8');
     expect(vercelIgnore).toContain('!public/datasets/civic/*.csv');
+    expect(vercelIgnore).toContain('!public/datasets/civic/*.parquet');
 
     const proxyTs = fs.readFileSync(path.join(MARIGOLD_ROOT, 'src/proxy.ts'), 'utf-8');
     expect(proxyTs).toContain("'/datasets(.*)'");

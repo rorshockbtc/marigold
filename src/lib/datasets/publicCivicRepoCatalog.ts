@@ -17,13 +17,17 @@ export interface PublicDataRepoEvaluation {
 }
 
 export interface MountablePublicDataset {
-  id: 'usCountyAtlas' | 'msNcBenchmarks' | 'femaContinuity';
+  id: 'usCountyAtlas' | 'msNcBenchmarks' | 'femaContinuity' | 'publicHealthAccess' | 'irsFdicFiscal';
   label: string;
   shortLabel: string;
   filename: string;
   publicPath: string;
   rows: number;
   sha256: string;
+  parquetFilename: string;
+  parquetPath: string;
+  parquetSha256: string;
+  primaryMetricCol: string;
   description: string;
   keyColumns: string[];
 }
@@ -32,7 +36,13 @@ export interface CuratedPipeStoryStarter {
   id: string;
   title: string;
   subtitle: string;
-  pipeSlug: 'marigoldinsights' | 'civic-data-benchmarks' | 'disaster-continuity' | 'election-integrity';
+  pipeSlug:
+    | 'marigoldinsights'
+    | 'civic-data-benchmarks'
+    | 'disaster-continuity'
+    | 'election-integrity'
+    | 'public-health-benchmarks'
+    | 'fiscal-migration';
   pipeLabel: string;
   pipeUrl: string;
   datasetId: MountablePublicDataset['id'];
@@ -103,6 +113,50 @@ export const EVALUATED_PUBLIC_DATA_REPOS: PublicDataRepoEvaluation[] = [
     status: 'adopted',
     summary: 'Keyless paginated disaster declarations tracking Hurricane Helene (DR-4827-NC, 39 NC counties) and multi-year stress counties like Washoe NV and coastal LA.',
   },
+  {
+    id: 'cdc-places-2024-county',
+    name: 'CDC PLACES 2024 Release (County GIS-Friendly Format)',
+    agencyOrMaintainer: 'Centers for Disease Control and Prevention (CDC)',
+    url: 'https://data.cdc.gov/api/views/i46a-9kgh/rows.csv?accessType=DOWNLOAD',
+    sha256: 'a47cad3a852c5b35a031d548bc6dd4e9b5f7836bb7c851b84382160beafe15ef',
+    license: '17 U.S.C. 105 Federal Public Domain',
+    joinKey: '5-digit county_fips (3,143 counties · 40 age-adjusted measures)',
+    status: 'adopted',
+    summary: 'Supplies county age-adjusted prevalence for disability, mobility, cognition, transportation insecurity, uninsured adults, diabetes, and food insecurity.',
+  },
+  {
+    id: 'hhs-hospitals-nchs-mortality',
+    name: 'HHS Registered Acute Hospital Counts & NCHS County Mortality',
+    agencyOrMaintainer: 'U.S. HHS / CDC National Center for Health Statistics',
+    url: 'https://healthdata.gov/api/views/vz64-k9wr/rows.csv?accessType=DOWNLOAD',
+    sha256: '3edae9913b5081d4d77bdcead434641f4c4859a19d3fae879d94576a2ac433e7',
+    license: '17 U.S.C. 105 Federal Public Domain',
+    joinKey: '5-digit county_fips (6,732 hospitals across 2,528 counties + 659 hospital deserts)',
+    status: 'adopted',
+    summary: 'Aggregates facility counts cleanly onto county_fips (dropping facility street addresses) alongside NCHS model-based drug mortality across 3,136 counties.',
+  },
+  {
+    id: 'irs-soi-migration-2022-2023',
+    name: 'IRS SOI 2022-2023 County-to-County Migration',
+    agencyOrMaintainer: 'Internal Revenue Service Statistics of Income',
+    url: 'https://www.irs.gov/pub/irs-soi/countyinflow2223.csv',
+    sha256: '813ba2ef550c6a598a5121ccf98edcc79f61f1af69eb495bf44cd830b1586745',
+    license: '17 U.S.C. 105 Federal Public Domain',
+    joinKey: '5-digit county_fips (Form 1040 returns, individuals, and net AGI in $1,000s)',
+    status: 'adopted',
+    summary: 'Measures annual household tax-return inflows, outflows, and Adjusted Gross Income shifts (e.g., +$502.07M Brunswick NC vs. -$133.79M Hinds MS).',
+  },
+  {
+    id: 'fdic-sod-2024',
+    name: 'FDIC 2024 Summary of Deposits (Bank Branches & Deposits)',
+    agencyOrMaintainer: 'Federal Deposit Insurance Corporation',
+    url: 'https://banks.data.fdic.gov/api/sod?filters=YEAR%3A2024&format=json',
+    sha256: '9926d0c90217bbde8d23d05d4c59f5ea606e1104ce37bb4b15957007f375d4e0',
+    license: '17 U.S.C. 105 Federal Public Domain',
+    joinKey: '5-digit county_fips (76,727 branches · $17.40T deposits across 3,195 counties)',
+    status: 'adopted',
+    summary: 'Aggregates 2024 bank branches, unique FDIC charters (CERT), deposits ($M), and 38 banking-desert counties nationwide.',
+  },
 ];
 
 export const EXCLUDED_PUBLIC_DATA_REPOS: PublicDataRepoEvaluation[] = [
@@ -153,6 +207,10 @@ export const PUBLIC_CIVIC_DATASETS: Record<MountablePublicDataset['id'], Mountab
     publicPath: '/datasets/civic/us_county_election_admin_cvap_2024.csv',
     rows: 3222,
     sha256: '0b32894e8244e488c65da48986e4ce4eb13f918cf9fd7aa5d36f53161e4ce7a6',
+    parquetFilename: 'us_county_election_admin_cvap_2024.parquet',
+    parquetPath: '/datasets/civic/us_county_election_admin_cvap_2024.parquet',
+    parquetSha256: 'fe691795948c93d46a7d524ed7f46eee9037d003e8a2e51217eb60f6d1d9fe83',
+    primaryMetricCol: 'eavs_removals_total',
     description: 'Nationwide Zero-PII county join across 240.8M CVAP citizens, 226.4M EAVS voters, 35.3M confirmation notices, 20.0M removals, 13.98M deaths, and 154.2M 2024 votes.',
     keyColumns: ['county_fips', 'state_abbr', 'county_name', 'cvap_2024', 'eavs_confirmation_notices', 'eavs_removals_total', 'eavs_mail_undeliverable', 'fema_disasters_2020_2026'],
   },
@@ -164,6 +222,10 @@ export const PUBLIC_CIVIC_DATASETS: Record<MountablePublicDataset['id'], Mountab
     publicPath: '/datasets/civic/ms_nc_audit_vs_federal_benchmarks_2026.csv',
     rows: 182,
     sha256: '8c3c387b9e6f923249b55ffc022a41e9fa0e4b4631b34c7f3ac9f1323aadf49a',
+    parquetFilename: 'ms_nc_audit_vs_federal_benchmarks_2026.parquet',
+    parquetPath: '/datasets/civic/ms_nc_audit_vs_federal_benchmarks_2026.parquet',
+    parquetSha256: 'ac9abdfe1c6817235000b4c18f2d8e59808e0500d90143713b6322cffbfe2394',
+    primaryMetricCol: 'marigold_active_to_cvap_pct',
     description: '1:1 join of Mississippi (82 counties) and North Carolina (100 counties) 2026 roll audits against Census CVAP 90% MOE bounds, net domestic migration, EAVS notices, and Helene DR-4827-NC.',
     keyColumns: ['county_fips', 'state_abbr', 'county_name', 'marigold_active_to_cvap_pct', 'exceeds_cvap_moe_flag', 'net_domestic_mig_2020_2024', 'eavs_2024_notices', 'eavs_2024_removals'],
   },
@@ -175,8 +237,42 @@ export const PUBLIC_CIVIC_DATASETS: Record<MountablePublicDataset['id'], Mountab
     publicPath: '/datasets/civic/fema_county_election_continuity_2020_2026.csv',
     rows: 3210,
     sha256: '55a51720e644294e2cffea8645f03876843bd62fbac3ccd1031aaa1d75fc414e',
+    parquetFilename: 'fema_county_election_continuity_2020_2026.parquet',
+    parquetPath: '/datasets/civic/fema_county_election_continuity_2020_2026.parquet',
+    parquetSha256: '5ecc2b7e5b26b6426acc33ad299023435f1f4496bb326e51a886e2178e18d413',
+    primaryMetricCol: 'fema_disasters_2020_2026',
     description: 'County-level federal disaster declarations joined against 2020-to-2024 certified turnout change, undeliverable mail packets, and provisional ballots cast.',
     keyColumns: ['county_fips', 'state_abbr', 'county_name', 'fema_disasters_2020_2026', 'fema_2024_election_year_disasters', 'turnout_change_2020_to_2024_pct', 'eavs_mail_undeliverable'],
+  },
+  publicHealthAccess: {
+    id: 'publicHealthAccess',
+    label: '3,143 Counties · CDC PLACES + HHS Hospitals + NCHS Mortality',
+    shortLabel: 'CDC Health + Hospitals',
+    filename: 'us_county_public_health_access_2024.csv',
+    publicPath: '/datasets/civic/us_county_public_health_access_2024.csv',
+    rows: 3143,
+    sha256: 'ed70d87f98f2ee32640eadd73796ad903f60c2c399e9c5625e03fc6a1ff472db',
+    parquetFilename: 'us_county_public_health_access_2024.parquet',
+    parquetPath: '/datasets/civic/us_county_public_health_access_2024.parquet',
+    parquetSha256: '3b067fc311b31ccbff74352cccee82a0f9bb47ed14311b2ea5fd95f9457eae31',
+    primaryMetricCol: 'eb_smoothed_disability_pct',
+    description: 'CDC PLACES 2024 age-adjusted chronic & disability prevalence with Empirical Bayes state shrinkage, 6,732 HHS hospitals (659 desert counties), and 3,136 NCHS drug mortality counties.',
+    keyColumns: ['county_fips', 'state_abbr', 'county_name', 'eb_smoothed_disability_pct', 'lack_transport_adj_prev', 'uninsured_adj_prev', 'hhs_hospitals_count', 'hospital_desert_flag', 'nchs_drug_mortality_rate', 'civic_health_barrier_z'],
+  },
+  irsFdicFiscal: {
+    id: 'irsFdicFiscal',
+    label: '3,219 Counties · IRS 2022-23 AGI Migration + FDIC Deposits',
+    shortLabel: 'IRS AGI + FDIC Banks',
+    filename: 'us_county_irs_migration_fdic_banking_2024.csv',
+    publicPath: '/datasets/civic/us_county_irs_migration_fdic_banking_2024.csv',
+    rows: 3219,
+    sha256: '015c1c80c3c03648749b3377e2cd9bfd44886b60e47631caf3ee36e3888625f3',
+    parquetFilename: 'us_county_irs_migration_fdic_banking_2024.parquet',
+    parquetPath: '/datasets/civic/us_county_irs_migration_fdic_banking_2024.parquet',
+    parquetSha256: '043189ebbdfc1d6a6c14cd909c105a6c62f8dc05c99099d3007bbd51921bb4da',
+    primaryMetricCol: 'irs_net_agi_millions',
+    description: 'IRS SOI 2022-2023 county tax-return & Adjusted Gross Income migration joined against 76,727 FDIC branches ($17.40T deposits) and Census CVAP active registration.',
+    keyColumns: ['county_fips', 'state_abbr', 'county_name', 'irs_net_returns', 'irs_net_agi_millions', 'fdic_branches_2024', 'fdic_unique_banks_2024', 'fdic_deposits_millions_2024', 'banking_desert_flag'],
   },
 };
 
@@ -253,10 +349,52 @@ export const CURATED_PIPE_STORY_STARTERS: CuratedPipeStoryStarter[] = [
     antithesisNarrative: '<p>High raw removal volume does not automatically measure administrative fairness without checking Section C undeliverable rates and Section E provisional rejections, while vital-record deaths include non-registrants and minors inside county population denominators.</p>',
     synthesisNarrative: '<p>Pair Section 8 notice cadence with provisional cure outcomes and Census vital baselines locally inside DuckDB-Wasm. Read full statutory essays on <a href="https://pipes.pink/explore/election-integrity" target="_blank" rel="noopener noreferrer" class="underline text-amber-800">pipe/election-integrity</a>.</p>',
   },
+  {
+    id: 'public-health-disability-hospital-deserts',
+    title: 'Disability, Transport Barriers & Hospital Deserts',
+    subtitle: 'Join CDC PLACES 2024 Empirical Bayes rates, HHS acute hospital counts, and NCHS mortality across 3,143 counties.',
+    pipeSlug: 'public-health-benchmarks',
+    pipeLabel: 'pipe/public-health-benchmarks',
+    pipeUrl: 'https://pipes.pink/explore/public-health-benchmarks',
+    datasetId: 'publicHealthAccess',
+    sql: "SELECT (county_name || ', ' || state_abbr) AS x, ROUND(eb_smoothed_disability_pct, 2) AS y, lack_transport_adj_prev, hhs_hospitals_count, hospital_desert_flag FROM data_file WHERE eb_smoothed_disability_pct IS NOT NULL ORDER BY civic_health_barrier_z DESC LIMIT 12",
+    chartType: 'bar',
+    xKey: 'x',
+    yKey: 'y',
+    chartTitle: 'Empirical Bayes Smoothed Disability Prevalence (%) in Top Barrier Counties',
+    hookTitle: '659 U.S. Hospital Deserts & Why Physical Access Shapes Civic Continuity',
+    hookNarrative: '<p>Joining CDC PLACES 2024 across <strong>3,143 counties</strong> with <strong>6,732 HHS acute hospitals</strong> reveals <strong>659 hospital-desert counties</strong> nationwide—including <strong>8</strong> in Mississippi and <strong>18</strong> in North Carolina. Mississippi averages <strong>39.00%</strong> age-adjusted disability and <strong>14.28%</strong> transportation barriers, led by hospital-desert <strong>Humphreys County (46.04% EB-smoothed disability; 23.00% lack transportation; 11 FEMA disasters)</strong>, while North Carolina averages <strong>33.35%</strong> led by <strong>Robeson County (41.15% EB-smoothed; 43.03 NCHS drug mortality rate; 1,167 provisional ballots)</strong>.</p>',
+    antithesisNarrative: '<p>CDC PLACES relies on Behavioral Risk Factor Surveillance System (BRFSS) small-area multilevel regression rather than direct clinical censuses in every county, and HHS facility files count acute inpatient hubs without indexing freestanding rural clinics across neighboring county lines.</p>',
+    synthesisNarrative: '<p>Use Empirical Bayes shrinkage and hospital-desert overlays to pre-position mobile polling, accessible curb-side assistance, and emergency medical capacity before November storms. Read the methodology on <a href="https://pipes.pink/explore/public-health-benchmarks" target="_blank" rel="noopener noreferrer" class="underline text-amber-800">pipe/public-health-benchmarks</a>.</p>',
+  },
+  {
+    id: 'irs-agi-migration-fdic-deposits',
+    title: 'IRS Net AGI Migration & FDIC County Banking Capacity',
+    subtitle: 'Track Form 1040 household tax-base flows alongside 76,727 FDIC branches ($17.40T deposits) across 3,219 counties.',
+    pipeSlug: 'fiscal-migration',
+    pipeLabel: 'pipe/fiscal-migration',
+    pipeUrl: 'https://pipes.pink/explore/fiscal-migration',
+    datasetId: 'irsFdicFiscal',
+    sql: "SELECT (county_name || ', ' || state_abbr) AS x, ROUND(irs_net_agi_millions, 2) AS y, irs_net_returns, fdic_branches_2024, fdic_deposits_millions_2024 FROM data_file WHERE state_abbr IN ('MS', 'NC') AND irs_net_agi_millions IS NOT NULL ORDER BY irs_net_agi_millions DESC LIMIT 12",
+    chartType: 'bar',
+    xKey: 'x',
+    yKey: 'y',
+    chartTitle: 'IRS 2022-2023 Net Adjusted Gross Income Migration ($M) — NC & MS Leaders',
+    hookTitle: '+$3.90B Income Inflow in North Carolina vs. -$133.79M Outflow in Hinds MS',
+    hookNarrative: '<p>IRS Statistics of Income (SOI) 2022-2023 return matching shows North Carolina gained <strong>+39,207 net tax returns</strong> and <strong>+$3,898.23M net AGI</strong>—led by coastal <strong>Brunswick County (+3,474 returns; +$502.07M AGI; 99.61% EAVS active/CVAP)</strong> and <strong>Wake County (+$363.56M AGI)</strong>—while Mississippi lost <strong>-3,094 returns</strong> (<strong>-$133.79M</strong> in <strong>Hinds County</strong> alone). Matched against <strong>76,727 FDIC branches</strong>, North Carolina holds <strong>$693.32B</strong> in deposits versus <strong>$77.82B</strong> across Mississippi and <strong>38</strong> banking-desert counties nationwide.</p>',
+    antithesisNarrative: '<p>IRS migration totals capture tax filers claiming the same SSN across consecutive filing years, under-representing non-filers, institutional college populations, and within-year moves occurring after April filing deadlines.</p>',
+    synthesisNarrative: '<p>Pair IRS annual return migration with FDIC branch deposits and Census 5-year CVAP to audit whether rising voter ratios reflect affluent taxpayer arrivals or unpurged departures. Explore fiscal briefs on <a href="https://pipes.pink/explore/fiscal-migration" target="_blank" rel="noopener noreferrer" class="underline text-amber-800">pipe/fiscal-migration</a>.</p>',
+  },
 ];
 
 export function resolvePublicDatasetForWebHunt(query: string): MountablePublicDataset {
   const q = (query || '').toLowerCase();
+  if (/\b(health|hospital|disability|mobility|diabetes|hypertension|uninsured|mortality|overdose|transport|cdc|places|hhs|nchs)\b/.test(q)) {
+    return PUBLIC_CIVIC_DATASETS.publicHealthAccess;
+  }
+  if (/\b(irs|agi|tax|fdic|bank|deposit|branch|income|wealth|inflow|outflow|credit|fiscal)\b/.test(q)) {
+    return PUBLIC_CIVIC_DATASETS.irsFdicFiscal;
+  }
   if (/\b(fema|disaster|helene|hurricane|wildfire|flood|storm|washoe|orleans|continuity)\b/.test(q)) {
     return PUBLIC_CIVIC_DATASETS.femaContinuity;
   }

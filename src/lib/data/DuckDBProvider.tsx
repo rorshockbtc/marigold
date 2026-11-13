@@ -44,6 +44,13 @@ interface DuckDBContextType {
   query: (sql: string) => Promise<any[]>;
   registerFileHandle: (fileName: string, file: File) => Promise<void>;
   mountCsvTextAsDataFile: (fileName: string, csvText: string) => Promise<{ rowCount: number; schema: any[] }>;
+  mountParquetBufferAsDataFile: (
+    fileName: string,
+    buffer: Uint8Array
+  ) => Promise<{ rowCount: number; schema: any[]; format: 'parquet' }>;
+  mountArrowIPCAsDataFile: (
+    ipcBuffer: Uint8Array
+  ) => Promise<{ rowCount: number; schema: any[]; format: 'arrow' }>;
 }
 
 const DuckDBContext = createContext<DuckDBContextType | undefined>(undefined);
@@ -117,8 +124,45 @@ export function DuckDBProvider({ children }: { children: React.ReactNode }) {
     return { rowCount, schema };
   };
 
+  const mountParquetBufferAsDataFile = async (
+    fileName: string,
+    buffer: Uint8Array
+  ): Promise<{ rowCount: number; schema: any[]; format: 'parquet' }> => {
+    if (!db || !conn) throw new Error("DuckDB not ready");
+    await db.registerFileBuffer(fileName, buffer);
+    const safeName = fileName.replace(/'/g, "''");
+    await conn.query(`CREATE OR REPLACE TABLE data_file AS SELECT * FROM read_parquet('${safeName}');`);
+    const schema = await query('DESCRIBE data_file;');
+    const cntRows = await query('SELECT COUNT(*) AS cnt FROM data_file;');
+    const rowCount = Number(cntRows[0]?.cnt ?? 0);
+    return { rowCount, schema, format: 'parquet' };
+  };
+
+  const mountArrowIPCAsDataFile = async (
+    ipcBuffer: Uint8Array
+  ): Promise<{ rowCount: number; schema: any[]; format: 'arrow' }> => {
+    if (!db || !conn) throw new Error("DuckDB not ready");
+    await conn.query('DROP TABLE IF EXISTS data_file;');
+    await conn.insertArrowFromIPCStream(ipcBuffer, { name: 'data_file', create: true });
+    const schema = await query('DESCRIBE data_file;');
+    const cntRows = await query('SELECT COUNT(*) AS cnt FROM data_file;');
+    const rowCount = Number(cntRows[0]?.cnt ?? 0);
+    return { rowCount, schema, format: 'arrow' };
+  };
+
   return (
-    <DuckDBContext.Provider value={{ db, conn, isReady, query, registerFileHandle, mountCsvTextAsDataFile }}>
+    <DuckDBContext.Provider
+      value={{
+        db,
+        conn,
+        isReady,
+        query,
+        registerFileHandle,
+        mountCsvTextAsDataFile,
+        mountParquetBufferAsDataFile,
+        mountArrowIPCAsDataFile,
+      }}
+    >
       {children}
     </DuckDBContext.Provider>
   );

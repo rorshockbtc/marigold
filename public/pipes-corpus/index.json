@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-12T18:45:00Z",
+  "generatedAt": "2026-11-13T01:38:24Z",
   "zeroPiiVerified": true,
-  "totalPipes": 4,
-  "totalArticles": 24,
+  "totalPipes": 6,
+  "totalArticles": 32,
   "pipes": [
     {
       "slug": "marigoldinsights",
@@ -123,7 +123,7 @@
         {
           "id": "5e1b0707f2884e00",
           "title": "Reading the 2024 EAVS V2.0 Codebook Without Pitfalls: Sentinel Codes, Renumbered Columns, and Town-to-County Joins",
-          "summary": "How to parse the Feb 2026 U.S. Election Assistance Commission EAVS release cleanly\u2014including A10a confirmation notices, A12a removals, and New England municipal aggregation.",
+          "summary": "How to parse the Feb 2026 U.S. Election Assistance Commission EAVS release cleanly—including A10a confirmation notices, A12a removals, and New England municipal aggregation.",
           "archetype": "canon",
           "sourceTitle": "U.S. Election Assistance Commission, 2024 EAVS V2.0 Survey Instrument and Codebook",
           "sourceUrl": "https://www.eac.gov/research-and-data/studies-and-reports",
@@ -255,7 +255,7 @@
           "title": "HAVA Title III and the Prohibition of Lever Machines: How the 2002 Act Transformed Precinct Machinery",
           "summary": "Following the 2000 Florida recount crisis, Congress passed the Help America Vote Act of 2002, spending three billion dollars to eliminate mechanical lever machines and paper punch cards nationwide.",
           "archetype": "canon",
-          "sourceTitle": "Help America Vote Act of 2002, Public Law 107-252 (Codified at 52 U.S.C. \u00a7\u00a7 20901-21145)",
+          "sourceTitle": "Help America Vote Act of 2002, Public Law 107-252 (Codified at 52 U.S.C. §§ 20901-21145)",
           "sourceUrl": "https://www.justice.gov/crt/help-america-vote-act-2002",
           "relatedPipes": [
             "cybersecurity",
@@ -366,6 +366,138 @@
             "cybersecurity",
             "history",
             "politics"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "public-health-benchmarks",
+      "title": "Public Health Benchmarks",
+      "description": "Zero-PII epidemiology: CDC PLACES 2024 Empirical Bayes shrinkage, 6,732 HHS acute hospitals, NCHS county mortality, and CMS <11 suppression.",
+      "articleCount": 4,
+      "publicUrl": "https://pipes.pink/explore/public-health-benchmarks",
+      "corpusFile": "/pipes-corpus/public-health-benchmarks-pipes-v1.json",
+      "articles": [
+        {
+          "id": "0c66ac7a0f6236ea",
+          "title": "Empirical Bayes Small-Area Smoothing in CDC PLACES: Separating Rural Sample Variance from Chronic Burden",
+          "summary": "How Clayton-Kaldor Empirical Bayes shrinkage stabilizes CDC PLACES 2024 county disability and chronic disease rates across 3,143 U.S. counties.",
+          "archetype": "canon",
+          "sourceTitle": "Centers for Disease Control and Prevention, PLACES: Local Data for Better Health Methodology (2024 Release)",
+          "sourceUrl": "https://www.cdc.gov/places/methodology/index.html",
+          "relatedPipes": [
+            "civic-data-benchmarks",
+            "marigoldinsights",
+            "databases",
+            "disaster-continuity"
+          ]
+        },
+        {
+          "id": "4b6ca6ca6146f14d",
+          "title": "Disability, Transportation Barriers, and Mail-Ballot Reliance Across Mississippi and North Carolina",
+          "summary": "Joining CDC PLACES mobility, cognition, and transit-barrier rates against EAVS provisional and mail voting records across 182 MS and NC counties.",
+          "archetype": "dispatch",
+          "sourceTitle": "CDC PLACES 2024 GIS Release Joined with U.S. EAC 2024 EAVS V2.0",
+          "sourceUrl": "https://data.cdc.gov/api/views/i46a-9kgh/rows.csv?accessType=DOWNLOAD",
+          "relatedPipes": [
+            "election-integrity",
+            "marigoldinsights",
+            "civic-data-benchmarks",
+            "disaster-continuity"
+          ]
+        },
+        {
+          "id": "570cf55834f876d7",
+          "title": "Mapping Rural Hospital Deserts Against Federal Disaster Exposure",
+          "summary": "Cross-referencing 6,732 HHS acute hospitals and NCHS mortality rates against 3,143 CDC PLACES and OpenFEMA county records without exposing facility addresses.",
+          "archetype": "dispatch",
+          "sourceTitle": "U.S. HHS Registered Hospital Registry Joined with OpenFEMA Declarations & NCHS Mortality",
+          "sourceUrl": "https://healthdata.gov/api/views/vz64-k9wr/rows.csv?accessType=DOWNLOAD",
+          "relatedPipes": [
+            "disaster-continuity",
+            "marigoldinsights",
+            "civic-data-benchmarks",
+            "privacy"
+          ]
+        },
+        {
+          "id": "63af02fd192d4da6",
+          "title": "HIPAA Safe Harbor, Cell Suppression, and Zero-PII County Health Joins",
+          "summary": "Implementing 45 CFR § 164.514(b), <11 CMS/HHS small-cell suppression, and optional differential privacy over Zstd Parquet public health cubes.",
+          "archetype": "canon",
+          "sourceTitle": "U.S. HHS Office for Civil Rights, Guidance Regarding Methods for De-identification of Protected Health Information (45 CFR § 164.514)",
+          "sourceUrl": "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html",
+          "relatedPipes": [
+            "privacy",
+            "local-first",
+            "marigoldinsights",
+            "databases"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "fiscal-migration",
+      "title": "Fiscal Migration",
+      "description": "Annual IRS SOI 2022-2023 county AGI & return flows joined with 76,727 FDIC branch deposits ($17.40T) and out-of-core Parquet/Arrow workflows.",
+      "articleCount": 4,
+      "publicUrl": "https://pipes.pink/explore/fiscal-migration",
+      "corpusFile": "/pipes-corpus/fiscal-migration-pipes-v1.json",
+      "articles": [
+        {
+          "id": "36b9e1ae90a0e0a2",
+          "title": "76,727 Bank Branches by County FIPS: What the FDIC Summary of Deposits Reveals About Rural Credit Access",
+          "summary": "Auditing $17.40 trillion in U.S. FDIC branch deposits across 3,195 counties, 38 banking deserts, and North Carolina vs. Mississippi capital concentration.",
+          "archetype": "dispatch",
+          "sourceTitle": "Federal Deposit Insurance Corporation (FDIC), 2024 Summary of Deposits Open Data API",
+          "sourceUrl": "https://banks.data.fdic.gov/api/sod?filters=YEAR%3A2024&format=json",
+          "relatedPipes": [
+            "austrian-economics",
+            "marigoldinsights",
+            "civic-data-benchmarks",
+            "databases"
+          ]
+        },
+        {
+          "id": "447c4e4679115148",
+          "title": "Following the Tax Base: Brunswick and Wake Inflows vs. Delta Outflows in the 2022-2023 IRS Release",
+          "summary": "Quantifying North Carolina’s +$3.90B AGI inflow against Mississippi’s -$68.36M net tax-base outflow and top coastal/Sunbelt gainers nationwide.",
+          "archetype": "dispatch",
+          "sourceTitle": "Internal Revenue Service, 2022-2023 County-to-County Inflow and Outflow Migration Releases",
+          "sourceUrl": "https://www.irs.gov/pub/irs-soi/countyinflow2223.csv",
+          "relatedPipes": [
+            "austrian-economics",
+            "civic-data-benchmarks",
+            "marigoldinsights",
+            "public-health-benchmarks"
+          ]
+        },
+        {
+          "id": "a099808c48d28039",
+          "title": "Reading IRS SOI County-to-County Tax Migration Without Confusing Household Churn for Fraud",
+          "summary": "How IRS Form 1040 address matching (n1 returns, n2 individuals, and AGI) resolves five-year Census lag during active voter-roll audits.",
+          "archetype": "canon",
+          "sourceTitle": "Internal Revenue Service, Statistics of Income (SOI) Migration Data Users Guide (2022-2023)",
+          "sourceUrl": "https://www.irs.gov/statistics/soi-tax-stats-migration-data",
+          "relatedPipes": [
+            "civic-data-benchmarks",
+            "marigoldinsights",
+            "austrian-economics",
+            "election-integrity"
+          ]
+        },
+        {
+          "id": "b22c9659d63270eb",
+          "title": "Out-of-Core Public Lakehouses: Zstd Parquet, Apache Arrow IPC, and Unsupervised Fellegi-Sunter Linkage",
+          "summary": "How columnar Parquet compression, zero-copy Arrow streams, and EM record linkage power 10M-row public civic analytics at zero cloud cost.",
+          "archetype": "canon",
+          "sourceTitle": "DuckDB Foundation & Apache Arrow Format Specifications (2024-2026)",
+          "sourceUrl": "https://arrow.apache.org/docs/format/Columnar.html",
+          "relatedPipes": [
+            "databases",
+            "local-first",
+            "marigoldinsights",
+            "public-health-benchmarks"
           ]
         }
       ]

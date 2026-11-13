@@ -86,7 +86,7 @@ interface ChatMessage {
 }
 
 export const DataExplorerLayout: React.FC = () => {
-  const { query, isReady, mountCsvTextAsDataFile } = useDuckDB();
+  const { query, isReady, mountCsvTextAsDataFile, mountParquetBufferAsDataFile } = useDuckDB();
   const { classifyIntent, generateSQL, synthesizeNarrative, synthesizeResearch, isGenerating, pipelineStatus, error } = useMaryAIRouter();
   const { remainingFree, isQuotaExceeded, isPipesSubscribed, incrementQuota } = useDataStoryQuota();
   const { isDataConnected, loadedFileName, loadedRowCount } = useVoterRollConnection();
@@ -94,6 +94,7 @@ export const DataExplorerLayout: React.FC = () => {
   const [activeSchema, setActiveSchema] = useState<{fileName: string, schema: any[]} | null>(null);
   const [activePublicDatasetId, setActivePublicDatasetId] = useState<MountablePublicDataset['id'] | null>(null);
   const [mountedRowCount, setMountedRowCount] = useState<number | null>(null);
+  const [mountedFormat, setMountedFormat] = useState<'Zstd Parquet' | 'CSV' | null>(null);
   const [isMountingPublicDataset, setIsMountingPublicDataset] = useState<string | null>(null);
   const [isRepoDrawerOpen, setIsRepoDrawerOpen] = useState(false);
   const [pipesCorpusIndex, setPipesCorpusIndex] = useState<PipesCorpusIndex | null>(null);
@@ -155,6 +156,7 @@ export const DataExplorerLayout: React.FC = () => {
 
   const handleSchemaExtracted = (fileName: string, schema: any[]) => {
     setActivePublicDatasetId(null);
+    setMountedFormat(null);
     setActiveSchema({ fileName, schema });
     setMessages(prev => [...prev, {
       id: Date.now().toString(),
@@ -180,19 +182,50 @@ export const DataExplorerLayout: React.FC = () => {
     if (!isReady) return null;
     setIsMountingPublicDataset(ds.id);
     try {
-      const res = await fetch(ds.publicPath);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const csvText = await res.text();
-      const { rowCount, schema } = await mountCsvTextAsDataFile(ds.filename, csvText);
-      setActiveSchema({ fileName: ds.filename, schema });
+      let mountedFile = ds.filename;
+      let mountedSchema: any[] = [];
+      let mountedRows = 0;
+      let usedFormat: 'Zstd Parquet' | 'CSV' = 'CSV';
+
+      // Prefer columnar Zstd Parquet shard for fast out-of-core DuckDB-Wasm mounting
+      let parquetOk = false;
+      try {
+        const pqRes = await fetch(ds.parquetPath);
+        if (pqRes.ok) {
+          const pqBuf = new Uint8Array(await pqRes.arrayBuffer());
+          const mountedPq = await mountParquetBufferAsDataFile(ds.parquetFilename, pqBuf);
+          mountedFile = ds.parquetFilename;
+          mountedSchema = mountedPq.schema;
+          mountedRows = mountedPq.rowCount;
+          usedFormat = 'Zstd Parquet';
+          parquetOk = true;
+        }
+      } catch {
+        parquetOk = false;
+      }
+
+      if (!parquetOk) {
+        const res = await fetch(ds.publicPath);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const csvText = await res.text();
+        const mountedCsv = await mountCsvTextAsDataFile(ds.filename, csvText);
+        mountedFile = ds.filename;
+        mountedSchema = mountedCsv.schema;
+        mountedRows = mountedCsv.rowCount;
+        usedFormat = 'CSV';
+      }
+
+      const activeSha = usedFormat === 'Zstd Parquet' ? ds.parquetSha256 : ds.sha256;
+      setActiveSchema({ fileName: mountedFile, schema: mountedSchema });
       setActivePublicDatasetId(ds.id);
-      setMountedRowCount(rowCount);
+      setMountedRowCount(mountedRows);
+      setMountedFormat(usedFormat);
       setMessages(prev => [...prev, {
         id: `${Date.now()}-mount`,
         role: 'system',
-        text: `Mounted Zero-PII dataset ${ds.filename} (${rowCount.toLocaleString()} county rows · SHA-256 ${ds.sha256.slice(0, 12)}…) into DuckDB-Wasm table data_file.`
+        text: `Mounted Zero-PII ${usedFormat} dataset ${mountedFile} (${mountedRows.toLocaleString()} county rows · SHA-256 ${activeSha.slice(0, 12)}…) into DuckDB-Wasm table data_file.`
       }]);
-      return { fileName: ds.filename, schema, rowCount };
+      return { fileName: mountedFile, schema: mountedSchema, rowCount: mountedRows };
     } catch (err) {
       console.error('Failed to mount public civic dataset:', err);
       setExportBanner(`Could not mount ${ds.filename} into local DuckDB-Wasm.`);
@@ -719,6 +752,7 @@ export const DataExplorerLayout: React.FC = () => {
             <div className="px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-700/50 text-xs text-emerald-300 font-mono">
               Connected: {activeSchema.fileName}
               {mountedRowCount !== null ? ` (${mountedRowCount.toLocaleString()} rows)` : ''}
+              {mountedFormat ? ` · ${mountedFormat}` : ''}
             </div>
           ) : (
             <div className="w-64">
@@ -1137,6 +1171,40 @@ export const DataExplorerLayout: React.FC = () => {
               ) : (
                 <p className="text-xs text-stone-600 font-mono">Fetching /pipes-corpus/index.json…</p>
               )}
+            </section>
+
+            <section className="space-y-2.5">
+              <div className="p-3.5 rounded-xl bg-[#F6F3EC] border border-[#E5DEC9] space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-bold text-[#111111]">
+                    Server FOSS Lakehouse &amp; Refinery
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono">
+                    /api/civic-lake
+                  </span>
+                </div>
+                <p className="text-xs text-stone-700">
+                  Serves Zstd-compressed Apache Parquet shards (<code>PAR1</code>), zero-copy Apache Arrow IPC streams (<code>?format=arrow</code>), Clayton-Kaldor Empirical Bayes rates, Moran&apos;s I &amp; Getis-Ord Gi* hotspots (<code>?format=summary</code>), unsupervised Fellegi-Sunter EM weights, and CMS &lt;11 small-cell suppression.
+                </p>
+                <div className="flex flex-wrap gap-3 text-[11px] font-mono pt-1">
+                  <a
+                    href="/api/civic-lake?dataset=publicHealthAccess&format=summary&state=NC"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-800 underline hover:text-amber-950"
+                  >
+                    GET Health Summary (NC) →
+                  </a>
+                  <a
+                    href="/api/civic-lake?dataset=irsFdicFiscal&format=arrow&state=MS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-800 underline hover:text-amber-950"
+                  >
+                    GET Fiscal Arrow IPC (MS) →
+                  </a>
+                </div>
+              </div>
             </section>
 
             <section className="space-y-3">

@@ -1,5 +1,6 @@
 *.csv
 !public/datasets/civic/*.csv
+!public/datasets/civic/*.parquet
 *.db
 *.db-journal
 *.db-shm

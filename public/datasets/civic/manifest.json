@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T00:32:10.344492+00:00",
+  "generatedAt": "2026-11-13T01:25:35.920Z",
   "zeroPiiCompliant": true,
   "privacyRule": "County-level aggregate public records only; zero voter names, birth dates, voter IDs, or street addresses.",
   "upstreamSources": [
@@ -48,6 +48,40 @@
       "sha256": "22f7e21e65e45d5d06e787669192a4251853f440dca8234402ab38fc367a2653",
       "rawRecordsFetched": 19551,
       "license": "17 U.S.C. 105 Federal Public Domain"
+    },
+    {
+      "id": "cdc-places-2024-county",
+      "name": "CDC PLACES 2024 Release (County GIS-Friendly Format)",
+      "url": "https://data.cdc.gov/api/views/i46a-9kgh/rows.csv?accessType=DOWNLOAD",
+      "sha256": "a47cad3a852c5b35a031d548bc6dd4e9b5f7836bb7c851b84382160beafe15ef",
+      "license": "17 U.S.C. 105 Federal Public Domain"
+    },
+    {
+      "id": "hhs-hospitals-nchs-mortality",
+      "name": "HHS Registered Acute Hospital Counts & CDC NCHS County Drug Mortality",
+      "url": "https://healthdata.gov/api/views/vz64-k9wr/rows.csv?accessType=DOWNLOAD",
+      "sha256": {
+        "hhs_hospitals": "3edae9913b5081d4d77bdcead434641f4c4859a19d3fae879d94576a2ac433e7",
+        "cdc_nchs_drug_mortality": "857650f8070a90af3843b75f95e34340d2518f3c3af27d271b86a366fc7b8c96"
+      },
+      "license": "17 U.S.C. 105 Federal Public Domain"
+    },
+    {
+      "id": "irs-soi-migration-2022-2023",
+      "name": "IRS Statistics of Income (SOI) 2022-2023 County-to-County Migration",
+      "url": "https://www.irs.gov/pub/irs-soi/countyinflow2223.csv",
+      "sha256": {
+        "inflow_2223": "813ba2ef550c6a598a5121ccf98edcc79f61f1af69eb495bf44cd830b1586745",
+        "outflow_2223": "364dba518f0db092515ccde03dda987815f6e54bcc8859640001e9185d4c106e"
+      },
+      "license": "17 U.S.C. 105 Federal Public Domain"
+    },
+    {
+      "id": "fdic-sod-2024",
+      "name": "FDIC 2024 Summary of Deposits (76,727 Branches Rolled to County FIPS)",
+      "url": "https://banks.data.fdic.gov/api/sod?filters=YEAR%3A2024&format=json",
+      "sha256": "9926d0c90217bbde8d23d05d4c59f5ea606e1104ce37bb4b15957007f375d4e0",
+      "license": "17 U.S.C. 105 Federal Public Domain"
     }
   ],
   "datasets": {
@@ -57,6 +91,10 @@
       "bytes": 498972,
       "rows": 3222,
       "sha256": "0b32894e8244e488c65da48986e4ce4eb13f918cf9fd7aa5d36f53161e4ce7a6",
+      "parquetFilename": "us_county_election_admin_cvap_2024.parquet",
+      "parquetPath": "/datasets/civic/us_county_election_admin_cvap_2024.parquet",
+      "parquetBytes": 197393,
+      "parquetSha256": "fe691795948c93d46a7d524ed7f46eee9037d003e8a2e51217eb60f6d1d9fe83",
       "columns": [
         "county_fips",
         "state_abbr",
@@ -94,6 +132,10 @@
       "bytes": 24750,
       "rows": 182,
       "sha256": "8c3c387b9e6f923249b55ffc022a41e9fa0e4b4631b34c7f3ac9f1323aadf49a",
+      "parquetFilename": "ms_nc_audit_vs_federal_benchmarks_2026.parquet",
+      "parquetPath": "/datasets/civic/ms_nc_audit_vs_federal_benchmarks_2026.parquet",
+      "parquetBytes": 16309,
+      "parquetSha256": "ac9abdfe1c6817235000b4c18f2d8e59808e0500d90143713b6322cffbfe2394",
       "columns": [
         "county_fips",
         "state_abbr",
@@ -131,6 +173,10 @@
       "bytes": 329330,
       "rows": 3210,
       "sha256": "55a51720e644294e2cffea8645f03876843bd62fbac3ccd1031aaa1d75fc414e",
+      "parquetFilename": "fema_county_election_continuity_2020_2026.parquet",
+      "parquetPath": "/datasets/civic/fema_county_election_continuity_2020_2026.parquet",
+      "parquetBytes": 83883,
+      "parquetSha256": "5ecc2b7e5b26b6426acc33ad299023435f1f4496bb326e51a886e2178e18d413",
       "columns": [
         "county_fips",
         "state_abbr",
@@ -146,6 +192,75 @@
         "eavs_mail_transmitted",
         "eavs_mail_undeliverable",
         "eavs_provisional_cast"
+      ]
+    },
+    "publicHealthAccess": {
+      "filename": "us_county_public_health_access_2024.csv",
+      "publicPath": "/datasets/civic/us_county_public_health_access_2024.csv",
+      "bytes": 355154,
+      "rows": 3143,
+      "sha256": "ed70d87f98f2ee32640eadd73796ad903f60c2c399e9c5625e03fc6a1ff472db",
+      "parquetFilename": "us_county_public_health_access_2024.parquet",
+      "parquetPath": "/datasets/civic/us_county_public_health_access_2024.parquet",
+      "parquetBytes": 114817,
+      "parquetSha256": "3b067fc311b31ccbff74352cccee82a0f9bb47ed14311b2ea5fd95f9457eae31",
+      "columns": [
+        "county_fips",
+        "state_abbr",
+        "county_name",
+        "total_pop_2024",
+        "cvap_2024",
+        "disability_adj_prev",
+        "eb_smoothed_disability_pct",
+        "mobility_adj_prev",
+        "cognition_adj_prev",
+        "lack_transport_adj_prev",
+        "uninsured_adj_prev",
+        "diabetes_adj_prev",
+        "hypertension_adj_prev",
+        "obesity_adj_prev",
+        "depression_adj_prev",
+        "food_insecurity_adj_prev",
+        "hhs_hospitals_count",
+        "hospital_desert_flag",
+        "nchs_drug_mortality_rate",
+        "eavs_mail_undeliverable",
+        "eavs_provisional_cast",
+        "fema_disasters_2020_2026",
+        "civic_health_barrier_z"
+      ]
+    },
+    "irsFdicFiscal": {
+      "filename": "us_county_irs_migration_fdic_banking_2024.csv",
+      "publicPath": "/datasets/civic/us_county_irs_migration_fdic_banking_2024.csv",
+      "bytes": 334976,
+      "rows": 3219,
+      "sha256": "015c1c80c3c03648749b3377e2cd9bfd44886b60e47631caf3ee36e3888625f3",
+      "parquetFilename": "us_county_irs_migration_fdic_banking_2024.parquet",
+      "parquetPath": "/datasets/civic/us_county_irs_migration_fdic_banking_2024.parquet",
+      "parquetBytes": 149380,
+      "parquetSha256": "043189ebbdfc1d6a6c14cd909c105a6c62f8dc05c99099d3007bbd51921bb4da",
+      "columns": [
+        "county_fips",
+        "state_abbr",
+        "county_name",
+        "cvap_2024",
+        "active_to_cvap_pct",
+        "irs_inflow_returns",
+        "irs_outflow_returns",
+        "irs_net_returns",
+        "irs_inflow_individuals",
+        "irs_outflow_individuals",
+        "irs_net_individuals",
+        "irs_inflow_agi_thousands",
+        "irs_outflow_agi_thousands",
+        "irs_net_agi_thousands",
+        "irs_net_agi_millions",
+        "net_domestic_mig_2020_2024",
+        "fdic_branches_2024",
+        "fdic_unique_banks_2024",
+        "fdic_deposits_millions_2024",
+        "banking_desert_flag"
       ]
     }
   },
@@ -191,6 +306,44 @@
     "medsl2024StateTotalsSample": {
       "MS": 1228008,
       "NC": 5699141
+    }
+  },
+  "publicHealthAndFiscalHighlights": {
+    "national": {
+      "healthCounties": 3143,
+      "hospitalDesertCounties": 659,
+      "totalHhsHospitalsMatched": 6732,
+      "meanDisabilityPct": 32.36,
+      "meanLackTransportPct": 9.45,
+      "fiscalCounties": 3219,
+      "fdicRawBranchRows": 76727,
+      "fdicMatchedBranches": 76672,
+      "fdicTotalDepositsMillions": 17395742.37,
+      "bankingDesertCounties": 38
+    },
+    "mississippiSummary": {
+      "counties": 82,
+      "hospitalDeserts": 8,
+      "meanDisabilityPct": 39,
+      "meanLackTransportPct": 14.28,
+      "meanDiabetesPct": 14.76,
+      "fdicBranches": 1055,
+      "fdicDepositsMillions": 77824.33,
+      "bankingDeserts": 0,
+      "irsTotalNetReturns": -3094,
+      "irsTotalNetAgiMillions": -68.36
+    },
+    "northCarolinaSummary": {
+      "counties": 100,
+      "hospitalDeserts": 18,
+      "meanDisabilityPct": 33.35,
+      "meanLackTransportPct": 9.9,
+      "meanDiabetesPct": 11.23,
+      "fdicBranches": 1986,
+      "fdicDepositsMillions": 693316.31,
+      "bankingDeserts": 2,
+      "irsTotalNetReturns": 39207,
+      "irsTotalNetAgiMillions": 3898.23
     }
   }
 }

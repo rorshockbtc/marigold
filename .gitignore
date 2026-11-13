@@ -47,6 +47,7 @@ next-env.d.ts
 *.sqlite3
 *.csv
 !public/datasets/civic/*.csv
+!public/datasets/civic/*.parquet
 /data/
 .env*
 tests/ux_scenarios.md

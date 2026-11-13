@@ -176,7 +176,11 @@ export function generateDeterministicSQLPayload(
     colNames.includes('cvap_2024') ||
     colNames.includes('fema_disasters_2020_2026') ||
     colNames.includes('marigold_active_to_cvap_pct') ||
-    colNames.includes('eavs_removals_total');
+    colNames.includes('eavs_removals_total') ||
+    colNames.includes('eb_smoothed_disability_pct') ||
+    colNames.includes('disability_adj_prev') ||
+    colNames.includes('irs_net_agi_millions') ||
+    colNames.includes('fdic_deposits_millions_2024');
 
   if (isPublicBenchmark) {
     const labelExpr =
@@ -223,6 +227,127 @@ export function generateDeterministicSQLPayload(
           xAxisLabel: 'County, State',
           yAxisLabel: 'Undeliverable Mail Ballots (C1c)',
           title: 'Undeliverable Mail Ballots Across U.S. Counties (2024 EAVS)',
+        },
+      };
+    }
+
+    if (/\b(hospital|desert|hhs|acute|clinic|emergency room)\b/.test(q) && colNames.includes('hhs_hospitals_count')) {
+      if (colNames.includes('eb_smoothed_disability_pct')) {
+        return {
+          query: `SELECT ${labelExpr} AS x, ROUND(CAST(eb_smoothed_disability_pct AS DOUBLE), 2) AS y FROM data_file WHERE hospital_desert_flag = 1 AND eb_smoothed_disability_pct IS NOT NULL ORDER BY y DESC LIMIT 12`,
+          chartType: 'bar',
+          chartConfig: {
+            xAxisKey: 'x',
+            yAxisKey: 'y',
+            xAxisLabel: 'County, State',
+            yAxisLabel: 'EB-Smoothed Disability (%)',
+            title: 'Hospital-Desert Counties Ranked by Smoothed Disability (%)',
+          },
+        };
+      }
+      return {
+        query: `SELECT ${labelExpr} AS x, CAST(hhs_hospitals_count AS DOUBLE) AS y FROM data_file WHERE hhs_hospitals_count IS NOT NULL ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'HHS Registered Acute Hospitals',
+          title: 'HHS Registered Acute Hospitals by County',
+        },
+      };
+    }
+
+    if (
+      /\b(health|cdc|places|disability|mobility|transport|diabetes|uninsured|mortality|overdose|nchs|empirical bayes)\b/.test(q) &&
+      (colNames.includes('eb_smoothed_disability_pct') || colNames.includes('disability_adj_prev'))
+    ) {
+      if (/\btransport/.test(q) && colNames.includes('lack_transport_adj_prev')) {
+        return {
+          query: `SELECT ${labelExpr} AS x, ROUND(CAST(lack_transport_adj_prev AS DOUBLE), 2) AS y FROM data_file WHERE lack_transport_adj_prev IS NOT NULL ORDER BY y DESC LIMIT 12`,
+          chartType: 'bar',
+          chartConfig: {
+            xAxisKey: 'x',
+            yAxisKey: 'y',
+            xAxisLabel: 'County, State',
+            yAxisLabel: 'Lack Reliable Transport (%)',
+            title: 'CDC PLACES 2024 Transportation Barriers by County (%)',
+          },
+        };
+      }
+      if (/\b(mortality|overdose|nchs|drug)\b/.test(q) && colNames.includes('nchs_drug_mortality_rate')) {
+        return {
+          query: `SELECT ${labelExpr} AS x, ROUND(CAST(nchs_drug_mortality_rate AS DOUBLE), 2) AS y FROM data_file WHERE nchs_drug_mortality_rate IS NOT NULL ORDER BY y DESC LIMIT 12`,
+          chartType: 'bar',
+          chartConfig: {
+            xAxisKey: 'x',
+            yAxisKey: 'y',
+            xAxisLabel: 'County, State',
+            yAxisLabel: 'Drug Mortality (per 100k)',
+            title: 'CDC NCHS Model-Based Drug Mortality Rate by County',
+          },
+        };
+      }
+      const healthCol = colNames.includes('eb_smoothed_disability_pct')
+        ? 'eb_smoothed_disability_pct'
+        : 'disability_adj_prev';
+      return {
+        query: `SELECT ${labelExpr} AS x, ROUND(CAST(${healthCol} AS DOUBLE), 2) AS y FROM data_file WHERE ${healthCol} IS NOT NULL ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'Smoothed Disability Prevalence (%)',
+          title: 'CDC PLACES 2024 Empirical Bayes Smoothed Disability Rate (%)',
+        },
+      };
+    }
+
+    if (/\b(fdic|bank|branch|deposit|credit|charter)\b/.test(q) && colNames.includes('fdic_deposits_millions_2024')) {
+      return {
+        query: `SELECT ${labelExpr} AS x, ROUND(CAST(fdic_deposits_millions_2024 AS DOUBLE), 2) AS y FROM data_file WHERE fdic_deposits_millions_2024 IS NOT NULL ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'FDIC Deposits ($ Millions)',
+          title: 'FDIC Insured Deposits by County ($ Millions, 2024)',
+        },
+      };
+    }
+
+    if (
+      colNames.includes('irs_net_agi_millions') &&
+      (/\b(irs|agi|tax|inflow|outflow|migration|wealth|capital)\b/.test(q) || !colNames.includes('marigold_active_to_cvap_pct'))
+    ) {
+      const orderExpr = /\b(outflow|loss|shrink)\b/.test(q)
+        ? 'ASC'
+        : 'DESC';
+      return {
+        query: `SELECT ${labelExpr} AS x, ROUND(CAST(irs_net_agi_millions AS DOUBLE), 2) AS y FROM data_file WHERE irs_net_agi_millions IS NOT NULL ORDER BY y ${orderExpr} LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'Net AGI Migration ($M)',
+          title: 'IRS 2022-2023 Net Adjusted Gross Income Migration ($M)',
+        },
+      };
+    }
+
+    if (colNames.includes('eb_smoothed_disability_pct')) {
+      return {
+        query: `SELECT ${labelExpr} AS x, ROUND(CAST(eb_smoothed_disability_pct AS DOUBLE), 2) AS y FROM data_file WHERE eb_smoothed_disability_pct IS NOT NULL ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'EB-Smoothed Disability (%)',
+          title: 'CDC PLACES 2024 Empirical Bayes Smoothed Disability Rate (%)',
         },
       };
     }
@@ -455,12 +580,43 @@ export function synthesizeDeterministicNarrative(
  */
 export function synthesizeDeterministicResearch(naturalLanguageQuery: string) {
   const cleanQuery = scrubBannedEditorialPhrases(naturalLanguageQuery || 'Statutory Voter Roll Forensics');
+  const qLower = cleanQuery.toLowerCase();
+  const isHealthQuery = /\b(health|cdc|places|hospital|desert|disability|nchs|mortality|hipaa|empirical bayes)\b/.test(qLower);
+  const isFiscalQuery = /\b(irs|soi|agi|tax|migration|fdic|bank|branch|deposit|credit|parquet|arrow)\b/.test(qLower);
+
+  const extraCitations = [];
+  if (isHealthQuery) {
+    extraCitations.push({
+      title: 'Pipes Canon · Public Health Benchmarks (CDC PLACES, 6,732 HHS Hospitals & NCHS Mortality)',
+      url: 'https://pipes.pink/explore/public-health-benchmarks',
+      snippet:
+        'Empirical Bayes small-area disability smoothing across 3,143 counties, 659 acute hospital deserts, and CMS <11 small-cell privacy enforcement.',
+    });
+  }
+  if (isFiscalQuery) {
+    extraCitations.push({
+      title: 'Pipes Canon · Fiscal Migration (IRS SOI 2022-2023 AGI & FDIC Summary of Deposits)',
+      url: 'https://pipes.pink/explore/fiscal-migration',
+      snippet:
+        'Reconciles IRS Form 1040 AGI inflows/outflows against 76,727 FDIC branches ($17.40T deposits) and Zstd Parquet / Apache Arrow IPC streams.',
+    });
+  }
+  if (!isHealthQuery && !isFiscalQuery) {
+    extraCitations.push({
+      title: 'Pipes Canon · Public Health Benchmarks & Fiscal Migration Series',
+      url: 'https://pipes.pink/explore/public-health-benchmarks',
+      snippet:
+        'Joins CDC PLACES 2024 disability/transit rates, HHS acute hospitals, IRS 2022-2023 county AGI migration, and FDIC 2024 branch deposits by 5-digit county FIPS.',
+    });
+  }
+
   return {
     title: `Methodological & Statutory Brief: ${cleanQuery.slice(0, 68)}`,
     narrative: scrubBannedEditorialPhrases(
-      `<p>Under the National Voter Registration Act (NVRA, 52 U.S.C. § 20507) and Help America Vote Act (HAVA) computerized statewide list maintenance provisions, election officials and citizen auditors must balance two statutory mandates: maintaining accurate, current registration rolls while safeguarding eligible citizens against unlawful removal within 90 days of a federal election.</p><p>Marigold enforces both mandates mathematically by executing Fellegi-Sunter probabilistic record linkage, Benford's Law first-digit regression, and USPS NCOA/CMRA cross-checks inside local browser WebAssembly memory—preserving complete citizen privacy while producing reproducible SQL provenance hashes.</p>`
+      `<p>Under the National Voter Registration Act (NVRA, 52 U.S.C. § 20507), Help America Vote Act (HAVA), and HIPAA Safe Harbor (45 CFR § 164.514), election and health auditors must reconcile current administrative lists without exposing personally identifiable records.</p><p>Marigold enforces Zero-PII integrity mathematically by pairing server-side Zstd Parquet and Apache Arrow IPC public county lakes (CDC PLACES Empirical Bayes rates, HHS hospital deserts, IRS SOI 2022–2023 tax migration, FDIC Summary of Deposits) with client-side DuckDB-Wasm execution and unsupervised Fellegi-Sunter EM linkage inside browser RAM.</p>`
     ),
     citations: [
+      ...extraCitations,
       {
         title: 'National Voter Registration Act of 1993 (52 U.S.C. § 20507) — List Maintenance Standards',
         url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title52-section20507',
@@ -481,7 +637,7 @@ export function synthesizeDeterministicResearch(naturalLanguageQuery: string) {
       },
     ],
     nextSocraticQuestion:
-      'Would you like to run the 360° statutory SQL sweep against the mounted Roosevelt benchmark to see these standards applied to 1,800 records?',
+      'Would you like to run the 360° statutory SQL sweep against the mounted Zstd Parquet county lake or compare Mississippi and North Carolina benchmarks?',
   };
 }
 
