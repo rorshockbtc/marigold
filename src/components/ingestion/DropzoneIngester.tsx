@@ -35,10 +35,10 @@ export const DropzoneIngester: React.FC<DropzoneIngesterProps> = ({ onSchemaExtr
       // 1. Register the zero-copy file handle with DuckDB
       await registerFileHandle(file.name, file);
 
-      // 2. Perform a lightweight DESCRIBE to sniff the metadata without loading rows
-      // We use read_csv_auto for robustness.
-      const sql = `DESCRIBE SELECT * FROM read_csv_auto('${file.name}') LIMIT 0;`;
-      const schemaResult = await query(sql);
+      // 2. Materialize local table `data_file` and describe its schema
+      const safeName = file.name.replace(/'/g, "''");
+      await query(`CREATE OR REPLACE TABLE data_file AS SELECT * FROM read_csv_auto('${safeName}');`);
+      const schemaResult = await query('DESCRIBE data_file;');
 
       // schemaResult is an array of objects representing columns: [{ column_name: '...', column_type: '...' }, ...]
       console.log(`Schema sniffed for ${file.name}:`, schemaResult);

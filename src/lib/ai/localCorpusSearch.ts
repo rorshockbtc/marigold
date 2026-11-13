@@ -178,6 +178,42 @@ export function buildDefaultMarigoldCivicCorpus(): CorpusDoc[] {
       statutoryCitation: "Zero-PII Civic Security Standard",
       tags: ["air-gap", "privacy", "opfs", "parquet", "merkle", "ots", "opentimestamps", "webgpu"],
     },
+    {
+      id: "eavs-2024-v2-renumbering",
+      title: "U.S. EAC 2024 EAVS V2.0 (Feb 2026) — A10a Notices, A12a Removals & Sentinel Cleaning",
+      summary: "35,328,942 confirmation notices (A10a), 20,021,606 voter removals (A12a), and 915,949 undeliverable mail ballots across 3,222 matched counties.",
+      content: "In the Feb 2026 EAVS V2.0 release, 6,461 local jurisdictions roll cleanly into 3,127 county FIPS units once New England towns and Wisconsin municipalities aggregate to parent counties. Negative sentinels (-99, -88, -77) must normalize to null before summing 203,680,591 active and 22,588,570 inactive voters. See pipe/civic-data-benchmarks.",
+      category: "playbook",
+      statutoryCitation: "U.S. EAC 2024 EAVS V2.0 & 52 U.S.C. 20507",
+      tags: ["eavs", "a10a", "a12a", "removals", "confirmation", "notices", "undeliverable", "provisional", "fips"],
+    },
+    {
+      id: "census-cvap-moe-migration",
+      title: "Census 2020-2024 ACS CVAP 90% MOE & Domestic Migration Divergence (MS vs. NC)",
+      summary: "Brunswick County NC (106.08%, +33,821 migration) vs. 7 Mississippi upper-MOE counties led by Humphreys (116.01%) and Hinds (100.25%, -17,670 migration).",
+      content: "Across North Carolina's 100 counties (7,898,142 CVAP; 6,902,431 active; 971,554 removals led by Mecklenburg 122,082), only Brunswick exceeds its 90% CVAP upper bound due to rapid +33,821 domestic in-migration outpacing 5-year ACS averages. Mississippi's 82 counties (2,221,778 CVAP; 1,882,342 active; 148,200 removals) show 7 counties above CVAP+MOE amid rural out-migration.",
+      category: "state_report",
+      statutoryCitation: "U.S. Census 2020-2024 ACS CVAP & PopEst",
+      tags: ["cvap", "moe", "brunswick", "mecklenburg", "wake", "hinds", "humphreys", "migration", "deaths"],
+    },
+    {
+      id: "openfema-helene-washoe-continuity",
+      title: "OpenFEMA 2020-2026 Continuity & Hurricane Helene DR-4827-NC Turnout Surge",
+      summary: "39 declared DR-4827-NC counties increased certified votes from 2,338,633 to 2,396,685 while Washoe NV expanded +4.60% across 21 FEMA events.",
+      content: "Across 19,551 OpenFEMA DisasterDeclarationsSummaries rows covering 3,210 matched counties, 39 North Carolina Hurricane Helene DR-4827-NC counties grew certified ballots (+58,052 total; Buncombe held at 159,885 vs. 161,569 in 2020). Washoe NV endured 21 declarations (5 in 2024) with +4.60% turnout growth, while coastal Louisiana parishes declined -5.60% to -10.51%. See pipe/disaster-continuity.",
+      category: "state_report",
+      statutoryCitation: "OpenFEMA DisasterDeclarationsSummaries v2 & MEDSL Returns",
+      tags: ["fema", "openfema", "helene", "dr-4827-nc", "washoe", "louisiana", "disaster", "turnout", "buncombe"],
+    },
+    {
+      id: "pipes-curatorial-canon-bridge",
+      title: "Mounted Pipes Corpus Index: Marigold Insights, Civic Benchmarks & Disaster Continuity",
+      summary: "24 primary-source curatorial briefs mounted from pipes.pink across 4 civic Pipes with offline Okapi BM25 search.",
+      content: "Marigold mounts exported Greater corpus bundles from pipe/marigoldinsights, pipe/civic-data-benchmarks, pipe/disaster-continuity, and pipe/election-integrity under /pipes-corpus/index.json so every county SQL query pairs with audited constitutional and statistical context.",
+      category: "architecture",
+      statutoryCitation: "Pipes Editorial Standard v1",
+      tags: ["pipes", "marigoldinsights", "civic-data-benchmarks", "disaster-continuity", "election-integrity", "corpus"],
+    },
   ];
 }
 

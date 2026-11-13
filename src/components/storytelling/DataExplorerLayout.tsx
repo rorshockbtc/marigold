@@ -18,6 +18,38 @@ import { BlindSpotItem } from '@/lib/pipes/editorialRubricAndGraph';
 import { AirGapStatusBadge } from '@/components/AirGapStatusBadge';
 import { synthesizeOfflineGroundedAnswer } from '@/lib/ai/localCorpusSearch';
 import { downloadStandaloneOfflineDossier } from '@/lib/datasets/standaloneOfflineHtmlBundle';
+import {
+  PUBLIC_CIVIC_DATASETS,
+  CURATED_PIPE_STORY_STARTERS,
+  EVALUATED_PUBLIC_DATA_REPOS,
+  EXCLUDED_PUBLIC_DATA_REPOS,
+  resolvePublicDatasetForWebHunt,
+  MountablePublicDataset,
+  CuratedPipeStoryStarter,
+} from '@/lib/datasets/publicCivicRepoCatalog';
+
+interface PipesCorpusIndex {
+  generatedAt: string;
+  zeroPiiVerified: boolean;
+  totalPipes: number;
+  totalArticles: number;
+  pipes: Array<{
+    slug: string;
+    title: string;
+    description: string;
+    articleCount: number;
+    publicUrl: string;
+    corpusFile: string;
+    articles: Array<{
+      id: string;
+      title: string;
+      summary: string;
+      archetype: string;
+      sourceTitle: string;
+      sourceUrl: string;
+    }>;
+  }>;
+}
 
 export interface DataStoryPayload {
   query: string;
@@ -54,12 +86,17 @@ interface ChatMessage {
 }
 
 export const DataExplorerLayout: React.FC = () => {
-  const { query, isReady } = useDuckDB();
+  const { query, isReady, mountCsvTextAsDataFile } = useDuckDB();
   const { classifyIntent, generateSQL, synthesizeNarrative, synthesizeResearch, isGenerating, pipelineStatus, error } = useMaryAIRouter();
   const { remainingFree, isQuotaExceeded, isPipesSubscribed, incrementQuota } = useDataStoryQuota();
   const { isDataConnected, loadedFileName, loadedRowCount } = useVoterRollConnection();
 
   const [activeSchema, setActiveSchema] = useState<{fileName: string, schema: any[]} | null>(null);
+  const [activePublicDatasetId, setActivePublicDatasetId] = useState<MountablePublicDataset['id'] | null>(null);
+  const [mountedRowCount, setMountedRowCount] = useState<number | null>(null);
+  const [isMountingPublicDataset, setIsMountingPublicDataset] = useState<string | null>(null);
+  const [isRepoDrawerOpen, setIsRepoDrawerOpen] = useState(false);
+  const [pipesCorpusIndex, setPipesCorpusIndex] = useState<PipesCorpusIndex | null>(null);
   const [cachedAuditSweep, setCachedAuditSweep] = useState<AuditSweepResults | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [dossierBlocks, setDossierBlocks] = useState<DossierBlock[]>([]);
@@ -117,6 +154,7 @@ export const DataExplorerLayout: React.FC = () => {
   }, [messages]);
 
   const handleSchemaExtracted = (fileName: string, schema: any[]) => {
+    setActivePublicDatasetId(null);
     setActiveSchema({ fileName, schema });
     setMessages(prev => [...prev, {
       id: Date.now().toString(),
@@ -125,10 +163,204 @@ export const DataExplorerLayout: React.FC = () => {
     }]);
   };
 
-  const handleSynthesizeFromAuditSweep = () => {
+  useEffect(() => {
+    if (isRepoDrawerOpen && !pipesCorpusIndex) {
+      fetch('/pipes-corpus/index.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => {
+          if (data) setPipesCorpusIndex(data);
+        })
+        .catch(() => null);
+    }
+  }, [isRepoDrawerOpen, pipesCorpusIndex]);
+
+  const mountPublicDatasetToDuckDB = async (
+    ds: MountablePublicDataset
+  ): Promise<{ fileName: string; schema: any[]; rowCount: number } | null> => {
+    if (!isReady) return null;
+    setIsMountingPublicDataset(ds.id);
+    try {
+      const res = await fetch(ds.publicPath);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const csvText = await res.text();
+      const { rowCount, schema } = await mountCsvTextAsDataFile(ds.filename, csvText);
+      setActiveSchema({ fileName: ds.filename, schema });
+      setActivePublicDatasetId(ds.id);
+      setMountedRowCount(rowCount);
+      setMessages(prev => [...prev, {
+        id: `${Date.now()}-mount`,
+        role: 'system',
+        text: `Mounted Zero-PII dataset ${ds.filename} (${rowCount.toLocaleString()} county rows · SHA-256 ${ds.sha256.slice(0, 12)}…) into DuckDB-Wasm table data_file.`
+      }]);
+      return { fileName: ds.filename, schema, rowCount };
+    } catch (err) {
+      console.error('Failed to mount public civic dataset:', err);
+      setExportBanner(`Could not mount ${ds.filename} into local DuckDB-Wasm.`);
+      return null;
+    } finally {
+      setIsMountingPublicDataset(null);
+    }
+  };
+
+  const handleRunCuratedStoryStarter = async (starter: CuratedPipeStoryStarter) => {
     if (!incrementQuota()) {
       setExportBanner("Monthly free Data Story quota reached (3/3). Subscribe on Pipes for unlimited local dossiers.");
       return;
+    }
+    const ds = PUBLIC_CIVIC_DATASETS[starter.datasetId];
+    const mounted = await mountPublicDatasetToDuckDB(ds);
+    if (!mounted) return;
+
+    setIsQueryingLocalDB(true);
+    try {
+      const rows = await query(starter.sql);
+      const stamp = Date.now();
+      const blocks: DossierBlock[] = [
+        {
+          id: `starter-hook-${stamp}`,
+          type: 'hook',
+          status: 'proposed',
+          content: {
+            title: starter.hookTitle,
+            narrative: starter.hookNarrative,
+          },
+        },
+        {
+          id: `starter-chart-${stamp + 1}`,
+          type: 'chart',
+          status: 'proposed',
+          content: {
+            title: starter.chartTitle,
+            chartConfig: {
+              chartType: starter.chartType,
+              data: rows,
+              config: {
+                xKey: starter.xKey,
+                yKeys: [starter.yKey],
+                title: starter.chartTitle,
+              },
+            },
+          },
+          sqlProvenance: starter.sql,
+        },
+        {
+          id: `starter-anti-${stamp + 2}`,
+          type: 'dialectic_antithesis',
+          status: 'proposed',
+          content: {
+            title: 'Statistical Caveats & Administrative Context',
+            narrative: starter.antithesisNarrative,
+          },
+        },
+        {
+          id: `starter-synth-${stamp + 3}`,
+          type: 'synthesis',
+          status: 'proposed',
+          content: {
+            title: `Pipes Curatorial Bridge (${starter.pipeLabel})`,
+            narrative: starter.synthesisNarrative,
+          },
+        },
+      ];
+      setDossierBlocks(blocks);
+      setMessages(prev => [...prev, {
+        id: `${stamp}-story`,
+        role: 'assistant',
+        text: `Executed "${starter.title}" directly inside browser DuckDB-Wasm over ${mounted.rowCount.toLocaleString()} Zero-PII county rows and linked primary sources from ${starter.pipeLabel}.`,
+        payload: {
+          query: starter.sql,
+          chartType: starter.chartType,
+          chartConfig: { xKey: starter.xKey, yKeys: [starter.yKey], title: starter.chartTitle },
+          narrative: `DuckDB-Wasm query returned ${rows.length} top counties from ${ds.filename}.`,
+        },
+      }]);
+    } catch (err) {
+      console.error('Story starter SQL failed:', err);
+      setExportBanner(`Query error running "${starter.title}".`);
+    } finally {
+      setIsQueryingLocalDB(false);
+    }
+  };
+
+  const handleSynthesizeFromAuditSweep = async () => {
+    if (!incrementQuota()) {
+      setExportBanner("Monthly free Data Story quota reached (3/3). Subscribe on Pipes for unlimited local dossiers.");
+      return;
+    }
+
+    const colNames = (activeSchema?.schema || []).map((c: any) => String(c.column_name || c.name || ''));
+    const hasFederalColumns =
+      activePublicDatasetId !== null ||
+      colNames.includes('county_fips') ||
+      colNames.includes('cvap_2024') ||
+      colNames.includes('fema_disasters_2020_2026');
+
+    if (hasFederalColumns) {
+      setIsQueryingLocalDB(true);
+      try {
+        const isFemaOnly = colNames.includes('fema_2024_election_year_disasters') && !colNames.includes('marigold_active_2026');
+        const sql = isFemaOnly
+          ? "SELECT (county_name || ', ' || state_abbr) AS category, CAST(fema_disasters_2020_2026 AS BIGINT) AS count FROM data_file WHERE fema_disasters_2020_2026 > 0 ORDER BY 2 DESC LIMIT 10"
+          : colNames.includes('marigold_active_to_cvap_pct')
+          ? "SELECT (county_name || ', ' || state_abbr) AS category, ROUND(marigold_active_to_cvap_pct, 2) AS count FROM data_file WHERE cvap_2024 > 1000 ORDER BY 2 DESC LIMIT 10"
+          : "SELECT (county_name || ', ' || state_abbr) AS category, CAST(eavs_removals_total AS BIGINT) AS count FROM data_file WHERE eavs_removals_total > 0 ORDER BY 2 DESC LIMIT 10";
+
+        const liveRows = await query(sql);
+        const totalScanned = mountedRowCount || liveRows.length;
+        const stamp = Date.now();
+        setDossierBlocks([
+          {
+            id: `audit-hook-${stamp}`,
+            type: 'hook',
+            status: 'proposed',
+            content: {
+              title: `Live Zero-PII Civic Benchmark Dossier: ${activeSchema?.fileName || 'Public County Atlas'}`,
+              narrative: `<p>Executed deterministic DuckDB-Wasm aggregation locally across <strong>${totalScanned.toLocaleString()}</strong> county records inside <code>${activeSchema?.fileName}</code> with zero personally identifiable data transmitted over the network.</p>`,
+            },
+          },
+          {
+            id: `audit-chart-${stamp + 1}`,
+            type: 'chart',
+            status: 'proposed',
+            content: {
+              title: isFemaOnly
+                ? 'Top FEMA Disaster Exposure Counties (2020-2026)'
+                : colNames.includes('marigold_active_to_cvap_pct')
+                ? 'Active Registrations vs. Census 2020-2024 CVAP (%)'
+                : 'Top U.S. Counties by 2024 EAVS Voter Removals (A12a)',
+              chartConfig: {
+                chartType: 'bar',
+                data: liveRows,
+                config: {
+                  xKey: 'category',
+                  yKeys: ['count'],
+                  title: 'Live Browser DuckDB-Wasm County Aggregation',
+                },
+              },
+            },
+            sqlProvenance: sql,
+          },
+          {
+            id: `audit-synthesis-${stamp + 2}`,
+            type: 'synthesis',
+            status: 'proposed',
+            content: {
+              title: 'Primary-Source Provenance & Pipes Research Bridge',
+              narrative: `<p>All figures trace directly to keyless public federal and academic distributions pinned via SHA-256 manifest digests. Pair these SQL metrics with full methodological briefs on <a href="https://pipes.pink/explore/marigoldinsights" target="_blank" rel="noopener noreferrer" class="underline text-amber-800">pipe/marigoldinsights</a> and <a href="https://pipes.pink/explore/civic-data-benchmarks" target="_blank" rel="noopener noreferrer" class="underline text-amber-800">pipe/civic-data-benchmarks</a>.</p>`,
+            },
+          },
+        ]);
+        setMessages(prev => [...prev, {
+          id: `${stamp}-live`,
+          role: 'assistant',
+          text: `Synthesized a live DuckDB-Wasm 360° dossier from mounted public dataset ${activeSchema?.fileName} (${totalScanned.toLocaleString()} counties).`,
+        }]);
+        return;
+      } catch (err) {
+        console.error('Live public dossier synthesis failed, falling back to audit sweep:', err);
+      } finally {
+        setIsQueryingLocalDB(false);
+      }
     }
 
     const totalScanned = cachedAuditSweep?.totalScanned || loadedRowCount || 1800;
@@ -245,8 +477,14 @@ export const DataExplorerLayout: React.FC = () => {
     }
   };
 
-  const executeLocalPipeline = async (userQuery: string, isDrafting: boolean, exploreQuestion?: string) => {
-    if (!activeSchema) return;
+  const executeLocalPipeline = async (
+    userQuery: string,
+    isDrafting: boolean,
+    exploreQuestion?: string,
+    schemaOverride?: { fileName: string; schema: any[] }
+  ) => {
+    const schemaCtx = schemaOverride || activeSchema;
+    if (!schemaCtx) return;
     
     let sqlPayload = null;
     let duckDbResult = null;
@@ -255,7 +493,7 @@ export const DataExplorerLayout: React.FC = () => {
     const maxRetries = 1;
 
     while (retryCount <= maxRetries && !duckDbResult) {
-      sqlPayload = await generateSQL(userQuery, activeSchema.schema, sqlErrorStr);
+      sqlPayload = await generateSQL(userQuery, schemaCtx.schema, sqlErrorStr);
       if (!sqlPayload) return;
 
       setIsQueryingLocalDB(true);
@@ -272,8 +510,8 @@ export const DataExplorerLayout: React.FC = () => {
 
     if (!duckDbResult || !sqlPayload) {
       const grounded = synthesizeOfflineGroundedAnswer(userQuery, {
-        datasetName: activeSchema.fileName,
-        rowCount: loadedRowCount ?? undefined,
+        datasetName: schemaCtx.fileName,
+        rowCount: mountedRowCount ?? loadedRowCount ?? undefined,
       });
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
@@ -352,15 +590,25 @@ export const DataExplorerLayout: React.FC = () => {
   };
 
   const handleActionPrompt = async (action: 'APPROVE' | 'DECLINE', msgId: string) => {
+    const targetMsg = messages.find(m => m.id === msgId);
+    const datasetQuery = targetMsg?.actionPrompt?.datasetQuery || 'national county civic benchmarks';
+
     // Remove the action prompt from the message
     setMessages(prev => prev.map(m => m.id === msgId ? { ...m, actionPrompt: undefined } : m));
 
     if (action === 'DECLINE') {
-        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', text: "No problem. Bypassing local data execution. Generating a qualitative summary based on public research..." }]);
-        await executeResearchPipeline("Provide a qualitative summary based on public research.");
-    } else {
-        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'system', text: "[MOCK] Downloading 40GB dataset to Marigold_Local... (This would trigger the background ingestor)" }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', text: "No problem. Bypassing dataset mounting and generating a grounded Pipes & statutory summary..." }]);
+      await executeResearchPipeline(datasetQuery);
+      return;
     }
+
+    const ds = resolvePublicDatasetForWebHunt(datasetQuery);
+    const mounted = await mountPublicDatasetToDuckDB(ds);
+    if (!mounted) {
+      await executeResearchPipeline(datasetQuery);
+      return;
+    }
+    await executeLocalPipeline(datasetQuery, true, undefined, { fileName: mounted.fileName, schema: mounted.schema });
   };
 
   const handleBlockAction = (blockId: string, action: 'approved' | 'rejected' | 'discuss') => {
@@ -413,7 +661,39 @@ export const DataExplorerLayout: React.FC = () => {
           <AirGapStatusBadge defaultLockedWhenDataConnected={false} />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {Object.values(PUBLIC_CIVIC_DATASETS).map((ds) => {
+              const isMounted = activePublicDatasetId === ds.id && activeSchema?.fileName === ds.filename;
+              const isMountingThis = isMountingPublicDataset === ds.id;
+              return (
+                <button
+                  key={ds.id}
+                  type="button"
+                  onClick={() => mountPublicDatasetToDuckDB(ds)}
+                  disabled={!isReady || isMountingPublicDataset !== null}
+                  title={ds.description}
+                  data-testid={`btn-mount-${ds.id}`}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border transition ${
+                    isMounted
+                      ? 'bg-emerald-950/70 border-emerald-500/70 text-emerald-200 font-semibold'
+                      : 'bg-gray-900 border-gray-700 text-amber-200 hover:border-amber-400 hover:text-white'
+                  } disabled:opacity-50`}
+                >
+                  {isMountingThis ? 'Mounting…' : ds.shortLabel}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setIsRepoDrawerOpen(true)}
+              data-testid="btn-open-pipes-repo-drawer"
+              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-950/60 border border-amber-600/60 text-amber-200 hover:bg-amber-900/70 transition"
+            >
+              Pipes Canon &amp; Repo Audit
+            </button>
+          </div>
+
           <div className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-700 text-xs text-gray-300 flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${isQuotaExceeded ? 'bg-[#B45309]' : 'bg-emerald-400'}`} />
             {isPipesSubscribed ? (
@@ -438,6 +718,7 @@ export const DataExplorerLayout: React.FC = () => {
           {activeSchema ? (
             <div className="px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-700/50 text-xs text-emerald-300 font-mono">
               Connected: {activeSchema.fileName}
+              {mountedRowCount !== null ? ` (${mountedRowCount.toLocaleString()} rows)` : ''}
             </div>
           ) : (
             <div className="w-64">
@@ -560,6 +841,57 @@ export const DataExplorerLayout: React.FC = () => {
                   >
                     Open 360° Audit Workbench
                   </Link>
+                </div>
+
+                <div className="pt-6 text-left">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-amber-800 font-semibold">
+                      Zero-PII Public Data &amp; Pipes Story Starters
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsRepoDrawerOpen(true)}
+                      className="text-[11px] font-mono text-amber-700 hover:text-amber-900 underline"
+                    >
+                      Inspect 5 Adopted / 3 Excluded Repos →
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {CURATED_PIPE_STORY_STARTERS.map((starter) => {
+                      const starterDs = PUBLIC_CIVIC_DATASETS[starter.datasetId];
+                      const isBusy = isQueryingLocalDB || isMountingPublicDataset !== null;
+                      return (
+                        <button
+                          key={starter.id}
+                          type="button"
+                          onClick={() => handleRunCuratedStoryStarter(starter)}
+                          disabled={!isReady || isBusy}
+                          data-testid={`starter-card-${starter.id}`}
+                          className="p-4 rounded-xl border border-[#E5DEC9] bg-[#F6F3EC] hover:bg-white hover:border-amber-600 text-left transition shadow-sm disabled:opacity-50 flex flex-col justify-between gap-2"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-mono font-semibold">
+                                {starter.pipeLabel}
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono">
+                                {starterDs.shortLabel}
+                              </span>
+                            </div>
+                            <h3 className="text-sm font-bold text-[#1C1917] leading-snug">
+                              {starter.title}
+                            </h3>
+                            <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                              {starter.subtitle}
+                            </p>
+                          </div>
+                          <span className="text-[11px] font-semibold text-amber-800">
+                            Mount CSV &amp; Run SQL Dossier →
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -742,6 +1074,128 @@ export const DataExplorerLayout: React.FC = () => {
           ]);
         }}
       />
+
+      {isRepoDrawerOpen && (
+        <div
+          className="fixed inset-0 z-50 flex justify-end bg-[#111111]/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Pipes Canon and Public Civic Repo Audit"
+        >
+          <div className="w-full max-w-2xl bg-[#FAF8F5] text-[#1C1917] h-full overflow-y-auto border-l border-[#E5DEC9] shadow-2xl p-6 space-y-6">
+            <div className="flex items-start justify-between border-b border-[#E5DEC9] pb-4">
+              <div>
+                <span className="text-[11px] font-mono uppercase tracking-wider text-amber-800 font-semibold">
+                  Zero-PII Provenance &amp; Curatorial Registry
+                </span>
+                <h2 className="text-xl font-bold text-[#111111] mt-1">
+                  Pipes Canon &amp; Public Data Repo Audit
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRepoDrawerOpen(false)}
+                className="px-3 py-1.5 rounded-lg border border-[#D6CEBA] bg-white text-xs font-semibold text-[#1C1917] hover:bg-[#F6F3EC]"
+              >
+                Close ✕
+              </button>
+            </div>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#111111]">
+                  Mounted Pipes Corpora ({pipesCorpusIndex ? `${pipesCorpusIndex.totalPipes} Pipes · ${pipesCorpusIndex.totalArticles} Articles` : 'Loading…'})
+                </h3>
+                <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono">
+                  Zero-PII Verified
+                </span>
+              </div>
+              {pipesCorpusIndex ? (
+                <div className="space-y-2.5">
+                  {pipesCorpusIndex.pipes.map((pipe) => (
+                    <div
+                      key={pipe.slug}
+                      className="p-3.5 rounded-xl bg-[#F6F3EC] border border-[#E5DEC9] space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-amber-900">
+                          pipe/{pipe.slug} ({pipe.articleCount} articles)
+                        </span>
+                        <a
+                          href={pipe.publicUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-semibold text-amber-800 underline hover:text-amber-950"
+                        >
+                          Open on pipes.pink →
+                        </a>
+                      </div>
+                      <p className="text-xs text-stone-700">{pipe.description}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-stone-600 font-mono">Fetching /pipes-corpus/index.json…</p>
+              )}
+            </section>
+
+            <section className="space-y-3">
+              <h3 className="text-sm font-bold text-[#111111]">
+                Adopted Public Data Repositories ({EVALUATED_PUBLIC_DATA_REPOS.length} SHA-256 Verified)
+              </h3>
+              <div className="space-y-2.5">
+                {EVALUATED_PUBLIC_DATA_REPOS.map((repo) => (
+                  <div
+                    key={repo.id}
+                    className="p-3.5 rounded-xl bg-white border border-emerald-200 space-y-1"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-[#111111]">{repo.name}</span>
+                      <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono">
+                        ADOPTED
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-mono text-stone-600">
+                      {repo.agencyOrMaintainer} · {repo.joinKey}
+                    </p>
+                    <p className="text-xs text-stone-700">{repo.summary}</p>
+                    <p className="text-[10px] font-mono text-stone-500">
+                      SHA-256: {repo.sha256.slice(0, 16)}… · {repo.license}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h3 className="text-sm font-bold text-[#111111]">
+                Excluded Sources ({EXCLUDED_PUBLIC_DATA_REPOS.length} Guardrail &amp; Quality Rejections)
+              </h3>
+              <div className="space-y-2.5">
+                {EXCLUDED_PUBLIC_DATA_REPOS.map((repo) => (
+                  <div
+                    key={repo.id}
+                    className="p-3.5 rounded-xl bg-[#F6F3EC] border border-amber-300/70 space-y-1"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-[#111111]">{repo.name}</span>
+                      <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-mono">
+                        EXCLUDED
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-700">{repo.summary}</p>
+                    {repo.excludedReason && (
+                      <p className="text-[11px] font-semibold text-amber-900">
+                        Reason: {repo.excludedReason}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

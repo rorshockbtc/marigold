@@ -1,0 +1,374 @@
+{
+  "generatedAt": "2026-11-12T18:45:00Z",
+  "zeroPiiVerified": true,
+  "totalPipes": 4,
+  "totalArticles": 24,
+  "pipes": [
+    {
+      "slug": "marigoldinsights",
+      "title": "Marigold Insights",
+      "description": "Local-compute civic intelligence, Zero-PII voter audit benchmarks, and browser DuckDB-Wasm storytelling canon.",
+      "articleCount": 4,
+      "publicUrl": "https://pipes.pink/explore/marigoldinsights",
+      "corpusFile": "/pipes-corpus/marigoldinsights-pipes-v1.json",
+      "articles": [
+        {
+          "id": "6c5e77c1b4fa421f",
+          "title": "Zero-PII Civic Benchmarking: Reconciling State Voter Rolls Against Federal Aggregates Without Exposing Voters",
+          "summary": "How client-side county aggregation joins state voter registration exports against Census CVAP, EAVS V2.0, and MEDSL returns while stripping every personal identifier.",
+          "archetype": "canon",
+          "sourceTitle": "U.S. Election Assistance Commission, 2024 Election Administration and Voting Survey (EAVS) V2.0 (Feb 2026)",
+          "sourceUrl": "https://www.eac.gov/research-and-data/studies-and-reports",
+          "relatedPipes": [
+            "election-integrity",
+            "privacy",
+            "local-first",
+            "civic-data-benchmarks"
+          ]
+        },
+        {
+          "id": "b068ff4d328ed3ce",
+          "title": "Evaluating Keyless Public Data Repositories for Civic Analytics: What Passed Verification and What Was Rejected",
+          "summary": "A technical audit of five open federal and academic data feeds ingested via deterministic SHA-256 verification alongside three deliberately excluded sources.",
+          "archetype": "dispatch",
+          "sourceTitle": "MIT Election Data and Science Lab, U.S. Presidential Election Returns 2016-2024",
+          "sourceUrl": "https://electionlab.mit.edu/data",
+          "relatedPipes": [
+            "civic-data-benchmarks",
+            "disaster-continuity",
+            "databases",
+            "privacy"
+          ]
+        },
+        {
+          "id": "da1642bd86765e1c",
+          "title": "Inside the Three-Tier Local Intelligence Engine: Why Deterministic SQL Beats Cloud Wrappers for Data Journalism",
+          "summary": "How structured intent routing, in-browser DuckDB-Wasm execution, and optional local WebGPU narration deliver zero-leakage investigative briefs at zero token cost.",
+          "archetype": "canon",
+          "sourceTitle": "DuckDB Foundation, DuckDB-Wasm: An Analytical SQL Engine Inside the Browser (2024)",
+          "sourceUrl": "https://duckdb.org/2021/10/29/duckdb-wasm.html",
+          "relatedPipes": [
+            "local-compute",
+            "databases",
+            "local-first",
+            "systems-design"
+          ]
+        },
+        {
+          "id": "da5dbca7a12a6d7b",
+          "title": "Mississippi vs. North Carolina 2026 Audit Synthesis: What Federal Benchmarks Reveal Behind Two Divergent Voter Rolls",
+          "summary": "Cross-referencing 182 counties across Mississippi and North Carolina against Census CVAP margins of error, 2024 EAVS removals, and domestic migration flows.",
+          "archetype": "dispatch",
+          "sourceTitle": "U.S. Census Bureau, County Population Estimates and Components of Change 2020-2024",
+          "sourceUrl": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/counties/totals/co-est2024-alldata.csv",
+          "relatedPipes": [
+            "election-integrity",
+            "civic-data-benchmarks",
+            "mathematics",
+            "systems-design"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "civic-data-benchmarks",
+      "title": "Civic Data Benchmarks",
+      "description": "Technical guides to EAVS V2.0, Census ACS CVAP 90% margins of error, county FIPS joins, and MEDSL election returns.",
+      "articleCount": 4,
+      "publicUrl": "https://pipes.pink/explore/civic-data-benchmarks",
+      "corpusFile": "/pipes-corpus/civic-data-benchmarks-pipes-v1.json",
+      "articles": [
+        {
+          "id": "119bedadf66849b0",
+          "title": "Using ACS CVAP 90% Margins of Error Correctly: Separating Real Registration Anomalies From Sample Lag",
+          "summary": "How small-county American Community Survey sampling tolerances explain apparent 100%+ voter registration ratios in fast-growing vs. shrinking U.S. counties.",
+          "archetype": "canon",
+          "sourceTitle": "U.S. Census Bureau, Citizen Voting Age Population (CVAP) Special Tabulation Documentation",
+          "sourceUrl": "https://www.census.gov/programs-surveys/decennial/race/about/voting-rights/cvap.html",
+          "relatedPipes": [
+            "mathematics",
+            "election-integrity",
+            "marigoldinsights",
+            "databases"
+          ]
+        },
+        {
+          "id": "2da1ba5572f1af36",
+          "title": "Mail Ballot Undeliverables and Provisional Rejections Across 3,222 Counties: Reading EAVS Sections C and E",
+          "summary": "Empirical nationwide benchmarks from EAVS V2.0 showing 915,949 undeliverable mail ballots out of 66.1 million transmitted and 422,940 rejected provisional ballots.",
+          "archetype": "dispatch",
+          "sourceTitle": "U.S. Election Assistance Commission, 2024 EAVS Section C (By-Mail) and Section E (Provisional) Data",
+          "sourceUrl": "https://www.eac.gov/research-and-data/studies-and-reports",
+          "relatedPipes": [
+            "election-integrity",
+            "marigoldinsights",
+            "disaster-continuity",
+            "systems-design"
+          ]
+        },
+        {
+          "id": "5b1b91c930770771",
+          "title": "Reconciling Certified County Votes Against List Removals: Why 13.98 Million U.S. Deaths Anchor Roll Hygiene",
+          "summary": "Benchmarking 2024 vs. 2020 certified county returns (154.27M vs. 156.21M) alongside 13.98 million 2020-2024 Census deaths and 20.02 million EAVS voter removals.",
+          "archetype": "dispatch",
+          "sourceTitle": "MIT Election Data & Science Lab / tonmcg U.S. County Presidential Election Returns (2016-2024)",
+          "sourceUrl": "https://raw.githubusercontent.com/tonmcg/US_County_Level_Election_Results_08-24/master/2024_US_County_Level_Presidential_Results.csv",
+          "relatedPipes": [
+            "election-integrity",
+            "mathematics",
+            "marigoldinsights",
+            "local-first"
+          ]
+        },
+        {
+          "id": "5e1b0707f2884e00",
+          "title": "Reading the 2024 EAVS V2.0 Codebook Without Pitfalls: Sentinel Codes, Renumbered Columns, and Town-to-County Joins",
+          "summary": "How to parse the Feb 2026 U.S. Election Assistance Commission EAVS release cleanly\u2014including A10a confirmation notices, A12a removals, and New England municipal aggregation.",
+          "archetype": "canon",
+          "sourceTitle": "U.S. Election Assistance Commission, 2024 EAVS V2.0 Survey Instrument and Codebook",
+          "sourceUrl": "https://www.eac.gov/research-and-data/studies-and-reports",
+          "relatedPipes": [
+            "election-integrity",
+            "databases",
+            "systems-design",
+            "marigoldinsights"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "disaster-continuity",
+      "title": "Disaster Continuity",
+      "description": "OpenFEMA disaster declarations, Hurricane Helene DR-4827-NC empirical audits, and air-gapped county resilience.",
+      "articleCount": 4,
+      "publicUrl": "https://pipes.pink/explore/disaster-continuity",
+      "corpusFile": "/pipes-corpus/disaster-continuity-pipes-v1.json",
+      "articles": [
+        {
+          "id": "18360ba5c36a316c",
+          "title": "Multi-Declaration Stress Test: Comparing Washoe County Nevada (21 FEMA Events) Against Coastal Louisiana Turnout Drops",
+          "summary": "Cross-referencing 3,210 counties in OpenFEMA 2020-2026 shows why Washoe County, NV gained +4.60% turnout across 21 declarations while Louisiana parishes dropped up to -10.51%.",
+          "archetype": "dispatch",
+          "sourceTitle": "OpenFEMA DisasterDeclarationsSummaries v2 API (2020-2026 Multi-Year County Aggregation)",
+          "sourceUrl": "https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries",
+          "relatedPipes": [
+            "civic-data-benchmarks",
+            "election-integrity",
+            "systems-design",
+            "local-first"
+          ]
+        },
+        {
+          "id": "754b25c87ef340ad",
+          "title": "Statutory Continuity Checklist: Preparing County Election Boards Before the Next Federal Disaster Declaration",
+          "summary": "Operational rules uniting OpenFEMA county frequency history, USPS NCOA address hygiene, and paper-ballot manifest reconciliation under Title 52 and state emergency statutes.",
+          "archetype": "dispatch",
+          "sourceTitle": "National Conference of State Legislatures (NCSL), Election Emergencies Statutory Compendium",
+          "sourceUrl": "https://www.ncsl.org/elections-and-campaigns/election-emergencies",
+          "relatedPipes": [
+            "law",
+            "election-integrity",
+            "civic-data-benchmarks",
+            "systems-design"
+          ]
+        },
+        {
+          "id": "afdd788002507c7f",
+          "title": "Air-Gapped Disaster Dossiers: Why County Clerks Need Offline Browser Analytics When Grid and Cloud Fail",
+          "summary": "Designing zero-server DuckDB-Wasm and local BM25 emergency playbooks so election boards can audit provisional casts and displaced rolls on battery-powered laptops.",
+          "archetype": "canon",
+          "sourceTitle": "National Academies of Sciences, Securing the Vote: Continuity and Resiliency Standards (2018)",
+          "sourceUrl": "https://nap.nationalacademies.org/catalog/25120/securing-the-vote-protecting-american-democracy",
+          "relatedPipes": [
+            "local-first",
+            "local-compute",
+            "election-integrity",
+            "privacy"
+          ]
+        },
+        {
+          "id": "ea3f61e5387ec631",
+          "title": "Hurricane Helene and Election Continuity: How 39 Declared North Carolina Counties Grew Certified Turnout From 2.33M to 2.39M",
+          "summary": "Empirical post-Helene audit combining OpenFEMA DR-4827-NC declarations with MEDSL returns and 2024 EAVS provisional and mail ballot metrics across Western North Carolina.",
+          "archetype": "canon",
+          "sourceTitle": "OpenFEMA DisasterDeclarationsSummaries v2 API (DR-4827-NC Hurricane Helene)",
+          "sourceUrl": "https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries",
+          "relatedPipes": [
+            "election-integrity",
+            "civic-data-benchmarks",
+            "systems-design",
+            "marigoldinsights"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "election-integrity",
+      "title": "Election Integrity",
+      "description": "Primary-source Risk-Limiting Audits, NVRA Section 8 list maintenance, domestic migration lags, and ballot chain of custody.",
+      "articleCount": 12,
+      "publicUrl": "https://pipes.pink/explore/election-integrity",
+      "corpusFile": "/pipes-corpus/election-integrity-pipes-v1.json",
+      "articles": [
+        {
+          "id": "0d304d5e703c5e91",
+          "title": "Risk-Limiting Audits in Practice: How Statistical Ballot-Polling Audits Enforce Mathematical Confidence",
+          "summary": "Pioneered by statistician Philip Stark, Risk-Limiting Audits use rigorous statistical sampling of physical paper ballots to detect machine tabulation errors before election certification.",
+          "archetype": "dispatch",
+          "sourceTitle": "Mark Lindeman and Philip B. Stark, A Gentle Introduction to Risk-Limiting Audits (IEEE Security and Privacy, 2012)",
+          "sourceUrl": "https://www.stat.berkeley.edu/~stark/Preprints/gentle12.pdf",
+          "relatedPipes": [
+            "mathematics",
+            "cybersecurity",
+            "politics"
+          ]
+        },
+        {
+          "id": "0ed2dc90d48e4f49",
+          "title": "The Australian Ballot Revolution: How the 1888 Reform Replaced Party Tickets with Private Sovereignty",
+          "summary": "In 1888, Massachusetts adopted the Australian secret ballot, ending a century of colorful party tickets handed to voters on the street that enabled rampant bribery and employer intimidation.",
+          "archetype": "canon",
+          "sourceTitle": "Commonwealth of Massachusetts, Acts and Resolves of 1888, Chapter 436: An Act to Provide for Printing and Distributing Ballots at the Public Expense",
+          "sourceUrl": "https://www.loc.gov/item/mal1888001/",
+          "relatedPipes": [
+            "politics",
+            "law",
+            "history"
+          ]
+        },
+        {
+          "id": "11d9b9bdfb15c440",
+          "title": "Benchmarking NVRA Section 8 List Maintenance Using 2024 EAVS A10a Confirmation Notices and A12a Removals",
+          "summary": "Quantifying 35.3 million confirmation notices and 20.0 million voter removals across matched U.S. counties alongside state statutory compliance patterns in MS and NC.",
+          "archetype": "canon",
+          "sourceTitle": "National Voter Registration Act of 1993, Section 8 (52 U.S.C. 20507) & 2024 EAVS V2.0",
+          "sourceUrl": "https://www.justice.gov/crt/national-voter-registration-act-1993-nvra",
+          "relatedPipes": [
+            "law",
+            "civic-data-benchmarks",
+            "marigoldinsights",
+            "databases"
+          ]
+        },
+        {
+          "id": "3e159fd8ceb14a06",
+          "title": "HAVA Title III and the Prohibition of Lever Machines: How the 2002 Act Transformed Precinct Machinery",
+          "summary": "Following the 2000 Florida recount crisis, Congress passed the Help America Vote Act of 2002, spending three billion dollars to eliminate mechanical lever machines and paper punch cards nationwide.",
+          "archetype": "canon",
+          "sourceTitle": "Help America Vote Act of 2002, Public Law 107-252 (Codified at 52 U.S.C. \u00a7\u00a7 20901-21145)",
+          "sourceUrl": "https://www.justice.gov/crt/help-america-vote-act-2002",
+          "relatedPipes": [
+            "cybersecurity",
+            "law",
+            "history"
+          ]
+        },
+        {
+          "id": "7e2e0a873ed2bf06",
+          "title": "Clean Voter Rolls and Unbroken Chain of Custody: How Citizens Can Audit Their Precincts Under the Law",
+          "summary": "Accurate voter rolls and documented ballot custody are statutory duties under NVRA Section 8, which gives every citizen the legal right to inspect the records.",
+          "archetype": "canon",
+          "sourceTitle": "",
+          "sourceUrl": "https://uscode.house.gov/view.xhtml?req=(title:52%20section:20507%20edition:prelim)",
+          "relatedPipes": [
+            "law",
+            "constitutional-law",
+            "politics"
+          ]
+        },
+        {
+          "id": "8b085d29fe615396",
+          "title": "The Bipartisan Principle: Why Election Boards Must Balance Parties at Every Check-In Table",
+          "summary": "From the 2005 Carter-Baker Commission to state election statutes, American election administration relies on the two-person rule: paired bipartisan representation at every stage of the precinct process.",
+          "archetype": "canon",
+          "sourceTitle": "Commission on Federal Election Reform, Building Confidence in U.S. Elections (Carter-Baker Report, 2005)",
+          "sourceUrl": "https://www.cartercenter.org/news/documents/doc2145.html",
+          "relatedPipes": [
+            "law",
+            "politics",
+            "history"
+          ]
+        },
+        {
+          "id": "8eb7f44f816f092b",
+          "title": "The Georgia Curling v. Raffensperger Ruling: Why Federal Judge Totenberg Ordered Paper Touchscreen Remediation in 2024",
+          "summary": "In January 2024, Federal District Judge Amy Totenberg issued an 135-page ruling in Curling v. Raffensperger, finding that Georgia's touchscreen voting system possesses documented systemic security vulnerabilities.",
+          "archetype": "dispatch",
+          "sourceTitle": "Curling v. Raffensperger, Case No. 1:17-cv-02989-AT (N.D. Ga. Jan 2024 Order and Injunction)",
+          "sourceUrl": "https://storage.courtlistener.com/recap/gov.uscourts.gand.240678/gov.uscourts.gand.240678.1678.0.pdf",
+          "relatedPipes": [
+            "law",
+            "cybersecurity",
+            "constitutional-law"
+          ]
+        },
+        {
+          "id": "9042d71da23e7965",
+          "title": "The 2024 EAC Voluntary Voting System Guidelines 2.0: Mandating Penetration Testing and Independent Software Verification",
+          "summary": "The U.S. Election Assistance Commission's VVSG 2.0 standards mandate commercial voting hardware undergo adversarial penetration testing and independent software verification before certification.",
+          "archetype": "dispatch",
+          "sourceTitle": "U.S. Election Assistance Commission, Voluntary Voting System Guidelines (VVSG) 2.0",
+          "sourceUrl": "https://www.eac.gov/voting-equipment/voluntary-voting-system-guidelines",
+          "relatedPipes": [
+            "open-source",
+            "cybersecurity",
+            "law"
+          ]
+        },
+        {
+          "id": "a17e6de29a30a978",
+          "title": "The Interstate List-Maintenance Dilemma: What the 2023-2024 ERIC Departures Teach About State Data Interoperability",
+          "summary": "Between 2023 and 2024, nine states departed from the Electronic Registration Information Center (ERIC), exposing the legal and technical challenges of maintaining clean voter rolls across state borders.",
+          "archetype": "dispatch",
+          "sourceTitle": "National Conference of State Legislatures (NCSL), Voter Registration List Maintenance: Legal Frameworks and Cross-State Collaborations (2024)",
+          "sourceUrl": "https://www.ncsl.org/elections-and-campaigns/voter-registration-list-maintenance",
+          "relatedPipes": [
+            "cryptography",
+            "law",
+            "politics"
+          ]
+        },
+        {
+          "id": "a87df4b833a08250",
+          "title": "The Postal Chain of Custody: Postal Service OIG Audits on Absentee Ballot Processing in 2024",
+          "summary": "Audits by the USPS Office of Inspector General reveal how postmark legibility, dedicated sorting operations, and daily ballot sweeps safeguard absentee ballots in federal elections.",
+          "archetype": "dispatch",
+          "sourceTitle": "USPS Office of Inspector General, Service Performance of Election and Political Mail During the 2024 Primaries (Audit Report No. 24-053-R24)",
+          "sourceUrl": "https://www.uspsoig.gov/reports/audit-reports/service-performance-election-and-political-mail-during-2024-primaries",
+          "relatedPipes": [
+            "law",
+            "politics",
+            "economics"
+          ]
+        },
+        {
+          "id": "b9113f0c958f521a",
+          "title": "Domestic Migration Lag in Voter Audits: Explaining Coastal North Carolina vs. Mississippi Delta Registration Ratios",
+          "summary": "How Census 2020-2024 domestic migration flows (+33,821 in Brunswick County, NC vs. -17,670 in Hinds County, MS) explain divergent 100%+ CVAP flags.",
+          "archetype": "dispatch",
+          "sourceTitle": "U.S. Census Bureau, Domestic Migration Components 2020-2024 and ACS CVAP Special Tabulation",
+          "sourceUrl": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/counties/totals/co-est2024-alldata.csv",
+          "relatedPipes": [
+            "civic-data-benchmarks",
+            "mathematics",
+            "marigoldinsights",
+            "local-first"
+          ]
+        },
+        {
+          "id": "d9a88d3c69046aeb",
+          "title": "Why Paper Ballots and Public Observation Remain the Gold Standard of Civic Trust",
+          "summary": "Self-government requires elections that losing voters can verify with their own eyes, grounded in Federalist No. 51, state poll-watcher statutes, and voter-marked paper ballots.",
+          "archetype": "canon",
+          "sourceTitle": "",
+          "sourceUrl": "https://avalon.law.yale.edu/18th_century/fed51.asp",
+          "relatedPipes": [
+            "cybersecurity",
+            "history",
+            "politics"
+          ]
+        }
+      ]
+    }
+  ]
+}

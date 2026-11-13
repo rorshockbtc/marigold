@@ -171,6 +171,94 @@ export function generateDeterministicSQLPayload(
   const dateCol = findCol(['reg_date', 'registration_date', 'date', 'created_at'], 'reg_date');
   const lastCol = findCol(['last_name', 'lastname', 'surname'], 'last_name');
 
+  // 0. Public Federal & MS/NC County Benchmark Schemas (Zero-PII County Aggregates)
+  const isPublicBenchmark =
+    colNames.includes('cvap_2024') ||
+    colNames.includes('fema_disasters_2020_2026') ||
+    colNames.includes('marigold_active_to_cvap_pct') ||
+    colNames.includes('eavs_removals_total');
+
+  if (isPublicBenchmark) {
+    const labelExpr =
+      colNames.includes('county_name') && colNames.includes('state_abbr')
+        ? "(county_name || ', ' || state_abbr)"
+        : `CAST(${countyCol} AS VARCHAR)`;
+
+    if (/\b(fema|disaster|helene|hurricane|storm|flood|wildfire|turnout)\b/.test(q) && colNames.includes('fema_disasters_2020_2026')) {
+      return {
+        query: `SELECT ${labelExpr} AS x, CAST(fema_disasters_2020_2026 AS DOUBLE) AS y FROM data_file WHERE fema_disasters_2020_2026 > 0 ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'FEMA Declarations (2020-2026)',
+          title: 'OpenFEMA Disaster Declarations by County (2020-2026)',
+        },
+      };
+    }
+
+    if (/\b(removal|notice|purge|nvra|list maintenance|a10a|a12a)\b/.test(q) && (colNames.includes('eavs_removals_total') || colNames.includes('eavs_2024_removals'))) {
+      const remCol = colNames.includes('eavs_removals_total') ? 'eavs_removals_total' : 'eavs_2024_removals';
+      return {
+        query: `SELECT ${labelExpr} AS x, CAST(${remCol} AS DOUBLE) AS y FROM data_file WHERE ${remCol} > 0 ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'EAVS 2024 Removals (A12a)',
+          title: 'NVRA Section 8 Voter Removals by County (2024 EAVS)',
+        },
+      };
+    }
+
+    if (/\b(mail|undeliverable|provisional|rejected|postal)\b/.test(q) && colNames.includes('eavs_mail_undeliverable')) {
+      return {
+        query: `SELECT ${labelExpr} AS x, CAST(eavs_mail_undeliverable AS DOUBLE) AS y FROM data_file WHERE eavs_mail_undeliverable > 0 ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'Undeliverable Mail Ballots (C1c)',
+          title: 'Undeliverable Mail Ballots Across U.S. Counties (2024 EAVS)',
+        },
+      };
+    }
+
+    if (colNames.includes('marigold_active_to_cvap_pct') || colNames.includes('active_to_cvap_pct')) {
+      const pctCol = colNames.includes('marigold_active_to_cvap_pct')
+        ? 'marigold_active_to_cvap_pct'
+        : 'active_to_cvap_pct';
+      return {
+        query: `SELECT ${labelExpr} AS x, ROUND(CAST(${pctCol} AS DOUBLE), 2) AS y FROM data_file WHERE ${pctCol} IS NOT NULL AND cvap_2024 > 1000 ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'Active Voters % of CVAP',
+          title: 'Active Registration vs. Census CVAP Ratio (%)',
+        },
+      };
+    }
+
+    if (colNames.includes('cvap_2024')) {
+      return {
+        query: `SELECT ${labelExpr} AS x, CAST(cvap_2024 AS DOUBLE) AS y FROM data_file WHERE cvap_2024 IS NOT NULL ORDER BY y DESC LIMIT 12`,
+        chartType: 'bar',
+        chartConfig: {
+          xAxisKey: 'x',
+          yAxisKey: 'y',
+          xAxisLabel: 'County, State',
+          yAxisLabel: 'Citizen Voting Age Population (2024)',
+          title: 'Largest Counties by Census 2020-2024 CVAP',
+        },
+      };
+    }
+  }
+
   // 1. High-density occupancy / address clustering
   if (/\b(density|occupan|12\+|shared address|cluster|household|apartment|dorm)\b/.test(q)) {
     return {
@@ -384,6 +472,12 @@ export function synthesizeDeterministicResearch(naturalLanguageQuery: string) {
         url: 'https://doi.org/10.1080/01621459.1969.10501049',
         snippet:
           'Establishes the mathematical foundation for weighting composite string similarity, date-of-birth agreement, and suffix disambiguation (Jr./Sr./III) to prevent homonym false positives.',
+      },
+      {
+        title: 'Pipes Canon · Civic Data Benchmarks & Marigold Insights (EAVS V2.0, Census CVAP & OpenFEMA)',
+        url: 'https://pipes.pink/explore/civic-data-benchmarks',
+        snippet:
+          'Primary-source curations detailing EAVS A10a/A12a renumbering, ACS CVAP 90% margin-of-error triage, and Hurricane Helene DR-4827-NC continuity across 3,222 counties.',
       },
     ],
     nextSocraticQuestion:
