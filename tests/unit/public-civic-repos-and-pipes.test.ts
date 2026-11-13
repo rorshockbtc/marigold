@@ -171,4 +171,14 @@ describe('Public Civic Data Repositories & Pipes Integration', () => {
     expect(brunswickHits.length).toBeGreaterThan(0);
     expect(brunswickHits.map((h) => `${h.doc.title} ${h.doc.content}`).join(' ')).toMatch(/Brunswick|CVAP/i);
   });
+
+  it('ensures .vercelignore and Clerk proxy allowlist public civic CSVs and Pipes JSON corpora', () => {
+    const vercelIgnore = fs.readFileSync(path.join(MARIGOLD_ROOT, '.vercelignore'), 'utf-8');
+    expect(vercelIgnore).toContain('!public/datasets/civic/*.csv');
+
+    const proxyTs = fs.readFileSync(path.join(MARIGOLD_ROOT, 'src/proxy.ts'), 'utf-8');
+    expect(proxyTs).toContain("'/datasets(.*)'");
+    expect(proxyTs).toContain("'/pipes-corpus(.*)'");
+    expect(proxyTs).toContain('datasets|pipes-corpus');
+  });
 });
