@@ -6,7 +6,7 @@ import { useCSVExport } from "@/hooks/useCSVExport";
 import { DesktopImportGuide } from "@/components/DesktopImportGuide";
 import Link from "next/link";
 import { GlossaryTooltip } from "@/components/GlossaryTooltip";
-import { Download, Sparkles, AlertCircle, FileSpreadsheet, Zap, Layers } from 'lucide-react';
+import { Download, Sparkles, AlertCircle, FileSpreadsheet, Zap, Layers, HardDrive, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
 import { FilterControl } from "@/components/ui/FilterControl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -15,6 +15,19 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { PinSetupModal } from "@/components/PinSetupModal";
 import { AirGapStatusBadge } from "@/components/AirGapStatusBadge";
 import type { ParquetVaultManifest } from "@/lib/datasets/parquetShardCompiler";
+import {
+  isRunningInPipesDesktop,
+  getPipesNativeCapabilities,
+  listLocalCivicDatasetsNative,
+  streamProfileDatasetNative,
+  shardMassiveArchiveNative,
+  shouldRecommendPipesDesktop,
+  PIPES_DESKTOP_URLS,
+  type PipesNativeCapabilities,
+  type LocalCivicDatasetItem,
+  type NativeStreamProfile,
+  type NativeShardManifest,
+} from "@/lib/desktop/tauriPipesBridge";
 
 export default function DataPrepPage() {
   const { state: parseState, parseFile, clearData } = useCSVParser();
@@ -32,6 +45,15 @@ export default function DataPrepPage() {
   const [detectedVaultManifest, setDetectedVaultManifest] = useState<ParquetVaultManifest | null>(null);
   const [isCompilingVault, setIsCompilingVault] = useState(false);
   const [vaultStatusMsg, setVaultStatusMsg] = useState<string | null>(null);
+  const [isTauriDesktop, setIsTauriDesktop] = useState(false);
+  const [nativeCaps, setNativeCaps] = useState<PipesNativeCapabilities | null>(null);
+  const [nativeDatasets, setNativeDatasets] = useState<LocalCivicDatasetItem[]>([]);
+  const [selectedNativePath, setSelectedNativePath] = useState("~/Downloads/ncvoter_Statewide.zip");
+  const [nativeBusy, setNativeBusy] = useState(false);
+  const [nativeMsg, setNativeMsg] = useState<string | null>(null);
+  const [nativeProfile, setNativeProfile] = useState<NativeStreamProfile | null>(null);
+  const [nativeManifest, setNativeManifest] = useState<NativeShardManifest | null>(null);
+  const [largeBrowserFileNotice, setLargeBrowserFileNotice] = useState<{ file: File; reason: string } | null>(null);
 
   const requirePin = (action: () => void) => {
     if (!hasPinSet) {
@@ -124,6 +146,21 @@ export default function DataPrepPage() {
         });
       });
     }).catch(() => {});
+    // Detect Pipes.app Sovereign Native IPC (O(1) Rust 4GB+ streaming engine)
+    if (isRunningInPipesDesktop()) {
+      setIsTauriDesktop(true);
+      getPipesNativeCapabilities().then((caps) => {
+        setNativeCaps(caps);
+        if (caps?.available) {
+          listLocalCivicDatasetsNative().then((items) => {
+            setNativeDatasets(items);
+            if (items.length > 0) {
+              setSelectedNativePath(items[0].path);
+            }
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    }
   }, []);
 
   // Safeguard against accidental tab closure during active processing
@@ -150,22 +187,55 @@ export default function DataPrepPage() {
     return true;
   };
 
+  const handleNativeStreamProfile = async () => {
+    setNativeBusy(true);
+    setNativeMsg("Streaming archive in Rust O(1) memory & verifying SHA-256...");
+    try {
+      const profile = await streamProfileDatasetNative(selectedNativePath, null, "county_desc");
+      setNativeProfile(profile);
+      setNativeMsg(`Streamed ${profile.totalRows.toLocaleString()} rows from ${profile.entryName} in ${profile.elapsedMs}ms.`);
+    } catch (err: any) {
+      setNativeMsg(err?.message || String(err));
+    } finally {
+      setNativeBusy(false);
+    }
+  };
+
+  const handleNativeShardArchive = async () => {
+    setNativeBusy(true);
+    setNativeMsg(`Sharding into ${rowsPerFile.toLocaleString()}-row Merkle chunks inside ~/Documents/Marigold_Local...`);
+    try {
+      const manifest = await shardMassiveArchiveNative(selectedNativePath, rowsPerFile, null);
+      setNativeManifest(manifest);
+      setNativeMsg(`Created ${manifest.shardCount} Merkle-verified shards in ${manifest.outputDir}.`);
+    } catch (err: any) {
+      setNativeMsg(err?.message || String(err));
+    } finally {
+      setNativeBusy(false);
+    }
+  };
+
+  const handleCandidateFile = (file: File) => {
+    if (!checkDemoFileAllowed(file)) return;
+    const advice = shouldRecommendPipesDesktop(file);
+    if (advice.recommend && !isTauriDesktop) {
+      setLargeBrowserFileNotice({ file, reason: advice.reason });
+      return;
+    }
+    setLargeBrowserFileNotice(null);
+    requirePin(() => parseFile(file));
+  };
+
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      if (checkDemoFileAllowed(file)) {
-        requirePin(() => parseFile(file));
-      }
+      handleCandidateFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      if (checkDemoFileAllowed(file)) {
-        requirePin(() => parseFile(file));
-      }
+      handleCandidateFile(e.target.files[0]);
     }
   };
 
@@ -389,34 +459,185 @@ export default function DataPrepPage() {
         </div>
       )}
 
+      {/* Native Pipes.app Out-of-Core Streaming Panel (Shown Inside Pipes Desktop) */}
+      {isTauriDesktop && nativeCaps?.available && (
+        <div className="bg-[#FAF8F5] border-2 border-[#065F46] rounded-2xl p-6 text-[#1C1917] shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="bg-[#D1FAE5] text-[#065F46] border border-[#065F46]/30 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Pipes Sovereign Node · Native Rust IPC ({nativeCaps.engine})</span>
+            </span>
+            <span className="text-xs font-mono text-[#57534E]">
+              Vault: {nativeCaps.defaultVaultDir}
+            </span>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-serif font-bold text-[#1C1917]">
+              4GB+ Out-of-Core Streaming &amp; Merkle Sharder (Bypasses WASM Ceiling)
+            </h3>
+            <p className="text-xs text-[#44403C] leading-relaxed">
+              Running inside Pipes.app Desktop. Stream massive state <code className="font-mono">.zip</code> or tab-delimited <code className="font-mono">.txt</code> files directly from disk in constant memory without loading gigabytes into browser RAM.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <div className="md:col-span-2">
+              <label htmlFor="native-path-input" className="block text-xs font-mono font-bold text-[#44403C] mb-1">
+                Dataset Path ({nativeDatasets.length} files detected in Downloads / Marigold_Local)
+              </label>
+              <input
+                id="native-path-input"
+                type="text"
+                value={selectedNativePath}
+                onChange={(e) => setSelectedNativePath(e.target.value)}
+                list="native-dataset-suggestions"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#D6D0C4] bg-white text-xs font-mono text-[#1C1917]"
+              />
+              <datalist id="native-dataset-suggestions">
+                {nativeDatasets.map((d) => (
+                  <option key={d.path} value={d.path} />
+                ))}
+              </datalist>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={handleNativeStreamProfile}
+                disabled={nativeBusy}
+                variant="primary"
+                className="bg-[#1C1917] hover:bg-[#B45309] text-white font-bold px-4 py-2.5 rounded-xl text-xs"
+              >
+                <HardDrive className="w-3.5 h-3.5 mr-1.5" />
+                <span>Stream Profile</span>
+              </Button>
+              <Button
+                onClick={handleNativeShardArchive}
+                disabled={nativeBusy}
+                variant="outline"
+                className="border-[#B45309] bg-[#FEF3C7] text-[#78350F] font-bold px-4 py-2.5 rounded-xl text-xs"
+              >
+                <span>Shard 250k Blocks</span>
+              </Button>
+            </div>
+          </div>
+
+          {nativeMsg && (
+            <div className="bg-[#FEF3C7] border border-[#F59E0B]/40 rounded-xl px-4 py-2.5 text-xs font-mono text-[#451A03]">
+              {nativeMsg}
+            </div>
+          )}
+
+          {nativeProfile && (
+            <div className="bg-white border border-[#D6D0C4] rounded-xl p-4 text-xs font-mono space-y-2">
+              <div className="font-bold text-[#1C1917]">
+                {nativeProfile.entryName} · {nativeProfile.totalRows.toLocaleString()} rows · {nativeProfile.delimiter} · SHA-256 {nativeProfile.sha256.slice(0, 16)}…
+              </div>
+              {nativeProfile.topGroups.length > 0 && (
+                <div className="text-[#44403C]">
+                  Top {nativeProfile.groupByColumn || "Groups"}:{" "}
+                  {nativeProfile.topGroups.slice(0, 5).map((g) => `${g.value} (${g.count.toLocaleString()})`).join(" · ")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {nativeManifest && (
+            <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-xs font-mono text-emerald-950">
+              Saved {nativeManifest.shardCount} verified shards ({nativeManifest.totalRows.toLocaleString()} rows) to {nativeManifest.outputDir} · Merkle Root {nativeManifest.merkleRoot.slice(0, 16)}…
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Upload Zone */}
       {!parseState.isProcessing && parseState.totalRows === 0 && (!existingShardCount || existingShardCount === 0) && (
-        <div 
-          className="border-2 border-dashed border-primary/60 rounded-2xl p-10 sm:p-14 text-center bg-primary/5 hover:bg-primary/10 transition-all shadow-sm"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleFileDrop}
-        >
-          <div className="text-5xl mb-4">📂</div>
-          <h3 className="text-2xl font-black text-foreground mb-2">
-            {isDemo ? "Step 2: Select Your Downloaded `DEMO_roosevelt...csv` File" : "Upload Local Voter Roll File"}
-          </h3>
-          <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-8">
-            {isDemo ? (
-              <>Click the button below and pick the <strong className="text-foreground font-mono">DEMO_roosevelt_statewide_voter_roll.csv</strong> file you just saved to your computer&apos;s Downloads folder. Our browser Web Worker will instantly stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
-            ) : (
-              <>Select a raw <strong className="text-foreground font-mono">.zip</strong> archive (no unzipping needed!), <strong className="text-foreground font-mono">.csv</strong>, tab-delimited <strong className="text-foreground font-mono">.txt/.tsv</strong>, or <strong className="text-foreground font-mono">.xlsx</strong> file from your machine. Our browser Web Worker streams and decompresses rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
-            )}
-          </p>
-          <input 
-            type="file" 
-            accept=".zip,.csv,.txt,.tsv,.json,.xlsx" 
-            className="hidden" 
-            id="csv-upload" 
-            onChange={handleFileSelect} 
-          />
-          <label htmlFor="csv-upload" className="bg-primary hover:bg-primary/90 text-white font-black cursor-pointer inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-base shadow-xl transform active:scale-[0.98] transition-all">
-            <span>{isDemo ? "📂 Select `DEMO_roosevelt...csv` from Downloads" : "📂 Select .ZIP, .CSV, or .TXT Voter Roll"}</span>
-          </label>
+        <div className="space-y-4">
+          {largeBrowserFileNotice && (
+            <div className="bg-[#FEF3C7] border-2 border-[#B45309] rounded-2xl p-6 text-[#1C1917] shadow-sm space-y-3 animate-in fade-in">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="bg-[#1C1917] text-[#FAF8F5] text-xs font-mono font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  4GB+ Archive Handoff Recommended ({largeBrowserFileNotice.file.name})
+                </span>
+                <span className="text-xs font-mono font-bold text-[#92400E]">
+                  Browser Wasm Ceiling Guard
+                </span>
+              </div>
+              <p className="text-sm text-[#451A03] leading-relaxed">
+                {largeBrowserFileNotice.reason}
+              </p>
+              <div className="flex flex-wrap gap-3 pt-1">
+                <a
+                  href={PIPES_DESKTOP_URLS.downloadMarigoldModule}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-[#1C1917] hover:bg-[#B45309] text-white font-bold px-5 py-3 rounded-xl text-xs inline-flex items-center gap-2 transition-colors"
+                >
+                  <span>Open 4GB+ Archive in Pipes Desktop (Marigold Module)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <Button
+                  onClick={() => {
+                    const pending = largeBrowserFileNotice.file;
+                    setLargeBrowserFileNotice(null);
+                    requirePin(() => parseFile(pending));
+                  }}
+                  variant="outline"
+                  className="border-[#B45309] bg-white hover:bg-[#FAF8F5] text-[#78350F] font-bold px-5 py-3 rounded-xl text-xs"
+                >
+                  Continue Browser Chunked Stream Anyway
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div 
+            className="border-2 border-dashed border-primary/60 rounded-2xl p-10 sm:p-14 text-center bg-primary/5 hover:bg-primary/10 transition-all shadow-sm"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+          >
+            <div className="text-5xl mb-4">📂</div>
+            <h3 className="text-2xl font-black text-foreground mb-2">
+              {isDemo ? "Step 2: Select Your Downloaded `DEMO_roosevelt...csv` File" : "Upload Local Voter Roll File"}
+            </h3>
+            <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-8">
+              {isDemo ? (
+                <>Click the button below and pick the <strong className="text-foreground font-mono">DEMO_roosevelt_statewide_voter_roll.csv</strong> file you just saved to your computer&apos;s Downloads folder. Our browser Web Worker will instantly stream and chunk rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
+              ) : (
+                <>Select a raw <strong className="text-foreground font-mono">.zip</strong> archive (no unzipping needed!), <strong className="text-foreground font-mono">.csv</strong>, tab-delimited <strong className="text-foreground font-mono">.txt/.tsv</strong>, or <strong className="text-foreground font-mono">.xlsx</strong> file from your machine. Our browser Web Worker streams and decompresses rows locally into <GlossaryTooltip term="RAM" />—0 bytes ever leave your machine!</>
+              )}
+            </p>
+            <input 
+              type="file" 
+              accept=".zip,.csv,.txt,.tsv,.json,.xlsx" 
+              className="hidden" 
+              id="csv-upload" 
+              onChange={handleFileSelect} 
+            />
+            <label htmlFor="csv-upload" className="bg-primary hover:bg-primary/90 text-white font-black cursor-pointer inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-base shadow-xl transform active:scale-[0.98] transition-all">
+              <span>{isDemo ? "📂 Select `DEMO_roosevelt...csv` from Downloads" : "📂 Select .ZIP, .CSV, or .TXT Voter Roll"}</span>
+            </label>
+          </div>
+
+          {!isTauriDesktop && (
+            <div className="bg-[#FAF8F5] border border-[#D6D0C4] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#B45309]">
+                  Working with 4GB+ Statewide Archives (e.g. ncvoter_Statewide.zip)?
+                </div>
+                <p className="text-xs text-[#44403C] leading-relaxed">
+                  Use the built-in <strong>Marigold Data &amp; Civic Studio</strong> module inside <code className="font-mono">Pipes.app</code> (&lt;15MB native desktop app) to stream and shard multi-gigabyte archives in constant memory.
+                </p>
+              </div>
+              <a
+                href={PIPES_DESKTOP_URLS.downloadMarigoldModule}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 bg-[#1C1917] hover:bg-[#B45309] text-white font-bold text-xs px-4 py-2.5 rounded-xl inline-flex items-center gap-1.5 transition-colors"
+              >
+                <span>Get Pipes Desktop</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          )}
         </div>
       )}
 

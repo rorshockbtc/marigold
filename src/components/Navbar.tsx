@@ -176,6 +176,21 @@ export function Navbar() {
                         </div>
                       </div>
                     </Link>
+                    <a
+                      href="https://pipes.pink/download?module=marigold"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setOpenDropdown(null)}
+                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-amber-50/70 transition-colors group"
+                    >
+                      <Layers className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
+                      <div>
+                        <div className="font-bold text-foreground group-hover:text-primary">Pipes Desktop (4GB+ Module)</div>
+                        <div className="text-xs text-secondary leading-snug">
+                          Out-of-core Rust engine inside Pipes.app for statewide .zip rolls
+                        </div>
+                      </div>
+                    </a>
                   </div>
 
                   {/* Column 2: Who Uses Marigold */}

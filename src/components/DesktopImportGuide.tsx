@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PIPES_DESKTOP_URLS } from "@/lib/desktop/tauriPipesBridge";
 
 export function DesktopImportGuide() {
   const [isOpen, setIsOpen] = useState(false);
@@ -111,6 +112,26 @@ export function DesktopImportGuide() {
                 💡 Tip: You can drag and drop multiple shard files simultaneously on Data Prep to combine them into RAM.
               </div>
             </div>
+          </div>
+
+          {/* Pipes Desktop · Marigold Module Card */}
+          <div className="bg-white border-2 border-[#B45309]/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="text-xs font-extrabold text-[#1C1917] flex items-center gap-2">
+                <span>⚡ Pipes Desktop · Marigold Module (4GB+ Native Engine)</span>
+              </div>
+              <p className="text-xs text-[#44403C] leading-relaxed">
+                Handling multi-gigabyte statewide <code className="font-mono">.zip</code> or <code className="font-mono">.txt</code> archives? The Marigold module built into <strong>Pipes.app</strong> shards 8M+ row files into 250k-row Merkle blocks in O(1) memory.
+              </p>
+            </div>
+            <a
+              href={PIPES_DESKTOP_URLS.downloadMarigoldModule}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 bg-[#1C1917] hover:bg-[#B45309] text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Download Pipes Desktop &rarr;
+            </a>
           </div>
         </div>
       )}
