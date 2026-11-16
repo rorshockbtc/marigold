@@ -12,7 +12,7 @@ export function Footer() {
         {/* Brand & Mission Statement */}
         <div className="space-y-4 lg:w-1/3">
           <div className="font-serif font-bold text-foreground text-xl flex items-center gap-3">
-            <MarigoldIcon className="w-6 h-6 flex-shrink-0 text-primary drop-shadow-2xs" />
+            <MarigoldIcon className="w-7 h-7 flex-shrink-0 text-primary drop-shadow-2xs" />
             <span>Marigold Insights</span>
           </div>
           <p className="text-secondary text-sm leading-relaxed max-w-sm">

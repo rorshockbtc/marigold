@@ -54,7 +54,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group shrink-0" onClick={() => setOpenDropdown(null)}>
-          <MarigoldIcon className="w-7 h-7 flex-shrink-0 text-primary group-hover:scale-105 transition-transform drop-shadow-2xs" />
+          <MarigoldIcon className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 text-primary group-hover:scale-105 transition-transform drop-shadow-2xs" />
           <div className="flex flex-col">
             <span className="text-lg sm:text-xl font-serif font-bold tracking-tight text-foreground leading-none group-hover:text-primary transition-colors">
               Marigold Insights

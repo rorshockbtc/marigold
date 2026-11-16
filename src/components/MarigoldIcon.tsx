@@ -8,20 +8,34 @@ interface MarigoldIconProps {
 
 /**
  * Marigold Brand Mark: Typographic Eight Petalled Outlined Black Florette (❁, U+2741).
- * Aligns Marigold with the tactile typographic brand identity (||| for Pipes, ! for Bang, ❁ for Marigold).
+ * Rendered inside a scalable 100x100 SVG viewBox so utility sizing (e.g. w-9 h-9, w-4 h-4)
+ * scales the typographic glyph proportionally across all headers, navbars, and badges.
  */
 export function MarigoldIcon({ className = "w-6 h-6", size, style }: MarigoldIconProps) {
   return (
-    <span
+    <svg
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="Marigold"
-      className={`inline-flex items-center justify-center leading-none select-none font-serif text-[1.15em] ${className}`}
+      className={`select-none ${className}`}
       style={{
-        ...(size ? { width: size, height: size, fontSize: size } : {}),
+        ...(size ? { width: size, height: size } : {}),
         ...style,
       }}
     >
-      ❁
-    </span>
+      <text
+        x="50"
+        y="53"
+        dominantBaseline="central"
+        textAnchor="middle"
+        fill="currentColor"
+        fontFamily="Georgia, Cambria, 'Times New Roman', serif"
+        fontSize="94"
+      >
+        ❁
+      </text>
+    </svg>
   );
 }

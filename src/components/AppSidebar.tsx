@@ -97,7 +97,7 @@ export default function AppSidebar() {
       {/* Brand Header */}
       <div className={`p-4 border-b border-border flex items-center justify-between bg-[#EAE5DC]/60 ${isCollapsed ? 'flex-col gap-3' : ''}`}>
         <div className="flex items-center gap-2.5 overflow-hidden">
-          <MarigoldIcon className="w-6 h-6 flex-shrink-0 drop-shadow-sm" />
+          <MarigoldIcon className="w-7 h-7 flex-shrink-0 text-primary drop-shadow-sm" />
           {!isCollapsed && <span className="font-serif font-bold text-lg tracking-tight text-foreground whitespace-nowrap">Marigold Insights</span>}
         </div>
         <button
